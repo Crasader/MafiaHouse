@@ -1,4 +1,17 @@
-﻿  AppDelegate.cpp
+﻿  GroupLogo.cpp
+  StartScreen.cpp
+c:\users\100672027\desktop\mafia house - electric lemon studios\classes\startscreen.cpp(65): warning C4996: 'cocos2d::CCScene': was declared deprecated
+  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\deprecated\ccdeprecated.h(748): note: see declaration of 'cocos2d::CCScene'
+c:\users\100672027\desktop\mafia house - electric lemon studios\classes\startscreen.cpp(64): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
+  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
+c:\users\100672027\desktop\mafia house - electric lemon studios\classes\startscreen.cpp(66): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
+  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
+c:\users\100672027\desktop\mafia house - electric lemon studios\classes\grouplogo.cpp(58): warning C4996: 'cocos2d::CCScene': was declared deprecated
+  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\deprecated\ccdeprecated.h(748): note: see declaration of 'cocos2d::CCScene'
+c:\users\100672027\desktop\mafia house - electric lemon studios\classes\grouplogo.cpp(57): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
+  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
+c:\users\100672027\desktop\mafia house - electric lemon studios\classes\grouplogo.cpp(59): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
+  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
   Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100672027\Desktop\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.exe
   Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100672027\Desktop\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.pdb (Full PDB)
   0 File(s) copied

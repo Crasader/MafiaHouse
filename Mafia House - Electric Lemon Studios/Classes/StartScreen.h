@@ -11,6 +11,8 @@ public:
 
 	virtual bool init();
 
+	void update(float deltaTime);
+
 	CREATE_FUNC(StartScreen);
 
 	void Step(float dt);
@@ -23,6 +25,8 @@ private:
 
 	//character
 	Sprite* sprite;
+	Label* label;
+	int frameCount = 0;
 };
 
 #endif // __START_SCREEN_H__
