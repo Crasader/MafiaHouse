@@ -1,36 +1,6 @@
-﻿  AppDelegate.cpp
-  CocoLogo.cpp
-  DisplayHandler.cpp
-  GroupLogo.cpp
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\cocologo.cpp(58): warning C4996: 'cocos2d::CCScene': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\deprecated\ccdeprecated.h(748): note: see declaration of 'cocos2d::CCScene'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\cocologo.cpp(57): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\cocologo.cpp(59): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\grouplogo.cpp(58): warning C4996: 'cocos2d::CCScene': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\deprecated\ccdeprecated.h(748): note: see declaration of 'cocos2d::CCScene'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\grouplogo.cpp(57): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\grouplogo.cpp(59): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-  HelloWorldScene.cpp
-  InputHandler.cpp
-  MenuScreen.cpp
-  StartScreen.cpp
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\startscreen.cpp(79): warning C4996: 'cocos2d::CCScene': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\deprecated\ccdeprecated.h(748): note: see declaration of 'cocos2d::CCScene'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\startscreen.cpp(80): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\helloworldscene.cpp(298): warning C4996: 'cocos2d::CCScene': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\deprecated\ccdeprecated.h(748): note: see declaration of 'cocos2d::CCScene'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\helloworldscene.cpp(297): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-c:\users\100672027\documents\mafiahousegithub\mafia house - electric lemon studios\classes\helloworldscene.cpp(299): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-  main.cpp
+﻿  MenuScreen.cpp
 AppDelegate.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
-     Creating library C:\Users\100672027\Documents\MafiaHouseGithub\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.lib and object C:\Users\100672027\Documents\MafiaHouseGithub\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.exp
-  Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100672027\Documents\MafiaHouseGithub\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.exe
-  Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100672027\Documents\MafiaHouseGithub\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.pdb (Full PDB)
+     Creating library C:\Users\100654328\Documents\Mafia House\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.lib and object C:\Users\100654328\Documents\Mafia House\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.exp
+  Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100654328\Documents\Mafia House\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.exe
+  Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100654328\Documents\Mafia House\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.pdb (Full PDB)
   0 File(s) copied

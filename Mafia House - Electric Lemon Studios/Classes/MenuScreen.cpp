@@ -36,7 +36,7 @@ bool MenuScreen::init()
 
 
 	//Initialize a Sprite
-	sprite = Sprite::create("Start.png");
+	sprite = Sprite::create("MainMenu.png");
 
 	float x = origin.x + visibleSize.width / 2;
 	float y = origin.y + visibleSize.height / 2;
