@@ -34,8 +34,10 @@ private:
 	//character
 	Sprite* sprite;
 	Sprite* character;
+	Sprite* background;
 	Vec2 characterPosition = Vec2(79, 200);
 	float characterSpeed = 10.0f;
+
 
 	int a = 0;
 };

@@ -15,8 +15,6 @@ public:
 
 	CREATE_FUNC(StartScreen);
 
-	void Step(float dt);
-
 private:
 	//--- Cocos Engine References ---//
 	Director* director;

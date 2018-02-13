@@ -1,5 +1,7 @@
 #include "StartScreen.h"
+#include "MenuScreen.h"
 #include "DisplayHandler.h"
+#include "InputHandler.h"
 #include <iostream>
 
 using namespace std;
@@ -58,24 +60,23 @@ bool StartScreen::init()
 	return true;
 }
 
-void StartScreen::Step(float dt)
-{
-	this->unschedule(schedule_selector(StartScreen::Step));
-	CCDirector::sharedDirector()->purgeCachedData();
-	CCScene *pScene = Scene::create();
-	CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(1.0f, pScene));
-}
-
 void StartScreen::update(float deltaTime)
 {
 	if (frameCount == 0)
 	{
 		label->runAction(FadeOut::create(1.0f));
 	}
+
 	frameCount++;
 	if (frameCount == 50)
 	{
 		label->runAction(FadeIn::create(1.0f));
 		frameCount = -50;
 	}	
+
+	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE))
+	{
+		CCScene *pScene = MenuScreen::create();
+		CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(1.0f, pScene));
+	}
 }
