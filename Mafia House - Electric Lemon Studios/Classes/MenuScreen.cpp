@@ -46,6 +46,7 @@ bool MenuScreen::init()
 
 	//can initialize(preload) sound effects here 
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/boom.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/LoadBullet.wav");
 
 
 
@@ -144,6 +145,7 @@ void MenuScreen::update(float deltaTime)
 	//select different menu sign
 	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		float x = origin.x + visibleSize.width * (3.5 / 11);
 		float y = origin.y + visibleSize.height * (0.5 / 6);
 		gunSign->setPosition(x, y);
@@ -155,6 +157,7 @@ void MenuScreen::update(float deltaTime)
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		float x = origin.x + visibleSize.width * (3.5 / 11);
 		float y = origin.y + visibleSize.height * (1.2 / 6);
 		gunSign->setPosition(x, y);
@@ -166,6 +169,7 @@ void MenuScreen::update(float deltaTime)
 	}
 	if (INPUTS-> getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y == origin.y + visibleSize.height * (2.6 / 6)))
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		float x = origin.x + visibleSize.width * (3.5 / 11);
 		float y = origin.y + visibleSize.height * (1.9 / 6);
 		gunSign->setPosition(x, y);
@@ -177,6 +181,7 @@ void MenuScreen::update(float deltaTime)
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		float x = origin.x + visibleSize.width * (3.5 / 11);
 		float y = origin.y + visibleSize.height * (2.6 / 6);
 		gunSign->setPosition(x, y);
@@ -188,6 +193,7 @@ void MenuScreen::update(float deltaTime)
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		float x = origin.x + visibleSize.width * (3.5 / 11);
 		float y = origin.y + visibleSize.height * (1.9 / 6);
 		gunSign->setPosition(x, y);
@@ -199,6 +205,7 @@ void MenuScreen::update(float deltaTime)
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y == origin.y + visibleSize.height * (0.5 / 6)))
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		float x = origin.x + visibleSize.width * (3.5 / 11);
 		float y = origin.y + visibleSize.height * (1.2 / 6);
 		gunSign->setPosition(x, y);
