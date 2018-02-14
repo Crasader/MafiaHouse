@@ -45,15 +45,10 @@ bool StartScreen::init()
 
 	this->addChild(sprite, 0);
 
-
-
 	label = Label::createWithTTF("Press Space To Start", "fonts/Nexa_Bold.otf", 24);
 	label->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 4));
 
 	this->addChild(label, 1);
-
-
-	/*this->schedule(schedule_selector(StartScreen::Step), 4.0f);*/
 
 	this->scheduleUpdate();
 
@@ -76,7 +71,14 @@ void StartScreen::update(float deltaTime)
 
 	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE))
 	{
-		CCScene *pScene = MenuScreen::create();
-		CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(1.0f, pScene));
+		this->schedule(schedule_selector(StartScreen::Step), 0.0f);
 	}
+}
+
+void StartScreen::Step(float dt)
+{
+	this->unschedule(schedule_selector(StartScreen::Step));
+	CCDirector::sharedDirector()->purgeCachedData();
+	CCScene *pScene = MenuScreen::create();
+	CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(2.0f, pScene));
 }

@@ -35,7 +35,7 @@ private:
 	Sprite* sprite;
 	Sprite* character;
 	Sprite* background;
-	Vec2 characterPosition = Vec2(79, 200);
+	Vec2 characterPosition;
 	float characterSpeed = 10.0f;
 
 

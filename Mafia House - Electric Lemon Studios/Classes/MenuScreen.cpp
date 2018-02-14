@@ -1,7 +1,9 @@
 #include "MenuScreen.h"
 #include "DisplayHandler.h"
 #include "InputHandler.h"
+#include "HelloWorldScene.h"
 #include <iostream>
+
 
 using namespace std;
 
@@ -33,20 +35,86 @@ bool MenuScreen::init()
 
 	auto visibleSize = director->getVisibleSize();
 	Vec2 origin = director->getVisibleOrigin();
+	////Setup everything//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	//Setup the background
+	background = Sprite::create("MainMenu.png");
 
-	//Initialize a Sprite
-	sprite = Sprite::create("MainMenu.png");
+	background->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
 
 	float x = origin.x + visibleSize.width / 2;
 	float y = origin.y + visibleSize.height / 2;
 
-	sprite->setPosition(Vec2(x, y));
+	background->setPosition(Vec2(x, y));
 
-	this->addChild(sprite, 0);
+	this->addChild(background, 0);
 
+	//Setup the Start Game Sign
 
+	startGame = Sprite::create("StartGame.png");
 
+	startGame->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+
+	x = origin.x + visibleSize.width / 2;
+	y = origin.y + visibleSize.height * (2.6 / 6);
+
+	startGame->setPosition(Vec2(x, y));
+
+	this->addChild(startGame, 1);
+
+	//Setup the Select Level Sign
+
+	selectLevel = Sprite::create("SelectLevel.png");
+
+	selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.9, visibleSize.height / background->getContentSize().height*0.8);
+
+	x = origin.x + visibleSize.width / 2;
+	y = origin.y + visibleSize.height * (1.9 / 6);
+
+	selectLevel->setPosition(Vec2(x, y));
+
+	this->addChild(selectLevel, 1);
+
+	//Setup the Options Sign
+
+	options = Sprite::create("Options.png");
+
+	options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.7);
+
+	x = origin.x + visibleSize.width / 2;
+	y = origin.y + visibleSize.height * (1.2 / 6);
+
+	options->setPosition(Vec2(x, y));
+
+	this->addChild(options, 1);
+
+	//Setup the Exit Sign
+
+	exit = Sprite::create("Exit.png");
+
+	exit->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.6);
+
+	x = origin.x + visibleSize.width / 2;
+	y = origin.y + visibleSize.height * (0.5 / 6);
+
+	exit->setPosition(Vec2(x, y));
+
+	this->addChild(exit, 1);
+
+	//Setup the Gun Sign
+
+	gunSign = Sprite::create("MenuGun.png");
+
+	gunSign->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+
+	x = origin.x + visibleSize.width * (3.5 / 11);
+	y = origin.y + visibleSize.height * (2.6 / 6);
+
+	gunSign->setPosition(Vec2(x, y));
+
+	this->addChild(gunSign, 1);
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	this->scheduleUpdate();
 
 	return true;
@@ -56,9 +124,108 @@ void MenuScreen::update(float deltaTime)
 {
 	gameTime += deltaTime;
 
-	//put update here
-	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE))
+	auto visibleSize = director->getVisibleSize();
+	Vec2 origin = director->getVisibleOrigin();
+
+	//select different menu sign
+	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
 	{
-		//Example for press space key
+		float x = origin.x + visibleSize.width * (3.5 / 11);
+		float y = origin.y + visibleSize.height * (0.5 / 6);
+		gunSign->setPosition(x, y);
+		exit->runAction(Blink::create(0.1f, 1));
+		options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		exit->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
+		startGame->setScale(visibleSize.width / background->getContentSize().width*0.6, visibleSize.height / background->getContentSize().height*0.6);
 	}
+	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
+	{
+		float x = origin.x + visibleSize.width * (3.5 / 11);
+		float y = origin.y + visibleSize.height * (1.2 / 6);
+		gunSign->setPosition(x, y);
+		options->runAction(Blink::create(0.1f, 1));
+		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		options->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+		startGame->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
+		exit->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+	}
+	if (INPUTS-> getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y == origin.y + visibleSize.height * (2.6 / 6)))
+	{
+		float x = origin.x + visibleSize.width * (3.5 / 11);
+		float y = origin.y + visibleSize.height * (1.9 / 6);
+		gunSign->setPosition(x, y);
+		selectLevel->runAction(Blink::create(0.1f, 1));
+		exit->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
+		startGame->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		selectLevel->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+		options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+	}
+	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
+	{
+		float x = origin.x + visibleSize.width * (3.5 / 11);
+		float y = origin.y + visibleSize.height * (2.6 / 6);
+		gunSign->setPosition(x, y);
+		startGame->runAction(Blink::create(0.1f, 1));
+		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		startGame->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+		options->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
+		exit->setScale(visibleSize.width / background->getContentSize().width*0.6, visibleSize.height / background->getContentSize().height*0.6);
+	}
+	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
+	{
+		float x = origin.x + visibleSize.width * (3.5 / 11);
+		float y = origin.y + visibleSize.height * (1.9 / 6);
+		gunSign->setPosition(x, y);
+		selectLevel->runAction(Blink::create(0.1f, 1));
+		options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		selectLevel->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+		exit->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
+		startGame->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+	}
+	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y == origin.y + visibleSize.height * (0.5 / 6)))
+	{
+		float x = origin.x + visibleSize.width * (3.5 / 11);
+		float y = origin.y + visibleSize.height * (1.2 / 6);
+		gunSign->setPosition(x, y);
+		options->runAction(Blink::create(0.1f, 1));
+		startGame->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
+		exit->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		options->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+	}
+
+	//update for enter different section
+	//Exit
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (0.5 / 6)))
+	{
+		director->end();
+	}
+	//Options
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
+	{
+
+	}
+	//Select Level
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
+	{
+
+	}
+	//Start Game
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (2.6 / 6)))
+	{
+		Step(2.0f);
+	}
+
+
+	//update the keybord each frame
+	INPUTS->clearForNextFrame();
+}
+
+void MenuScreen::Step(float dt)
+{
+	this->unschedule(schedule_selector(MenuScreen::Step));
+	CCDirector::sharedDirector()->purgeCachedData();
+	CCScene *pScene = HelloWorld::create();
+	CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(2.0f, pScene));
 }

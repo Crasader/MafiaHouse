@@ -1,6 +1,7 @@
 #include "GroupLogo.h"
 #include "StartScreen.h"
 #include "DisplayHandler.h"
+#include "InputHandler.h"
 #include <iostream>
 
 using namespace std;
@@ -49,6 +50,18 @@ bool GroupLogo::init()
 	this->scheduleUpdate();
 
 	return true;
+}
+
+void GroupLogo::update(float deltaTime)
+{
+	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE))
+	{
+		Scene *scene = StartScreen::create();
+		director->replaceScene(TransitionFade::create(0.0f, scene));
+	}
+
+	//update the keybord each frame
+	INPUTS->clearForNextFrame();
 }
 
 void GroupLogo::Step(float dt)

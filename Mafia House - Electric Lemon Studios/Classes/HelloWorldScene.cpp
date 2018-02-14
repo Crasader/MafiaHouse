@@ -76,6 +76,7 @@ bool HelloWorld::init()
 // Run this function once
 void HelloWorld::setup()
 {
+
 	auto visibleSize = director->getVisibleSize();
 	Vec2 origin = director->getVisibleOrigin();
 
@@ -198,8 +199,9 @@ void HelloWorld::setup()
 	}
 	else
 	{
-		float x = origin.x + character->getContentSize().width / 2;
-		float y = origin.y + visibleSize.height / 3;
+		float x = origin.x + visibleSize.width / 2;
+		float y = origin.y + visibleSize.height / 2;
+		characterPosition = Vec2(x, y);
 		// position the sprite on the center of the screen
 		character->setPosition(Vec2(x, y));
 
@@ -266,6 +268,9 @@ void HelloWorld::update(float deltaTime)
 	//		a = 0;
 	//	}
 	//}
+
+	auto cam = Camera::getDefaultCamera();
+	cam->setPosition(director->getVisibleOrigin() + characterPosition);
 
 
 	if(character != nullptr)

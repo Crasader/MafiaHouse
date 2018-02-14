@@ -105,6 +105,11 @@ bool InputHandler::getKey(KeyCode key) const
 	return (keyboardStates[(int)key] == InputState::Pressed || keyboardStates[(int)key] == InputState::Held);
 }
 
+bool InputHandler::getKeyHeld(KeyCode key) const
+{
+	return (keyboardStates[(int)key] == InputState::Held);
+}
+
 
 //Any 
 bool InputHandler::getAnyButtonPress() const

@@ -11,6 +11,8 @@ public:
 
 	virtual bool init();
 
+	void update(float deltaTime);
+
 	CREATE_FUNC(GroupLogo);
 
 	void Step(float dt);
@@ -19,7 +21,6 @@ private:
 	//--- Cocos Engine References ---//
 	Director* director;
 	Vec2 windowSize;
-	float gameTime = 0.0f;
 
 	//character
 	Sprite* sprite;

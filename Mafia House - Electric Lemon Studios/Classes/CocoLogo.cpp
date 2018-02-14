@@ -1,6 +1,7 @@
 #include "CocoLogo.h"
 #include "GroupLogo.h"
 #include "DisplayHandler.h"
+#include "InputHandler.h"
 #include <iostream>
 
 using namespace std;
@@ -49,6 +50,18 @@ bool CocoLogo::init()
 	this->scheduleUpdate();
 
 	return true;
+}
+
+void CocoLogo::update(float deltaTime)
+{
+	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE))
+	{
+		Scene *scene = GroupLogo::create();
+		director->replaceScene(TransitionFade::create(0.0f, scene));
+	}
+
+	//update the keybord each frame
+	INPUTS->clearForNextFrame();
 }
 
 void CocoLogo::Step(float dt)

@@ -15,6 +15,8 @@ public:
 
 	CREATE_FUNC(MenuScreen);
 
+	void Step(float dt);
+
 private:
 	//--- Cocos Engine References ---//
 	Director* director;
@@ -22,7 +24,12 @@ private:
 	float gameTime = 0.0f;
 
 	//Put your code here
-	Sprite* sprite;
+	Sprite* background;
+	Sprite* startGame;
+	Sprite* selectLevel;
+	Sprite* options;
+	Sprite* exit;
+	Sprite* gunSign;
 };
 
 #endif // !__MENU_SCREEN_H__

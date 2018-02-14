@@ -175,6 +175,8 @@ public:
 	*/
 	bool getKey(KeyCode key) const;
 
+	bool getKeyHeld(KeyCode key) const;
+
 
 	//Any.
 	/*
