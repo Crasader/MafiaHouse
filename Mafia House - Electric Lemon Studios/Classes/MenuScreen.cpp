@@ -1,8 +1,9 @@
+#include "SimpleAudioEngine.h"	//to play music when this scene starts
 #include "MenuScreen.h"
 #include "DisplayHandler.h"
 #include "InputHandler.h"
 #include "HelloWorldScene.h"
-#include <iostream>
+#include <iostream> 
 
 
 using namespace std;
@@ -36,6 +37,19 @@ bool MenuScreen::init()
 	auto visibleSize = director->getVisibleSize();
 	Vec2 origin = director->getVisibleOrigin();
 	////Setup everything//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	//start playing music 
+	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+	audio->preloadBackgroundMusic("Audio/menu.wav");
+	audio->playBackgroundMusic("Audio/menu.wav");
+
+	//can initialize(preload) sound effects here 
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/boom.wav");
+
+
+
+
 
 	//Setup the background
 	background = Sprite::create("MainMenu.png");
@@ -199,21 +213,24 @@ void MenuScreen::update(float deltaTime)
 	//Exit
 	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (0.5 / 6)))
 	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 		director->end();
 	}
 	//Options
 	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
 	{
-
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 	}
 	//Select Level
 	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
 	{
-
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 	}
 	//Start Game
 	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (2.6 / 6)))
 	{
+		//will make a gun shooting noise 
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 		Step(2.0f);
 	}
 

@@ -48,6 +48,7 @@ bool HelloWorld::init()
         return false;
     }
 
+
     //auto visibleSize = Director::getInstance()->getVisibleSize();
     //Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -69,6 +70,8 @@ bool HelloWorld::init()
 	//Schedule the use of the update function so the function actually gets called
 	this->scheduleUpdate();
 
+	//CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic("Audio/mainMenu.mp3");
+	//CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("Audio/mainMenu.mp3");
 
     return true;
 }
