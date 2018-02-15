@@ -1,11 +1,3 @@
-﻿  HelloWorldScene.cpp
-c:\users\100672027\documents\mafiahouse\mafia house - electric lemon studios\classes\helloworldscene.cpp(247): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\100672027\documents\mafiahouse\mafia house - electric lemon studios\classes\helloworldscene.cpp(451): warning C4996: 'cocos2d::CCScene': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\deprecated\ccdeprecated.h(748): note: see declaration of 'cocos2d::CCScene'
-c:\users\100672027\documents\mafiahouse\mafia house - electric lemon studios\classes\helloworldscene.cpp(450): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-c:\users\100672027\documents\mafiahouse\mafia house - electric lemon studios\classes\helloworldscene.cpp(452): warning C4996: 'cocos2d::Director::sharedDirector': was declared deprecated
-  c:\users\100672027\desktop\cocos2d-x-3.16\cocos\base\ccdirector.h(148): note: see declaration of 'cocos2d::Director::sharedDirector'
-  Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100672027\Documents\MafiaHouse\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.exe
+﻿  Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100672027\Documents\MafiaHouse\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.exe
   Mafia House - Electric Lemon Studios.vcxproj -> C:\Users\100672027\Documents\MafiaHouse\Mafia House - Electric Lemon Studios\proj.win32\Debug.win32\Mafia House - Electric Lemon Studios.pdb (Full PDB)
   0 File(s) copied

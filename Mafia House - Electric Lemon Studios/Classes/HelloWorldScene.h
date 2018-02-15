@@ -39,6 +39,8 @@ private:
 	Sprite* knife;
 	Sprite* enemy;
 	Sprite* exmark;
+	Label* label2;
+	Label* label1;
 	Vec2 characterPosition;
 	Vec2 boxPosition;
 	Vec2 knifePosition;

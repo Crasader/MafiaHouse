@@ -58,7 +58,7 @@ static int register_all_packages()
 bool AppDelegate::applicationDidFinishLaunching() {
 
 	//Create the window
-	DISPLAY->init(1800, 1012.5, "Mafia House", false, 1.0f);
+	DISPLAY->init(1800, 1012.5, "Mafia House", true, 1.0f);
 
     // initialize director
     auto director = Director::getInstance();

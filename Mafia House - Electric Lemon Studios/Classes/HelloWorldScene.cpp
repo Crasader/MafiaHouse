@@ -291,6 +291,16 @@ void HelloWorld::setup()
 		this->addChild(exmark, 3);
 	}
 
+	//lables
+	label2 = Label::createWithTTF("<-A Left or D Right->", "fonts/Nexa_Bold.otf", 24);
+	label2->setPosition(Vec2(-200,-200));
+
+	this->addChild(label2, 4);
+
+	label1 = Label::createWithTTF("Space for Pick Up", "fonts/Nexa_Bold.otf", 24);
+	label1->setPosition(Vec2(-200, -200));
+
+	this->addChild(label1, 4);
 
 	/*this->schedule(schedule_selector(HelloWorld::Step), 3.0f);*/
 }
@@ -299,8 +309,6 @@ void HelloWorld::setup()
 void HelloWorld::update(float deltaTime)
 {
 	gameTime += deltaTime;
-
-	cout << gameTime << endl;
 
 	auto visibleSize = director->getVisibleSize();
 	Vec2 origin = director->getVisibleOrigin();
@@ -332,14 +340,14 @@ void HelloWorld::update(float deltaTime)
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_A) && characterPosition.x > visibleSize.width / 2)
 	{
-		id = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav",true);
+		id = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true, 2.0, 0.0f, 2.0f);
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_A) && characterPosition.x > visibleSize.width / 2)
 	{
 		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(id);
 	}
 
-	if (INPUTS->getKey(KeyCode::KEY_D) && characterPosition.x < (background->getContentSize().width)*(visibleSize.height / background->getContentSize().height) - visibleSize.width / 2)
+	if (INPUTS->getKey(KeyCode::KEY_D) && characterPosition.x < enemyPosition.x-60/*background->getContentSize().width)*(visibleSize.height / background->getContentSize().height) - visibleSize.width / 2*/)
 	{
 		if (knifePosition == boxPosition)
 		{
@@ -363,22 +371,28 @@ void HelloWorld::update(float deltaTime)
 		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(id);
 	}
 
-	if (abs(knifePosition.x - characterPosition.x) < 30)
+	if (abs(knifePosition.x - characterPosition.x) < 50)
 	{
+		////////
+		label1->setPosition(characterPosition.x, characterPosition.y + 150);
 		if (gameTime - a > 0.3)
 		{
 			knife->runAction(Blink::create(0.2f, 1));
 			a = gameTime;
 		}
-		if (INPUTS->getKey(KeyCode::KEY_F))
+		if (INPUTS->getKey(KeyCode::KEY_SPACE))
 		{
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
 			knife->setScale(1, 1);
 			knifePosition = boxPosition;
 		}
 	}
+	else
+	{
+		label1->setPosition(Vec2(-200, -200));
+	}
 
-	if (abs(enemyPosition.x - characterPosition.x) < 400)
+	if (abs(enemyPosition.x - characterPosition.x) < 400 && enemy->isFlipX())
 	{
 		float x = enemyPosition.x;
 		float y = origin.y + visibleSize.height / 8 + 110;
@@ -392,7 +406,34 @@ void HelloWorld::update(float deltaTime)
 	else
 	{
 		exmark->setPosition(Vec2(-100, -100));
+		if (enemy->isFlipX())
+		{
+			enemyPosition.x -= 3;
+		}
+		if (!enemy->isFlipX())
+		{
+			enemyPosition.x += 3;
+		}
+		if (enemyPosition.x < 1900)
+		{
+			enemy->setFlipX(false);
+		}
+		if (enemyPosition.x > 2702)
+		{
+			enemy->setFlipX(true);
+		}
 	}
+
+	if (characterPosition.x < 1150)
+	{
+		label2->setPosition(characterPosition.x, characterPosition.y + 150);
+	}
+	else
+	{
+		label2->setPosition(Vec2(-200, -200));
+	}
+
+
 	
 	/*if (INPUTS->getKeyPress(KeyCode::KEY_Q))
 	{
@@ -421,6 +462,8 @@ void HelloWorld::update(float deltaTime)
 		box->setPosition(boxPosition);
 	if (knife != nullptr)
 		knife->setPosition(knifePosition);
+	if (enemy != nullptr)
+		enemy->setPosition(enemyPosition);
 
 	//update the keybord each frame
 	INPUTS->clearForNextFrame();
