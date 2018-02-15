@@ -83,6 +83,11 @@ void HelloWorld::setup()
 	auto visibleSize = director->getVisibleSize();
 	Vec2 origin = director->getVisibleOrigin();
 
+
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/equip.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/walk.wav");
+
+
 	//set collision box foe screen
 	/*auto edgebody = PhysicsBody::createEdgeBox(visibleSize, { 0, 0, 0 }, 10);
 	edgebody->setContactTestBitmask(true);
@@ -99,7 +104,7 @@ void HelloWorld::setup()
 	//    you may modify it.
 
 	// add a "close" icon to exit the progress. it's an autorelease object
-	auto closeItem = MenuItemImage::create(
+	/*auto closeItem = MenuItemImage::create(
 		"CloseNormal.png",
 		"CloseSelected.png",
 		CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
@@ -112,15 +117,15 @@ void HelloWorld::setup()
 	}
 	else
 	{
-		float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2;
-		float y = origin.y + closeItem->getContentSize().height / 2;
+		float x = origin.x + closeItem->getContentSize().width / 2;
+		float y = origin.y + visibleSize.height - closeItem->getContentSize().height / 2;
 		closeItem->setPosition(Vec2(x, y));
-	}
+	}*/
 
-	// create menu, it's an autorelease object
-	auto menu = Menu::create(closeItem, NULL);
-	menu->setPosition(Vec2::ZERO);
-	this->addChild(menu, 1);
+	//// create menu, it's an autorelease object
+	//auto menu = Menu::create(closeItem, NULL);
+	//menu->setPosition(Vec2::ZERO);
+	//this->addChild(menu, 1);
 
 	/////////////////////////////
 	// 3. add your codes below...
@@ -180,15 +185,16 @@ void HelloWorld::setup()
 
 	//set up background
 
-	background = Sprite::create("background.png");
+	background = Sprite::create("backscroll.png");
 	if (background == nullptr)
 	{
-		problemLoading("'background.png'");
+		problemLoading("'backscroll.png'");
 	}
 	else
 	{
+		background->setScale(visibleSize.height / background->getContentSize().height, visibleSize.height / background->getContentSize().height);
 		// position the sprite on the center of the screen
-		background->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2));
+		background->setPosition(Vec2(origin.x + (background->getContentSize().width/2)*(visibleSize.height / background->getContentSize().height), origin.y + visibleSize.height / 2));
 
 		// add the sprite as a child to this layer
 		this->addChild(background, 0);
@@ -203,15 +209,87 @@ void HelloWorld::setup()
 	else
 	{
 		float x = origin.x + visibleSize.width / 2;
-		float y = origin.y + visibleSize.height / 2;
+		float y = origin.y + visibleSize.height / 8;
 		characterPosition = Vec2(x, y);
 		// position the sprite on the center of the screen
 		character->setPosition(Vec2(x, y));
 
 		// add the sprite as a child to this layer
-		this->addChild(character, 2);
+		this->addChild(character, 4);
 	}
 
+	//setup inventery Box
+	box = Sprite::create("box.png");
+	if (box == nullptr)
+	{
+		problemLoading("'box.png'");
+	}
+	else
+	{
+		float x = origin.x + visibleSize.width - 50;
+		float y = origin.y + visibleSize.height - 50;
+		boxPosition = Vec2(x, y);
+		// position the sprite on the center of the screen
+		box->setPosition(Vec2(x, y));
+
+		// add the sprite as a child to this layer
+		this->addChild(box, 2);
+	}
+
+	//setup Knife
+	knife = Sprite::create("knife.png");
+	if (knife == nullptr)
+	{
+		problemLoading("'knife.png'");
+	}
+	else
+	{
+		knife->setScale(0.7, 0.7);
+		float x = origin.x + visibleSize.width / 4 * 3;
+		float y = origin.y + visibleSize.height/ 20;
+		knifePosition = Vec2(x, y);
+		// position the sprite on the center of the screen
+		knife->setPosition(Vec2(x, y));
+
+		// add the sprite as a child to this layer
+		this->addChild(knife, 3);
+	}
+
+	//setup enemy
+	enemy = Sprite::create("enemy.png");
+	if (enemy == nullptr)
+	{
+		problemLoading("'enemy.png'");
+	}
+	else
+	{
+		enemy->runAction(FlipX::create(true));
+		float x = origin.x + visibleSize.width / 2 * 3;
+		float y = origin.y + visibleSize.height / 8;
+		enemyPosition = Vec2(x, y);
+		// position the sprite on the center of the screen
+		enemy->setPosition(Vec2(x, y));
+
+		// add the sprite as a child to this layer
+		this->addChild(enemy, 3);
+	}
+
+	//setup exclamation mark
+	exmark = Sprite::create("exmark.png");
+	if (exmark == nullptr)
+	{
+		problemLoading("'exmark.png'");
+	}
+	else
+	{
+		/*float x = origin.x + visibleSize.width / 2 * 3;
+		float y = origin.y + visibleSize.height / 8 + 110;*/
+		// position the sprite on the center of the screen
+		exmark->setPosition(Vec2(-100, -100));
+
+		// add the sprite as a child to this layer
+		this->addChild(exmark, 3);
+	}
 
 
 	/*this->schedule(schedule_selector(HelloWorld::Step), 3.0f);*/
@@ -222,20 +300,29 @@ void HelloWorld::update(float deltaTime)
 {
 	gameTime += deltaTime;
 
+	cout << gameTime << endl;
+
+	auto visibleSize = director->getVisibleSize();
+	Vec2 origin = director->getVisibleOrigin();
 	
 	/*sprite->runAction(FadeOut::create(1));*/
 	
 
 	Vec2 MousePos = INPUTS->getMousePosition();
 
-	if (INPUTS->getKey(KeyCode::KEY_W))
-		characterPosition += Vec2(0, +1) * characterSpeed;
+	//if (INPUTS->getKey(KeyCode::KEY_W))
+	//	characterPosition += Vec2(0, +1) * characterSpeed;
 
-	if (INPUTS->getKey(KeyCode::KEY_S))
-		characterPosition += Vec2(0, -1) * characterSpeed;
+	//if (INPUTS->getKey(KeyCode::KEY_S))
+	//	characterPosition += Vec2(0, -1) * characterSpeed;
 
-	if (INPUTS->getKey(KeyCode::KEY_A))
+	if (INPUTS->getKey(KeyCode::KEY_A) && characterPosition.x > visibleSize.width / 2)
 	{
+		if (knifePosition == boxPosition)
+		{
+			knifePosition += Vec2(-1, 0) * characterSpeed;
+		}
+		boxPosition += Vec2(-1, 0) * characterSpeed;
 		characterPosition += Vec2(-1, 0) * characterSpeed;
 		if (!character->isFlippedX())
 		{
@@ -243,9 +330,22 @@ void HelloWorld::update(float deltaTime)
 			character->runAction(flipxAction);
 		}
 	}
-
-	if (INPUTS->getKey(KeyCode::KEY_D))
+	if (INPUTS->getKeyPress(KeyCode::KEY_A) && characterPosition.x > visibleSize.width / 2)
 	{
+		id = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav",true);
+	}
+	if (INPUTS->getKeyRelease(KeyCode::KEY_A) && characterPosition.x > visibleSize.width / 2)
+	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(id);
+	}
+
+	if (INPUTS->getKey(KeyCode::KEY_D) && characterPosition.x < (background->getContentSize().width)*(visibleSize.height / background->getContentSize().height) - visibleSize.width / 2)
+	{
+		if (knifePosition == boxPosition)
+		{
+			knifePosition += Vec2(+1, 0) * characterSpeed;
+		}
+		boxPosition += Vec2(+1, 0) * characterSpeed;
 		characterPosition += Vec2(+1, 0) * characterSpeed;
 		if (character->isFlippedX())
 		{
@@ -254,6 +354,46 @@ void HelloWorld::update(float deltaTime)
 		}
 	}
 
+	if (INPUTS->getKeyPress(KeyCode::KEY_D) && characterPosition.x < (background->getContentSize().width)*(visibleSize.height / background->getContentSize().height) - visibleSize.width / 2)
+	{
+		id = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
+	}
+	if (INPUTS->getKeyRelease(KeyCode::KEY_D) && characterPosition.x < (background->getContentSize().width)*(visibleSize.height / background->getContentSize().height) - visibleSize.width / 2)
+	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(id);
+	}
+
+	if (abs(knifePosition.x - characterPosition.x) < 30)
+	{
+		if (gameTime - a > 0.3)
+		{
+			knife->runAction(Blink::create(0.2f, 1));
+			a = gameTime;
+		}
+		if (INPUTS->getKey(KeyCode::KEY_F))
+		{
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
+			knife->setScale(1, 1);
+			knifePosition = boxPosition;
+		}
+	}
+
+	if (abs(enemyPosition.x - characterPosition.x) < 400)
+	{
+		float x = enemyPosition.x;
+		float y = origin.y + visibleSize.height / 8 + 110;
+		exmark->setPosition(Vec2(x, y));
+		if (gameTime - a > 0.5)
+		{
+			exmark->runAction(Blink::create(0.3f, 1));
+			a = gameTime;
+		}
+	}
+	else
+	{
+		exmark->setPosition(Vec2(-100, -100));
+	}
+	
 	/*if (INPUTS->getKeyPress(KeyCode::KEY_Q))
 	{
 		CCJumpTo* jump = JumpTo::create(1, ccp(director->getVisibleOrigin().x / 6, director->getVisibleOrigin().y / 8), director->getVisibleOrigin().y / 1.2f, 1);
@@ -273,12 +413,17 @@ void HelloWorld::update(float deltaTime)
 	//}
 
 	auto cam = Camera::getDefaultCamera();
-	cam->setPosition(director->getVisibleOrigin() + characterPosition);
-
+	cam->setPosition(director->getVisibleOrigin().x + characterPosition.x, director->getVisibleOrigin().y + director->getVisibleSize().height / 2);
 
 	if(character != nullptr)
 		character->setPosition(characterPosition);
+	if (box != nullptr)
+		box->setPosition(boxPosition);
+	if (knife != nullptr)
+		knife->setPosition(knifePosition);
 
+	//update the keybord each frame
+	INPUTS->clearForNextFrame();
 }
 
 

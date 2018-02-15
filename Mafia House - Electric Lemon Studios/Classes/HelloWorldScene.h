@@ -35,11 +35,18 @@ private:
 	Sprite* sprite;
 	Sprite* character;
 	Sprite* background;
+	Sprite* box;
+	Sprite* knife;
+	Sprite* enemy;
+	Sprite* exmark;
 	Vec2 characterPosition;
+	Vec2 boxPosition;
+	Vec2 knifePosition;
+	Vec2 enemyPosition;
 	float characterSpeed = 10.0f;
 
-
-	int a = 0;
+	unsigned int id;
+	float a = 0;
 };
 
 #endif // __HELLOWORLD_SCENE_H__
