@@ -3,6 +3,7 @@
 #include "DisplayHandler.h"
 #include "InputHandler.h"
 #include "HelloWorldScene.h"
+#include "Tutorial.h"
 #include <iostream> 
 
 
@@ -23,233 +24,270 @@ cocos2d::Scene* MenuScreen::createScene()
 	return scene;
 }
 
+// initialize the secene
 bool MenuScreen::init()
 {
+	// super init first
 	if (!Scene::init())
 	{
 		return false;
 	}
 
+	// Init
 	director = Director::getInstance();
 
-	windowSize = DISPLAY->getWindowSizeAsVec2();
+	// get visible windows sizw and the origin position of gamw world
+	visibleSize = director->getVisibleSize();
+	origin = director->getVisibleOrigin();
 
-	auto visibleSize = director->getVisibleSize();
-	Vec2 origin = director->getVisibleOrigin();
+
 	////Setup everything//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-	//start playing music 
+	// start playing background music 
 	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
 	audio->preloadBackgroundMusic("Audio/menu.wav");
 	audio->playBackgroundMusic("Audio/menu.wav");
 
-	//can initialize(preload) sound effects here 
+	//initialize(preload) sound effects here 
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/boom.wav");
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/LoadBullet.wav");
 
+	//////////////////////////
+	// Setup the background
 
-
-
-
-	//Setup the background
 	background = Sprite::create("MainMenu.png");
 
-	background->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+	// setup the different scale size
+	scale1 = Vec2(visibleSize.x / background->getContentSize().width, visibleSize.y / background->getContentSize().height);
+	scale2 = Vec2(visibleSize.x / background->getContentSize().width*0.8, visibleSize.y / background->getContentSize().height*0.8);
+	scale3 = Vec2(visibleSize.x / background->getContentSize().width*0.7, visibleSize.y / background->getContentSize().height*0.7);
+	scale4 = Vec2(visibleSize.x / background->getContentSize().width*0.6, visibleSize.y / background->getContentSize().height*0.6);
 
-	float x = origin.x + visibleSize.width / 2;
-	float y = origin.y + visibleSize.height / 2;
+	// set the background size same as window size
+	background->setScale(scale1.x, scale1.y);
 
+	// position the background on the center of the screen
+	float x = origin.x + visibleSize.x / 2;
+	float y = origin.y + visibleSize.y / 2;
 	background->setPosition(Vec2(x, y));
 
+	// add the background as a child to this layer
 	this->addChild(background, 0);
 
-	//Setup the Start Game Sign
+	//////////////////////////////
+	// Setup the Start Game Sign
 
 	startGame = Sprite::create("StartGame.png");
 
-	startGame->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+	startGame->setScale(scale1.x, scale1.y);
 
-	x = origin.x + visibleSize.width / 2;
-	y = origin.y + visibleSize.height * (2.6 / 6);
+	x = origin.x + visibleSize.x / 2;
+	y = origin.y + visibleSize.y * (2.6 / 6);
 
 	startGame->setPosition(Vec2(x, y));
 
 	this->addChild(startGame, 1);
 
-	//Setup the Select Level Sign
+	///////////////////////////////
+	// Setup the Select Level Sign
 
 	selectLevel = Sprite::create("SelectLevel.png");
 
-	selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.9, visibleSize.height / background->getContentSize().height*0.8);
+	selectLevel->setScale(scale2.x, scale2.y);
 
-	x = origin.x + visibleSize.width / 2;
-	y = origin.y + visibleSize.height * (1.9 / 6);
+	x = origin.x + visibleSize.x / 2;
+	y = origin.y + visibleSize.y * (1.9 / 6);
 
 	selectLevel->setPosition(Vec2(x, y));
 
 	this->addChild(selectLevel, 1);
 
-	//Setup the Options Sign
+	////////////////////////////////
+	// Setup the Options Sign
 
 	options = Sprite::create("Options.png");
 
-	options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.7);
+	options->setScale(scale3.x, scale3.y);
 
-	x = origin.x + visibleSize.width / 2;
-	y = origin.y + visibleSize.height * (1.2 / 6);
+	x = origin.x + visibleSize.x / 2;
+	y = origin.y + visibleSize.y * (1.2 / 6);
 
 	options->setPosition(Vec2(x, y));
 
 	this->addChild(options, 1);
 
-	//Setup the Exit Sign
+	////////////////////////////////
+	// Setup the Exit Sign
 
 	exit = Sprite::create("Exit.png");
 
-	exit->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.6);
+	exit->setScale(scale4.x, scale4.y);
 
-	x = origin.x + visibleSize.width / 2;
-	y = origin.y + visibleSize.height * (0.5 / 6);
+	x = origin.x + visibleSize.x / 2;
+	y = origin.y + visibleSize.y * (0.5 / 6);
 
 	exit->setPosition(Vec2(x, y));
 
 	this->addChild(exit, 1);
 
-	//Setup the Gun Sign
+	////////////////////////////////
+	// Setup the Gun Sign
 
 	gunSign = Sprite::create("MenuGun.png");
 
-	gunSign->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
+	gunSign->setScale(scale1.x, scale1.y);
 
-	x = origin.x + visibleSize.width * (3.5 / 11);
-	y = origin.y + visibleSize.height * (2.6 / 6);
+	// set the different position of gunsign
+	positionStart = Vec2(origin.x + visibleSize.x * (3.5 / 11), origin.y + visibleSize.y * (2.6 / 6));
+	positionSelect = Vec2(origin.x + visibleSize.x * (3.5 / 11), origin.y + visibleSize.y * (1.9 / 6));
+	positionOption = Vec2(origin.x + visibleSize.x * (3.5 / 11), origin.y + visibleSize.y * (1.2 / 6));
+	positionExit = Vec2(origin.x + visibleSize.x * (3.5 / 11), origin.y + visibleSize.y * (0.5 / 6));
 
-	gunSign->setPosition(Vec2(x, y));
+	gunSign->setPosition(positionStart);
 
 	this->addChild(gunSign, 1);
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	//Schedule the use of the update function so the function actually gets called
 	this->scheduleUpdate();
 
 	return true;
 }
 
+// update function for every frame
 void MenuScreen::update(float deltaTime)
 {
 	gameTime += deltaTime;
 
-	auto visibleSize = director->getVisibleSize();
-	Vec2 origin = director->getVisibleOrigin();
+	////////////////////////////////////////////////
+	// Move gun sign to select different menu sign
 
-	//select different menu sign
-	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
+	// use S key to move down
+	// move from option to exit
+	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition() == positionOption))
 	{
+		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
-		float x = origin.x + visibleSize.width * (3.5 / 11);
-		float y = origin.y + visibleSize.height * (0.5 / 6);
-		gunSign->setPosition(x, y);
+		// blink the sign
 		exit->runAction(Blink::create(0.1f, 1));
-		options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-		exit->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
-		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
-		startGame->setScale(visibleSize.width / background->getContentSize().width*0.6, visibleSize.height / background->getContentSize().height*0.6);
+		// set the gun to new position
+		gunSign->setPosition(positionExit);
+		// scale all menu sign to right size
+		startGame->setScale(scale4.x, scale4.y);
+		selectLevel->setScale(scale3.x, scale3.y);
+		options->setScale(scale2.x, scale2.y);
+		exit->setScale(scale1.x, scale1.y);
 	}
-	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
+	// move from selectlevel to option
+	if (INPUTS->getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition() == positionSelect))
 	{
+		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
-		float x = origin.x + visibleSize.width * (3.5 / 11);
-		float y = origin.y + visibleSize.height * (1.2 / 6);
-		gunSign->setPosition(x, y);
+		// blink the sign
 		options->runAction(Blink::create(0.1f, 1));
-		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-		options->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
-		startGame->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
-		exit->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		// set the gun to new position
+		gunSign->setPosition(positionOption);
+		// scale all menu sign to right size
+		startGame->setScale(scale3.x, scale3.y);
+		selectLevel->setScale(scale2.x, scale2.y);
+		options->setScale(scale1.x, scale1.y);
+		exit->setScale(scale2.x, scale2.y);
 	}
-	if (INPUTS-> getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition().y == origin.y + visibleSize.height * (2.6 / 6)))
+	// move from startgame to selectlevel
+	if (INPUTS-> getKeyPress(KeyCode::KEY_S) && (gunSign->getPosition() == positionStart))
 	{
+		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
-		float x = origin.x + visibleSize.width * (3.5 / 11);
-		float y = origin.y + visibleSize.height * (1.9 / 6);
-		gunSign->setPosition(x, y);
+		// blink the sign
 		selectLevel->runAction(Blink::create(0.1f, 1));
-		exit->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
-		startGame->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-		selectLevel->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
-		options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-	}
-	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
-	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
-		float x = origin.x + visibleSize.width * (3.5 / 11);
-		float y = origin.y + visibleSize.height * (2.6 / 6);
-		gunSign->setPosition(x, y);
-		startGame->runAction(Blink::create(0.1f, 1));
-		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-		startGame->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
-		options->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
-		exit->setScale(visibleSize.width / background->getContentSize().width*0.6, visibleSize.height / background->getContentSize().height*0.6);
-	}
-	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
-	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
-		float x = origin.x + visibleSize.width * (3.5 / 11);
-		float y = origin.y + visibleSize.height * (1.9 / 6);
-		gunSign->setPosition(x, y);
-		selectLevel->runAction(Blink::create(0.1f, 1));
-		options->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-		selectLevel->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
-		exit->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
-		startGame->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-	}
-	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition().y == origin.y + visibleSize.height * (0.5 / 6)))
-	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
-		float x = origin.x + visibleSize.width * (3.5 / 11);
-		float y = origin.y + visibleSize.height * (1.2 / 6);
-		gunSign->setPosition(x, y);
-		options->runAction(Blink::create(0.1f, 1));
-		startGame->setScale(visibleSize.width / background->getContentSize().width*0.7, visibleSize.height / background->getContentSize().height*0.7);
-		exit->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
-		options->setScale(visibleSize.width / background->getContentSize().width, visibleSize.height / background->getContentSize().height);
-		selectLevel->setScale(visibleSize.width / background->getContentSize().width*0.8, visibleSize.height / background->getContentSize().height*0.8);
+		// set the gun to new position
+		gunSign->setPosition(positionSelect);
+		// scale all menu sign to right size
+		startGame->setScale(scale2.x, scale2.y);
+		selectLevel->setScale(scale1.x, scale1.y);
+		options->setScale(scale2.x, scale2.y);
+		exit->setScale(scale3.x, scale3.y);
 	}
 
-	//update for enter different section
-	//Exit
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (0.5 / 6)))
+	// use W key to move up
+	// move from selectlevel to startgame
+	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition() == positionSelect))
 	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
-		director->end();
+		// play the music of loadbullet
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
+		// blink the sign
+		startGame->runAction(Blink::create(0.1f, 1));
+		// set the gun to new position
+		gunSign->setPosition(positionStart);
+		// scale all menu sign to right size
+		startGame->setScale(scale1.x, scale1.y);
+		selectLevel->setScale(scale2.x, scale2.y);
+		options->setScale(scale3.x, scale3.y);
+		exit->setScale(scale4.x, scale4.y);
 	}
-	//Options
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y < origin.y + visibleSize.height * (1.2 / 6) + 1) && (gunSign->getPosition().y > origin.y + visibleSize.height * (1.2 / 6) - 1))
+	// move from option to selectlevel
+	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition() == positionOption))
 	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+		// play the music of loadbullet
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
+		// blink the sign
+		selectLevel->runAction(Blink::create(0.1f, 1));
+		// set the gun to new position
+		gunSign->setPosition(positionSelect);
+		// scale all menu sign to right size
+		startGame->setScale(scale2.x, scale2.y);
+		selectLevel->setScale(scale1.x, scale1.y);
+		options->setScale(scale2.x, scale2.y);
+		exit->setScale(scale3.x, scale3.y);
 	}
-	//Select Level
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (1.9 / 6)))
+	// move from exit to option
+	if (INPUTS->getKeyPress(KeyCode::KEY_W) && (gunSign->getPosition() == positionExit))
 	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+		// play the music of loadbullet
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
+		// blink the sign
+		options->runAction(Blink::create(0.1f, 1));
+		// set the gun to new position
+		gunSign->setPosition(positionOption);
+		// scale all menu sign to right size
+		startGame->setScale(scale3.x, scale3.y);
+		selectLevel->setScale(scale2.x, scale2.y);
+		options->setScale(scale1.x, scale1.y);
+		exit->setScale(scale2.x, scale2.y);
 	}
-	//Start Game
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition().y == origin.y + visibleSize.height * (2.6 / 6)))
+
+	//////////////////////////////////////////////////
+	// Press Enter for go to different section
+	// Start Game
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionStart))
 	{
 		//will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
-		Step(2.0f);
+		// switch to tutorial scene
+		director->replaceScene(TransitionFade::create(2.0f, HelloWorld::create()));
 	}
-
+	// Select Level
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionSelect))
+	{
+		//will make a gun shooting noise 
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+	}
+	// Options
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionOption))
+	{
+		//will make a gun shooting noise 
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+	}
+	// Exit
+	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionExit))
+	{
+		// will make a gun shooting noise 
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+		// exit the game
+		director->end();
+	}
 
 	//update the keybord each frame
 	INPUTS->clearForNextFrame();
-}
-
-void MenuScreen::Step(float dt)
-{
-	this->unschedule(schedule_selector(MenuScreen::Step));
-	CCDirector::sharedDirector()->purgeCachedData();
-	CCScene *pScene = HelloWorld::create();
-	CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(2.0f, pScene));
 }

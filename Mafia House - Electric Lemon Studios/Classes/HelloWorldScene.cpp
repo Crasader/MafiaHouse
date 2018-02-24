@@ -340,7 +340,7 @@ void HelloWorld::update(float deltaTime)
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_A) && characterPosition.x > visibleSize.width / 2)
 	{
-		id = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true, 2.0, 0.0f, 2.0f);
+		id = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_A) && characterPosition.x > visibleSize.width / 2)
 	{

@@ -57,23 +57,20 @@ static int register_all_packages()
 
 bool AppDelegate::applicationDidFinishLaunching() {
 
-	//Create the window
-	DISPLAY->init(1800, 1012.5, "Mafia House", true, 1.0f);
+	// create and setup the window
+	DISPLAY->init(1800, 1012.5, "Mafia House", false, 1.0f);
 
     // initialize director
     auto director = Director::getInstance();
 
     register_all_packages();
 
-    // create a scene. it's an autorelease object
+    // create a scene (if you want directly test one scene you can switch the name here)
     auto scene = CocoLogo::createScene();
 
-    // run
-    /*director->runWithScene(scene);*/
-
+    // run scene
 	auto transitions = TransitionFade::create(2.0f, scene);
 	director->replaceScene(transitions);
-
 
 	//Set up the input handler
 	INPUTS->init();

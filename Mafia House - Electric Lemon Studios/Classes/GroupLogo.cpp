@@ -21,39 +21,46 @@ cocos2d::Scene* GroupLogo::createScene()
 	return scene;
 }
 
+// initialize the secene
 bool GroupLogo::init()
 {
+	// super init first
 	if (!Scene::init())
 	{
 		return false;
 	}
 
+	// Init
 	director = Director::getInstance();
 
-	windowSize = DISPLAY->getWindowSizeAsVec2();
-
-
-	sprite = Sprite::create("Electric Lemon.png");
-
+	// get visible windows sizw and the origin position of gamw world
 	auto visibleSize = director->getVisibleSize();
 	Vec2 origin = director->getVisibleOrigin();
 
+	// create group logo
+	sprite = Sprite::create("Electric Lemon.png");
+
+	// position the sprite on the center of the screen
 	float x = origin.x + visibleSize.width / 2;
 	float y = origin.y + visibleSize.height / 2;
-
 	sprite->setPosition(Vec2(x, y));
 
+	// add the sprite as a child to this layer
 	this->addChild(sprite, 0);
 
+	// switch to next scene
 	this->schedule(schedule_selector(GroupLogo::Step), 4.0f);
 
+	//Schedule the use of the update function so the function actually gets called
 	this->scheduleUpdate();
 
 	return true;
 }
 
+// update function for every frame
 void GroupLogo::update(float deltaTime)
 {
+	// press space for immidiate switch to next scene
 	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE))
 	{
 		Scene *scene = StartScreen::create();
@@ -64,10 +71,13 @@ void GroupLogo::update(float deltaTime)
 	INPUTS->clearForNextFrame();
 }
 
+// Help to switch to next scene
 void GroupLogo::Step(float dt)
 {
+	// fade out this scene
 	this->unschedule(schedule_selector(GroupLogo::Step));
-	CCDirector::sharedDirector()->purgeCachedData();
-	CCScene *pScene = StartScreen::create();
-	CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(1.0f, pScene));
+	director->purgeCachedData();
+
+	// run next scene
+	director->replaceScene(CCTransitionFade::create(1.0f, StartScreen::create()));
 }

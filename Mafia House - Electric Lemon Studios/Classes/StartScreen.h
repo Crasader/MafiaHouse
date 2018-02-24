@@ -9,22 +9,29 @@ class StartScreen : public cocos2d::Scene
 public:
 	static cocos2d::Scene* createScene();
 
+	// initialize the secene
 	virtual bool init();
 
+	// update function for every frame
 	void update(float deltaTime);
 
+	// implement the "static create()" method manually
 	CREATE_FUNC(StartScreen);
 
+	// help to switch to next scene
 	void Step(float dt);
 
 private:
 	//--- Cocos Engine References ---//
 	Director* director;
-	Vec2 windowSize;
 
-	//character
+	// sprite for game logo
 	Sprite* sprite;
+
+	// label for start game
 	Label* label;
+
+	// count for how many frame passed
 	int frameCount = 0;
 };
 
