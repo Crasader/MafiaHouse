@@ -10,14 +10,14 @@
     <Filter Include="Classes">
       <UniqueIdentifier>{308ab296-9eca-4c1c-bafa-0e42d4c3ee7f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Scene">
-      <UniqueIdentifier>{fcc2a3e2-4376-4b0e-a8a5-3e9024c7937e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Level">
-      <UniqueIdentifier>{d6319d2e-6ad2-42ea-b4c1-291a3ad4a802}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Classes\Tools">
       <UniqueIdentifier>{cdbd30ff-188d-48c9-8466-9c4c073b0956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Objects">
+      <UniqueIdentifier>{d6319d2e-6ad2-42ea-b4c1-291a3ad4a802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Scenes">
+      <UniqueIdentifier>{fcc2a3e2-4376-4b0e-a8a5-3e9024c7937e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -27,9 +27,6 @@
     <ClCompile Include="..\Classes\AppDelegate.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\HelloWorldScene.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\InputHandler.cpp">
       <Filter>Classes\Tools</Filter>
     </ClCompile>
@@ -37,34 +34,43 @@
       <Filter>Classes\Tools</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\CocoLogo.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\GroupLogo.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\MenuScreen.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\StartScreen.cpp">
-      <Filter>Classes\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\Enemy.cpp">
-      <Filter>Classes\Level</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\Item.cpp">
-      <Filter>Classes\Level</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\Object.cpp">
-      <Filter>Classes\Level</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\Player.cpp">
-      <Filter>Classes\Level</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\Block.cpp">
-      <Filter>Classes\Level</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\Tutorial.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\HelloWorldScene.cpp">
+      <Filter>Classes\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\GameObject.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Item.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Stage1.cpp">
+      <Filter>Classes\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Wall.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Enemy.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Player.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Level.cpp">
+      <Filter>Classes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,9 +80,6 @@
     <ClInclude Include="..\Classes\AppDelegate.h">
       <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\HelloWorldScene.h">
-      <Filter>Classes</Filter>
-    </ClInclude>
     <ClInclude Include="..\Classes\InputHandler.h">
       <Filter>Classes\Tools</Filter>
     </ClInclude>
@@ -84,34 +87,43 @@
       <Filter>Classes\Tools</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\CocoLogo.h">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\GroupLogo.h">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\MenuScreen.h">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\StartScreen.h">
-      <Filter>Classes\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\Block.h">
-      <Filter>Classes\Level</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\Enemy.h">
-      <Filter>Classes\Level</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\Item.h">
-      <Filter>Classes\Level</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\Object.h">
-      <Filter>Classes\Level</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\Player.h">
-      <Filter>Classes\Level</Filter>
+      <Filter>Classes\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\Tutorial.h">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\HelloWorldScene.h">
+      <Filter>Classes\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Level.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Enemy.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\GameObject.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Item.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Stage1.h">
+      <Filter>Classes\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Wall.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Player.h">
+      <Filter>Classes\Objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

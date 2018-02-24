@@ -1,14 +1,10 @@
-#ifndef ITEM_H
-#define ITEM_H
-
-#include <iostream>
-using namespace std;
-
-class Item
+#pragma once
+#include "GameObject.h"
+class Item : public GameObject
 {
 public:
+	Item();
+	~Item();
 
-private:
-
+	static Item* create(const std::string& filename = "knife.png");
 };
-#endif // !ITEM_H

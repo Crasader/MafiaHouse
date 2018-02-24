@@ -1,15 +1,16 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#pragma once
+#include "GameObject.h"
+#include "Item.h"
+#include <vector>
+USING_NS_CC;
 
-#include <iostream>
-using namespace std;
-
-class Player
+class Player : public GameObject
 {
 public:
+	Player();
+	~Player();
 
-private:
+	static Player* create(const std::string& filename = "player.png");
 
+	std::vector<Item> items;//items the player is carrying
 };
-#endif // !PLAYER_H
-

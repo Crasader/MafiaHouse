@@ -1,14 +1,17 @@
-#ifndef ENEMY_H
-#define ENEMY_H
+#pragma once
+#include "GameObject.h"
+USING_NS_CC;
 
-#include <iostream>
-using namespace std;
-
-class Enemy
+class Enemy : public GameObject
 {
 public:
+	Enemy();
+	~Enemy();
 
-private:
+	static Enemy* create(const std::string& filename = "guard.png");
 
+	void initObject(Vec2 startPos = Vec2(0, 0));
+
+protected:
+	Sprite* vision;
 };
-#endif // !ENEMY_H

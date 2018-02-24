@@ -1,6 +1,6 @@
 #include "AppDelegate.h"
 #include "CocoLogo.h"
-
+#include "Stage1.h"
 
 //Wrapper Classes
 #include "InputHandler.h"
@@ -58,7 +58,7 @@ static int register_all_packages()
 bool AppDelegate::applicationDidFinishLaunching() {
 
 	// create and setup the window
-	DISPLAY->init(1800, 1012.5, "Mafia House", false, 1.0f);
+	DISPLAY->init(1920, 1080, "Mafia House", false, 1.0f);
 
     // initialize director
     auto director = Director::getInstance();
@@ -71,6 +71,10 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // run scene
 	auto transitions = TransitionFade::create(2.0f, scene);
 	director->replaceScene(transitions);
+
+	//for testing, go straight into level
+	//auto level1 = Stage1::create();
+	//director->runWithScene(level1);
 
 	//Set up the input handler
 	INPUTS->init();
