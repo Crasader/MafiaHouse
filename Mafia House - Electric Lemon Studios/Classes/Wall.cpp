@@ -10,6 +10,8 @@ Wall::Wall()
 	//physics body properties
 	tag = 0;
 	dynamic = false;
+	category = 2;
+	collision = 0xFFFFFFFF;
 }
 
 

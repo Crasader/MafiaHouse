@@ -40,5 +40,7 @@ protected:
 
 	std::vector<Wall*> walls;//the physical boundaries of the level
 
-	bool onContactBegin(cocos2d::PhysicsContact &contact);
+	bool onContactBegin(PhysicsContact &contact);
+
+	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);
 };

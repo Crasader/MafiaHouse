@@ -11,10 +11,13 @@ public:
 	//must overload create function of Sprite to derive class properly
 	static GameObject* create(const std::string& filename);
 
-	virtual void initObject(Vec2 startPos = Vec2(0,0));
+	virtual void initObject(Vec2 startPos);
+	virtual void initObject();
 
 	void initAnimations();
 	Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
+
+	void flip();
 
 	GameObject* object;
 	//static std::string spriteName;//file name of the sprite
@@ -24,5 +27,7 @@ public:
 	bool dynamic;//set whether bosy will be dynamic or not
 	int category = 1;//category group bitmask for collisions
 	int collision = 1;//collision group bitmask for collisions
+
+	bool flipped = false;
 };
 

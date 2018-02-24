@@ -55,7 +55,6 @@ bool Stage1::init()
 	//Items
 	auto item = Item::create();
 	item->initObject(Vec2(400, 25));
-	item->setFlippedX(true);
 	items.push_back(item);
 	mainLayer->addChild(items[0], 3);
 

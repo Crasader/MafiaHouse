@@ -73,7 +73,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	director->replaceScene(transitions);
 
 	//for testing, go straight into level
-	//auto level1 = Stage1::create();
+	//auto level1 = Stage1::createScene();
 	//director->runWithScene(level1);
 
 	//Set up the input handler

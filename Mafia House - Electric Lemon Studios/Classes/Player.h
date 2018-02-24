@@ -12,5 +12,14 @@ public:
 
 	static Player* create(const std::string& filename = "player.png");
 
-	std::vector<Item> items;//items the player is carrying
+	void initObject(Vec2 startPos = Vec2(0, 0));
+
+	//functions for player actions:
+	void pickUpItem();
+
+	int itemToPickUp = -1;
+
+private:
+	Item* heldItem;
+	std::vector<Item*> items;//items the player is carrying
 };

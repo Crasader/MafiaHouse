@@ -26,9 +26,9 @@ void Level::setup()
 	//setting background image
 	background = Sprite::create(backgroundName);
 	//background->setContentSize(Size(1920, 1080));
+	//background->setScale(0.5);
 	background->setAnchorPoint(Vec2(0, 0));
 	background->setPosition(0, 0);
-	background->setScale(0.5);
 	mainLayer->addChild(background);
 
 	//creating collision box on edge of game area
@@ -46,27 +46,36 @@ void Level::setup()
 	contactListener->onContactBegin = CC_CALLBACK_1(Level::onContactBegin, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
+	contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+
 	//for running the update function
 	this->scheduleUpdate();
 }
 
 void Level::update(float deltaTime)
 {
+	player->pickUpItem();
 	//player movement
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
-		player->getPhysicsBody()->setVelocity(Vec2(100, 0));
-		if (player->isFlippedX() == true) {
-			player->setFlippedX(false);
+		player->getPhysicsBody()->applyImpulse(Vec2(6000, 0));
+		if (player->flipped == true) {
+			player->flipped = false;
+			player->flip();
+			//player->setScaleX(player->getScaleX() * -1);
 		}
 	}
-	else if (INPUTS->getKey(KeyCode::KEY_A)) {
-		player->getPhysicsBody()->setVelocity(Vec2(-100, 0));
-		if (player->isFlippedX() == false) {
-			player->setFlippedX(true);
+	if (INPUTS->getKey(KeyCode::KEY_A)) {
+		player->getPhysicsBody()->applyImpulse(Vec2(-6000, 0));
+		if (player->flipped == false) {
+			player->flipped = true;
+			player->flip();
+			//player->setScaleX(player->getScaleX() * -1);
 		}
 	}
-	else {
-		player->getPhysicsBody()->setVelocity(Vec2(0, 0));
+	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)){
+		player->getPhysicsBody()->setVelocity(Vec2(0, 0) );
 	}
 
 	//positioning camera node to be below player (adding it as a child of player doesn't work)
@@ -79,14 +88,51 @@ void Level::update(float deltaTime)
 //check if 2 objects collide and do something
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact)
 {
-	PhysicsBody *a = contact.getShapeA()->getBody();
+	/*PhysicsBody *a = contact.getShapeA()->getBody();
 	PhysicsBody *b = contact.getShapeB()->getBody();
 
 	// check if player has collided with a vision cone
 	if ((a->getTag() == 1 && b->getTag() == 2) || (b->getTag() == 1 && a->getTag() == 2))
 	{
-		CCLOG("COLLISION HAS OCCURED");
+		CCLOG("BEGIN COLLISION HAS OCCURED");
+	}*/
+
+	return true;
+}
+
+bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve) {
+	//solve.setRestitution(10.0);
+	PhysicsBody *a = contact.getShapeA()->getBody();
+	PhysicsBody *b = contact.getShapeB()->getBody();
+	
+	// check if player has collided with a vision cone
+	if ((a->getTag() == 1 && b->getTag() == 2) || (b->getTag() == 1 && a->getTag() == 2))
+	{
+		CCLOG("YOU HAVE BEEN SPOTTED");
+		return false;
 	}
+
+	//check if player can pick up item
+	if (a->getTag() == 1 && (b->getTag() >= 100 && b->getTag() <= 200))
+	{
+		CCLOG("CAN PICK UP ITEM");
+		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {
+			player->itemToPickUp = b->getTag();
+			b->getNode()->removeFromParent();
+		}
+		return false;
+	}
+	else if (b->getTag() == 1 && (a->getTag() >= 100 && a->getTag() <= 200))
+	{
+		CCLOG("CAN PICK UP ITEM");
+		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {
+			player->itemToPickUp = a->getTag();
+			a->getNode()->removeFromParent();
+		}
+		return false;
+	}
+	
+	//CCLOG(" ");
 
 	return true;
 }
