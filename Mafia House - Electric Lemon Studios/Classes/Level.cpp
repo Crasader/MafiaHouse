@@ -106,7 +106,17 @@ void Level::update(float deltaTime)
 	//have player stay behind object they are hiding behind
 	if (player->hidden == true) {
 		auto hideObject = mainLayer->getChildByTag(player->objectHidingBehind);
+		if (player->hideStart == true) {
+			hideObject->setOpacity(180);
+			player->hideStart = false;
+		}
 		follow(player, hideObject, (hideObject->getContentSize().width / 2.0f), Vec2(hideObject->getContentSize().width / 2, 0));
+	}
+	else {
+		if (player->objectHidingBehind != -1) {
+			mainLayer->getChildByTag(player->objectHidingBehind)->setOpacity(225);
+			player->objectHidingBehind = -1;
+		}
 	}
 
 	//having camera 'chase' player
@@ -181,12 +191,12 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		CCLOG("CAN HIDE BEHIND THING");
 		if (ctrl_press == true) {
 			if (player->hidden == false) {
+				player->hideStart = true;
 				player->hidden = true;
 				player->objectHidingBehind = b->getTag();
 			}
 			else {
 				player->hidden = false;
-				player->objectHidingBehind = -1;
 			}
 		}
 		return false;
@@ -197,12 +207,12 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 
 		if (ctrl_press == true) {
 			if (player->hidden == false) {
+				player->hideStart = true;
 				player->hidden = true;
 				player->objectHidingBehind = a->getTag();
 			}
 			else {
 				player->hidden = false;
-				player->objectHidingBehind = -1;
 			}
 		}
 		return false;

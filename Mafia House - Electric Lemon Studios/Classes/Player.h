@@ -21,6 +21,7 @@ public:
 	int objectHidingBehind = -1;//the tag of the object the player is hiding behind
 
 	bool hidden = false;
+	bool hideStart = false;
 
 	Item* heldItem = NULL;
 

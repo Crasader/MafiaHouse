@@ -35,7 +35,7 @@ bool Stage1::init()
 
 	//Rooms
 	auto room = Room::create();
-	room->createRoom(Vec2(100,0), 1500, 400, 25, 2, 0);
+	room->createRoom(Vec2(100,0), 1500, 400, 25, 1, 0);
 	rooms.push_back(room);
 	for (int i = 0; i < rooms.size(); i++) {
 		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room?
