@@ -18,11 +18,9 @@ public:
 	void initAnimations();
 	Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
 
-	void flip();
+	void flip();//flips game object on X-axis
 
-	GameObject* object;
-
-	bool flipped = false;
+	bool flipped = false;//false = facing right
 
 protected:
 	//static std::string spriteName;//file name of the sprite

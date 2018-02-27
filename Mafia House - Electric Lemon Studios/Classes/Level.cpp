@@ -103,6 +103,12 @@ void Level::update(float deltaTime)
 		}
 	}
 
+	//have player stay behind object they are hiding behind
+	if (player->hidden == true) {
+		auto hideObject = mainLayer->getChildByTag(player->objectHidingBehind);
+		follow(player, hideObject, (hideObject->getContentSize().width / 2.0f), Vec2(hideObject->getContentSize().width / 2, 0));
+	}
+
 	//having camera 'chase' player
 	follow(camPos, player, 200.0f, camOffset);
 
@@ -132,14 +138,19 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	Node *b = contact.getShapeB()->getBody()->getNode();
 	
 	// check if player has collided with a vision cone
-	if ((a->getTag() == 1 && b->getTag() == 2) || (b->getTag() == 1 && a->getTag() == 2))
+	if ((a->getName() == "player" && b->getName() == "vision_cone") || (a->getName() == "vision_cone" && b->getName() == "player"))
 	{
-		CCLOG("YOU HAVE BEEN SPOTTED");
+		if (player->hidden != true) {
+			CCLOG("YOU HAVE BEEN SPOTTED");
+		}
+		else {
+			CCLOG("YOU AVOIDED DETECTION");
+		}
 		return false;
 	}
 
 	//check if player can pick up item
-	if (a->getTag() == 1 && (b->getTag() >= 100 && b->getTag() <= 199))
+	if (a->getName() == "player" && b->getName() == "item")
 	{
 		CCLOG("CAN PICK UP ITEM");
 		if (space_press == true) {
@@ -148,7 +159,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		return false;
 	}
-	else if (b->getTag() == 1 && (a->getTag() >= 100 && a->getTag() <= 199))
+	else if (a->getName() == "item" && b->getName() == "player")
 	{
 		CCLOG("CAN PICK UP ITEM");
 		if (space_press == true) {
@@ -159,35 +170,39 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	}
 
 	//player and held item
-	if ((a->getTag() == 1 && (b->getTag() >= 200 && b->getTag() <= 299)) || (b->getTag() == 1 && (a->getTag() >= 200 && a->getTag() <= 299)))
+	if ((a->getName() == "player" && b->getName() == "held_item") || (a->getName() == "held_item" && b->getName() == "player"))
 	{
 		return false;
 	}
 
 	//player and env. object
-	if (a->getTag() == 1 && (b->getTag() >= 300 && b->getTag() <= 399))
+	if (a->getName() == "player" && b->getName() == "env_object")
 	{
 		CCLOG("CAN HIDE BEHIND THING");
 		if (ctrl_press == true) {
 			if (player->hidden == false) {
 				player->hidden = true;
+				player->objectHidingBehind = b->getTag();
 			}
 			else {
 				player->hidden = false;
+				player->objectHidingBehind = -1;
 			}
 		}
 		return false;
 	}
-	else if (b->getTag() == 1 && (a->getTag() >= 300 && a->getTag() <= 399))
+	else if (a->getName() == "env_object" && b->getName() == "player")
 	{
 		CCLOG("CAN HIDE BEHIND THING");
 
 		if (ctrl_press == true) {
 			if (player->hidden == false) {
 				player->hidden = true;
+				player->objectHidingBehind = a->getTag();
 			}
 			else {
 				player->hidden = false;
+				player->objectHidingBehind = -1;
 			}
 		}
 		return false;

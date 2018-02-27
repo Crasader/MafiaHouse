@@ -33,49 +33,38 @@ bool Stage1::init()
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 
-	//Walls
-	/*auto wall = Wall::create();
-	wall->initObject(Vec2(100,25), Size(25, 650));
-	walls.push_back(wall);
-
-	wall = Wall::create();
-	wall->initObject(Vec2(1075, 25), Size(25, 650));
-	walls.push_back(wall);
-
-	wall = Wall::create();
-	wall->initObject(Vec2(100, 0), Size(1000, 25));
-	walls.push_back(wall);
-
-	wall = Wall::create();
-	wall->initObject(Vec2(100, 675), Size(1000, 25));
-	walls.push_back(wall);
-
-	for (int i = 0; i < walls.size(); i++) {
-		mainLayer->addChild(walls[i], 1);
-	}
-	*/
 	//Rooms
 	auto room = Room::create();
 	room->createRoom(Vec2(100,0), 1500, 400, 25, 2, 0);
-	mainLayer->addChild(room);
+	rooms.push_back(room);
+	for (int i = 0; i < rooms.size(); i++) {
+		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room?
+		mainLayer->addChild(rooms[i]);
+	}
 
 	//Env. Objects
 	auto object = EnvObject::create();
 	object->initObject(Vec2(300,25));
 	objects.push_back(object);
-	mainLayer->addChild(objects[0]);
+	for (int i = 0; i < objects.size(); i++) {
+		objects[i]->setTag(objects[i]->getTag() + i);//giving a unique tag to each object
+		mainLayer->addChild(objects[i]);
+	}
 	
 	//Items
-	auto item = Item::create();
-	item->initObject(Vec2(400, 25));
-	items.push_back(item);
-	mainLayer->addChild(items[0]);
+	Item* knife = Knife::create();
+	knife->initObject(Vec2(400, 25));
+	items.push_back(knife);
+	for (int i = 0; i < items.size(); i++) {
+		items[i]->setTag(items[i]->getTag() + i);//giving a unique tag to each item
+		mainLayer->addChild(items[i]);
+	}
 
 	//Enemies
 	auto guard = Enemy::create();
 	guard->initObject(Vec2(500, 25));
 
-	//guard moves automatically
+	//guard moves automatically, put this into Enemy class
 	auto movement = MoveBy::create(5, Vec2(400, 0));
 	auto turn = ScaleBy::create(0.0f,-1.0f, 1.0f);
 	auto wait = MoveBy::create(0.5, Vec2(0, 0));
@@ -84,7 +73,10 @@ bool Stage1::init()
 	guard->runAction(RepeatForever::create(sequence));
 
 	enemies.push_back(guard);
-	mainLayer->addChild(enemies[0]);
+	for (int i = 0; i < enemies.size(); i++) {
+		enemies[i]->setTag(enemies[i]->getTag() + i);//giving a unique tag to each enemy
+		mainLayer->addChild(enemies[i]);
+	}
 
 	return true;
 }

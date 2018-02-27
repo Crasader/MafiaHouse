@@ -16,7 +16,9 @@ public:
 	//functions for player actions:
 	void pickUpItem();
 
-	int itemToPickUp = -1;
+	int itemToPickUp = -1;//the tag of the item the player is picking up
+
+	int objectHidingBehind = -1;//the tag of the object the player is hiding behind
 
 	bool hidden = false;
 

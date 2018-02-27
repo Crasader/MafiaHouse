@@ -5,6 +5,7 @@ Player::Player()
 	//sprite properties
 	zOrder = 4;
 	scale = 1.5f;
+	name = "player";
 	//physics body properties
 	tag = 1;
 	dynamic = true;
@@ -42,16 +43,16 @@ void Player::initObject(Vec2 startPos) {
 void Player::pickUpItem() {
 	if (itemToPickUp != -1) {
 		Item* item = NULL;
-		if (itemToPickUp == 100) {
-			item = Item::create();
+		if (itemToPickUp >= 10100 && itemToPickUp <= 10199) {//10100 - 10199 for knives
+			item = Knife::create();
 		}
 
 		if (item != NULL) {
-			item->initObject();
+			item->initHeldItem(itemToPickUp);
 
 			items.push_back(item);
 
-			this->removeChildByName("item", true);
+			this->removeChildByName("held_item", true);
 
 			heldItem = items.back();
 

@@ -6,7 +6,7 @@ Enemy::Enemy()
 	zOrder = 4;
 	scale = 1.5f;
 	//physics body properties
-	tag = 4;
+	tag = 30000;//enemies will be 30000 - 29999
 	dynamic = true;
 	category = 4;
 	collision = 3;
@@ -34,14 +34,13 @@ void Enemy::initObject(Vec2 startPos) {
 	//initializing vision cone
 	vision = GameObject::create("visionCone.png");
 	vision->initObject();
-	vision->setTag(2);
+	vision->setName("vision_cone");
 	vision->setScale(0.75);
 	vision->setPositionNormalized(Vec2(1, 0.4));
-	vision->setGlobalZOrder(5);
+	vision->setGlobalZOrder(6);
 
 	vision->getPhysicsBody()->setCategoryBitmask(4);
 	vision->getPhysicsBody()->setCollisionBitmask(1);
-	vision->getPhysicsBody()->setTag(2);
 
 	this->addChild(vision);
 }

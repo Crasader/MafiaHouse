@@ -3,7 +3,7 @@
 Wall::Wall()
 {
 	//sprite properties
-	zOrder = 2;
+	zOrder = 5;
 	scale = 1.0f;
 	//physics body properties
 	tag = 0;
