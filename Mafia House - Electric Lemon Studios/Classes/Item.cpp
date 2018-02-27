@@ -7,8 +7,9 @@ Item::Item()
 	//sprite properties
 	//spriteName = "knife.png";
 	scale = 0.6f;
+	name = "item";
 	//physics body properties
-	tag = 100;//eat item will have a different tag number
+	tag = 100;//each item will have a different tag number
 	dynamic = false;
 	category = 8;
 	collision = 1;
@@ -49,8 +50,12 @@ void Item::initObject(Vec2 startPos) {
 	this->addChild(pickUpRadius);*/
 }
 
+//used when player picks up item
 void Item::initObject() {
 	scale = 0.4f;
+	tag += 100;//adding 100 to tag to differentiate items player is carrying from items in level
 	GameObject::initObject();
+	this->setPositionNormalized(Vec2(1, 0.5));
 	this->setFlippedX(true);
+	this->getPhysicsBody()->setMass(0);
 }

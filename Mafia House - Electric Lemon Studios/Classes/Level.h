@@ -29,7 +29,7 @@ protected:
 
 	Node* camPos;//an invisible node used to position the "camera"
 
-	Sprite* background;
+	Sprite* background;//the background image of the level
 	std::string backgroundName = "defaultbg.png";
 
 	Player* player;//the player character
@@ -40,7 +40,11 @@ protected:
 
 	std::vector<Wall*> walls;//the physical boundaries of the level
 
+	Vec2 camOffset = Vec2(0, 300);//the offset for the camera, so player isn't in exact centre of screen
+
 	bool onContactBegin(PhysicsContact &contact);
 
-	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);
+	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
+
+	void follow(Node* nodeA, Node* nodeB, float radius = 0.0f, Vec2 offset = Vec2(0,0));//used to make one node follow another
 };

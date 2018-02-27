@@ -54,6 +54,9 @@ void GameObject::initObject() {
 	//set scale of sprite
 	this->setScale(scale);
 
+	//set name of sprite
+	this->setName(name);
+
 	//creating physics body
 	auto body = PhysicsBody::createBox(this->getContentSize());
 	//auto size = sprite->getContentSize();
@@ -88,7 +91,12 @@ Vector<SpriteFrame*> GameObject::getAnimation(const char *format, int count){
 }
 
 void GameObject::flip() {
-	this->setScaleX(this->getScaleX() * -1);
-	//this->setAnchorPoint(Vec2(0, 0));
+	this->setScaleX(this->getScaleX() * -1);//flips sprite and it's children by inverting x scale
+	if (this->flipped == true) {
+		this->setAnchorPoint(Vec2(1, 0));//have to change anchor point to opposite corner after flipping or the sprite will change position
+	}
+	else {
+		this->setAnchorPoint(Vec2(0, 0));
+	}
 	//this->setPositionX(this->getPositionX() + this->getContentSize().width);
 }

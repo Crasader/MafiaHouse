@@ -20,6 +20,6 @@ public:
 	int itemToPickUp = -1;
 
 private:
-	Item* heldItem;
+	Item* heldItem = NULL;
 	std::vector<Item*> items;//items the player is carrying
 };

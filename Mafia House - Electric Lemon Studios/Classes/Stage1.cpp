@@ -30,6 +30,8 @@ bool Stage1::init()
 
 	//set player starting position
 	player->setPosition(200, 25);
+	//setting camera to player position
+	camPos->setPosition(player->getPosition() + camOffset);
 
 	//Walls
 	auto wall = Wall::create();

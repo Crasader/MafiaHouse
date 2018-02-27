@@ -22,6 +22,7 @@ public:
 	GameObject* object;
 	//static std::string spriteName;//file name of the sprite
 	float scale;//scale factor for sprite
+	std::string name = "object";//can set name to identify sprite type
 
 	int tag;//tag for the physics body, used for collision detection
 	bool dynamic;//set whether bosy will be dynamic or not

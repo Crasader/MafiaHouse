@@ -34,22 +34,6 @@ void Player::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	
 	this->getPhysicsBody()->setVelocityLimit(180);//max player speed
-
-	//initializing vision cone
-	/*heldItem = Item::create();
-	heldItem->setScale(0.75);
-	heldItem->setAnchorPoint(Vec2(0, 0));
-	heldItem->setPositionNormalized(Vec2(1, 0.4));
-	heldItem->setTag(22);
-
-	auto visionBody = PhysicsBody::createBox(heldItem->getContentSize());
-	visionBody->setDynamic(false);
-	visionBody->setCategoryBitmask(4);
-	visionBody->setCollisionBitmask(1);
-	visionBody->setContactTestBitmask(0xFFFFFFFF);
-	visionBody->setTag(2);
-	heldItem->setPhysicsBody(visionBody);
-	this->addChild(heldItem);*/
 }
 
 //functions for player actions:
@@ -57,17 +41,23 @@ void Player::initObject(Vec2 startPos) {
 //called if space bar is pressed and player is colliding with item
 void Player::pickUpItem() {
 	if (itemToPickUp != -1) {
-		Item* item;
+		Item* item = NULL;
 		if (itemToPickUp == 100) {
 			item = Item::create();
 		}
 
-		items.push_back(item);
-		items.back()->initObject();
-		items.back()->setPositionNormalized(Vec2(1, 0.5));
+		if (item != NULL) {
+			item->initObject();
 
-		this->addChild(items.back());
+			items.push_back(item);
 
-		itemToPickUp = -1;
+			this->removeChildByName("item", true);
+
+			this->addChild(items.back());
+
+			heldItem = items.back();
+
+			itemToPickUp = -1;
+		}
 	}
 }

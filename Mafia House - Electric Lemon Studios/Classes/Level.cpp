@@ -17,12 +17,6 @@ void Level::setup()
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
 
-	//Invisible Node for the camera to follow
-	camPos = Node::create();
-	mainLayer->addChild(camPos);
-	//makes "camera" follow player
-	mainLayer->runAction(Follow::create(camPos, Rect::ZERO));
-
 	//setting background image
 	background = Sprite::create(backgroundName);
 	//background->setContentSize(Size(1920, 1080));
@@ -40,6 +34,12 @@ void Level::setup()
 	player = Player::create();
 	player->initObject();
 	mainLayer->addChild(player, 2);
+
+	//Invisible Node for the camera to follow
+	camPos = Node::create();
+	mainLayer->addChild(camPos);
+	//makes "camera" follow player
+	mainLayer->runAction(Follow::create(camPos, Rect::ZERO));
 
 	//necessary for collision detection
 	auto contactListener = EventListenerPhysicsContact::create();
@@ -79,7 +79,8 @@ void Level::update(float deltaTime)
 	}
 
 	//positioning camera node to be below player (adding it as a child of player doesn't work)
-	camPos->setPosition(player->getPosition() - Vec2(0, -400));
+	//camPos->setPosition(player->getPosition() - Vec2(0, -400));
+	follow(camPos, player, 200.0f, camOffset);
 
 	//update the keyboard each frame
 	INPUTS->clearForNextFrame();
@@ -113,7 +114,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	}
 
 	//check if player can pick up item
-	if (a->getTag() == 1 && (b->getTag() >= 100 && b->getTag() <= 200))
+	if (a->getTag() == 1 && (b->getTag() >= 100 && b->getTag() <= 199))
 	{
 		CCLOG("CAN PICK UP ITEM");
 		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {
@@ -122,7 +123,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		return false;
 	}
-	else if (b->getTag() == 1 && (a->getTag() >= 100 && a->getTag() <= 200))
+	else if (b->getTag() == 1 && (a->getTag() >= 100 && a->getTag() <= 199))
 	{
 		CCLOG("CAN PICK UP ITEM");
 		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {
@@ -131,8 +132,26 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		return false;
 	}
+
+	//player and held item
+	if (a->getTag() == 1 && (b->getTag() >= 200 && b->getTag() <= 299))
+	{
+		return false;
+	}
+	else if (b->getTag() == 1 && (a->getTag() >= 200 && a->getTag() <= 299))
+	{
+		return false;
+	}
 	
 	//CCLOG(" ");
 
 	return true;
+}
+
+void Level::follow(Node* nodeA, Node* nodeB, float radius, Vec2 offset) {
+	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
+	float distance = displacement.getLength();
+	if (distance > radius) {
+		nodeA->setPosition((nodeB->getPosition() + offset) + (displacement.getNormalized() * radius));
+	}
 }
