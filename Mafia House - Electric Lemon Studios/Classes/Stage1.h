@@ -2,7 +2,6 @@
 
 #include "cocos2d.h"
 #include "InputHandler.h"
-#include "Player.h"
 #include "Level.h"
 USING_NS_CC;
 

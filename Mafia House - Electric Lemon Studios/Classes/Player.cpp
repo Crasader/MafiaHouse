@@ -3,13 +3,13 @@
 Player::Player()
 {
 	//sprite properties
-	//spriteName = "player.png";
+	zOrder = 4;
 	scale = 1.5f;
 	//physics body properties
 	tag = 1;
 	dynamic = true;
 	category = 1;
-	collision = 14;
+	collision = 30;
 
 	init();
 }
@@ -53,9 +53,9 @@ void Player::pickUpItem() {
 
 			this->removeChildByName("item", true);
 
-			this->addChild(items.back());
-
 			heldItem = items.back();
+
+			this->addChild(heldItem);
 
 			itemToPickUp = -1;
 		}

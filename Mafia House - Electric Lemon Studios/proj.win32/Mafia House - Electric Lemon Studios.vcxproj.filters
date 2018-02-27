@@ -72,6 +72,9 @@
     <ClCompile Include="..\Classes\Level.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\EnvObject.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -123,6 +126,9 @@
       <Filter>Classes\Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\Player.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\EnvObject.h">
       <Filter>Classes\Objects</Filter>
     </ClInclude>
   </ItemGroup>

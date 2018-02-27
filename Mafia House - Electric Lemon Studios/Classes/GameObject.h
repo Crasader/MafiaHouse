@@ -1,6 +1,7 @@
 #pragma once
 #include "cocos2d.h"
 #include <string>
+#include <vector>
 USING_NS_CC;
 
 class GameObject: public Sprite
@@ -20,15 +21,18 @@ public:
 	void flip();
 
 	GameObject* object;
-	//static std::string spriteName;//file name of the sprite
-	float scale;//scale factor for sprite
-	std::string name = "object";//can set name to identify sprite type
-
-	int tag;//tag for the physics body, used for collision detection
-	bool dynamic;//set whether bosy will be dynamic or not
-	int category = 1;//category group bitmask for collisions
-	int collision = 1;//collision group bitmask for collisions
 
 	bool flipped = false;
+
+protected:
+	//static std::string spriteName;//file name of the sprite
+	float zOrder = 0;//determines what is drawn over top of what
+	float scale = 1.0;//scale factor for sprite
+	std::string name = "name";//can set name to identify sprite type
+
+	int tag = 0;//tag for the physics body, used for collision detection
+	bool dynamic = false;//set whether bosy will be dynamic or not
+	int category = 1;//category group bitmask for collisions
+	int collision = 1;//collision group bitmask for collisions
 };
 

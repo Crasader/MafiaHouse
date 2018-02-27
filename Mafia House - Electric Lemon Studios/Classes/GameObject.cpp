@@ -21,41 +21,27 @@ GameObject* GameObject::create(const std::string& filename)
 }
 
 void GameObject::initObject(Vec2 startPos){
-	//necessary stuff, will not change between objects:
-	this->setAnchorPoint(Vec2(0, 0));
-
-	//set scale of sprite
-	this->setScale(scale);
-
 	//set position of sprite
 	this->setPosition(startPos);
 
-	//creating physics body
-	auto body = PhysicsBody::createBox(this->getContentSize());
-	//auto size = sprite->getContentSize();
-	//body->setPositionOffset(Vec2(size.width/2, size.height/2));
-
-	//not necessary, will change from object to object:
-	body->setDynamic(dynamic);
-	body->setCategoryBitmask(category);
-	body->setCollisionBitmask(collision);
-
-	//necessary stuff, will not change between objects:
-	body->setContactTestBitmask(0xFFFFFFFF);
-	body->setTag(tag);
-
-	this->setPhysicsBody(body);
+	GameObject::initObject();
 }
 
 void GameObject::initObject() {
 	//necessary stuff, will not change between objects:
 	this->setAnchorPoint(Vec2(0, 0));
 
+	//set Z order
+	this->setGlobalZOrder(zOrder);
+
 	//set scale of sprite
 	this->setScale(scale);
 
 	//set name of sprite
 	this->setName(name);
+
+	//set tag
+	this->setTag(tag);
 
 	//creating physics body
 	auto body = PhysicsBody::createBox(this->getContentSize());

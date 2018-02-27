@@ -1,7 +1,6 @@
 #pragma once
 #include "GameObject.h"
 #include "Item.h"
-#include <vector>
 USING_NS_CC;
 
 class Player : public GameObject
@@ -19,7 +18,10 @@ public:
 
 	int itemToPickUp = -1;
 
-private:
+	bool hidden = false;
+
 	Item* heldItem = NULL;
+
+private:
 	std::vector<Item*> items;//items the player is carrying
 };

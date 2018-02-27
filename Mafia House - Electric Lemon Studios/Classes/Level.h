@@ -7,6 +7,7 @@
 #include "Enemy.h"
 #include "Item.h"
 #include "Wall.h"
+#include "EnvObject.h"
 USING_NS_CC;
 
 class Level: public Scene
@@ -38,7 +39,9 @@ protected:
 
 	std::vector<Item*> items;//the items in the level
 
-	std::vector<Wall*> walls;//the physical boundaries of the level
+	std::vector<EnvObject*> objects;//the environmental objects in the level
+
+	std::vector<Room*> rooms;//the rooms the level is made up of
 
 	Vec2 camOffset = Vec2(0, 300);//the offset for the camera, so player isn't in exact centre of screen
 
@@ -47,4 +50,9 @@ protected:
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
 
 	void follow(Node* nodeA, Node* nodeB, float radius = 0.0f, Vec2 offset = Vec2(0,0));//used to make one node follow another
+	//nodeA will 'chase' nodeB; you can also use this to 'leash' nodeA to nodeB instead
+
+	//for keyboard inputs, becuase getKeyPress doesn't work from within onConctactPresolve for some reason
+	bool space_press = false;
+	bool ctrl_press = false;
 };

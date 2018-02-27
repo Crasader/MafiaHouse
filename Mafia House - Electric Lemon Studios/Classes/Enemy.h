@@ -13,5 +13,5 @@ public:
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
 protected:
-	Sprite* vision;
+	GameObject* vision;
 };

@@ -34,7 +34,7 @@ bool Stage1::init()
 	camPos->setPosition(player->getPosition() + camOffset);
 
 	//Walls
-	auto wall = Wall::create();
+	/*auto wall = Wall::create();
 	wall->initObject(Vec2(100,25), Size(25, 650));
 	walls.push_back(wall);
 
@@ -53,12 +53,23 @@ bool Stage1::init()
 	for (int i = 0; i < walls.size(); i++) {
 		mainLayer->addChild(walls[i], 1);
 	}
+	*/
+	//Rooms
+	auto room = Room::create();
+	room->createRoom(Vec2(100,0), 1500, 400, 25, 2, 0);
+	mainLayer->addChild(room);
+
+	//Env. Objects
+	auto object = EnvObject::create();
+	object->initObject(Vec2(300,25));
+	objects.push_back(object);
+	mainLayer->addChild(objects[0]);
 	
 	//Items
 	auto item = Item::create();
 	item->initObject(Vec2(400, 25));
 	items.push_back(item);
-	mainLayer->addChild(items[0], 3);
+	mainLayer->addChild(items[0]);
 
 	//Enemies
 	auto guard = Enemy::create();
@@ -73,7 +84,7 @@ bool Stage1::init()
 	guard->runAction(RepeatForever::create(sequence));
 
 	enemies.push_back(guard);
-	mainLayer->addChild(enemies[0], 2);
+	mainLayer->addChild(enemies[0]);
 
 	return true;
 }

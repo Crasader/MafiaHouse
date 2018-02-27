@@ -3,7 +3,7 @@
 Enemy::Enemy()
 {
 	//sprite properties
-	//spriteName = "guard.png";
+	zOrder = 4;
 	scale = 1.5f;
 	//physics body properties
 	tag = 4;
@@ -32,18 +32,16 @@ Enemy* Enemy::create(const std::string& filename)
 void Enemy::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	//initializing vision cone
-	vision = Sprite::create("visionCone.png");
+	vision = GameObject::create("visionCone.png");
+	vision->initObject();
+	vision->setTag(2);
 	vision->setScale(0.75);
-	vision->setAnchorPoint(Vec2(0, 0));
 	vision->setPositionNormalized(Vec2(1, 0.4));
+	vision->setGlobalZOrder(5);
 
-	auto visionBody = PhysicsBody::createBox(vision->getContentSize());
-	visionBody->setDynamic(false);
-	visionBody->setCategoryBitmask(4);
-	visionBody->setCollisionBitmask(1);
-	visionBody->setContactTestBitmask(0xFFFFFFFF);
-	visionBody->setTag(2);
-	vision->setPhysicsBody(visionBody);
+	vision->getPhysicsBody()->setCategoryBitmask(4);
+	vision->getPhysicsBody()->setCollisionBitmask(1);
+	vision->getPhysicsBody()->setTag(2);
 
 	this->addChild(vision);
 }

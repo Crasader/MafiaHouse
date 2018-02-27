@@ -1,28 +1,28 @@
-#include "Item.h"
+#include "EnvObject.h"
 
 
 
-Item::Item()
+EnvObject::EnvObject()
 {
 	//sprite properties
-	zOrder = 5;
-	scale = 0.6f;
-	name = "item";
+	zOrder = 3;
+	scale = 2.0f;
+	name = "object";
 	//physics body properties
-	tag = 100;//each item will have a different tag number
+	tag = 300;//each object will have a different tag number
 	dynamic = false;
-	category = 8;
+	category = 16;
 	collision = 1;
 }
 
 
-Item::~Item()
+EnvObject::~EnvObject()
 {
 }
 
-Item* Item::create(const std::string& filename)
+EnvObject* EnvObject::create(const std::string& filename)
 {
-	Item *sprite = new (std::nothrow) Item();
+	EnvObject *sprite = new (std::nothrow) EnvObject();
 	if (sprite && sprite->initWithFile(filename))
 	{
 		sprite->autorelease();
@@ -31,12 +31,12 @@ Item* Item::create(const std::string& filename)
 	CC_SAFE_DELETE(sprite);
 	return nullptr;
 }
-
-void Item::initObject(Vec2 startPos) {
+/*
+void EnvObject::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	this->setFlippedX(true);
 	//initializing pickup radius
-	/*pickUpRadius = Node::create();
+	pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 
 	auto pickUpRadiusBody = PhysicsBody::createCircle(100.0f);
@@ -47,15 +47,14 @@ void Item::initObject(Vec2 startPos) {
 	pickUpRadiusBody->setTag(3);
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 
-	this->addChild(pickUpRadius);*/
-}
-
-//used when player picks up item
-void Item::initObject() {
+	this->addChild(pickUpRadius);
+}*/
+/*
+void EnvObject::initObject() {
 	scale = 0.4f;
 	tag += 100;//adding 100 to tag to differentiate items player is carrying from items in level
 	GameObject::initObject();
 	this->setPositionNormalized(Vec2(1, 0.5));
 	this->setFlippedX(true);
 	this->getPhysicsBody()->setMass(0);
-}
+}*/
