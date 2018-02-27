@@ -36,5 +36,18 @@ public:
 	void createRoom(Vec2 position, int length, int height, int thick = 25, int doorSide = 0, int noSide = 0);
 	//door: 0 = no door, 1 = left wall door, 2 = right wall door
 	//noside: used to tell if the room doesn't need a certain wall
-	//0 = make all walls, 1 = no left wall, 2 = no right wall, 3 = no floor, 4 = no ceiling
+	//0 = make all walls, 1 = no left wall, 2 = left wall or ceiling
+};
+
+class Building : public Node
+{
+public:
+	Building();
+	~Building();
+
+	static Building* Building::create();
+
+	void createBuilding(Vec2 position, int numFloors);
+
+	std::vector<Room*> floor;
 };
