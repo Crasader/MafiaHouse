@@ -23,6 +23,7 @@ void Level::setup()
 	//background->setScale(0.5);
 	background->setAnchorPoint(Vec2(0, 0));
 	background->setPosition(0, 0);
+	background->setScale(0.4f);
 	mainLayer->addChild(background);
 
 	//creating collision box on edge of game area
