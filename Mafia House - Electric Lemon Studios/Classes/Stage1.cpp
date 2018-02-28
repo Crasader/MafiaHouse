@@ -23,7 +23,7 @@ bool Stage1::init()
 	}
 
 	//set the background name before calling setup
-	backgroundName = "backscroll.png";
+	backgroundName = "TutorialLevel.png";
 
 	//initlializes stuff that is the same for all levels
 	setup();
