@@ -66,7 +66,7 @@ Knife::Knife()
 	scale = 0.6f;
 	name = "item";
 	//physics body properties
-	tag = 10100;//10100 - 10199 for knives
+	tag = 10100;//10100 - 10199 for knives 10101, 10102, ... 10187
 	dynamic = false;
 	category = 8;
 	collision = 1;

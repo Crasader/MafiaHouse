@@ -146,7 +146,12 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	//solve.setRestitution(10.0);
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
-	
+
+	//check collision between player and enemy
+	if ((a->getName() == "player" && b->getName() == "enemy") || (a->getName() == "enemy" && b->getName() == "player"))
+	{
+		return false;
+	}
 	// check if player has collided with a vision cone
 	if ((a->getName() == "player" && b->getName() == "vision_cone") || (a->getName() == "vision_cone" && b->getName() == "player"))
 	{

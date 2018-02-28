@@ -3,10 +3,11 @@
 Enemy::Enemy()
 {
 	//sprite properties
-	zOrder = 4;
+	name = "enemy";
+	zOrder = 3;
 	scale = 1.5f;
 	//physics body properties
-	tag = 30000;//enemies will be 30000 - 29999
+	tag = 30000;//enemies will be 30000 - 39999
 	dynamic = true;
 	category = 4;
 	collision = 3;
