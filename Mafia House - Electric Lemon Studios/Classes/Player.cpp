@@ -34,7 +34,7 @@ Player* Player::create(const std::string& filename)
 void Player::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	
-	this->getPhysicsBody()->setVelocityLimit(180);//max player speed
+	this->getPhysicsBody()->setVelocityLimit(maxSpeed);//max player speed
 }
 
 //functions for player actions:

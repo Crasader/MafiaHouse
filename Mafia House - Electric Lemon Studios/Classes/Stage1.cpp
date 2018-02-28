@@ -34,9 +34,30 @@ bool Stage1::init()
 	camPos->setPosition(player->getPosition() + camOffset);
 
 	//Rooms
-	auto room = Room::create();
-	room->createRoom(Vec2(100,0), 1500, 400, 25, 1, 0);
-	rooms.push_back(room);
+	vector<vector<RoomData>> roomData;
+	vector<int> floorHeights;
+
+	int numFloors = 3;
+	for (int i = 1; i <= numFloors; i++) {
+		int height = 400;
+		floorHeights.push_back(height);
+
+		int numRooms = 4;
+		vector<RoomData> dataSet;
+		for (int j = 1; j <= numRooms; j++) {
+			RoomData data;
+			if (j != numRooms) {
+				data.doorSide = 2;
+			}
+			else {
+				data.doorSide = 0;
+			}
+			data.length = 800;
+			dataSet.push_back(data);
+		}
+		roomData.push_back(dataSet);
+	}
+	createBuilding(&rooms, Vec2(0,0), floorHeights, roomData);
 	for (int i = 0; i < rooms.size(); i++) {
 		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room?
 		mainLayer->addChild(rooms[i]);

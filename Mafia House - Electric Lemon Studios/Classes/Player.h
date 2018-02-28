@@ -25,6 +25,8 @@ public:
 
 	Item* heldItem = NULL;
 
+	float maxSpeed = 180.0f;
+
 private:
 	std::vector<Item*> items;//items the player is carrying
 };

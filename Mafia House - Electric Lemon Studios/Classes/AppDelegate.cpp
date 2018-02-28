@@ -66,11 +66,11 @@ bool AppDelegate::applicationDidFinishLaunching() {
     register_all_packages();
 
     // create a scene (if you want directly test one scene you can switch the name here)
-    auto scene = CocoLogo::createScene();
+    //auto scene = CocoLogo::createScene();
 
     // run scene
-	auto transitions = TransitionFade::create(2.0f, scene);
-	director->replaceScene(transitions);
+	//auto transitions = TransitionFade::create(2.0f, scene);
+	//director->replaceScene(transitions);
 
 	//for testing, go straight into level
 	auto level1 = Stage1::createScene();

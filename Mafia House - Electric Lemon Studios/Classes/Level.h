@@ -9,6 +9,7 @@
 #include "Wall.h"
 #include "EnvObject.h"
 USING_NS_CC;
+using std::vector;
 
 class Level: public Scene
 {
