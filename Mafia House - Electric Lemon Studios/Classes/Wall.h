@@ -20,9 +20,9 @@ public:
 
 	static Door* create(const std::string& filename = "door.png");
 
-	void initObject(Vec2 startPos = Vec2(0, 0));//position, size
+	void initObject(Vec2 startPos = Vec2(0, 0));
 
-	const Size doorSize = Size(25, 175);
+	const Size doorSize = Size(30, 175);
 };
 
 class RoomData {
@@ -30,8 +30,12 @@ public:
 	RoomData() {}
 	~RoomData() {}
 
-	int length;//length of the room
-	int doorSide;//side door is on
+	int width;//length of the room
+
+	bool door;//is there a door on the right wall or not
+
+	int stair;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B
+	Vec2 stairPos;//posiiton of the stairway
 };
 
 class FloorData {
@@ -40,7 +44,7 @@ public:
 	~FloorData() {}
 
 	int height;//height of the floor
-	int offset;//horizontal position of start of the floor
+	RoomData rooms;//rooms the floor contains
 };
 
 //made of walls
