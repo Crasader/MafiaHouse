@@ -25,6 +25,29 @@ public:
 	const Size doorSize = Size(30, 175);
 };
 
+class StairData {
+public:
+	StairData() {}
+	~StairData() {}
+
+	Vec2 position = Vec2(0,0);//position of the stairway
+	int type = 0;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B
+	int pairNum = 0;//the number of the pair of stairways this stairway belongs to; ex. stairways 1A and 1B are both part of the number 1 pair
+};
+
+class Stair : public GameObject
+{
+public:
+	Stair();
+	~Stair();
+
+	static Stair* create(const std::string& filename = "stair.png");
+
+	void initObject(StairData data);
+
+	const Size stairSize = Size(60, 175);
+};
+
 class RoomData {
 public:
 	RoomData() {}
@@ -32,10 +55,7 @@ public:
 
 	int width;//length of the room
 
-	bool door;//is there a door on the right wall or not
-
-	int stair;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B
-	Vec2 stairPos;//posiiton of the stairway
+	int door;//does the room have doors: 0 = no doors, 1 = right wall door, 2 = both wall doors, 3 = left wall door
 };
 
 class FloorData {
@@ -47,7 +67,6 @@ public:
 	RoomData rooms;//rooms the floor contains
 };
 
-//made of walls
 class Room : public Node
 {
 public:
@@ -56,21 +75,13 @@ public:
 
 	static Room* Room::create();
 
-	//door: 0 = no door, 1 = left wall door, 2 = right wall door
-	//noside: used to tell if the room doesn't need a certain wall:
-		//0 = make all walls, 1 = no left wall, 2 = left wall or ceiling
-	void createRoom(Vec2 position, int length, int height, int thick = 25, int doorSide = 0, int noSide = 0);
+	int fullThick = 30;//thickness of the walls for level generation
+	int thick = fullThick / 2;//thickness of an individual wall
+
+	void createRoom(Vec2 position, int width, int height, int door, vector<StairData> stairs);
 };
 
-void createFloor(vector<Room*> *rooms, Vec2 position, int noSide, vector<RoomData> roomData, int height = 500, int thick = 25);
+//void createFloor(vector<Room*> *rooms, Vec2 position, int noSide, vector<RoomData> roomData, int height = 500, int thick = 25);
 
-void createBuilding(vector<Room*> *rooms, Vec2 position, vector<int> floorHeight, vector<vector<RoomData>> roomDatas, int thick = 25);
+//void createBuilding(vector<Room*> *rooms, Vec2 position, vector<int> floorHeight, vector<vector<RoomData>> roomDatas, int thick = 25);
 
-class Building
-{
-public:
-	Building();
-	~Building();
-
-	vector<Room*> rooms;//contains all rooms in the level
-};

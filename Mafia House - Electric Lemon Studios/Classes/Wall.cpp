@@ -33,6 +33,47 @@ void Wall::initObject(Vec2 startPos, Size size) {
 	GameObject::initObject(startPos);
 }
 
+//Stair Class
+Stair::Stair() {
+	//sprite properties
+	zOrder = 2;
+	scale = 1.0f;
+	//physics body properties
+	tag = 40000;
+	dynamic = false;
+	category = 2;
+	collision = 0xFFFFFFFF;
+}
+
+Stair::~Stair() {
+
+}
+
+Stair* Stair::create(const std::string& filename)
+{
+	Stair *sprite = new (std::nothrow) Stair();
+	if (sprite && sprite->initWithFile(filename))
+	{
+		sprite->autorelease();
+		return sprite;
+	}
+	CC_SAFE_DELETE(sprite);
+	return nullptr;
+}
+
+void Stair::initObject(StairData data) {
+	this->setContentSize(stairSize);//won't be needed once we have a proper sprite
+
+	GameObject::initObject(data.position);
+	//use type to set tag of the stairway
+	if (data.type == 2) {
+		this->setTag(tag + data.pairNum + 1000);//will have tag of it's partner stairway plus 1000
+	}
+	else {
+		this->setTag(tag + data.pairNum);
+	}
+}
+
 //Door Class
 Door::Door() {
 	//sprite properties
@@ -86,156 +127,89 @@ Room* Room::create() {
 	return ret;
 }
 
-//creates a room made of 4 walls
-void Room::createRoom(Vec2 position, int length, int height, int thick, int doorSide, int noSide) {
-	Wall* wall;
-	Door* door;
-	if (noSide == 0) {
-		//ceiling
-		wall = Wall::create();
-		wall->initObject(position + Vec2(0, thick + height), Size(length + (thick * 2), thick));
-		this->addChild(wall);
-		//floor
-		wall = Wall::create();
-		wall->initObject(position, Size(length + (thick * 2), thick));
-		this->addChild(wall);
-		if (doorSide == 0) {
-			//left wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(0, thick), Size(thick, height));
-			this->addChild(wall);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick), Size(thick, height));
-			this->addChild(wall);
-		}
-		else if (doorSide == 1) {
-			//door
-			door = Door::create();
-			door->initObject(position + Vec2(0, thick));
-			this->addChild(door);
-			//left wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(0, thick + door->doorSize.height), Size(thick, height - door->doorSize.height));
-			this->addChild(wall);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick), Size(thick, height));
-			this->addChild(wall);
-		}
-		else if (doorSide == 2) {
-			//door
-			door = Door::create();
-			door->initObject(position + Vec2(thick + length, thick));
-			this->addChild(door);
-			//left wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(0, thick), Size(thick, height));
-			this->addChild(wall);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick + door->doorSize.height), Size(thick, height - door->doorSize.height));
-			this->addChild(wall);
+//creates a room, made of 4 walls, can have doors and stairways
+void Room::createRoom(Vec2 position, int width, int height, int door, vector<StairData> stairs)
+{	//setting size of room
+	this->setContentSize(Size(width, height));
+
+	//creating stairways
+	if (stairs.size() > 0 && stairs[0].type != 0) {
+		Stair* s;
+		for (int i = 0; i < stairs.size(); i++) {
+			s = Stair::create();
+			s->initObject(stairs[i]);
 		}
 	}
-	//room with no left side
-	else if (noSide == 1) {
-		//ceiling
-		wall = Wall::create();
-		wall->initObject(position + Vec2(thick, thick + height), Size(length + thick, thick));
-		this->addChild(wall);
-		//floor
-		wall = Wall::create();
-		wall->initObject(position + Vec2(thick, 0), Size(length + thick, thick));
-		this->addChild(wall);
-		if (doorSide == 0 || doorSide == 1) {
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick), Size(thick, height));
-			this->addChild(wall);
-		}
-		else if (doorSide == 2) {
-			//door
-			door = Door::create();
-			door->initObject(position + Vec2(thick + length, thick));
-			this->addChild(door);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick + door->doorSize.height), Size(thick, height - door->doorSize.height));
-			this->addChild(wall);
-		}
+
+	//creating walls
+	Vec2 wallPos = position - Vec2(thick, thick);//the position for generating the walls of the room
+	Wall* w = Wall::create();
+	Door* d = Door::create();;
+
+	//floor
+	w->initObject(wallPos, Size(width + fullThick, thick));
+	this->addChild(w);
+
+	//ceiling
+	w = Wall::create();
+	w->initObject(wallPos + Vec2(0, height + thick), Size(width + fullThick, thick));
+	this->addChild(w);
+
+	if (door == 0) {//no doors
+		//left wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(0, thick), Size(thick, height));
+		this->addChild(w);
+
+		//right wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(width + thick, thick), Size(thick, height));
+		this->addChild(w);
 	}
-	//room with no floor
-	else if (noSide == 2) {
-		//ceiling
-		wall = Wall::create();
-		wall->initObject(position + Vec2(0, thick + height), Size(length + (thick * 2), thick));
-		this->addChild(wall);
-		if (doorSide == 0) {
-			//left wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(0, thick), Size(thick, height));
-			this->addChild(wall);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick), Size(thick, height));
-			this->addChild(wall);
-		}
-		else if (doorSide == 1) {
-			//door
-			door = Door::create();
-			door->initObject(position + Vec2(0, thick));
-			this->addChild(door);
-			//left wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(0, thick + door->doorSize.height), Size(thick, height - door->doorSize.height));
-			this->addChild(wall);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick), Size(thick, height));
-			this->addChild(wall);
-		}
-		else if (doorSide == 2) {
-			//door
-			door = Door::create();
-			door->initObject(position + Vec2(thick + length, thick));
-			this->addChild(door);
-			//left wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(0, thick), Size(thick, height));
-			this->addChild(wall);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick + door->doorSize.height), Size(thick, height - door->doorSize.height));
-			this->addChild(wall);
-		}
+	else if (door == 1) {//door on right wall 
+		//door
+		d->initObject(position + Vec2(width, 0));
+		this->addChild(d);
+
+		//left wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(0, thick), Size(thick, height));
+		this->addChild(w);
+
+		//right wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(width + thick, thick + d->doorSize.height), Size(thick, height - d->doorSize.height));
+		this->addChild(w);
 	}
-	//room with no left side or floor
-	else if (noSide == 3) {
-		//ceiling
-		wall = Wall::create();
-		wall->initObject(position + Vec2(thick, thick + height), Size(length + thick, thick));
-		this->addChild(wall);
-		if (doorSide == 0 || doorSide == 1) {
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick), Size(thick, height));
-			this->addChild(wall);
-		}
-		else if (doorSide == 2) {
-			//door
-			door = Door::create();
-			door->initObject(position + Vec2(thick + length, thick));
-			this->addChild(door);
-			//right wall
-			wall = Wall::create();
-			wall->initObject(position + Vec2(thick + length, thick + door->doorSize.height), Size(thick, height - door->doorSize.height));
-			this->addChild(wall);
-		}
+	else if (door == 2) {//doors on both walls
+		//door
+		d->initObject(position + Vec2(width, 0));
+		this->addChild(d);
+
+		//left wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(0, thick + d->doorSize.height), Size(thick, height - d->doorSize.height));
+		this->addChild(w);
+
+		//right wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(width + thick, thick + d->doorSize.height), Size(thick, height - d->doorSize.height));
+		this->addChild(w);
+	}
+	else if (door == 3) {//door left wall
+		//left wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(0, thick + d->doorSize.height), Size(thick, height - d->doorSize.height));
+		this->addChild(w);
+
+		//right wall
+		w = Wall::create();
+		w->initObject(wallPos + Vec2(width + thick, thick), Size(thick, height));
+		this->addChild(w);
 	}
 }
 
-void createFloor(vector<Room*> *rooms, Vec2 position, int noSide, vector<RoomData> roomData, int height, int thick) {
+/*void createFloor(vector<Room*> *rooms, Vec2 position, int noSide, vector<RoomData> roomData, int height, int thick) {
 
 	Room* room;
 
@@ -264,12 +238,4 @@ void createBuilding(vector<Room*> *rooms, Vec2 position, vector<int> floorHeight
 		}
 		position = position + Vec2(0, floorHeights[i] + thick);//adding height of created floor to set position for next floor
 	}
-}
-
-//Building Class
-Building::Building() {
-
-}
-Building::~Building() {
-
-}
+}*/

@@ -34,7 +34,7 @@ bool Stage1::init()
 	camPos->setPosition(player->getPosition() + camOffset);
 
 	//Rooms
-	vector<vector<RoomData>> roomData;
+	/*vector<vector<RoomData>> roomData;
 	vector<int> floorHeights;
 
 	int numFloors = 3;
@@ -61,7 +61,11 @@ bool Stage1::init()
 	for (int i = 0; i < rooms.size(); i++) {
 		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room?
 		mainLayer->addChild(rooms[i]);
-	}
+	}*/
+	vector<StairData> stair;
+	auto room = Room::create();
+	room->createRoom(background->getPosition() + Vec2(room->thick, room->thick), 1000, 500, 3, stair);
+	mainLayer->addChild(room);
 
 	//Env. Objects
 	auto object = EnvObject::create();
