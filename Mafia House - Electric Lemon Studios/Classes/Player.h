@@ -21,11 +21,13 @@ public:
 	int objectHidingBehind = -1;//the tag of the object the player is hiding behind
 
 	bool hidden = false;
-	bool hideStart = false;
+	bool hideStart = false;//used for setting the object you are hiding behind transparent
+
+	int stairEntered = -1;//the tag of the stairway the player has used
 
 	Item* heldItem = NULL;
 
-	float maxSpeed = 180.0f;
+	float maxSpeed = 0.6f;
 
 private:
 	std::vector<Item*> items;//items the player is carrying

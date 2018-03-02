@@ -82,6 +82,14 @@ void GameObject::setRoomPosition(Vec2 roomPos, Size roomSize, Vec2 position) {
 	this->setPosition(roomPos + offset);
 }
 
+void GameObject::move(Vec2 velocity) {
+	auto mass = this->getPhysicsBody()->getMass();
+
+	Vec2 force = mass * velocity;
+
+	this->getPhysicsBody()->applyImpulse(force);
+}
+
 void GameObject::flip() {
 	this->setScaleX(this->getScaleX() * -1);//flips sprite and it's children by inverting x scale
 	if (this->flipped == true) {

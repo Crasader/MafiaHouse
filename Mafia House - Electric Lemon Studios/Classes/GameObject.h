@@ -20,6 +20,8 @@ public:
 
 	void setRoomPosition(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects position relative to the room it is generated inside
 
+	void move(Vec2 velocity);
+
 	void flip();//flips game object on X-axis
 
 	bool flipped = false;//false = facing right

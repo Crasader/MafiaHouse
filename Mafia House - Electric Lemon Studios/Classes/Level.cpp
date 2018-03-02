@@ -13,10 +13,12 @@ Level::~Level()
 
 void Level::setup()
 {
+	this->setTag(-100);
+	this->setScale(4);
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
-	//mainLayer->setScale(0.25);//uncomment to zoom out the entire level, will break the physics badly
+	mainLayer->setScale(0.25);//uncomment to zoom out the entire level, will break the physics badly
 
 	//setting background image
 	background = Sprite::create(backgroundName);
@@ -66,14 +68,16 @@ void Level::update(float deltaTime)
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
-		player->getPhysicsBody()->applyImpulse(Vec2(6000, 0));
+		//player->getPhysicsBody()->applyImpulse(Vec2(6000, 0));
+		player->move(Vec2(10.0f, 0));
 		if (player->flipped == true) {
 			player->flipped = false;
 			player->flip();
 		}
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
-		player->getPhysicsBody()->applyImpulse(Vec2(-6000, 0));
+		//player->getPhysicsBody()->applyImpulse(Vec2(-6000, 0));
+		player->move(Vec2(-10.0f, 0));
 		if (player->flipped == false) {
 			player->flipped = true;
 			player->flip();
@@ -82,6 +86,7 @@ void Level::update(float deltaTime)
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)){
 		player->getPhysicsBody()->setVelocity(Vec2(0, 0) );
 	}
+
 	//picking up items
 	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {
 		space_press = true;
@@ -223,11 +228,17 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	if (a->getName() == "player" && b->getName() == "stair")
 	{
 		CCLOG("CAN GO THROUGH STAIRWAY");
+		if (ctrl_press == true) {
+			player->stairEntered = b->getTag();
+		}
 		return false;
 	}
 	else if (a->getName() == "stair" && b->getName() == "player")
 	{
 		CCLOG("CAN GO THROUGH STAIRWAY");
+		if (ctrl_press == true) {
+			player->stairEntered = a->getTag();
+		}
 		return false;
 	}
 
