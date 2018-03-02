@@ -43,9 +43,9 @@ public:
 
 	static Stair* create(const std::string& filename = "stair.png");
 
-	void initObject(StairData data);
+	void initObject(StairData data, Vec2 roomPos, Size roomSize);
 
-	const Size stairSize = Size(60, 175);
+	const Size stairSize = Size(75, 160);
 };
 
 class RoomData {

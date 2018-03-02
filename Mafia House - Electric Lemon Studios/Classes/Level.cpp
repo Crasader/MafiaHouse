@@ -16,7 +16,7 @@ void Level::setup()
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
-	mainLayer->setScale(0.25);
+	//mainLayer->setScale(0.25);//uncomment to zoom out the entire level, will break the physics badly
 
 	//setting background image
 	background = Sprite::create(backgroundName);
@@ -216,6 +216,18 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				player->hidden = false;
 			}
 		}
+		return false;
+	}
+
+	//player and stairway
+	if (a->getName() == "player" && b->getName() == "stair")
+	{
+		CCLOG("CAN GO THROUGH STAIRWAY");
+		return false;
+	}
+	else if (a->getName() == "stair" && b->getName() == "player")
+	{
+		CCLOG("CAN GO THROUGH STAIRWAY");
 		return false;
 	}
 

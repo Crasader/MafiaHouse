@@ -77,6 +77,11 @@ Vector<SpriteFrame*> GameObject::getAnimation(const char *format, int count){
 	return animFrames;
 }
 
+void GameObject::setRoomPosition(Vec2 roomPos, Size roomSize, Vec2 position) {
+	Vec2 offset = Vec2(position.x * roomSize.width, position.y * roomSize.height);
+	this->setPosition(roomPos + offset);
+}
+
 void GameObject::flip() {
 	this->setScaleX(this->getScaleX() * -1);//flips sprite and it's children by inverting x scale
 	if (this->flipped == true) {

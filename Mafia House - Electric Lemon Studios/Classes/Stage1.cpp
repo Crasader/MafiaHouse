@@ -45,7 +45,7 @@ bool Stage1::init()
 	roomData.door = 1;
 	stair.pairNum = 1;
 	stair.type = 1;
-	stair.position = Vec2(0.2, 0.2);
+	stair.position = Vec2(0.2, 0);
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
@@ -54,7 +54,7 @@ bool Stage1::init()
 	roomData.door = 3;
 	stair.pairNum = 2;
 	stair.type = 1;
-	stair.position = Vec2(0.7, 0.7);
+	stair.position = Vec2(0.7, 0);
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
@@ -63,7 +63,7 @@ bool Stage1::init()
 	roomData.door = 0;
 	stair.pairNum = 3;
 	stair.type = 1;
-	stair.position = Vec2(0.5, 0.5);
+	stair.position = Vec2(0.5, 0);
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	floorData.push_back(floor);
@@ -83,11 +83,11 @@ bool Stage1::init()
 	roomData.door = 2;
 	stair.pairNum = 4;
 	stair.type = 1;
-	stair.position = Vec2(0.3, 0.3);
+	stair.position = Vec2(0.3, 0);
 	roomData.stairs.push_back(stair);
 	stair.pairNum = 1;
 	stair.type = 2;
-	stair.position = Vec2(0.9, 0.9);
+	stair.position = Vec2(0.9, 0);
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
@@ -96,7 +96,7 @@ bool Stage1::init()
 	roomData.door = 3;
 	stair.pairNum = 2;
 	stair.type = 2;
-	stair.position = Vec2(0.5, 0.5);
+	stair.position = Vec2(0.5, 0);
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	floorData.push_back(floor);
@@ -109,7 +109,7 @@ bool Stage1::init()
 	roomData.door = 1;
 	stair.pairNum = 4;
 	stair.type = 2;
-	stair.position = Vec2(0.8, 0.8);
+	stair.position = Vec2(0.4, 0);
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
@@ -125,7 +125,7 @@ bool Stage1::init()
 	roomData.door = 3;
 	stair.pairNum = 3;
 	stair.type = 2;
-	stair.position = Vec2(0.4, 0.4);
+	stair.position = Vec2(0.4, 0);
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	floorData.push_back(floor);

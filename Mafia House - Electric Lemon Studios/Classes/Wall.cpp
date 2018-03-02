@@ -36,6 +36,7 @@ void Wall::initObject(Vec2 startPos, Size size) {
 //Stair Class
 Stair::Stair() {
 	//sprite properties
+	name = "stair";
 	zOrder = 2;
 	scale = 1.0f;
 	//physics body properties
@@ -61,11 +62,11 @@ Stair* Stair::create(const std::string& filename)
 	return nullptr;
 }
 
-void Stair::initObject(StairData data) {
+void Stair::initObject(StairData data, Vec2 roomPos, Size roomSize) {
 	this->setContentSize(stairSize);//won't be needed once we have a proper sprite
 	
 	GameObject::initObject();
-	this->setPositionNormalized(data.position);
+	this->setRoomPosition(roomPos, roomSize, data.position);
 	//use type to set tag of the stairway
 	if (data.type == 2) {
 		this->setTag(tag + data.pairNum + 1000);//will have tag of it's partner stairway plus 1000
@@ -138,7 +139,7 @@ void Room::createRoom(Vec2 position, int width, int height, int door, vector<Sta
 		Stair* s;
 		for (int i = 0; i < stairs.size(); i++) {
 			s = Stair::create();
-			s->initObject(stairs[i]);
+			s->initObject(stairs[i], position, Size(width, height));
 			this->addChild(s);
 		}
 	}

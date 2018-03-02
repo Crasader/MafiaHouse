@@ -18,6 +18,8 @@ public:
 	void initAnimations();
 	Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
 
+	void setRoomPosition(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects position relative to the room it is generated inside
+
 	void flip();//flips game object on X-axis
 
 	bool flipped = false;//false = facing right
