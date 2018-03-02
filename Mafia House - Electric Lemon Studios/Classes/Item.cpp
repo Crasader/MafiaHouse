@@ -33,18 +33,19 @@ void Item::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	this->setFlippedX(true);
 	//initializing pickup radius
-	/*pickUpRadius = Node::create();
+	pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	pickUpRadius->setName("item_radius");
 
 	auto pickUpRadiusBody = PhysicsBody::createCircle(100.0f);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
 	pickUpRadiusBody->setCollisionBitmask(1);
 	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
-	pickUpRadiusBody->setTag(3);
+	pickUpRadiusBody->setTag(10000);
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 
-	this->addChild(pickUpRadius);*/
+	this->addChild(pickUpRadius);
 }
 
 //used when player picks up item

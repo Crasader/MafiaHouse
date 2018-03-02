@@ -13,7 +13,7 @@ public:
 	void initHeldItem(int itemTag);
 
 protected:
-	//Node* pickUpRadius;//used to create invisible physics body to detect when player can pick up item
+	Node* pickUpRadius;//used to create invisible physics body to detect when player can pick up item
 };
 
 class Knife : public Item

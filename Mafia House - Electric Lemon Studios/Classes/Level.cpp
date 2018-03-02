@@ -13,12 +13,10 @@ Level::~Level()
 
 void Level::setup()
 {
-	this->setTag(-100);
-	this->setScale(4);
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
-	mainLayer->setScale(0.25);//uncomment to zoom out the entire level, will break the physics badly
+	//mainLayer->setScale(0.25);//uncomment to zoom out the entire level, will break the physics badly
 
 	//setting background image
 	background = Sprite::create(backgroundName);
