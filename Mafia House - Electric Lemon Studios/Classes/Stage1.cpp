@@ -29,47 +29,117 @@ bool Stage1::init()
 	setup();
 
 	//set player starting position
-	player->setPosition(200, 25);
+	player->setPosition(800, 25);
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 
 	//Rooms
-	/*vector<vector<RoomData>> roomData;
-	vector<int> floorHeights;
+	//this will all be done automatically taking the data from a text file!!!
+	vector<FloorData> floorData;
+	FloorData floor;
+	RoomData roomData;
+	StairData stair;
+	//first floor:
+	floor.height = 400;
+	roomData.width = 1000;
+	roomData.door = 1;
+	stair.pairNum = 1;
+	stair.type = 1;
+	stair.position = Vec2(0.2, 0.2);
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	roomData.stairs.clear();//clearing stair data
 
-	int numFloors = 3;
-	for (int i = 1; i <= numFloors; i++) {
-		int height = 400;
-		floorHeights.push_back(height);
+	roomData.width = 800;
+	roomData.door = 3;
+	stair.pairNum = 2;
+	stair.type = 1;
+	stair.position = Vec2(0.7, 0.7);
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	roomData.stairs.clear();//clearing stair data
 
-		int numRooms = 4;
-		vector<RoomData> dataSet;
-		for (int j = 1; j <= numRooms; j++) {
-			RoomData data;
-			if (j != numRooms) {
-				data.doorSide = 2;
-			}
-			else {
-				data.doorSide = 0;
-			}
-			data.length = 800;
-			dataSet.push_back(data);
-		}
-		roomData.push_back(dataSet);
-	}
-	createBuilding(&rooms, Vec2(0,0), floorHeights, roomData);
+	roomData.width = 300;
+	roomData.door = 0;
+	stair.pairNum = 3;
+	stair.type = 1;
+	stair.position = Vec2(0.5, 0.5);
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	floorData.push_back(floor);
+	roomData.stairs.clear();//clearing stair data
+	floor.rooms.clear();//clearing room data
+
+	//next floor:
+	floor.height = 600;
+	roomData.width = 600;
+	roomData.door = 1;
+	stair.type = 0;
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	roomData.stairs.clear();//clearing stair data
+
+	roomData.width = 1500;
+	roomData.door = 2;
+	stair.pairNum = 4;
+	stair.type = 1;
+	stair.position = Vec2(0.3, 0.3);
+	roomData.stairs.push_back(stair);
+	stair.pairNum = 1;
+	stair.type = 2;
+	stair.position = Vec2(0.9, 0.9);
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	roomData.stairs.clear();//clearing stair data
+
+	roomData.width = 400;
+	roomData.door = 3;
+	stair.pairNum = 2;
+	stair.type = 2;
+	stair.position = Vec2(0.5, 0.5);
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	floorData.push_back(floor);
+	roomData.stairs.clear();//clearing stair data
+	floor.rooms.clear();//clearing room data
+
+	//next floor:
+	floor.height = 500;
+	roomData.width = 400;
+	roomData.door = 1;
+	stair.pairNum = 4;
+	stair.type = 2;
+	stair.position = Vec2(0.8, 0.8);
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	roomData.stairs.clear();//clearing stair data
+
+	roomData.width = 200;
+	roomData.door = 2;
+	stair.type = 0;
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	roomData.stairs.clear();//clearing stair data
+
+	roomData.width = 700;
+	roomData.door = 3;
+	stair.pairNum = 3;
+	stair.type = 2;
+	stair.position = Vec2(0.4, 0.4);
+	roomData.stairs.push_back(stair);
+	floor.rooms.push_back(roomData);
+	floorData.push_back(floor);
+
+	rooms = createBuilding(background->getPosition(), background->getContentSize().width, floorData);
+
 	for (int i = 0; i < rooms.size(); i++) {
-		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room?
+		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room
 		mainLayer->addChild(rooms[i]);
-	}*/
-	vector<StairData> stair;
-	auto room = Room::create();
-	room->createRoom(background->getPosition() + Vec2(room->thick, room->thick), 1000, 500, 3, stair);
-	mainLayer->addChild(room);
+	}
 
 	//Env. Objects
 	auto object = EnvObject::create();
-	object->initObject(Vec2(300,25));
+	object->initObject(Vec2(1000,25));
 	objects.push_back(object);
 	for (int i = 0; i < objects.size(); i++) {
 		objects[i]->setTag(objects[i]->getTag() + i);//giving a unique tag to each object
@@ -78,7 +148,7 @@ bool Stage1::init()
 	
 	//Items
 	Item* knife = Knife::create();
-	knife->initObject(Vec2(400, 25));
+	knife->initObject(Vec2(900, 25));
 	items.push_back(knife);
 	for (int i = 0; i < items.size(); i++) {
 		items[i]->setTag(items[i]->getTag() + i);//giving a unique tag to each item
@@ -87,7 +157,7 @@ bool Stage1::init()
 
 	//Enemies
 	auto guard = Enemy::create();
-	guard->initObject(Vec2(500, 25));
+	guard->initObject(Vec2(1300, 25));
 
 	//guard moves automatically, put this into Enemy class
 	auto movement = MoveBy::create(5, Vec2(400, 0));

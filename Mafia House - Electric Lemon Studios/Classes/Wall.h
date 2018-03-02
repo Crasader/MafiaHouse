@@ -30,9 +30,9 @@ public:
 	StairData() {}
 	~StairData() {}
 
-	Vec2 position = Vec2(0,0);//position of the stairway
-	int type = 0;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B
 	int pairNum = 0;//the number of the pair of stairways this stairway belongs to; ex. stairways 1A and 1B are both part of the number 1 pair
+	int type = 0;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B
+	Vec2 position = Vec2(0, 0);//position of the stairwayin the room
 };
 
 class Stair : public GameObject
@@ -56,6 +56,8 @@ public:
 	int width;//length of the room
 
 	int door;//does the room have doors: 0 = no doors, 1 = right wall door, 2 = both wall doors, 3 = left wall door
+
+	vector<StairData> stairs;//data for what stairways are in the room
 };
 
 class FloorData {
@@ -64,7 +66,7 @@ public:
 	~FloorData() {}
 
 	int height;//height of the floor
-	RoomData rooms;//rooms the floor contains
+	vector<RoomData> rooms;//rooms the floor contains
 };
 
 class Room : public Node
@@ -78,10 +80,9 @@ public:
 	int fullThick = 30;//thickness of the walls for level generation
 	int thick = fullThick / 2;//thickness of an individual wall
 
-	void createRoom(Vec2 position, int width, int height, int door, vector<StairData> stairs);
+	void createRoom(Vec2 position, int width, int height, int door, vector<StairData> stairs = vector<StairData>());
 };
 
-//void createFloor(vector<Room*> *rooms, Vec2 position, int noSide, vector<RoomData> roomData, int height = 500, int thick = 25);
+vector<Room*> createFloor(Vec2 position, vector<RoomData> roomData, int height);
 
-//void createBuilding(vector<Room*> *rooms, Vec2 position, vector<int> floorHeight, vector<vector<RoomData>> roomDatas, int thick = 25);
-
+vector<Room*> createBuilding(Vec2 position, float levelWidth, vector<FloorData> floorData);

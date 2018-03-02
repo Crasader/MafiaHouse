@@ -54,6 +54,7 @@ void GameObject::initObject() {
 	body->setCollisionBitmask(collision);
 
 	//necessary stuff, will not change between objects:
+	body->setRotationEnable(false);
 	body->setContactTestBitmask(0xFFFFFFFF);
 	body->setTag(tag);
 

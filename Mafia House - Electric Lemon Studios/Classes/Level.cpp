@@ -16,7 +16,7 @@ void Level::setup()
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
-	//mainLayer->setScale(0.5);
+	mainLayer->setScale(0.25);
 
 	//setting background image
 	background = Sprite::create(backgroundName);
