@@ -111,7 +111,7 @@ void Level::update(float deltaTime)
 			hideObject->setOpacity(180);
 			player->hideStart = false;
 		}
-		follow(player, hideObject, (hideObject->getContentSize().width / 2.0f), Vec2(hideObject->getContentSize().width / 2, 0));
+		followBox(player, hideObject, Vec2(hideObject->getContentSize().width / 2.0f, hideObject->getContentSize().height / 2.0f), Vec2(hideObject->getContentSize().width / 2.0f, hideObject->getContentSize().height / 2.0f));
 	}
 	else {
 		if (player->objectHidingBehind != -1) {
@@ -121,7 +121,7 @@ void Level::update(float deltaTime)
 	}
 
 	//having camera 'chase' player
-	follow(camPos, player, 200.0f, camOffset);
+	followBox(camPos, player, camBoundingBox, camOffset);
 
 	//update the keyboard each frame
 	INPUTS->clearForNextFrame();
@@ -234,10 +234,26 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	return true;
 }
 
-void Level::follow(Node* nodeA, Node* nodeB, float radius, Vec2 offset) {
+void Level::followRadius(Node* nodeA, Node* nodeB, float radius, Vec2 offset) {
 	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
 	float distance = displacement.getLength();
 	if (distance > radius) {
 		nodeA->setPosition((nodeB->getPosition() + offset) + (displacement.getNormalized() * radius));
+	}
+}
+
+void Level::followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
+	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
+	if (displacement.x > range.x) {
+		nodeA->setPositionX((nodeB->getPositionX() + offset.x) + range.x);
+	}
+	else if (displacement.x < -range.x) {
+		nodeA->setPositionX((nodeB->getPositionX() + offset.x) - range.x);
+	}
+	if (displacement.y > range.y) {
+		nodeA->setPositionY((nodeB->getPositionY() + offset.y) + range.y);
+	}
+	else if (displacement.y < -range.y) {
+		nodeA->setPositionY((nodeB->getPositionY() + offset.y) - range.y);
 	}
 }
