@@ -68,11 +68,13 @@ void Stair::initObject(StairData data, Vec2 roomPos, Size roomSize) {
 	
 	GameObject::initObject();
 	this->setRoomPosition(roomPos, roomSize, data.position);
+	
+	type = data.type;
 	//use type to set tag of the stairway
-	if (data.type == 2) {
+	if (type == 2) {
 		this->setTag(tag + data.pairNum + 1000);//will have tag of it's partner stairway plus 1000
 	}
-	else {
+	else if (type == 1){
 		this->setTag(tag + data.pairNum);
 	}
 }
@@ -129,11 +131,13 @@ void Door::use() {
 		isOpen = true;
 		this->getPhysicsBody()->setEnabled(false);
 		this->setGlobalZOrder(2);
+		this->setOpacity(100);
 	}
 	else {
 		isOpen = false;
 		this->getPhysicsBody()->setEnabled(true);
 		this->setGlobalZOrder(5);
+		this->setOpacity(225);
 	}
 }
 
@@ -162,6 +166,7 @@ Room* Room::create() {
 void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, int width, int height, int door, vector<StairData> stairways)
 {	//setting size of room
 	this->setContentSize(Size(width, height));
+	this->setAnchorPoint(Vec2(0, 0));
 
 	//creating stairways
 	if (stairways.size() > 0 && stairways[0].type != 0) {

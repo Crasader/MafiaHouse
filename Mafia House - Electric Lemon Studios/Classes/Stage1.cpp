@@ -24,12 +24,13 @@ bool Stage1::init()
 
 	//set the background name before calling setup
 	backgroundName = "backscroll.png";
+	backgroundScale = 2.0f;
 
 	//initlializes stuff that is the same for all levels
 	setup();
 
 	//set player starting position
-	player->setPosition(800, 25);
+	player->setPosition(1500, 25);
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 
@@ -131,7 +132,7 @@ bool Stage1::init()
 	floor.rooms.push_back(roomData);
 	floorData.push_back(floor);
 
-	createLevel(&rooms, &doors, &stairs, &objects, &items, &enemies, background->getPosition(), background->getContentSize().width, floorData);
+	createLevel(&rooms, &doors, &stairs, &objects, &items, &enemies, background->getPosition(), background->getContentSize().width * backgroundScale, floorData);
 	//Adding Rooms as child of Level
 	for (int i = 0; i < rooms.size(); i++) {
 		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room
@@ -142,13 +143,12 @@ bool Stage1::init()
 		mainLayer->addChild(doors[i]);
 	}
 	for (int i = 0; i < stairs.size(); i++) {
-		stairs[i]->setTag(stairs[i]->getTag() + i);//giving a unique tag to each stairway
 		mainLayer->addChild(stairs[i]);
 	}
 
 	//Env. Objects
 	auto object = EnvObject::create();
-	object->initObject(Vec2(1000,25));
+	object->initObject(Vec2(2300,25));
 	objects.push_back(object);
 	for (int i = 0; i < objects.size(); i++) {
 		objects[i]->setTag(objects[i]->getTag() + i);//giving a unique tag to each object
@@ -157,7 +157,7 @@ bool Stage1::init()
 	
 	//Items
 	Item* knife = Knife::create();
-	knife->initObject(Vec2(900, 25));
+	knife->initObject(Vec2(1800, 25));
 	items.push_back(knife);
 	for (int i = 0; i < items.size(); i++) {
 		items[i]->setTag(items[i]->getTag() + i);//giving a unique tag to each item
@@ -166,7 +166,7 @@ bool Stage1::init()
 
 	//Enemies
 	auto guard = Enemy::create();
-	guard->initObject(Vec2(1300, 25));
+	guard->initObject(Vec2(2400, 25));
 
 	//guard moves automatically, put this into Enemy class
 	auto movement = MoveBy::create(5, Vec2(400, 0));

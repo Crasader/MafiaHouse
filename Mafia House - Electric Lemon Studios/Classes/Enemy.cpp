@@ -2,6 +2,7 @@
 
 Enemy::Enemy()
 {
+	name = "enemy";
 	//sprite properties
 	zOrder = 4;
 	scale = 1.5f;

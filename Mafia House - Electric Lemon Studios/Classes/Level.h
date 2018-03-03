@@ -33,6 +33,7 @@ protected:
 
 	Sprite* background;//the background image of the level
 	std::string backgroundName = "defaultbg.png";
+	float backgroundScale = 1.0f;
 
 	Player* player;//the player character
 	
@@ -48,7 +49,7 @@ protected:
 
 	vector<Stair*> stairs;
 
-	Vec2 camBoundingBox = Vec2(200, 100);
+	Vec2 camBoundingBox = Vec2(250, 100);
 	Vec2 camOffset = Vec2(0, 300);//the offset for the camera, so player isn't in exact centre of screen
 
 	bool onContactBegin(PhysicsContact &contact);

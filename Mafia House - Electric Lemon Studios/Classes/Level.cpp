@@ -16,14 +16,16 @@ void Level::setup()
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
-	//mainLayer->setScale(0.25);//uncomment to zoom out the entire level, will break the physics badly
+	//mainLayer->setScale(0.5);//uncomment to zoom out the entire level, will break the physics badly
 
 	//setting background image
 	background = Sprite::create(backgroundName);
-	//background->setContentSize(Size(1920, 1080));
-	//background->setScale(0.5);
 	background->setAnchorPoint(Vec2(0, 0));
-	background->setPosition(0, 0);
+	// position the sprite on the center of the screen
+	auto visibleSize = director->getVisibleSize();
+	background->setPosition(Vec2((visibleSize.width / 2) - (background->getContentSize().width / 2), 0));
+	//background->setPosition(Vec2(0, 0));
+	background->setScale(backgroundScale);
 	mainLayer->addChild(background);
 
 	//creating collision box on edge of game area
@@ -67,7 +69,7 @@ void Level::update(float deltaTime)
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
 		//player->getPhysicsBody()->applyImpulse(Vec2(6000, 0));
-		player->move(Vec2(10.0f, 0));
+		player->move(Vec2(25.0f, 0));
 		if (player->flipped == true) {
 			player->flipped = false;
 			player->flip();
@@ -75,7 +77,7 @@ void Level::update(float deltaTime)
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
 		//player->getPhysicsBody()->applyImpulse(Vec2(-6000, 0));
-		player->move(Vec2(-10.0f, 0));
+		player->move(Vec2(-25.0f, 0));
 		if (player->flipped == false) {
 			player->flipped = true;
 			player->flip();
@@ -131,6 +133,19 @@ void Level::update(float deltaTime)
 		}
 	}
 
+	//use stairs
+	for (int i = 0; i < stairs.size(); i++) {
+		if (stairs[i]->getTag() == player->stairEntered) {
+			if (stairs[i]->type == 1) {
+				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() + 1000)->getPosition());
+			}
+			else if (stairs[i]->type == 2) {
+				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() - 1000)->getPosition());
+			}
+			player->stairEntered = -1;
+		}
+	}
+
 	//having camera 'chase' player
 	followBox(camPos, player, camBoundingBox, camOffset);
 
@@ -169,6 +184,19 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			CCLOG("YOU AVOIDED DETECTION");
 		}
 		return false;
+	}
+
+	// check if player has collided with an enemy
+	if ((a->getName() == "player" && b->getName() == "enemy") || (a->getName() == "enemy" && b->getName() == "player"))
+	{
+		if (player->hidden != true) {
+			CCLOG("YOU HAVE BEEN SPOTTED");
+			return true;
+		}
+		else {
+			CCLOG("YOU AVOIDED DETECTION");
+			return false;
+		}
 	}
 
 	//check if player can pick up item

@@ -52,6 +52,8 @@ public:
 
 	void initObject(StairData data, Vec2 roomPos, Size roomSize);
 
+	int type;
+
 	const Size stairSize = Size(75, 160);
 };
 
