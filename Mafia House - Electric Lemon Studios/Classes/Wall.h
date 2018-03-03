@@ -1,5 +1,8 @@
 #pragma once
 #include "GameObject.h"
+#include "Enemy.h"
+#include "Item.h"
+#include "EnvObject.h"
 using std::vector;
 class Wall : public GameObject
 {
@@ -21,6 +24,10 @@ public:
 	static Door* create(const std::string& filename = "door.png");
 
 	void initObject(Vec2 startPos = Vec2(0, 0));
+
+	void use();
+
+	bool isOpen = false;
 
 	const Size doorSize = Size(30, 175);
 };
@@ -80,9 +87,5 @@ public:
 	int fullThick = 30;//thickness of the walls for level generation
 	int thick = fullThick / 2;//thickness of an individual wall
 
-	void createRoom(Vec2 position, int width, int height, int door, vector<StairData> stairs = vector<StairData>());
+	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, int width, int height, int door, vector<StairData> stairways = vector<StairData>());
 };
-
-vector<Room*> createFloor(Vec2 position, vector<RoomData> roomData, int height);
-
-vector<Room*> createBuilding(Vec2 position, float levelWidth, vector<FloorData> floorData);

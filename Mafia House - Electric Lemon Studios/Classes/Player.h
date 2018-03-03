@@ -16,6 +16,8 @@ public:
 	//functions for player actions:
 	void pickUpItem();
 
+	int doorToUse = -1;//the tag of the door the player is opening/closing
+
 	int itemToPickUp = -1;//the tag of the item the player is picking up
 
 	int objectHidingBehind = -1;//the tag of the object the player is hiding behind

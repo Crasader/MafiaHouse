@@ -10,7 +10,7 @@ Player::Player()
 	tag = 1;
 	dynamic = true;
 	category = 1;
-	collision = 30;
+	collision = 22;
 
 	init();
 }

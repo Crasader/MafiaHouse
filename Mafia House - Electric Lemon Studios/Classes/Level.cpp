@@ -123,6 +123,14 @@ void Level::update(float deltaTime)
 		}
 	}
 
+	//open and close doors
+	for (int i = 0; i < doors.size(); i++) {
+		if (doors[i]->getTag() == player->doorToUse) {
+			doors[i]->use();
+			player->doorToUse = -1;
+		}
+	}
+
 	//having camera 'chase' player
 	followBox(camPos, player, camBoundingBox, camOffset);
 
@@ -164,21 +172,21 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	}
 
 	//check if player can pick up item
-	if (a->getName() == "player" && b->getName() == "item")
+	if (a->getName() == "player" && b->getName() == "item_radius")
 	{
 		CCLOG("CAN PICK UP ITEM");
 		if (space_press == true) {
-			player->itemToPickUp = b->getTag();
-			b->removeFromParent();
+			player->itemToPickUp = b->getParent()->getTag();
+			b->getParent()->removeFromParent();
 		}
 		return false;
 	}
-	else if (a->getName() == "item" && b->getName() == "player")
+	else if (a->getName() == "item_radius" && b->getName() == "player")
 	{
 		CCLOG("CAN PICK UP ITEM");
 		if (space_press == true) {
-			player->itemToPickUp = a->getTag();
-			a->removeFromParent();
+			player->itemToPickUp = a->getParent()->getTag();
+			a->getParent()->removeFromParent();
 		}
 		return false;
 	}
@@ -240,6 +248,24 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		return false;
 	}
 
+	//player and door
+	if (a->getName() == "player" && b->getName() == "door_radius")
+	{
+		CCLOG("CAN OPEN DOOR");
+		if (ctrl_press == true) {
+			player->doorToUse = b->getParent()->getTag();
+		}
+		return false;
+	}
+	else if (a->getName() == "door_radius" && b->getName() == "player")
+	{
+		CCLOG("CAN OPEN DOOR");
+		if (ctrl_press == true) {
+			player->doorToUse = a->getParent()->getTag();
+		}
+		return false;
+	}
+
 	return true;
 }
 
@@ -264,5 +290,48 @@ void Level::followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
 	}
 	else if (displacement.y < -range.y) {
 		nodeA->setPositionY((nodeB->getPositionY() + offset.y) - range.y);
+	}
+}
+
+void Level::createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, vector<RoomData> roomData, int height)
+{
+	Room* room;
+
+	for (int i = 0; i < roomData.size(); i++) {
+		room = Room::create();
+
+		room->createRoom(doors, stairs, objects, items, enemies, position, roomData[i].width, height, roomData[i].door, roomData[i].stairs);
+
+		position = position + Vec2(roomData[i].width + room->fullThick, 0);//adding length of created room to set position for next room
+
+		rooms->push_back(room);
+	}
+}
+
+void Level::createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, float levelWidth, vector<FloorData> floorData)
+{
+	Room r;
+
+	//calculating width differences between floors and first floor
+	int firstFloorWidth = 0;
+	vector<int> floorOffsets;
+	for (int i = 0; i < floorData.size(); i++) {
+		int totalWidth = 0;
+		for (int j = 0; j < floorData[i].rooms.size(); j++) {
+			totalWidth += floorData[i].rooms[j].width;
+		}
+		if (i == 0) {
+			firstFloorWidth = totalWidth;
+		}
+		floorOffsets.push_back((totalWidth - firstFloorWidth) / 2);
+	}
+
+	position = position + Vec2((levelWidth / 2) - (firstFloorWidth / 2), 0);//setting position to be in centre of background
+
+	//generating floors
+	for (int i = 0; i < floorData.size(); i++) {
+		createFloor(rooms, doors, stairs, objects, items, enemies, position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
+
+		position = position + Vec2(0, floorData[i].height + r.fullThick);//adding height of created floor to set position for next floor
 	}
 }

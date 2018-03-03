@@ -33,8 +33,9 @@ bool Stage1::init()
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 
-	//Rooms
+	//Level Generation
 	//this will all be done automatically taking the data from a text file!!!
+	//Can simply create a Level and call a initLevel function with a text file parameter
 	vector<FloorData> floorData;
 	FloorData floor;
 	RoomData roomData;
@@ -130,11 +131,19 @@ bool Stage1::init()
 	floor.rooms.push_back(roomData);
 	floorData.push_back(floor);
 
-	rooms = createBuilding(background->getPosition(), background->getContentSize().width, floorData);
-
+	createLevel(&rooms, &doors, &stairs, &objects, &items, &enemies, background->getPosition(), background->getContentSize().width, floorData);
+	//Adding Rooms as child of Level
 	for (int i = 0; i < rooms.size(); i++) {
 		rooms[i]->setTag(rooms[i]->getTag() + i);//giving a unique tag to each room
 		mainLayer->addChild(rooms[i]);
+	}
+	for (int i = 0; i < doors.size(); i++) {
+		doors[i]->setTag(doors[i]->getTag() + i);//giving a unique tag to each door
+		mainLayer->addChild(doors[i]);
+	}
+	for (int i = 0; i < stairs.size(); i++) {
+		stairs[i]->setTag(stairs[i]->getTag() + i);//giving a unique tag to each stairway
+		mainLayer->addChild(stairs[i]);
 	}
 
 	//Env. Objects

@@ -36,13 +36,17 @@ protected:
 
 	Player* player;//the player character
 	
-	std::vector<Enemy*> enemies;//the enemies in the level
+	vector<Enemy*> enemies;//the enemies in the level
 
-	std::vector<Item*> items;//the items in the level
+	vector<Item*> items;//the items in the level
 
-	std::vector<EnvObject*> objects;//the environmental objects in the level
+	vector<EnvObject*> objects;//the environmental objects in the level
 
-	std::vector<Room*> rooms;//the rooms the level is made up of
+	vector<Room*> rooms;//the rooms the level is made up of
+
+	vector<Door*> doors;
+
+	vector<Stair*> stairs;
 
 	Vec2 camBoundingBox = Vec2(200, 100);
 	Vec2 camOffset = Vec2(0, 300);//the offset for the camera, so player isn't in exact centre of screen
@@ -59,4 +63,8 @@ protected:
 	//for keyboard inputs, becuase getKeyPress doesn't work from within onConctactPresolve for some reason
 	bool space_press = false;
 	bool ctrl_press = false;
+
+	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
+	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, vector<RoomData> roomData, int height);
+	void createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, float levelWidth, vector<FloorData> floorData);
 };

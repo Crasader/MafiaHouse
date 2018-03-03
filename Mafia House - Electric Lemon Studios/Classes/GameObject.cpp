@@ -98,5 +98,4 @@ void GameObject::flip() {
 	else {
 		this->setAnchorPoint(Vec2(0, 0));
 	}
-	//this->setPositionX(this->getPositionX() + this->getContentSize().width);
 }

@@ -4,13 +4,12 @@ Item::Item()
 {
 	//sprite properties
 	zOrder = 5;
-	scale = 0.6f;
 	name = "item";
 	//physics body properties
-	tag = 10000;//each item type will be identified by the second and third digit: 10100 - 10199 for knives
-	dynamic = false;
 	category = 8;
 	collision = 1;
+	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
+	dynamic = true;
 }
 
 Item::~Item()
@@ -33,7 +32,7 @@ void Item::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	this->setFlippedX(true);
 	//initializing pickup radius
-	pickUpRadius = Node::create();
+	auto pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("item_radius");
 
@@ -52,7 +51,9 @@ void Item::initObject(Vec2 startPos) {
 void Item::initHeldItem(int itemTag) {
 	tag = itemTag;
 	name = "held_item";
+	dynamic = false;
 	scale = 0.4f;
+	category = 4;
 	GameObject::initObject();
 	this->setPositionNormalized(Vec2(1, 0.5));
 	this->setFlippedX(true);
@@ -62,15 +63,11 @@ void Item::initHeldItem(int itemTag) {
 //Knife Class:
 Knife::Knife()
 {
+	Item::Item();
 	//sprite properties
-	zOrder = 5;
 	scale = 0.6f;
-	name = "item";
 	//physics body properties
 	tag = 10100;//10100 - 10199 for knives
-	dynamic = false;
-	category = 8;
-	collision = 1;
 }
 
 Knife::~Knife()

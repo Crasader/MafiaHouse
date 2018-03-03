@@ -2,11 +2,12 @@
 
 Wall::Wall()
 {
+	name = "wall";
+	tag = 0;
 	//sprite properties
 	zOrder = 5;
 	scale = 1.0f;
 	//physics body properties
-	tag = 0;
 	dynamic = false;
 	category = 2;
 	collision = 0xFFFFFFFF;
@@ -35,12 +36,12 @@ void Wall::initObject(Vec2 startPos, Size size) {
 
 //Stair Class
 Stair::Stair() {
-	//sprite properties
 	name = "stair";
+	tag = 40000;
+	//sprite properties
 	zOrder = 2;
 	scale = 1.0f;
 	//physics body properties
-	tag = 40000;
 	dynamic = false;
 	category = 2;
 	collision = 0xFFFFFFFF;
@@ -78,11 +79,12 @@ void Stair::initObject(StairData data, Vec2 roomPos, Size roomSize) {
 
 //Door Class
 Door::Door() {
+	name = "door";
+	tag = 50000;
 	//sprite properties
-	zOrder = 2;
+	zOrder = 5;
 	scale = 1.0f;
 	//physics body properties
-	tag = 0;
 	dynamic = false;
 	category = 2;
 	collision = 0xFFFFFFFF;
@@ -106,6 +108,33 @@ Door* Door::create(const std::string& filename)
 void Door::initObject(Vec2 startPos) {
 	this->setContentSize(doorSize);//set the size of the wall
 	GameObject::initObject(startPos);
+
+	auto useRadius = Node::create();
+	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	useRadius->setName("door_radius");
+
+	auto radiusBody = PhysicsBody::createCircle(100.0f);
+	radiusBody->setDynamic(false);
+	radiusBody->setCategoryBitmask(4);
+	radiusBody->setCollisionBitmask(1);
+	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setTag(10000);
+	useRadius->setPhysicsBody(radiusBody);
+
+	this->addChild(useRadius);
+}
+
+void Door::use() {
+	if (isOpen == false) {
+		isOpen = true;
+		this->getPhysicsBody()->setEnabled(false);
+		this->setGlobalZOrder(2);
+	}
+	else {
+		isOpen = false;
+		this->getPhysicsBody()->setEnabled(true);
+		this->setGlobalZOrder(5);
+	}
 }
 
 //Room Class
@@ -130,17 +159,17 @@ Room* Room::create() {
 }
 
 //creates a room, made of 4 walls, can have doors and stairways
-void Room::createRoom(Vec2 position, int width, int height, int door, vector<StairData> stairs)
+void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, int width, int height, int door, vector<StairData> stairways)
 {	//setting size of room
 	this->setContentSize(Size(width, height));
 
 	//creating stairways
-	if (stairs.size() > 0 && stairs[0].type != 0) {
+	if (stairways.size() > 0 && stairways[0].type != 0) {
 		Stair* s;
-		for (int i = 0; i < stairs.size(); i++) {
+		for (int i = 0; i < stairways.size(); i++) {
 			s = Stair::create();
-			s->initObject(stairs[i], position, Size(width, height));
-			this->addChild(s);
+			s->initObject(stairways[i], position, Size(width, height));
+			stairs->push_back(s);
 		}
 	}
 
@@ -172,7 +201,7 @@ void Room::createRoom(Vec2 position, int width, int height, int door, vector<Sta
 	else if (door == 1) {//door on right wall 
 		//door
 		d->initObject(position + Vec2(width, 0));
-		this->addChild(d);
+		doors->push_back(d);
 
 		//left wall
 		w = Wall::create();
@@ -187,7 +216,7 @@ void Room::createRoom(Vec2 position, int width, int height, int door, vector<Sta
 	else if (door == 2) {//doors on both walls
 		//door
 		d->initObject(position + Vec2(width, 0));
-		this->addChild(d);
+		doors->push_back(d);
 
 		//left wall
 		w = Wall::create();
@@ -210,56 +239,4 @@ void Room::createRoom(Vec2 position, int width, int height, int door, vector<Sta
 		w->initObject(wallPos + Vec2(width + thick, thick), Size(thick, height));
 		this->addChild(w);
 	}
-}
-
-vector<Room*> createFloor(Vec2 position, vector<RoomData> roomData, int height)
-{
-	vector<Room*> rooms;
-	Room* room;
-
-	for (int i = 0; i < roomData.size(); i++) {
-		room = Room::create();
-
-		room->createRoom(position, roomData[i].width, height, roomData[i].door, roomData[i].stairs);
-
-		position = position + Vec2(roomData[i].width + room->fullThick, 0);//adding length of created room to set position for next room
-
-		rooms.push_back(room);
-	}
-
-	return rooms;
-}
-
-vector<Room*> createBuilding(Vec2 position, float levelWidth, vector<FloorData> floorData)
-{
-	Room r;
-	vector<Room*> rooms;//stores all rooms in the level
-	vector<Room*> floor;//used per floor
-
-	//calculating width differences between floors and first floor
-	int firstFloorWidth = 0;
-	vector<int> floorOffsets;
-	for (int i = 0; i < floorData.size(); i++) {
-		int totalWidth = 0;
-		for (int j = 0; j < floorData[i].rooms.size(); j++) {
-			totalWidth += floorData[i].rooms[j].width;
-		}
-		if (i == 0) {
-			firstFloorWidth = totalWidth;
-		}
-		floorOffsets.push_back((totalWidth - firstFloorWidth) / 2);
-	}
-
-	position = position + Vec2((levelWidth / 2) - (firstFloorWidth / 2), 0);//setting position to be in centre of background
-
-	//generating floors
-	for (int i = 0; i < floorData.size(); i++) {
-		floor = createFloor(position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
-
-		position = position + Vec2(0, floorData[i].height + r.fullThick);//adding height of created floor to set position for next floor
-
-		rooms.insert(std::end(rooms), std::begin(floor), std::end(floor));//adding floor's list of rooms to list of all rooms
-	}
-
-	return rooms;
 }
