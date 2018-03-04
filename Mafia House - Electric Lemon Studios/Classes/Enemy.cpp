@@ -5,7 +5,7 @@ Enemy::Enemy()
 	name = "enemy";
 	//sprite properties
 	zOrder = 4;
-	scale = 1.5f;
+	scale = 1.0f;
 	//physics body properties
 	tag = 30000;//enemies will be 30000 - 29999
 	dynamic = true;

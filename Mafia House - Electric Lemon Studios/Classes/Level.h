@@ -21,6 +21,8 @@ public:
 
 	void update(float deltaTime);
 
+	void onStart(float dt);
+
 protected:
 
 	Director* director = Director::getInstance();
@@ -33,7 +35,7 @@ protected:
 
 	Sprite* background;//the background image of the level
 	std::string backgroundName = "defaultbg.png";
-	float backgroundScale = 1.0f;
+	float backgroundScale = 2.0f;
 
 	Player* player;//the player character
 	
@@ -49,8 +51,11 @@ protected:
 
 	vector<Stair*> stairs;
 
-	Vec2 camBoundingBox = Vec2(250, 100);
-	Vec2 camOffset = Vec2(0, 300);//the offset for the camera, so player isn't in exact centre of screen
+	Vec2 camBoundingBox = Vec2(200, 0);
+	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
+	float camZoom = 1.0f;
+
+	Camera* camera = NULL;
 
 	bool onContactBegin(PhysicsContact &contact);
 

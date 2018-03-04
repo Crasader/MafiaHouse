@@ -36,7 +36,7 @@ void Item::initObject(Vec2 startPos) {
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("item_radius");
 
-	auto pickUpRadiusBody = PhysicsBody::createCircle(100.0f);
+	auto pickUpRadiusBody = PhysicsBody::createCircle(80.0f);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
 	pickUpRadiusBody->setCollisionBitmask(1);
@@ -52,7 +52,7 @@ void Item::initHeldItem(int itemTag) {
 	tag = itemTag;
 	name = "held_item";
 	dynamic = false;
-	scale = 0.4f;
+	scale = 0.38f;
 	category = 4;
 	GameObject::initObject();
 	this->setPositionNormalized(Vec2(1, 0.5));
@@ -65,7 +65,7 @@ Knife::Knife()
 {
 	Item::Item();
 	//sprite properties
-	scale = 0.6f;
+	scale = 0.38f;
 	//physics body properties
 	tag = 10100;//10100 - 10199 for knives
 }

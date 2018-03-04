@@ -11,6 +11,7 @@ Scene* Stage1::createScene()
 	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	scene->addChild(layer);
+	layer->getDefaultCamera()->removeFromParentAndCleanup(true);
 
 	return scene;
 }
@@ -24,7 +25,7 @@ bool Stage1::init()
 
 	//set the background name before calling setup
 	backgroundName = "backscroll.png";
-	backgroundScale = 2.0f;
+	//backgroundScale = 2.0f;
 
 	//initlializes stuff that is the same for all levels
 	setup();
@@ -42,8 +43,8 @@ bool Stage1::init()
 	RoomData roomData;
 	StairData stair;
 	//first floor:
-	floor.height = 400;
-	roomData.width = 1000;
+	floor.height = 250;
+	roomData.width = 600;
 	roomData.door = 1;
 	stair.pairNum = 1;
 	stair.type = 1;
@@ -52,7 +53,7 @@ bool Stage1::init()
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
 
-	roomData.width = 800;
+	roomData.width = 700;
 	roomData.door = 3;
 	stair.pairNum = 2;
 	stair.type = 1;
@@ -73,15 +74,15 @@ bool Stage1::init()
 	floor.rooms.clear();//clearing room data
 
 	//next floor:
-	floor.height = 600;
-	roomData.width = 600;
+	floor.height = 400;
+	roomData.width = 500;
 	roomData.door = 1;
 	stair.type = 0;
 	roomData.stairs.push_back(stair);
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
 
-	roomData.width = 1500;
+	roomData.width = 1000;
 	roomData.door = 2;
 	stair.pairNum = 4;
 	stair.type = 1;
@@ -94,7 +95,7 @@ bool Stage1::init()
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
 
-	roomData.width = 400;
+	roomData.width = 300;
 	roomData.door = 3;
 	stair.pairNum = 2;
 	stair.type = 2;
@@ -106,8 +107,8 @@ bool Stage1::init()
 	floor.rooms.clear();//clearing room data
 
 	//next floor:
-	floor.height = 500;
-	roomData.width = 400;
+	floor.height = 300;
+	roomData.width = 300;
 	roomData.door = 1;
 	stair.pairNum = 4;
 	stair.type = 2;
@@ -123,7 +124,7 @@ bool Stage1::init()
 	floor.rooms.push_back(roomData);
 	roomData.stairs.clear();//clearing stair data
 
-	roomData.width = 700;
+	roomData.width = 600;
 	roomData.door = 3;
 	stair.pairNum = 3;
 	stair.type = 2;

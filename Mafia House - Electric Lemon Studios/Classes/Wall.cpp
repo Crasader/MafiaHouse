@@ -43,7 +43,7 @@ Stair::Stair() {
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 2;
+	category = 4;
 	collision = 0xFFFFFFFF;
 }
 
@@ -115,7 +115,7 @@ void Door::initObject(Vec2 startPos) {
 	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	useRadius->setName("door_radius");
 
-	auto radiusBody = PhysicsBody::createCircle(100.0f);
+	auto radiusBody = PhysicsBody::createCircle(60.0f);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
 	radiusBody->setCollisionBitmask(1);

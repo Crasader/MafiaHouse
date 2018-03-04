@@ -29,7 +29,7 @@ public:
 
 	bool isOpen = false;
 
-	const Size doorSize = Size(30, 175);
+	const Size doorSize = Size(20, 110);
 };
 
 class StairData {
@@ -54,7 +54,7 @@ public:
 
 	int type;
 
-	const Size stairSize = Size(75, 160);
+	const Size stairSize = Size(45, 105);
 };
 
 class RoomData {
@@ -86,7 +86,7 @@ public:
 
 	static Room* Room::create();
 
-	int fullThick = 30;//thickness of the walls for level generation
+	int fullThick = 20;//thickness of the walls for level generation
 	int thick = fullThick / 2;//thickness of an individual wall
 
 	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, int width, int height, int door, vector<StairData> stairways = vector<StairData>());

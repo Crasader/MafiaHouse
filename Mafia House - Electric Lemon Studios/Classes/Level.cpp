@@ -4,6 +4,7 @@
 
 Level::Level()
 {
+
 }
 
 
@@ -16,7 +17,6 @@ void Level::setup()
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
-	//mainLayer->setScale(0.5);//uncomment to zoom out the entire level, will break the physics badly
 
 	//setting background image
 	background = Sprite::create(backgroundName);
@@ -41,8 +41,6 @@ void Level::setup()
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
 	mainLayer->addChild(camPos);
-	//makes "camera" follow player
-	mainLayer->runAction(Follow::create(camPos));
 
 	//necessary for collision detection
 	auto contactListener = EventListenerPhysicsContact::create();
@@ -54,7 +52,17 @@ void Level::setup()
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
 	//for running the update function
+	this->schedule(schedule_selector(Level::onStart));
+
 	this->scheduleUpdate();
+}
+
+void Level::onStart(float dt)
+{
+	this->unschedule(schedule_selector(Level::onStart));
+	camera = this->getScene()->getDefaultCamera();
+	camera->setPositionZ(500 / camZoom);
+
 }
 
 void Level::update(float deltaTime)
@@ -82,6 +90,12 @@ void Level::update(float deltaTime)
 			player->flipped = true;
 			player->flip();
 		}
+	}
+	if (INPUTS->getKey(KeyCode::KEY_W)) {
+		player->move(Vec2(0, 25.0f));
+	}
+	if (INPUTS->getKey(KeyCode::KEY_S)) {
+		player->move(Vec2(0, -25.0f));
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)){
 		player->getPhysicsBody()->setVelocity(Vec2(0, 0) );
@@ -116,7 +130,7 @@ void Level::update(float deltaTime)
 			hideObject->setOpacity(180);
 			player->hideStart = false;
 		}
-		followBox(player, hideObject, Vec2(hideObject->getContentSize().width / 2.0f, hideObject->getContentSize().height / 2.0f), Vec2(hideObject->getContentSize().width / 2.0f, hideObject->getContentSize().height / 2.0f));
+		followBox(player, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 	}
 	else {
 		if (player->objectHidingBehind != -1) {
@@ -146,8 +160,12 @@ void Level::update(float deltaTime)
 		}
 	}
 
+	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera 'chase' player
 	followBox(camPos, player, camBoundingBox, camOffset);
+	if (camera != NULL) {
+		camera->setPosition(camPos->getPosition());
+	}
 
 	//update the keyboard each frame
 	INPUTS->clearForNextFrame();

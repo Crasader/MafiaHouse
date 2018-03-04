@@ -4,7 +4,7 @@ Player::Player()
 {
 	//sprite properties
 	zOrder = 4;
-	scale = 1.5f;
+	scale = 1.0f;
 	name = "player";
 	//physics body properties
 	tag = 1;
