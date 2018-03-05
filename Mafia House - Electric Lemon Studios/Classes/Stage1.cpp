@@ -26,7 +26,7 @@ bool Stage1::init()
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
-	setBackground("backscroll.png", 1.5f);
+	setBackground("backscroll.png", 1.0f);
 	//create level
 	initLevel("test_level.txt");
 

@@ -16,7 +16,10 @@ void Level::onStart(float dt)
 {
 	this->unschedule(schedule_selector(Level::onStart));
 	camera = this->getScene()->getDefaultCamera();
+	//setting 'zoom' level using Z positoin of camera
 	camera->setPositionZ(500 / camZoom);
+
+	this->scheduleUpdate();
 
 }
 
@@ -113,9 +116,7 @@ void Level::update(float deltaTime)
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera 'chase' player
 	followBox(camPos, player, camBoundingBox, camOffset);
-	if (camera != NULL) {
-		camera->setPosition(camPos->getPosition());
-	}
+	camera->setPosition(camPos->getPosition());
 
 	//update the keyboard each frame
 	INPUTS->clearForNextFrame();
@@ -362,8 +363,6 @@ void Level::setup()
 
 	//for running the update function
 	this->schedule(schedule_selector(Level::onStart));
-
-	this->scheduleUpdate();
 }
 
 void Level::setBackground(string bgName, float scale) {
@@ -379,9 +378,9 @@ void Level::setBackground(string bgName, float scale) {
 	mainLayer->addChild(background);
 
 	//creating collision box on edge of game area
-	auto border = PhysicsBody::createEdgeBox(background->getContentSize(), PHYSICSBODY_MATERIAL_DEFAULT, 1.0f, Vec2(0, 0));
+	/*auto border = PhysicsBody::createEdgeBox(background->getContentSize(), PHYSICSBODY_MATERIAL_DEFAULT, 1.0f, Vec2(0, 0));
 	border->setDynamic(false);
-	background->addComponent(border);
+	background->addComponent(border);*/
 }
 
 bool Level::initLevel(string filename){
