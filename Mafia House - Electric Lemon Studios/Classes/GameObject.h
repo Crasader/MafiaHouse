@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include <string>
 #include <vector>
+#include <algorithm>
 USING_NS_CC;
 
 class GameObject: public Sprite
@@ -18,7 +19,8 @@ public:
 	void initAnimations();
 	Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
 
-	void setRoomPosition(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects position relative to the room it is generated inside
+	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
+	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
 	void move(Vec2 velocity);
 

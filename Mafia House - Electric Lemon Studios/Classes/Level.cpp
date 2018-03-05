@@ -76,14 +76,14 @@ void Level::update(float deltaTime)
 			if (player->heldItem != NULL) {
 				player->heldItem->setGlobalZOrder(player->heldItem->getGlobalZOrder() - 3);
 			}
-			hideObject->setOpacity(180);
+			hideObject->setOpacity(175);
 			player->hideStart = false;
 		}
 		followBox(player, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 	}
 	else {
 		if (player->objectHidingBehind != -1) {
-			mainLayer->getChildByTag(player->objectHidingBehind)->setOpacity(225);
+			mainLayer->getChildByTag(player->objectHidingBehind)->setOpacity(255);
 			player->objectHidingBehind = -1;
 			player->setGlobalZOrder(player->getGlobalZOrder() + 3);
 			if (player->heldItem != NULL) {
@@ -294,49 +294,6 @@ void Level::followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
 	}
 }
 
-void Level::createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height)
-{
-	Room* room;
-
-	for (int i = 0; i < roomData.size(); i++) {
-		room = Room::create();
-
-		room->createRoom(doors, stairs, objects, items, enemies, player, position, roomData[i].width, height, roomData[i].door, roomData[i].room);
-
-		position = position + Vec2(roomData[i].width + room->fullThick, 0);//adding length of created room to set position for next room
-
-		rooms->push_back(room);
-	}
-}
-
-void Level::createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, float levelWidth, vector<FloorData> floorData)
-{
-	Room r;
-
-	//calculating width differences between floors and first floor
-	int firstFloorWidth = 0;
-	vector<int> floorOffsets;
-	for (int i = 0; i < floorData.size(); i++) {
-		int totalWidth = 0;
-		for (int j = 0; j < floorData[i].rooms.size(); j++) {
-			totalWidth += floorData[i].rooms[j].width;
-		}
-		if (i == 0) {
-			firstFloorWidth = totalWidth;
-		}
-		floorOffsets.push_back((totalWidth - firstFloorWidth) / 2);
-	}
-
-	position = position + Vec2((levelWidth / 2) - (firstFloorWidth / 2) + r.thick, r.thick);//setting position to be in centre of background
-
-	//generating floors
-	for (int i = 0; i < floorData.size(); i++) {
-		createFloor(rooms, doors, stairs, objects, items, enemies, player, position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
-
-		position = position + Vec2(0, floorData[i].height + r.fullThick);//adding height of created floor to set position for next floor
-	}
-}
-
 void Level::setup()
 {
 	//node everything in level is attached to
@@ -381,6 +338,49 @@ void Level::setBackground(string bgName, float scale) {
 	/*auto border = PhysicsBody::createEdgeBox(background->getContentSize(), PHYSICSBODY_MATERIAL_DEFAULT, 1.0f, Vec2(0, 0));
 	border->setDynamic(false);
 	background->addComponent(border);*/
+}
+
+void Level::createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height)
+{
+	Room* room;
+
+	for (int i = 0; i < roomData.size(); i++) {
+		room = Room::create();
+
+		room->createRoom(doors, stairs, objects, items, enemies, player, position, roomData[i], height);
+
+		position = position + Vec2(roomData[i].width + room->fullThick, 0);//adding length of created room to set position for next room
+
+		rooms->push_back(room);
+	}
+}
+
+void Level::createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, float levelWidth, vector<FloorData> floorData)
+{
+	Room r;
+
+	//calculating width differences between floors and first floor
+	int firstFloorWidth = 0;
+	vector<int> floorOffsets;
+	for (int i = 0; i < floorData.size(); i++) {
+		int totalWidth = 0;
+		for (int j = 0; j < floorData[i].rooms.size(); j++) {
+			totalWidth += floorData[i].rooms[j].width;
+		}
+		if (i == 0) {
+			firstFloorWidth = totalWidth;
+		}
+		floorOffsets.push_back((totalWidth - firstFloorWidth) / 2);
+	}
+
+	position = position + Vec2((levelWidth / 2) - (firstFloorWidth / 2) + r.thick, r.thick);//setting position to be in centre of background
+
+	//generating floors
+	for (int i = 0; i < floorData.size(); i++) {
+		createFloor(rooms, doors, stairs, objects, items, enemies, player, position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
+
+		position = position + Vec2(0, floorData[i].height + r.fullThick);//adding height of created floor to set position for next floor
+	}
 }
 
 bool Level::initLevel(string filename){
@@ -438,14 +438,43 @@ bool Level::initLevel(string filename){
 
 			//setting data based on component type:
 			if (pieces[0] == "door") {
-				if (pieces[1] == "right") {
-					roomData.door = 1;
+				DoorData doorData;
+				doorData.type = 1;
+				if (pieces.size() > 2) {//set door's position on wall
+					doorData.pos = atof(pieces[2].c_str());
 				}
-				else if (pieces[1] == "both") {
-					roomData.door = 2;
+				//set what wall door is on
+				if (pieces[1] == "right") {
+					roomData.rightDoors.push_back(doorData);
 				}
 				else if (pieces[1] == "left") {
-					roomData.door = 3;
+					roomData.leftDoors.push_back(doorData);
+				}
+				else if (pieces[1] == "top") {
+					roomData.ceilingDoors.push_back(doorData);
+				}
+				else if (pieces[1] == "bot") {
+					roomData.bottomDoors.push_back(doorData);
+				}
+			}
+			else if (pieces[0] == "vent") {
+				DoorData ventData;
+				ventData.type = 2;
+				if (pieces.size() > 2) {//set vent's position on wall
+					ventData.pos = atof(pieces[2].c_str());
+				}
+				//set what wall vent is on
+				if (pieces[1] == "right") {
+					roomData.rightDoors.push_back(ventData);
+				}
+				else if (pieces[1] == "left") {
+					roomData.leftDoors.push_back(ventData);
+				}
+				else if (pieces[1] == "top") {
+					roomData.ceilingDoors.push_back(ventData);
+				}
+				else if (pieces[1] == "bot") {
+					roomData.bottomDoors.push_back(ventData);
 				}
 			}
 			else if (pieces[0] == "stair") {

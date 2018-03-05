@@ -80,9 +80,13 @@ Vector<SpriteFrame*> GameObject::getAnimation(const char *format, int count){
 	return animFrames;
 }
 
-void GameObject::setRoomPosition(Vec2 roomPos, Size roomSize, Vec2 position) {
+void GameObject::setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position) {
 	Vec2 offset = Vec2(position.x * roomSize.width, position.y * roomSize.height);
 	this->setPosition(roomPos + offset);
+}
+
+void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
+	this->setPosition(roomPos + position);
 }
 
 void GameObject::move(Vec2 velocity) {

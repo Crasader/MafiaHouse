@@ -25,13 +25,38 @@ public:
 
 	static Door* create(const std::string& filename = "door.png");
 
-	void initObject(Vec2 startPos = Vec2(0, 0));
+	virtual void initObject(Vec2 startPos = Vec2(0, 0));
+
+	virtual void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 
 	void use();
 
 	bool isOpen = false;
 
-	const Size doorSize = Size(20, 110);
+	float radius = 50.0f;
+
+	Size size = Size(20, 110);
+};
+
+class Vent : public Door
+{
+public:
+	Vent();
+	~Vent();
+
+	static Vent* create(const std::string& filename = "door.png");
+
+	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
+};
+
+class DoorData {
+public:
+	DoorData() {}
+	~DoorData() {}
+
+	float pos = 0.0f;
+
+	int type = 1;//1 = door, 2 = vent
 };
 
 class RoomData {
@@ -41,9 +66,12 @@ public:
 
 	int width;//length of the room
 
-	int door;//does the room have doors: 0 = no doors, 1 = right wall door, 2 = both wall doors, 3 = left wall door
+	vector<DoorData> rightDoors;//the locations of the vents and doors on the right wall
+	vector<DoorData> leftDoors;//the locations of the vents and doors on the left wall
+	vector<DoorData> ceilingDoors;//the locations of the vents and doors on the ceiling
+	vector<DoorData> bottomDoors;//the locations of the vents and doors on the ground
 
-	Vec2 room = Vec2(0, 0);
+	Vec2 room = Vec2(0, 0);//the room's coordinates
 };
 
 class FloorData {
@@ -66,5 +94,7 @@ public:
 	int fullThick = 20;//thickness of the walls for level generation
 	int thick = fullThick / 2;//thickness of an individual wall
 
-	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, int width, int height, int door, Vec2 room);
+	void createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size sizefloat, vector<DoorData> doorData = vector<DoorData>());
+
+	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, RoomData roomData, int height);
 };
