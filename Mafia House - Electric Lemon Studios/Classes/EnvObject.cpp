@@ -12,7 +12,7 @@ EnvObject::EnvObject()
 	tag = 20000;//each object will have a unique tag number
 	dynamic = true;
 	category = 16;
-	collision = 1;
+	collision = 3;
 }
 
 

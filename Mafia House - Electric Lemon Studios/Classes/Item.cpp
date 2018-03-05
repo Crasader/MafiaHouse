@@ -7,7 +7,7 @@ Item::Item()
 	name = "item";
 	//physics body properties
 	category = 8;
-	collision = 1;
+	collision = 3;
 	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
 }
@@ -30,7 +30,6 @@ Item* Item::create(const std::string& filename)
 
 void Item::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
-	this->setFlippedX(true);
 	//initializing pickup radius
 	auto pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
@@ -56,7 +55,6 @@ void Item::initHeldItem(int itemTag) {
 	category = 4;
 	GameObject::initObject();
 	this->setPositionNormalized(Vec2(1, 0.5));
-	this->setFlippedX(true);
 	this->getPhysicsBody()->setMass(0);
 }
 
@@ -66,6 +64,7 @@ Knife::Knife()
 	Item::Item();
 	//sprite properties
 	scale = 0.38f;
+	flippedX = true;
 	//physics body properties
 	tag = 10100;//10100 - 10199 for knives
 }

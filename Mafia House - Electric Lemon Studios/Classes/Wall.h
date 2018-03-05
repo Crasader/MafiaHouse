@@ -3,6 +3,7 @@
 #include "Enemy.h"
 #include "Item.h"
 #include "EnvObject.h"
+#include "Player.h"
 using std::vector;
 class Wall : public GameObject
 {
@@ -50,9 +51,10 @@ public:
 
 	static Stair* create(const std::string& filename = "stair.png");
 
-	void initObject(StairData data, Vec2 roomPos, Size roomSize);
+	void initObject();
 
-	int type;
+	int pairNum = 0;//the number of the pair of stairways this stairway belongs to; ex. stairways 1A and 1B are both part of the number 1 pair
+	int type = 0;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B
 
 	const Size stairSize = Size(45, 105);
 };
@@ -66,7 +68,7 @@ public:
 
 	int door;//does the room have doors: 0 = no doors, 1 = right wall door, 2 = both wall doors, 3 = left wall door
 
-	vector<StairData> stairs;//data for what stairways are in the room
+	Vec2 room = Vec2(0, 0);
 };
 
 class FloorData {
@@ -89,5 +91,5 @@ public:
 	int fullThick = 20;//thickness of the walls for level generation
 	int thick = fullThick / 2;//thickness of an individual wall
 
-	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, int width, int height, int door, vector<StairData> stairways = vector<StairData>());
+	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, int width, int height, int door, Vec2 room);
 };

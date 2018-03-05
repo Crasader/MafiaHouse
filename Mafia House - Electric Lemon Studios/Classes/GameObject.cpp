@@ -20,16 +20,12 @@ GameObject* GameObject::create(const std::string& filename)
 	return nullptr;
 }
 
-void GameObject::initObject(Vec2 startPos){
-	//set position of sprite
-	this->setPosition(startPos);
-
-	GameObject::initObject();
-}
-
 void GameObject::initObject() {
 	//necessary stuff, will not change between objects:
 	this->setAnchorPoint(Vec2(0, 0));
+
+	//set name of sprite
+	this->setName(name);
 
 	//set Z order
 	this->setGlobalZOrder(zOrder);
@@ -37,8 +33,8 @@ void GameObject::initObject() {
 	//set scale of sprite
 	this->setScale(scale);
 
-	//set name of sprite
-	this->setName(name);
+	//set whether sprite is flipped or not
+	this->setFlippedX(flippedX);
 
 	//set tag
 	this->setTag(tag);
@@ -59,6 +55,13 @@ void GameObject::initObject() {
 	body->setTag(tag);
 
 	this->setPhysicsBody(body);
+}
+
+void GameObject::initObject(Vec2 startPos) {
+	//set position of sprite
+	this->setPosition(startPos);
+
+	GameObject::initObject();
 }
 
 void GameObject::initAnimations() {

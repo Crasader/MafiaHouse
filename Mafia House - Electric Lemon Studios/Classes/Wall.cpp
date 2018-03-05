@@ -5,7 +5,7 @@ Wall::Wall()
 	name = "wall";
 	tag = 0;
 	//sprite properties
-	zOrder = 5;
+	zOrder = 6;
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
@@ -63,19 +63,17 @@ Stair* Stair::create(const std::string& filename)
 	return nullptr;
 }
 
-void Stair::initObject(StairData data, Vec2 roomPos, Size roomSize) {
+void Stair::initObject() {
 	this->setContentSize(stairSize);//won't be needed once we have a proper sprite
 	
 	GameObject::initObject();
-	this->setRoomPosition(roomPos, roomSize, data.position);
 	
-	type = data.type;
 	//use type to set tag of the stairway
 	if (type == 2) {
-		this->setTag(tag + data.pairNum + 1000);//will have tag of it's partner stairway plus 1000
+		this->setTag(tag + pairNum + 1000);//will have tag of it's partner stairway plus 1000
 	}
 	else if (type == 1){
-		this->setTag(tag + data.pairNum);
+		this->setTag(tag + pairNum);
 	}
 }
 
@@ -84,7 +82,7 @@ Door::Door() {
 	name = "door";
 	tag = 50000;
 	//sprite properties
-	zOrder = 5;
+	zOrder = 6;
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
@@ -163,18 +161,45 @@ Room* Room::create() {
 }
 
 //creates a room, made of 4 walls, can have doors and stairways
-void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, int width, int height, int door, vector<StairData> stairways)
+void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, int width, int height, int door, Vec2 room)
 {	//setting size of room
 	this->setContentSize(Size(width, height));
 	this->setAnchorPoint(Vec2(0, 0));
 
-	//creating stairways
-	if (stairways.size() > 0 && stairways[0].type != 0) {
-		Stair* s;
-		for (int i = 0; i < stairways.size(); i++) {
-			s = Stair::create();
-			s->initObject(stairways[i], position, Size(width, height));
-			stairs->push_back(s);
+	//setting player position
+	if (player->startRoom == room) {
+		player->setRoomPosition(position, Size(width, height), player->roomStartPos);
+	}
+	//setting stairway positions
+	if (stairs->size() > 0) {
+		for (int i = 0; i < stairs->size(); i++) {
+			if ((*stairs)[i]->startRoom == room) {
+				(*stairs)[i]->setRoomPosition(position, Size(width, height), (*stairs)[i]->roomStartPos);
+			}
+		}
+	}
+	//setting object positions
+	if (objects->size() > 0) {
+		for (int i = 0; i < objects->size(); i++) {
+			if ((*objects)[i]->startRoom == room) {
+				(*objects)[i]->setRoomPosition(position, Size(width, height), (*objects)[i]->roomStartPos);
+			}
+		}
+	}
+	//setting item positions
+	if (items->size() > 0) {
+		for (int i = 0; i < items->size(); i++) {
+			if ((*items)[i]->startRoom == room) {
+				(*items)[i]->setRoomPosition(position, Size(width, height), (*items)[i]->roomStartPos);
+			}
+		}
+	}
+	//setting enemy positions
+	if (enemies->size() > 0) {
+		for (int i = 0; i < enemies->size(); i++) {
+			if ((*enemies)[i]->startRoom == room) {
+				(*enemies)[i]->setRoomPosition(position, Size(width, height), (*enemies)[i]->roomStartPos);
+			}
 		}
 	}
 

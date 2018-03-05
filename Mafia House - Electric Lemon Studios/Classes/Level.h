@@ -3,6 +3,7 @@
 #include "InputHandler.h"
 #include <vector>
 #include <string>
+#include<fstream>
 #include "Player.h"
 #include "Enemy.h"
 #include "Item.h"
@@ -10,6 +11,9 @@
 #include "EnvObject.h"
 USING_NS_CC;
 using std::vector;
+using std::string;
+using std::atoi;
+using std::atof;
 
 class Level: public Scene
 {
@@ -18,6 +22,10 @@ public:
 	~Level();
 
 	void setup();//call in init(), initializes stuff that is the same for each level
+
+	void setBackground(string bgName = "defaultbg.png", float scale = 1.0f);
+
+	bool initLevel(string filename);//call in init(), creates everything in the level from a text file
 
 	void update(float deltaTime);
 
@@ -34,8 +42,7 @@ protected:
 	Node* camPos;//an invisible node used to position the "camera"
 
 	Sprite* background;//the background image of the level
-	std::string backgroundName = "defaultbg.png";
-	float backgroundScale = 2.0f;
+	float backgroundScale = 1.0f;
 
 	Player* player;//the player character
 	
@@ -71,6 +78,6 @@ protected:
 	bool ctrl_press = false;
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
-	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, vector<RoomData> roomData, int height);
-	void createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Vec2 position, float levelWidth, vector<FloorData> floorData);
+	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height);
+	void createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, float levelWidth, vector<FloorData> floorData);
 };
