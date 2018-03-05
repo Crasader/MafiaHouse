@@ -75,6 +75,9 @@
     <ClCompile Include="..\Classes\EnvObject.cpp">
       <Filter>Classes\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\Stair.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -129,6 +132,9 @@
       <Filter>Classes\Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\EnvObject.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Stair.h">
       <Filter>Classes\Objects</Filter>
     </ClInclude>
   </ItemGroup>
