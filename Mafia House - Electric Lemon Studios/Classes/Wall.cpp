@@ -70,7 +70,7 @@ void Door::initObject(Vec2 startPos) {
 	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	useRadius->setName("door_radius");
 
-	auto radiusBody = PhysicsBody::createCircle(radius);
+	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
 	radiusBody->setCollisionBitmask(1);
@@ -84,9 +84,11 @@ void Door::initObject(Vec2 startPos) {
 void Door::initObject(int orient, Vec2 startPos) {
 	if (orient == 2) {//horizontal
 		size = Size(110, 20);
+		useBox = Size(110, radius);
 	}
 	else if (orient == 1) {//vertical
 		size = Size(20, 110);
+		useBox = Size(radius, 110);
 	}
 	Door::initObject(startPos);
 }
@@ -108,16 +110,6 @@ void Door::use() {
 
 //Vent Class
 Vent::Vent() {
-	radius = 35.0f;
-	name = "vent";
-	tag = 60000;
-	//sprite properties
-	zOrder = 6;
-	scale = 1.0f;
-	//physics body properties
-	dynamic = false;
-	category = 2;
-	collision = 0xFFFFFFFF;
 }
 Vent::~Vent() {
 
@@ -136,11 +128,23 @@ Vent* Vent::create(const std::string& filename)
 }
 
 void Vent::initObject(int orient, Vec2 startPos) {
+	radius = 46.0f;
+	name = "vent";
+	tag = 60000;
+	//sprite properties
+	zOrder = 6;
+	scale = 1.0f;
+	//physics body properties
+	dynamic = false;
+	category = 2;
+	collision = 0xFFFFFFFF;
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
+		useBox = Size(55 + radius / 2, radius);
 	}
 	else if (orient == 1) {//vertical
 		size = Size(20, 50);
+		useBox = Size(radius, 55 + radius / 2);
 	}
 	Door::initObject(startPos);
 }
@@ -166,13 +170,15 @@ Room* Room::create() {
 	return ret;
 }
 
+bool sortByPosition(DoorData a, DoorData b) {return a.pos < b.pos;}
+
 void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size size, vector<DoorData> doorData)
 {
 	Wall* w;
 	if (doorData.size() > 0) {//has doors or vents
 
 		int loops = (doorData.size() * 2);
-		//std::sort(doorData.begin(), doorData.end());//sorting doors in order from least to greatest
+		std::sort(doorData.begin(), doorData.end(), sortByPosition);//sorting doors in order from least to greatest
 
 		//used purely for getting door and vent's proper size based on their orientation
 		Door* door = Door::create();
@@ -187,7 +193,8 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 		if (orientation == 1) {//vertical
 			for (int i = 0; i < loops; i++) {
 				if (i % 2 == 0) {//on even number iterations, make a wall segment
-					length = (size.height * doorData[j].pos) - newPos.y + position.y;
+					//length = (size.height * doorData[j].pos) - newPos.y + position.y;
+					length =  doorData[j].pos - newPos.y + position.y;
 					w = Wall::create();
 					w->initObject(newPos, Size(size.width, length));
 					if (length > 0) {
@@ -219,7 +226,8 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 		else if (orientation == 2) {//horizontal
 			for (int i = 0; i < loops; i++) {
 				if (i % 2 == 0) {//on even number iterations, make a wall segment
-					length = (size.width * doorData[j].pos) - newPos.x + position.x;
+					//length = (size.width * doorData[j].pos) - newPos.x + position.x;
+					length = doorData[j].pos - newPos.x + position.x;
 					w = Wall::create();
 					w->initObject(newPos, Size(length, size.height));
 					if (length > 0) {

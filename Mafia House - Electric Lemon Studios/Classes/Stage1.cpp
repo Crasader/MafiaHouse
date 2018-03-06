@@ -7,8 +7,7 @@ Scene* Stage1::createScene()
 	auto scene = Scene::createWithPhysics();
 	auto layer = Stage1::create();
 
-	//scene->getPhysicsWorld()->setGravity(Vec2(0, -100));
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	scene->addChild(layer);
 	layer->getDefaultCamera()->removeFromParentAndCleanup(true);

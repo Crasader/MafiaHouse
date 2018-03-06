@@ -1,10 +1,10 @@
 280
-700|door,right|vent,top,0.5|stair,1,A,0.5,0.0|player,0.0,0.0|item,knife,0.5,0.0|object,plant,0.2,0.0|enemy,guard,0.8,0.0
+700|door,right|vent,top,30|vent,top,350|stair,1,A,0.5,0.0|player,0.0,0.0|item,knife,0.5,0.0|object,plant,0.2,0.0|enemy,guard,0.8,0.0
 500|door,right|door,left|item,knife,0.7,0.0
 300|door,left|stair,2,A,0.8,0.0|object,plant,0.5,0.0|enemy,guard,0.4,0.0
 FLOOR_END
 220
-200|door,right|stair,2,B,0.4,0.0
-900|door,right|door,left|vent,bot,0.16667|item,knife,0.7,0.1|enemy,guard,0.8,0.0
+300|door,right|vent,bot,80|stair,2,B,0.5,0.0
+900|door,right|door,left|vent,bot,80|item,knife,0.7,0.1|enemy,guard,0.8,0.0
 400|door,left|stair,1,B,0.8,0.0|object,plant,0.5,0.0|enemy,guard,0.4,0.0
 FLOOR_END

@@ -33,9 +33,11 @@ public:
 
 	bool isOpen = false;
 
-	float radius = 50.0f;
+	float radius = 60.0f;
 
 	Size size = Size(20, 110);
+
+	Size useBox = Size(radius, radius);
 };
 
 class Vent : public Door
