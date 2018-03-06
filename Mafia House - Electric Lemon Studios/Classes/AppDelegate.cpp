@@ -1,6 +1,6 @@
 #include "AppDelegate.h"
 #include "CocoLogo.h"
-#include "Stage1.h"
+#include "Stages.h"
 
 //Wrapper Classes
 #include "InputHandler.h"

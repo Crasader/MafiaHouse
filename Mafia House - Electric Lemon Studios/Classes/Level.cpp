@@ -1,31 +1,51 @@
 #include "Level.h"
 
+void Level::setup(){
+	//node everything in level is attached to
+	mainLayer = Node::create();
+	this->addChild(mainLayer);
 
+	//initializing player
+	player = Player::create();
+	player->initObject();
+	mainLayer->addChild(player);
 
-Level::Level()
-{
+	//Invisible Node for the camera to follow
+	camPos = Node::create();
+	mainLayer->addChild(camPos);
 
+	//necessary for collision detection
+	auto contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactBegin = CC_CALLBACK_1(Level::onContactBegin, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+
+	contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+
+	//for running the update function
+	this->schedule(schedule_selector(Level::onStart));
 }
 
-
-Level::~Level()
-{
-}
-
-void Level::onStart(float dt)
-{
+void Level::onStart(float dt){
 	this->unschedule(schedule_selector(Level::onStart));
+
+	//physics debug drawing:
+	//this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+
+	//deleting layer's default camera, or else there will be a double scene drawn
+	this->getDefaultCamera()->removeFromParentAndCleanup(true);
+	//getting scene's default camera
 	camera = this->getScene()->getDefaultCamera();
 	//setting 'zoom' level using Z positoin of camera
-	camera->setPositionZ(500 / camZoom);
+	camera->setPositionZ(459.42983 / camZoom);
 
+	//scheduling update to start running after this
 	this->scheduleUpdate();
-
 }
 
-void Level::update(float deltaTime)
-{
-	//clearing 'inputs'
+void Level::update(float deltaTime){
+	//clearing input flags
 	ctrl_press = false;
 	space_press = false;
 
@@ -36,27 +56,29 @@ void Level::update(float deltaTime)
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
 		//player->getPhysicsBody()->applyImpulse(Vec2(6000, 0));
 		player->move(Vec2(25.0f, 0));
-		if (player->flipped == true) {
-			player->flipped = false;
+		if (player->turned == true) {
+			player->turned = false;
 			player->flip();
 		}
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
 		//player->getPhysicsBody()->applyImpulse(Vec2(-6000, 0));
 		player->move(Vec2(-25.0f, 0));
-		if (player->flipped == false) {
-			player->flipped = true;
+		if (player->turned == false) {
+			player->turned = true;
 			player->flip();
 		}
 	}
+	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
+		player->getPhysicsBody()->setVelocity(Vec2(0, 0));
+	}
+
+	//flying, for testing only
 	if (INPUTS->getKey(KeyCode::KEY_W)) {
 		player->move(Vec2(0, 25.0f));
 	}
 	if (INPUTS->getKey(KeyCode::KEY_S)) {
 		player->move(Vec2(0, -25.0f));
-	}
-	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)){
-		player->getPhysicsBody()->setVelocity(Vec2(0, 0) );
 	}
 
 	//picking up items
@@ -104,10 +126,10 @@ void Level::update(float deltaTime)
 	for (int i = 0; i < stairs.size(); i++) {
 		if (stairs[i]->getTag() == player->stairEntered) {
 			if (stairs[i]->type == 1) {
-				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() + 1000)->getPosition());
+				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() + 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
 			}
 			else if (stairs[i]->type == 2) {
-				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() - 1000)->getPosition());
+				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() - 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
 			}
 			player->stairEntered = -1;
 		}
@@ -256,8 +278,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 }
 
 //check if 2 objects collide and do something
-bool Level::onContactBegin(cocos2d::PhysicsContact &contact)
-{
+bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	/*PhysicsBody *a = contact.getShapeA()->getBody();
 	PhysicsBody *b = contact.getShapeB()->getBody();
 
@@ -294,34 +315,6 @@ void Level::followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
 	}
 }
 
-void Level::setup()
-{
-	//node everything in level is attached to
-	mainLayer = Node::create();
-	this->addChild(mainLayer);
-
-	//initializing player
-	player = Player::create();
-	player->initObject();
-	mainLayer->addChild(player);
-
-	//Invisible Node for the camera to follow
-	camPos = Node::create();
-	mainLayer->addChild(camPos);
-
-	//necessary for collision detection
-	auto contactListener = EventListenerPhysicsContact::create();
-	contactListener->onContactBegin = CC_CALLBACK_1(Level::onContactBegin, this);
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-
-	contactListener = EventListenerPhysicsContact::create();
-	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-
-	//for running the update function
-	this->schedule(schedule_selector(Level::onStart));
-}
-
 void Level::setBackground(string bgName, float scale) {
 	backgroundScale = scale;
 	//setting background image
@@ -330,8 +323,12 @@ void Level::setBackground(string bgName, float scale) {
 	// position the sprite on the center of the screen
 	auto visibleSize = director->getVisibleSize();
 	background->setPosition(Vec2((visibleSize.width / 2) - (background->getContentSize().width / 2), 0));
-	//background->setPosition(Vec2(0, 0));
+	//set scale
 	background->setScale(backgroundScale);
+	//disabling anti-aliasing!!! (looks like blurry poop without this)
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	background->getTexture()->setTexParameters(texParams);
+	
 	mainLayer->addChild(background);
 
 	//creating collision box on edge of game area
@@ -401,6 +398,8 @@ bool Level::initLevel(string filename){
 	int roomNum = -1;
 	while (getline(file, line)) {//each interation gets a single line from the file; gets data for a single room
 		RoomData roomData;
+
+		if (line[0] == '#') { continue; }//ignoring comment lines, which begin with the '#' character
 
 		if (line == "FLOOR_END") {//indicates to move to next floor in floors vector
 			floors.push_back(floorData);

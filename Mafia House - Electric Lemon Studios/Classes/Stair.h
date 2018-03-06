@@ -17,7 +17,7 @@ public:
 	Stair();
 	~Stair();
 
-	static Stair* create(const std::string& filename = "stair.png");
+	CREATE_SPRITE_FUNC(Stair, "stair.png");
 
 	void initObject();
 

@@ -11,8 +11,7 @@ class Wall : public GameObject
 public:
 	Wall();
 	~Wall();
-
-	static Wall* create(const std::string& filename = "wall.png");
+	CREATE_SPRITE_FUNC(Wall, "wall.png");
 
 	void initObject(Vec2 startPos = Vec2(0, 0), Size size = Size(25, 25));//position, size
 };
@@ -22,8 +21,7 @@ class Door : public GameObject
 public:
 	Door();
 	~Door();
-
-	static Door* create(const std::string& filename = "door.png");
+	CREATE_SPRITE_FUNC(Door, "door.png");
 
 	virtual void initObject(Vec2 startPos = Vec2(0, 0));
 
@@ -45,8 +43,7 @@ class Vent : public Door
 public:
 	Vent();
 	~Vent();
-
-	static Vent* create(const std::string& filename = "door.png");
+	CREATE_SPRITE_FUNC(Vent, "door.png");
 
 	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 };

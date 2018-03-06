@@ -8,8 +8,7 @@ class Player : public GameObject
 public:
 	Player();
 	~Player();
-
-	static Player* create(const std::string& filename = "player.png");
+	CREATE_SPRITE_FUNC(Player, "player.png");
 
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
@@ -30,6 +29,8 @@ public:
 	Item* heldItem = NULL;
 
 	float maxSpeed = 0.6f;
+
+	bool turned = false;
 
 private:
 	std::vector<Item*> items;//items the player is carrying

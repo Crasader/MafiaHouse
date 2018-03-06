@@ -17,18 +17,6 @@ Stair::~Stair() {
 
 }
 
-Stair* Stair::create(const std::string& filename)
-{
-	Stair *sprite = new (std::nothrow) Stair();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
-}
-
 void Stair::initObject() {
 	this->setContentSize(stairSize);//won't be needed once we have a proper sprite
 	

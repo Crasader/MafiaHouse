@@ -13,20 +13,7 @@ Wall::Wall()
 	collision = 0xFFFFFFFF;
 }
 
-Wall::~Wall()
-{
-}
-
-Wall* Wall::create(const std::string& filename)
-{
-	Wall *sprite = new (std::nothrow) Wall();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
+Wall::~Wall(){
 }
 
 void Wall::initObject(Vec2 startPos, Size size) {
@@ -47,19 +34,6 @@ Door::Door() {
 	collision = 0xFFFFFFFF;
 }
 Door::~Door() {
-
-}
-
-Door* Door::create(const std::string& filename)
-{
-	Door *sprite = new (std::nothrow) Door();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
 }
 
 void Door::initObject(Vec2 startPos) {
@@ -110,24 +84,6 @@ void Door::use() {
 
 //Vent Class
 Vent::Vent() {
-}
-Vent::~Vent() {
-
-}
-
-Vent* Vent::create(const std::string& filename)
-{
-	Vent *sprite = new (std::nothrow) Vent();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
-}
-
-void Vent::initObject(int orient, Vec2 startPos) {
 	radius = 46.0f;
 	name = "vent";
 	tag = 60000;
@@ -138,6 +94,11 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	dynamic = false;
 	category = 2;
 	collision = 0xFFFFFFFF;
+}
+Vent::~Vent() {
+}
+
+void Vent::initObject(int orient, Vec2 startPos) {
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
 		useBox = Size(55 + radius / 2, radius);
@@ -151,10 +112,8 @@ void Vent::initObject(int orient, Vec2 startPos) {
 
 //Room Class
 Room::Room() {
-
 }
 Room::~Room() {
-
 }
 
 Room* Room::create() {
@@ -170,7 +129,7 @@ Room* Room::create() {
 	return ret;
 }
 
-bool sortByPosition(DoorData a, DoorData b) {return a.pos < b.pos;}
+bool sortByPosition(DoorData a, DoorData b) {return a.pos < b.pos;}//function for sorting vector of DoorData
 
 void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size size, vector<DoorData> doorData)
 {
@@ -272,13 +231,15 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 
 	//setting player position
 	if (player->startRoom == roomData.room) {
-		player->setRoomPositionNormalized(position, Size(roomData.width, height), player->roomStartPos);
+		//player->setRoomPositionNormalized(position, Size(roomData.width, height), player->roomStartPos);
+		player->setRoomPosition(position, player->roomStartPos);
 	}
 	//setting stairway positions
 	if (stairs->size() > 0) {
 		for (int i = 0; i < stairs->size(); i++) {
 			if ((*stairs)[i]->startRoom == roomData.room) {
-				(*stairs)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*stairs)[i]->roomStartPos);
+				//(*stairs)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*stairs)[i]->roomStartPos);
+				(*stairs)[i]->setRoomPosition(position, (*stairs)[i]->roomStartPos);
 			}
 		}
 	}
@@ -286,7 +247,8 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 	if (objects->size() > 0) {
 		for (int i = 0; i < objects->size(); i++) {
 			if ((*objects)[i]->startRoom == roomData.room) {
-				(*objects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*objects)[i]->roomStartPos);
+				//(*objects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*objects)[i]->roomStartPos);
+				(*objects)[i]->setRoomPosition(position, (*objects)[i]->roomStartPos);
 			}
 		}
 	}
@@ -294,7 +256,8 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 	if (items->size() > 0) {
 		for (int i = 0; i < items->size(); i++) {
 			if ((*items)[i]->startRoom == roomData.room) {
-				(*items)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*items)[i]->roomStartPos);
+				//(*items)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*items)[i]->roomStartPos);
+				(*items)[i]->setRoomPosition(position, (*items)[i]->roomStartPos);
 			}
 		}
 	}
@@ -302,7 +265,8 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 	if (enemies->size() > 0) {
 		for (int i = 0; i < enemies->size(); i++) {
 			if ((*enemies)[i]->startRoom == roomData.room) {
-				(*enemies)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*enemies)[i]->roomStartPos);
+				//(*enemies)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*enemies)[i]->roomStartPos);
+				(*enemies)[i]->setRoomPosition(position, (*enemies)[i]->roomStartPos);
 			}
 		}
 	}

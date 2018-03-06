@@ -16,12 +16,18 @@ using std::string;
 using std::atoi;
 using std::atof;
 
+#define CREATE_SCENE_FUNC(_TYPE_) \
+static Scene* createScene() \
+{ \
+	Scene* scene = Scene::createWithPhysics(); \
+	_TYPE_* layer = _TYPE_::create(); \
+	scene->addChild(layer); \
+	return scene; \
+}
+
 class Level: public Scene
 {
 public:
-	Level();
-	~Level();
-
 	void setup();//call in init(), initializes stuff that is the same for each level
 
 	void setBackground(string bgName = "defaultbg.png", float scale = 1.0f);

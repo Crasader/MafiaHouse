@@ -5,12 +5,11 @@ class Item : public GameObject
 public:
 	Item();
 	~Item();
-
-	static Item* create(const std::string& filename = "knife.png");
+	CREATE_SPRITE_FUNC(Item, "knife.png");
 
 	void initObject(Vec2 startPos = Vec2(0,0));
 
-	void initHeldItem(int itemTag);
+	virtual void initHeldItem(int itemTag);
 };
 
 class Knife : public Item
@@ -18,6 +17,5 @@ class Knife : public Item
 public:
 	Knife();
 	~Knife();
-
-	static Knife* create(const std::string& filename = "knife.png");
+	CREATE_SPRITE_FUNC(Knife, "knife2.png");
 };

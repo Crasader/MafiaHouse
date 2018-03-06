@@ -5,13 +5,25 @@
 #include <algorithm>
 USING_NS_CC;
 
+#define CREATE_SPRITE_FUNC(__TYPE__, _FILENAME_) \
+static __TYPE__* create(const std::string& filename = _FILENAME_) \
+{ \
+    __TYPE__ *sprite = new(std::nothrow) __TYPE__(); \
+    if (sprite && sprite->initWithFile(filename)) \
+    { \
+        sprite->autorelease(); \
+        return sprite; \
+    } \
+    CC_SAFE_DELETE(sprite); \
+    return nullptr; \
+}
+
 class GameObject: public Sprite
 {
 public:
 	GameObject();
 	~GameObject();
-	//must overload create function of Sprite to derive class properly
-	static GameObject* create(const std::string& filename);
+	CREATE_SPRITE_FUNC(GameObject, "default.png");//must overload create function of Sprite to derive class properly
 
 	virtual void initObject();
 	virtual void initObject(Vec2 startPos);
@@ -24,7 +36,7 @@ public:
 
 	void move(Vec2 velocity);
 
-	void flip();//flips game object on X-axis
+	void flip();//flips object on X-axis
 
 	bool flipped = false;//false = facing right
 
@@ -42,4 +54,3 @@ protected:
 	int category = 1;//category group bitmask for collisions
 	int collision = 1;//collision group bitmask for collisions
 };
-

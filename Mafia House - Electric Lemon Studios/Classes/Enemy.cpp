@@ -3,37 +3,23 @@
 Enemy::Enemy()
 {
 	name = "enemy";
+	tag = 30000;//enemies will be 30000 - 39999
 	//sprite properties
 	zOrder = 4;
 	scale = 1.0f;
 	//physics body properties
-	tag = 30000;//enemies will be 30000 - 29999
 	dynamic = true;
 	category = 4;
 	collision = 3;
 }
-
-
-Enemy::~Enemy()
-{
+Enemy::~Enemy(){
 }
 
-Enemy* Enemy::create(const std::string& filename)
+void Enemy::initObject(Vec2 startPos)
 {
-	Enemy *sprite = new (std::nothrow) Enemy();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
-}
-
-void Enemy::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	//initializing vision cone
-	vision = GameObject::create("visionCone.png");
+	auto vision = GameObject::create("visionCone.png");
 	vision->initObject();
 	vision->setName("vision_cone");
 	vision->setScale(0.75);

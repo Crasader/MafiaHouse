@@ -57,9 +57,6 @@
     <ClCompile Include="..\Classes\Item.cpp">
       <Filter>Classes\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\Stage1.cpp">
-      <Filter>Classes\Scenes</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\Wall.cpp">
       <Filter>Classes\Objects</Filter>
     </ClCompile>
@@ -77,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="..\Classes\Stair.cpp">
       <Filter>Classes\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Stages.cpp">
+      <Filter>Classes\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,9 +122,6 @@
     <ClInclude Include="..\Classes\Item.h">
       <Filter>Classes\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\Stage1.h">
-      <Filter>Classes\Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="..\Classes\Wall.h">
       <Filter>Classes\Objects</Filter>
     </ClInclude>
@@ -136,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\Stair.h">
       <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Stages.h">
+      <Filter>Classes\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

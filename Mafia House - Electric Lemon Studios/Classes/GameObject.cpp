@@ -1,28 +1,17 @@
 #include "GameObject.h"
 
-GameObject::GameObject()
-{
+GameObject::GameObject(){
 }
-
-GameObject::~GameObject()
-{
-}
-
-GameObject* GameObject::create(const std::string& filename)
-{
-	GameObject *sprite = new (std::nothrow) GameObject();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
+GameObject::~GameObject(){
 }
 
 void GameObject::initObject() {
-	//necessary stuff, will not change between objects:
+	//set the anchor point to bottom left corner
 	this->setAnchorPoint(Vec2(0, 0));
+
+	//disabling anti-aliasing!!! (looks like blurry poop without this)
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	this->getTexture()->setTexParameters(texParams);
 
 	//set name of sprite
 	this->setName(name);
@@ -99,10 +88,12 @@ void GameObject::move(Vec2 velocity) {
 
 void GameObject::flip() {
 	this->setScaleX(this->getScaleX() * -1);//flips sprite and it's children by inverting x scale
-	if (this->flipped == true) {
+	if (flipped == false) {
+		flipped = true;
 		this->setAnchorPoint(Vec2(1, 0));//have to change anchor point to opposite corner after flipping or the sprite will change position
 	}
 	else {
+		flipped = false;
 		this->setAnchorPoint(Vec2(0, 0));
 	}
 }
