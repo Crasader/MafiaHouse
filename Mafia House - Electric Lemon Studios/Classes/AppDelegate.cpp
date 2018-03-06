@@ -1,6 +1,6 @@
 #include "AppDelegate.h"
 #include "CocoLogo.h"
-#include "Stage1.h"
+#include "Stages.h"
 
 //Wrapper Classes
 #include "InputHandler.h"
@@ -66,9 +66,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     register_all_packages();
 
     // create a scene (if you want directly test one scene you can switch the name here)
- //   auto scene = CocoLogo::createScene();
+    //auto scene = CocoLogo::createScene();
 
- //   // run scene
+    // run scene
 	//auto transitions = TransitionFade::create(2.0f, scene);
 	//director->replaceScene(transitions);
 

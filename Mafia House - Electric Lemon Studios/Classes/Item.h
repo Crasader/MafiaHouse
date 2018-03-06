@@ -5,15 +5,11 @@ class Item : public GameObject
 public:
 	Item();
 	~Item();
+	CREATE_SPRITE_FUNC(Item, "knife.png");
 
-	static Item* create(const std::string& filename = "knife.png");
+	void initObject(Vec2 startPos = Vec2(0,0));
 
-	void initObject(Vec2 startPos);
-
-	void initHeldItem(int itemTag);
-
-protected:
-	//Node* pickUpRadius;//used to create invisible physics body to detect when player can pick up item
+	virtual void initHeldItem(int itemTag);
 };
 
 class Knife : public Item
@@ -21,6 +17,5 @@ class Knife : public Item
 public:
 	Knife();
 	~Knife();
-
-	static Knife* create(const std::string& filename = "knife.png");
+	CREATE_SPRITE_FUNC(Knife, "knife2.png");
 };

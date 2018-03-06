@@ -162,7 +162,8 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\Level.cpp" />
     <ClCompile Include="..\Classes\MenuScreen.cpp" />
     <ClCompile Include="..\Classes\Player.cpp" />
-    <ClCompile Include="..\Classes\Stage1.cpp" />
+    <ClCompile Include="..\Classes\Stages.cpp" />
+    <ClCompile Include="..\Classes\Stair.cpp" />
     <ClCompile Include="..\Classes\StartScreen.cpp" />
     <ClCompile Include="..\Classes\Tutorial.cpp" />
     <ClCompile Include="..\Classes\Wall.cpp" />
@@ -182,7 +183,8 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClInclude Include="..\Classes\Level.h" />
     <ClInclude Include="..\Classes\MenuScreen.h" />
     <ClInclude Include="..\Classes\Player.h" />
-    <ClInclude Include="..\Classes\Stage1.h" />
+    <ClInclude Include="..\Classes\Stages.h" />
+    <ClInclude Include="..\Classes\Stair.h" />
     <ClInclude Include="..\Classes\StartScreen.h" />
     <ClInclude Include="..\Classes\Tutorial.h" />
     <ClInclude Include="..\Classes\Wall.h" />

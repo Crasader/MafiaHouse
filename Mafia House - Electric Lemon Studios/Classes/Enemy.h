@@ -7,11 +7,7 @@ class Enemy : public GameObject
 public:
 	Enemy();
 	~Enemy();
+	CREATE_SPRITE_FUNC(Enemy, "guard.png");
 
-	static Enemy* create(const std::string& filename = "guard.png");
-
-	void initObject(Vec2 startPos = Vec2(0, 0));
-
-protected:
-	GameObject* vision;
+	void initObject(Vec2 startPos = Vec2(0,0));
 };

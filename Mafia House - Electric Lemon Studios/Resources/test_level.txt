@@ -1,0 +1,27 @@
+# this is an example level file
+# '#' defines a comment line
+# the format is as follows:
+#
+# FLOOR_HEIGHT - height of the floor is given as an integer value
+# ROOM1_WIDTH | ROOM_OBJECT1_TYPE, DATA_PIECE1 , ..., OBJECT_ROOM_COORDINATES | ROOM_OBJECT2_TYPE, ...etc - each object in a room is deliniated by the '|' symbol
+# ROOM2... - each line is a new room on the floor
+# ROOM3...
+# FLOOR_END - to indicate the end of a floor's data; this MUST BE at the END of EVERY FLOOR! (or it will crash the game)
+#
+# each object in a room is given as pieces of data separated by a ','
+# all coordinates are relative to the room's position; (0,0) is the bottom left corner of the room the object is in
+# doors/vents: door/vent, wall_door_is_on(right, left, top ,bot), position_of_door_on_wall(a single integer value, higher = to the right / to the top of wall)
+# stairs: stair, pair_number(an integer that indicates which other stairway it is linked to), type(A or B, each pair of stairs must have one A and one B), x_coordinate, y_coordinate
+# items/objects/enemies: item/object/enemy, type(what subclass it is), x_coordinate, y_coordinate
+# player: player, x_coordinate, y_coordinate
+#
+280
+700|door,right|vent,top,30|vent,top,350|stair,1,A,360,0|player,0,0|item,knife,300,0|object,plant,100,0|enemy,guard,600,0
+500|door,right|door,left|item,knife,400,0
+300|door,left|stair,2,A,250,0|object,plant,150,0|enemy,guard,100,0
+FLOOR_END
+220
+300|door,right|vent,bot,80|stair,2,B,160,0
+900|door,right|door,left|vent,bot,80|item,knife,650,0|enemy,guard,800,0
+400|door,left|stair,1,B,360,0|object,plant,300,0|enemy,guard,200,0
+FLOOR_END

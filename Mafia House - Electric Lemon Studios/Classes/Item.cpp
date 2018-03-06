@@ -2,88 +2,59 @@
 
 Item::Item()
 {
+	name = "item";
 	//sprite properties
 	zOrder = 5;
-	scale = 0.6f;
-	name = "item";
 	//physics body properties
-	tag = 10000;//each item type will be identified by the second and third digit: 10100 - 10199 for knives
-	dynamic = false;
 	category = 8;
-	collision = 1;
+	collision = 3;
+	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
+	dynamic = true;
+}
+Item::~Item(){
 }
 
-Item::~Item()
+void Item::initObject(Vec2 startPos)
 {
-}
-
-Item* Item::create(const std::string& filename)
-{
-	Item *sprite = new (std::nothrow) Item();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
-}
-
-void Item::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
-	this->setFlippedX(true);
 	//initializing pickup radius
-	/*pickUpRadius = Node::create();
+	Size pickUpBox = this->getContentSize() * 2.0;
+	auto pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	pickUpRadius->setName("item_radius");
 
-	auto pickUpRadiusBody = PhysicsBody::createCircle(100.0f);
+	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
 	pickUpRadiusBody->setCollisionBitmask(1);
 	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
-	pickUpRadiusBody->setTag(3);
+	pickUpRadiusBody->setTag(10000);
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 
-	this->addChild(pickUpRadius);*/
+	this->addChild(pickUpRadius);
 }
 
 //used when player picks up item
-void Item::initHeldItem(int itemTag) {
+void Item::initHeldItem(int itemTag)
+{
 	tag = itemTag;
 	name = "held_item";
-	scale = 0.4f;
+	dynamic = false;
+	category = 4;
 	GameObject::initObject();
-	this->setPositionNormalized(Vec2(1, 0.5));
-	this->setFlippedX(true);
-	this->getPhysicsBody()->setMass(0);
+	this->setPositionNormalized(Vec2(0.86, 0.415));
+	//this->getPhysicsBody()->setMass(0);
 }
 
 //Knife Class:
 Knife::Knife()
 {
+	Item::Item();
 	//sprite properties
-	zOrder = 5;
-	scale = 0.6f;
-	name = "item";
+	//scale = 0.38f;
+	//flippedX = true;
 	//physics body properties
-	tag = 10100;//10100 - 10199 for knives 10101, 10102, ... 10187
-	dynamic = false;
-	category = 8;
-	collision = 1;
+	tag = 10100;//10100 - 10199 for knives
 }
-
-Knife::~Knife()
-{
-}
-
-Knife* Knife::create(const std::string& filename)
-{
-	Knife *sprite = new (std::nothrow) Knife();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
+Knife::~Knife(){
 }

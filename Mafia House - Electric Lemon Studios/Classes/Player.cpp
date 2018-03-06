@@ -3,38 +3,24 @@
 Player::Player()
 {
 	//sprite properties
-	zOrder = 4;
-	scale = 1.5f;
+	zOrder = 5;
+	scale = 1.0f;
 	name = "player";
 	//physics body properties
 	tag = 1;
 	dynamic = true;
 	category = 1;
-	collision = 30;
+	collision = 22;
 
 	init();
 }
-
-Player::~Player()
-{
-}
-
-Player* Player::create(const std::string& filename)
-{
-	Player *sprite = new (std::nothrow) Player();
-	if (sprite && sprite->initWithFile(filename))
-	{
-		sprite->autorelease();
-		return sprite;
-	}
-	CC_SAFE_DELETE(sprite);
-	return nullptr;
+Player::~Player(){
 }
 
 void Player::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 	
-	this->getPhysicsBody()->setVelocityLimit(180);//max player speed
+	this->getPhysicsBody()->setVelocityLimit(maxSpeed * this->getPhysicsBody()->getMass());//max player speed
 }
 
 //functions for player actions:
