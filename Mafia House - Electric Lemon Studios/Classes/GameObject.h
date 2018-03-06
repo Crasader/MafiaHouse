@@ -8,14 +8,14 @@ USING_NS_CC;
 #define CREATE_SPRITE_FUNC(__TYPE__, _FILENAME_) \
 static __TYPE__* create(const std::string& filename = _FILENAME_) \
 { \
-    __TYPE__ *sprite = new(std::nothrow) __TYPE__(); \
-    if (sprite && sprite->initWithFile(filename)) \
-    { \
-        sprite->autorelease(); \
-        return sprite; \
-    } \
-    CC_SAFE_DELETE(sprite); \
-    return nullptr; \
+	__TYPE__ *sprite = new(std::nothrow) __TYPE__(); \
+	if (sprite && sprite->initWithFile(filename)) \
+	{ \
+		sprite->autorelease(); \
+		return sprite; \
+	} \
+	CC_SAFE_DELETE(sprite); \
+	return nullptr; \
 }
 
 class GameObject: public Sprite
