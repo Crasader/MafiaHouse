@@ -32,6 +32,9 @@ public:
 
 	bool turned = false;
 
+	void noclip();
+	bool clip = false;
+
 private:
 	std::vector<Item*> items;//items the player is carrying
 };

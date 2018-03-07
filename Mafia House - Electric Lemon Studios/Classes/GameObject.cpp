@@ -6,6 +6,7 @@ GameObject::~GameObject(){
 }
 
 void GameObject::initObject() {
+	this->setPositionZ(0.0f);
 	//set the anchor point to bottom left corner
 	this->setAnchorPoint(Vec2(0, 0));
 

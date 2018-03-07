@@ -48,3 +48,14 @@ void Player::pickUpItem() {
 		}
 	}
 }
+
+void Player::noclip() {
+	if (clip == false) {
+		clip = true;
+		this->getPhysicsBody()->setCollisionBitmask(20);
+	}
+	else {
+		clip = false;
+		this->getPhysicsBody()->setCollisionBitmask(22);
+	}
+}

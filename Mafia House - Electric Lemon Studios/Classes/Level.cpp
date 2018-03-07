@@ -1,6 +1,9 @@
 #include "Level.h"
 
 void Level::setup(){
+	//loading sprite sheet into sprite frame cache
+	//SpriteFrameCache::getInstance()->addSpriteFramesWithFile("mafiahouse.plist");
+
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	this->addChild(mainLayer);
@@ -9,6 +12,7 @@ void Level::setup(){
 	player = Player::create();
 	player->initObject();
 	mainLayer->addChild(player);
+	//player->noclip();
 
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
@@ -34,9 +38,9 @@ void Level::onStart(float dt){
 	//this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
-	this->getDefaultCamera()->removeFromParentAndCleanup(true);
+	this->getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
 	//getting scene's default camera
-	camera = this->getScene()->getDefaultCamera();
+	camera = this->getDefaultCamera();
 	//setting 'zoom' level using Z positoin of camera
 	camera->setPositionZ(459.42983 / camZoom);
 
@@ -320,6 +324,7 @@ void Level::setBackground(string bgName, float scale) {
 	//setting background image
 	background = Sprite::create(bgName);
 	background->setAnchorPoint(Vec2(0, 0));
+	background->setPositionZ(0.0f);
 	// position the sprite on the center of the screen
 	auto visibleSize = director->getVisibleSize();
 	background->setPosition(Vec2((visibleSize.width / 2) - (background->getContentSize().width / 2), 0));
