@@ -52,7 +52,6 @@ Knife::Knife()
 	Item::Item();
 	//sprite properties
 	//scale = 0.38f;
-	//flippedX = true;
 	//physics body properties
 	tag = 10100;//10100 - 10199 for knives
 }

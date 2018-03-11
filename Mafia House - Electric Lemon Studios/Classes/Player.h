@@ -28,8 +28,6 @@ public:
 
 	Item* heldItem = NULL;
 
-	float maxSpeed = 0.6f;
-
 	bool turned = false;
 
 	void noclip();

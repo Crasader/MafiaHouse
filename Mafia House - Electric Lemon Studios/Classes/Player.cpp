@@ -12,15 +12,13 @@ Player::Player()
 	category = 1;
 	collision = 22;
 
-	init();
+	maxSpeed = 150;
 }
 Player::~Player(){
 }
 
 void Player::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
-	
-	this->getPhysicsBody()->setVelocityLimit(maxSpeed * this->getPhysicsBody()->getMass());//max player speed
 }
 
 //functions for player actions:

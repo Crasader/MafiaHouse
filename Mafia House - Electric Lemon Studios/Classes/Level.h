@@ -40,6 +40,10 @@ public:
 
 protected:
 
+	DrawNode* debugDraw;
+
+	float gameTime = 0.0f;
+
 	Director* director = Director::getInstance();
 
 	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera

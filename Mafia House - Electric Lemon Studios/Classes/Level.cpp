@@ -35,7 +35,7 @@ void Level::onStart(float dt){
 	this->unschedule(schedule_selector(Level::onStart));
 
 	//physics debug drawing:
-	//this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	this->getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -49,32 +49,56 @@ void Level::onStart(float dt){
 }
 
 void Level::update(float deltaTime){
+	//updating time
+	gameTime += deltaTime;
+
 	//clearing input flags
 	ctrl_press = false;
 	space_press = false;
+
+	//for debug drawing vision rays
+	if (debugDraw)
+	{
+		this->removeChild(debugDraw, true);
+	}
+	debugDraw = DrawNode::create();
+	debugDraw->setGlobalZOrder(10);
+
+	//enemy update
+	Vec2* point = new Vec2;
+	Vec2* start = new Vec2;
+	Vec2* end = new Vec2;
+	for (int i = 0; i < enemies.size(); i++) {
+		enemies[i]->walk(gameTime);
+		enemies[i]->visionRays(point, start, end);
+		debugDraw->drawDot(*point, 2, Color4F::WHITE);
+		debugDraw->drawSegment(*start, *end, 1, Color4F::BLUE);
+	}
+	this->addChild(debugDraw);
+	delete point;
+	delete start;
+	delete end;
 
 	//checking to see if player is picking up an item
 	player->pickUpItem();
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
-		//player->getPhysicsBody()->applyImpulse(Vec2(6000, 0));
-		player->move(Vec2(25.0f, 0));
 		if (player->turned == true) {
 			player->turned = false;
-			player->flip();
+			player->flipX();
 		}
+		player->move(Vec2(10.0f, 0));
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
-		//player->getPhysicsBody()->applyImpulse(Vec2(-6000, 0));
-		player->move(Vec2(-25.0f, 0));
 		if (player->turned == false) {
 			player->turned = true;
-			player->flip();
+			player->flipX();
 		}
+		player->move(Vec2(10.0f, 0));
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
-		player->getPhysicsBody()->setVelocity(Vec2(0, 0));
+		player->stop();
 	}
 
 	//flying, for testing only
@@ -573,12 +597,12 @@ bool Level::initLevel(string filename){
 		enemies[i]->setTag(enemies[i]->getTag() + i);//giving a unique tag to each enemy
 		mainLayer->addChild(enemies[i]);
 		//guard moves automatically, put this into Enemy class
-		auto movement = MoveBy::create(5, Vec2(400, 0));
+		/*auto movement = MoveBy::create(5, Vec2(400, 0));
 		auto turn = ScaleBy::create(0.0f, -1.0f, 1.0f);
 		auto wait = MoveBy::create(0.5, Vec2(0, 0));
 		auto moveback = MoveBy::create(5, Vec2(-400, 0));
 		auto sequence = Sequence::create(movement, wait, turn, moveback, wait, turn, NULL);
-		enemies[i]->runAction(RepeatForever::create(sequence));
+		enemies[i]->runAction(RepeatForever::create(sequence));*/
 	}
 
 	return true;

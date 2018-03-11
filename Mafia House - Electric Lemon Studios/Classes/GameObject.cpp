@@ -24,15 +24,15 @@ void GameObject::initObject() {
 	this->setScale(scale);
 
 	//set whether sprite is flipped or not
-	this->setFlippedX(flippedX);
+	this->setFlippedX(startFlippedX);
 
 	//set tag
 	this->setTag(tag);
 
 	//creating physics body
 	auto body = PhysicsBody::createBox(this->getContentSize());
-	//auto size = sprite->getContentSize();
-	//body->setPositionOffset(Vec2(size.width/2, size.height/2));
+	body->setTag(tag);
+	body->setName(name);
 
 	//not necessary, will change from object to object:
 	body->setDynamic(dynamic);
@@ -42,7 +42,8 @@ void GameObject::initObject() {
 	//necessary stuff, will not change between objects:
 	body->setRotationEnable(false);
 	body->setContactTestBitmask(0xFFFFFFFF);
-	body->setTag(tag);
+
+	body->setVelocityLimit(maxSpeed);//max object speed
 
 	this->setPhysicsBody(body);
 }
@@ -79,22 +80,30 @@ void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
 	this->setPosition(roomPos + position);
 }
 
+void GameObject::stop() {
+	this->getPhysicsBody()->setVelocity(Vec2(0, 0));
+	this->getPhysicsBody()->resetForces();
+}
+
 void GameObject::move(Vec2 velocity) {
 	auto mass = this->getPhysicsBody()->getMass();
 
 	Vec2 force = mass * velocity;
 
+	force.x = flippedX == true ? force.x * -1 : force.x;
+	force.y = flippedY == true ? force.y * -1 : force.y;
+
 	this->getPhysicsBody()->applyImpulse(force);
 }
 
-void GameObject::flip() {
+void GameObject::flipX() {
 	this->setScaleX(this->getScaleX() * -1);//flips sprite and it's children by inverting x scale
-	if (flipped == false) {
-		flipped = true;
+	if (flippedX == false) {
+		flippedX = true;
 		this->setAnchorPoint(Vec2(1, 0));//have to change anchor point to opposite corner after flipping or the sprite will change position
 	}
 	else {
-		flipped = false;
+		flippedX = false;
 		this->setAnchorPoint(Vec2(0, 0));
 	}
 }

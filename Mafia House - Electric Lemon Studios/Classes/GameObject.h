@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 USING_NS_CC;
+using std::string;
 
 #define CREATE_SPRITE_FUNC(__TYPE__, _FILENAME_) \
 static __TYPE__* create(const std::string& filename = _FILENAME_) \
@@ -34,23 +35,32 @@ public:
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
+	//movement functions
+	void stop();
+
 	void move(Vec2 velocity);
 
-	void flip();//flips object on X-axis
-
-	bool flipped = false;//false = facing right
+	void flipX();//flips object on X-axis
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position
 	Vec2 startRoom = Vec2(0,0);//coordinates of room the object starts in
 
 protected:
+	bool flippedX = false;//false = facing right
+	bool flippedY = false;//false = facing upright
+
+	float maxSpeed = 100.0f;
+
 	std::string name = "name";//can set name to identify sprite type, used for collision detection
 	float zOrder = 0;//determines what is drawn over top of what
 	float scale = 1.0;//scale factor for sprite
-	bool flippedX = false;
+	bool startFlippedX = false;
+	bool startFlippedY = false;
 
 	int tag = 0;//tag for the physics body, used for collision detection
 	bool dynamic = false;//set whether bosy will be dynamic or not
 	int category = 1;//category group bitmask for collisions
 	int collision = 1;//collision group bitmask for collisions
+
+	Director* director = Director::getInstance();
 };
