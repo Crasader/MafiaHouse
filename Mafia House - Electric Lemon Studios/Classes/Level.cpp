@@ -35,7 +35,7 @@ void Level::onStart(float dt){
 	this->unschedule(schedule_selector(Level::onStart));
 
 	//physics debug drawing:
-	this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	this->getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -65,19 +65,18 @@ void Level::update(float deltaTime){
 	debugDraw->setGlobalZOrder(10);
 
 	//enemy update
-	Vec2* point = new Vec2;
-	Vec2* start = new Vec2;
-	Vec2* end = new Vec2;
+	vector<Vec2> points;
+	Vec2 start;
 	for (int i = 0; i < enemies.size(); i++) {
 		enemies[i]->walk(gameTime);
-		enemies[i]->visionRays(point, start, end);
-		debugDraw->drawDot(*point, 2, Color4F::WHITE);
-		debugDraw->drawSegment(*start, *end, 1, Color4F::BLUE);
+		enemies[i]->visionRays(&points, &start);
+		for (int j = 0; j < points.size(); j++) {
+			//debugDraw->drawDot(points[j], 2, Color4F::WHITE);
+			debugDraw->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.1));
+		}
+		points.clear();
 	}
 	this->addChild(debugDraw);
-	delete point;
-	delete start;
-	delete end;
 
 	//checking to see if player is picking up an item
 	player->pickUpItem();

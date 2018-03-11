@@ -21,18 +21,18 @@ void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
 	//initializing vision cone
-	vision = GameObject::create("visionCone.png");
-	vision->initObject();
-	vision->setName("vision_cone");
-	vision->setScale(0.75);
-	vision->setPositionNormalized(Vec2(1, 0.4));
-	vision->setGlobalZOrder(6);
+	visionSprite = GameObject::create("visionCone.png");
+	visionSprite->initObject();
+	visionSprite->setName("vision_cone");
+	visionSprite->setScale(0.75);
+	visionSprite->setPositionNormalized(Vec2(1, 0.4));
+	visionSprite->setGlobalZOrder(6);
 
-	vision->getPhysicsBody()->setCategoryBitmask(4);
-	vision->getPhysicsBody()->setCollisionBitmask(1);
-	vision->getPhysicsBody()->setEnabled(false);
+	visionSprite->getPhysicsBody()->setCategoryBitmask(4);
+	visionSprite->getPhysicsBody()->setCollisionBitmask(1);
+	visionSprite->getPhysicsBody()->setEnabled(false);
 
-	this->addChild(vision);
+	//this->addChild(visionSprite);
 }
 
 void Enemy::walk(float time) {
@@ -51,35 +51,47 @@ void Enemy::walk(float time) {
 }
 
 
-void Enemy::visionRays(Vec2* point, Vec2* start, Vec2* end)
+void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 {
-	PhysicsRayCastCallbackFunc func = [this, point](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
+	bool* didRun = new bool;
+	*didRun = false;
+	PhysicsRayCastCallbackFunc func = [this, points, didRun](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
 	{
 		visionContactTag = info.shape->getBody()->getTag();
 		visionContactName = info.shape->getBody()->getName();
 
-		*point = info.contact;
-
-		if (visionContactName == "item" || visionContactName == "stair" || visionContactName == "env_object") {
+		if (visionContactName == "enemy" || visionContactName == "item" || visionContactName == "stair" || visionContactName == "env_object" || visionContactName == "item_radius" || visionContactName == "door_radius") {//things to ingore collisions with
 			return true;
 		}
-		return false;
+		else {
+			points->push_back(info.contact);
+			*didRun = true;
+			return false;
+		}
 	};
 
 	Vec2 startPoint;
 	Vec2 endPoint;
+	int direction;
 
 	if (flippedX == false) {
-		startPoint = this->getPosition() + Vec2(this->getContentSize().width + 1, 80);
-		endPoint = startPoint + (Vec2(1, 0) * 200);
+		startPoint = this->getPosition() + Vec2(this->getContentSize().width - 5, 87);
+		direction = 1;
 	}
 	else {
-		startPoint = this->getPosition() + Vec2(-1, 80);
-		endPoint = startPoint + (Vec2(-1, 0) * 200);
+		startPoint = this->getPosition() + Vec2(5, 87);
+		direction =  -1;
 	}
-
-	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startPoint, endPoint, nullptr);
-
 	*start = startPoint;
-	*end = endPoint;
+
+	float angle = 0 - (visionDegrees / 2);
+	for (int i = 0; i < visionDegrees; i++) {
+		endPoint.x = startPoint.x + cosf((angle + i) * M_PI / 180) * visionRadius * direction;
+		endPoint.y = startPoint.y + sinf((angle + i) * M_PI / 180) * visionRadius;
+		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startPoint, endPoint, nullptr);
+		if (*didRun == false) {
+			points->push_back(endPoint);
+		}
+		*didRun = false;
+	}
 }

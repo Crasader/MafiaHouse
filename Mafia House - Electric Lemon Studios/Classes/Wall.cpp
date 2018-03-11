@@ -50,6 +50,7 @@ void Door::initObject(Vec2 startPos) {
 	radiusBody->setCollisionBitmask(1);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
 	radiusBody->setTag(10000);
+	radiusBody->setName("door_radius");
 	useRadius->setPhysicsBody(radiusBody);
 
 	this->addChild(useRadius);

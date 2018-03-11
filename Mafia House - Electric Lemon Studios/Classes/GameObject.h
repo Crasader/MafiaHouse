@@ -5,6 +5,7 @@
 #include <algorithm>
 USING_NS_CC;
 using std::string;
+using std::vector;
 
 #define CREATE_SPRITE_FUNC(__TYPE__, _FILENAME_) \
 static __TYPE__* create(const std::string& filename = _FILENAME_) \

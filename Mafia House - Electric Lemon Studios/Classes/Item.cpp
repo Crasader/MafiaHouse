@@ -29,6 +29,7 @@ void Item::initObject(Vec2 startPos)
 	pickUpRadiusBody->setCollisionBitmask(1);
 	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
 	pickUpRadiusBody->setTag(10000);
+	pickUpRadiusBody->setName("item_radius");
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 
 	this->addChild(pickUpRadius);

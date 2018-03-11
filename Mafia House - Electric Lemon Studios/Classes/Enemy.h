@@ -13,9 +13,11 @@ public:
 
 	void walk(float time);
 
-	void visionRays(Vec2* point, Vec2* start, Vec2* end);//casts a bunch of rays; the enemies vision cone
+	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
+	int visionDegrees = 65;
+	int visionRadius = 130;
 
-	GameObject* vision;
+	GameObject* visionSprite;
 
 	string visionContactName;
 	int visionContactTag;
