@@ -18,15 +18,15 @@ Stair::~Stair() {
 }
 
 void Stair::initObject() {
-	this->setContentSize(stairSize);//won't be needed once we have a proper sprite
+	setContentSize(stairSize);//won't be needed once we have a proper sprite
 	
 	GameObject::initObject();
 	
 	//use type to set tag of the stairway
 	if (type == 2) {
-		this->setTag(tag + pairNum + 1000);//will have tag of it's partner stairway plus 1000
+		setTag(tag + pairNum + 1000);//will have tag of it's partner stairway plus 1000
 	}
 	else if (type == 1){
-		this->setTag(tag + pairNum);
+		setTag(tag + pairNum);
 	}
 }

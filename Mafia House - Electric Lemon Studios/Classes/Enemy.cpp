@@ -76,11 +76,11 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	int direction;
 
 	if (flippedX == false) {
-		startPoint = this->getPosition() + Vec2(this->getContentSize().width - 5, 87);
+		startPoint = getPosition() + Vec2(getContentSize().width - 5, 87);
 		direction = 1;
 	}
 	else {
-		startPoint = this->getPosition() + Vec2(5, 87);
+		startPoint = getPosition() + Vec2(5, 87);
 		direction =  -1;
 	}
 	*start = startPoint;

@@ -8,8 +8,10 @@ public:
 	CREATE_SPRITE_FUNC(Item, "knife.png");
 
 	void initObject(Vec2 startPos = Vec2(0,0));
+	void initRadius();
 
 	virtual void initHeldItem();
+	virtual void initDroppedItem(Vec2 pos, bool flip);
 };
 
 class Knife : public Item

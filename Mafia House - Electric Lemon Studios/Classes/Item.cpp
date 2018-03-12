@@ -4,12 +4,13 @@ Item::Item()
 {
 	name = "item";
 	//sprite properties
-	zOrder = 5;
+	zOrder = 6;
 	//physics body properties
 	category = 8;
 	collision = 3;
 	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
+	rotate = true;
 }
 Item::~Item(){
 }
@@ -17,8 +18,12 @@ Item::~Item(){
 void Item::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
-	//initializing pickup radius
-	Size pickUpBox = this->getContentSize() * 2.0;
+	retain();
+	initRadius();
+}
+//initializing pickup radius:
+void Item::initRadius() {
+	Size pickUpBox = getContentSize() * 2.0;
 	auto pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("item_radius");
@@ -32,16 +37,31 @@ void Item::initObject(Vec2 startPos)
 	pickUpRadiusBody->setName("item_radius");
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 
-	this->addChild(pickUpRadius);
+	addChild(pickUpRadius);
 }
 
 //used when player picks up item
 void Item::initHeldItem() {
-	this->removeChildByName("item_radius", true);
-	this->getPhysicsBody()->setDynamic(false);
-	this->setName("held_item");
-	this->getPhysicsBody()->setName("held_item");
-	this->setPositionNormalized(Vec2(0.86, 0.415));
+	removeChildByName("item_radius", true);
+	getPhysicsBody()->setDynamic(false);
+	setName("held_item");
+	getPhysicsBody()->setName("held_item");
+	setPosition(Vec2(24, 39));
+	if (flippedX == true) {
+		flipX();
+	}
+}
+//used when player drops item
+void Item::initDroppedItem(Vec2 pos, bool flip) {
+	getPhysicsBody()->setDynamic(true);
+	setName("item");
+	getPhysicsBody()->setName("item");
+	if (flip == true) {
+		flipX();
+		setAnchorPoint(Vec2(0, 0));
+	}
+	setPosition(pos);
+	initRadius();
 }
 
 //Knife Class:

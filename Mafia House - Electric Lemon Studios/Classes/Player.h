@@ -12,7 +12,9 @@ public:
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
 	//functions for player actions:
+	void resetActionChecks();//resets variables used to track what objects/items player will interact with/use
 	void pickUpItem(Node* mainLayer);
+	void dropItem(Node* mainLayer);
 
 	//for Interacting with objects:
 	int doorToUse = -1;//the tag of the door the player can open/close
@@ -25,7 +27,6 @@ public:
 
 	//for using held item:
 	Item* heldItem = NULL;
-
 
 	bool hidden = false;
 	bool hideStart = false;//used for setting the object you are hiding behind transparent

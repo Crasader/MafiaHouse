@@ -22,31 +22,52 @@ void Player::initObject(Vec2 startPos) {
 }
 
 //functions for player actions:
+void Player::resetActionChecks() {
+	doorToUse = -1;
+	stairToUse = -1;
+	objectToHideBehind = -1;
+	itemToPickUp = -1;
+	bodyToPickUp = -1;
+}
 
-//called if space bar is pressed and player is colliding with item
 void Player::pickUpItem(Node* mainLayer) {
-	if (itemToPickUp != -1) {
+	if (itemToPickUp != -1 && heldItem == NULL) {
 		heldItem = static_cast<Item*>(mainLayer->getChildByTag(itemToPickUp));
-		heldItem->retain();
 		mainLayer->removeChildByTag(itemToPickUp, true);
-		heldItem->initHeldItem();
-
-		inventory.push_back(heldItem);
 
 		removeChild(heldItem, true);
 		addChild(heldItem);
+		heldItem->initHeldItem();
+		inventory.push_back(heldItem);
 
 		itemToPickUp = -1;
+	}
+}
+
+void Player::dropItem(Node* mainLayer) {
+	if (heldItem != NULL) {
+		//removing dropped item from inventory
+		for (int i = 0; i < inventory.size(); i++) {
+			if (inventory[i] == heldItem) {
+				inventory.erase(inventory.begin() + i);
+				break;
+			}
+		}
+		heldItem->initDroppedItem(convertToWorldSpace(heldItem->getPosition()), flippedX);
+
+		removeChild(heldItem, true);
+		mainLayer->addChild(heldItem);
+		heldItem = NULL;
 	}
 }
 
 void Player::noclip() {
 	if (clip == false) {
 		clip = true;
-		this->getPhysicsBody()->setCollisionBitmask(20);
+		getPhysicsBody()->setCollisionBitmask(20);
 	}
 	else {
 		clip = false;
-		this->getPhysicsBody()->setCollisionBitmask(22);
+		getPhysicsBody()->setCollisionBitmask(22);
 	}
 }

@@ -6,31 +6,31 @@ GameObject::~GameObject(){
 }
 
 void GameObject::initObject() {
-	this->setPositionZ(0.0f);
+	setPositionZ(0.0f);
 	//set the anchor point to bottom left corner
-	this->setAnchorPoint(Vec2(0, 0));
+	setAnchorPoint(Vec2(0, 0));
 
 	//disabling anti-aliasing!!! (looks like blurry poop without this)
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
-	this->getTexture()->setTexParameters(texParams);
+	getTexture()->setTexParameters(texParams);
 
 	//set name of sprite
-	this->setName(name);
+	setName(name);
 
 	//set Z order
-	this->setGlobalZOrder(zOrder);
+	setGlobalZOrder(zOrder);
 
 	//set scale of sprite
-	this->setScale(scale);
+	setScale(scale);
 
 	//set whether sprite is flipped or not
-	this->setFlippedX(reversedX);
+	setFlippedX(reversedX);
 
 	//set tag
-	this->setTag(tag);
+	setTag(tag);
 
 	//creating physics body
-	auto body = PhysicsBody::createBox(this->getContentSize());
+	auto body = PhysicsBody::createBox(getContentSize());
 	body->setTag(tag);
 	body->setName(name);
 
@@ -40,17 +40,17 @@ void GameObject::initObject() {
 	body->setCollisionBitmask(collision);
 
 	//necessary stuff, will not change between objects:
-	body->setRotationEnable(false);
+	body->setRotationEnable(rotate);
 	body->setContactTestBitmask(0xFFFFFFFF);
 
 	body->setVelocityLimit(maxSpeed);//max object speed
 
-	this->setPhysicsBody(body);
+	setPhysicsBody(body);
 }
 
 void GameObject::initObject(Vec2 startPos) {
 	//set position of sprite
-	this->setPosition(startPos);
+	setPosition(startPos);
 
 	GameObject::initObject();
 }
@@ -73,26 +73,26 @@ Vector<SpriteFrame*> GameObject::getAnimation(const char *format, int count){
 
 void GameObject::setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position) {
 	Vec2 offset = Vec2(position.x * roomSize.width, position.y * roomSize.height);
-	this->setPosition(roomPos + offset);
+	setPosition(roomPos + offset);
 }
 
 void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
-	this->setPosition(roomPos + position);
+	setPosition(roomPos + position);
 }
 
 void GameObject::stop() {
-	this->getPhysicsBody()->setVelocity(Vec2(0, 0));
-	this->getPhysicsBody()->resetForces();
+	getPhysicsBody()->setVelocity(Vec2(0, 0));
+	getPhysicsBody()->resetForces();
 }
 
 void GameObject::slowStop() {
-	this->getPhysicsBody()->resetForces();
-	Vec2 force = this->getPhysicsBody()->getMass() * this->getPhysicsBody()->getVelocity();
-	this->getPhysicsBody()->applyForce(-force);
+	getPhysicsBody()->resetForces();
+	Vec2 force = getPhysicsBody()->getMass() * getPhysicsBody()->getVelocity();
+	getPhysicsBody()->applyForce(-force);
 }
 
 void GameObject::move(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
-	auto mass = this->getPhysicsBody()->getMass();
+	auto mass = getPhysicsBody()->getMass();
 
 	Vec2 force = mass * velocity;
 
@@ -100,17 +100,17 @@ void GameObject::move(Vec2 velocity) {//positive values will always move them fo
 	force.x = flippedX == true ? force.x * -1 : force.x;
 	force.y = flippedY == true ? force.y * -1 : force.y;
 
-	this->getPhysicsBody()->applyImpulse(force);
+	getPhysicsBody()->applyImpulse(force);
 }
 
 void GameObject::flipX() {
-	this->setScaleX(this->getScaleX() * -1);//flips sprite and it's children by inverting x scale
+	setScaleX(getScaleX() * -1);//flips sprite and it's children by inverting x scale
 	if (flippedX == false) {
 		flippedX = true;
-		this->setAnchorPoint(Vec2(1, 0));//have to change anchor point to opposite corner after flipping or the sprite will change position
+		setAnchorPoint(Vec2(1, 0));//have to change anchor point to opposite corner after flipping or the sprite will change position
 	}
 	else {
 		flippedX = false;
-		this->setAnchorPoint(Vec2(0, 0));
+		setAnchorPoint(Vec2(0, 0));
 	}
 }

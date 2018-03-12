@@ -80,10 +80,6 @@ protected:
 	//nodeA will 'chase' nodeB; you can also use this to 'leash' nodeA to nodeB instead
 	void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset = Vec2(0, 0));//like the followRadius function, but uses a rectangular bounding box instead of circular radius
 
-	//for keyboard inputs, becuase getKeyPress doesn't work from within onConctactPresolve for some reason
-	bool space_press = false;
-	bool ctrl_press = false;
-
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
 	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height);
 	void createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, float levelWidth, vector<FloorData> floorData);
