@@ -24,7 +24,7 @@ void GameObject::initObject() {
 	this->setScale(scale);
 
 	//set whether sprite is flipped or not
-	this->setFlippedX(startFlippedX);
+	this->setFlippedX(reversedX);
 
 	//set tag
 	this->setTag(tag);
@@ -85,11 +85,18 @@ void GameObject::stop() {
 	this->getPhysicsBody()->resetForces();
 }
 
-void GameObject::move(Vec2 velocity) {
+void GameObject::slowStop() {
+	this->getPhysicsBody()->resetForces();
+	Vec2 force = this->getPhysicsBody()->getMass() * this->getPhysicsBody()->getVelocity();
+	this->getPhysicsBody()->applyForce(-force);
+}
+
+void GameObject::move(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
 	auto mass = this->getPhysicsBody()->getMass();
 
 	Vec2 force = mass * velocity;
 
+	//reversing direction of movement if character is flipped
 	force.x = flippedX == true ? force.x * -1 : force.x;
 	force.y = flippedY == true ? force.y * -1 : force.y;
 

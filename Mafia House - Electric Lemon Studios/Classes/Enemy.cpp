@@ -27,12 +27,16 @@ void Enemy::walk(float time) {
 		previousTurnTime = time;
 	}
 
-	if (time - previousTurnTime >= walkTime) {
-		previousTurnTime = time;
-		stop();
-		flipX();
+	if (time - previousTurnTime >= walkTime && stopTime == -1) {
+		slowStop();
+		stopTime = time;
 	}
-	else {
+	else if (stopTime != -1 && time - stopTime >= waitTime) {
+		flipX();
+		previousTurnTime = time;
+		stopTime = -1;
+	}
+	else if (stopTime == -1){
 		move(Vec2(4, 0));
 	}
 }

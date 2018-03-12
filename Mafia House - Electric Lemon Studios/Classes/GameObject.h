@@ -38,6 +38,7 @@ public:
 
 	//movement functions
 	void stop();
+	void slowStop();
 
 	void move(Vec2 velocity);
 
@@ -55,8 +56,8 @@ protected:
 	std::string name = "name";//can set name to identify sprite type, used for collision detection
 	float zOrder = 0;//determines what is drawn over top of what
 	float scale = 1.0;//scale factor for sprite
-	bool startFlippedX = false;
-	bool startFlippedY = false;
+	bool reversedX = false;//is the object's sprite 'flipped' from the start or not
+	bool reversedY = false;
 
 	int tag = 0;//tag for the physics body, used for collision detection
 	bool dynamic = false;//set whether bosy will be dynamic or not

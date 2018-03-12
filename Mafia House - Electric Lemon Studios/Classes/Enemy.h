@@ -26,5 +26,7 @@ public:
 
 protected:
 	float walkTime = 6.0f;
+	float waitTime = 2.0f;
 	float previousTurnTime = -1;
+	float stopTime = -1;
 };
