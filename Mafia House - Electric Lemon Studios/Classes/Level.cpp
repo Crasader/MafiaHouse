@@ -56,13 +56,13 @@ void Level::update(float deltaTime){
 	ctrl_press = false;
 	space_press = false;
 
-	//for debug drawing vision rays
-	if (debugDraw)
+	//for drawing vision rays
+	if (visionRays)
 	{
-		this->removeChild(debugDraw, true);
+		this->removeChild(visionRays, true);
 	}
-	debugDraw = DrawNode::create();
-	debugDraw->setGlobalZOrder(10);
+	visionRays = DrawNode::create();
+	visionRays->setGlobalZOrder(10);
 
 	//enemy update
 	vector<Vec2> points;
@@ -71,12 +71,12 @@ void Level::update(float deltaTime){
 		enemies[i]->walk(gameTime);
 		enemies[i]->visionRays(&points, &start);
 		for (int j = 0; j < points.size(); j++) {
-			//debugDraw->drawDot(points[j], 2, Color4F::WHITE);
-			debugDraw->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.1));
+			//visionRays->drawDot(points[j], 2, Color4F::WHITE);
+			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.1));
 		}
 		points.clear();
 	}
-	this->addChild(debugDraw);
+	this->addChild(visionRays);
 
 	//checking to see if player is picking up an item
 	player->pickUpItem();

@@ -20,19 +20,6 @@ Enemy::~Enemy(){
 void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
-	//initializing vision cone
-	visionSprite = GameObject::create("visionCone.png");
-	visionSprite->initObject();
-	visionSprite->setName("vision_cone");
-	visionSprite->setScale(0.75);
-	visionSprite->setPositionNormalized(Vec2(1, 0.4));
-	visionSprite->setGlobalZOrder(6);
-
-	visionSprite->getPhysicsBody()->setCategoryBitmask(4);
-	visionSprite->getPhysicsBody()->setCollisionBitmask(1);
-	visionSprite->getPhysicsBody()->setEnabled(false);
-
-	//this->addChild(visionSprite);
 }
 
 void Enemy::walk(float time) {
@@ -53,20 +40,30 @@ void Enemy::walk(float time) {
 
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 {
-	bool* didRun = new bool;
-	*didRun = false;
-	PhysicsRayCastCallbackFunc func = [this, points, didRun](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
+	playerInVision = false;
+
+	didRun = false;
+	PhysicsRayCastCallbackFunc func = [this, points](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
 	{
 		visionContactTag = info.shape->getBody()->getTag();
 		visionContactName = info.shape->getBody()->getName();
 
-		if (visionContactName == "enemy" || visionContactName == "item" || visionContactName == "stair" || visionContactName == "env_object" || visionContactName == "item_radius" || visionContactName == "door_radius") {//things to ingore collisions with
-			return true;
-		}
-		else {
+		//enemy vision is blocked by walls, doors
+		if (visionContactName == "wall" || visionContactName == "door") {
 			points->push_back(info.contact);
-			*didRun = true;
+			didRun = true;
 			return false;
+		}
+		//enemy sees the player
+		else if (visionContactName == "player"){
+			playerInVision = true;
+			points->push_back(info.contact);
+			didRun = true;
+			return false;
+		}
+		//things to ingore collisions with
+		else {
+			return true;
 		}
 	};
 
@@ -89,9 +86,9 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 		endPoint.x = startPoint.x + cosf((angle + i) * M_PI / 180) * visionRadius * direction;
 		endPoint.y = startPoint.y + sinf((angle + i) * M_PI / 180) * visionRadius;
 		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startPoint, endPoint, nullptr);
-		if (*didRun == false) {
+		if (didRun == false) {
 			points->push_back(endPoint);
 		}
-		*didRun = false;
+		didRun = false;
 	}
 }
