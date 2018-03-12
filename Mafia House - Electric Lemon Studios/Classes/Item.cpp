@@ -36,15 +36,12 @@ void Item::initObject(Vec2 startPos)
 }
 
 //used when player picks up item
-void Item::initHeldItem(int itemTag)
-{
-	tag = itemTag;
-	name = "held_item";
-	dynamic = false;
-	category = 4;
-	GameObject::initObject();
+void Item::initHeldItem() {
+	this->removeChildByName("item_radius", true);
+	this->getPhysicsBody()->setDynamic(false);
+	this->setName("held_item");
+	this->getPhysicsBody()->setName("held_item");
 	this->setPositionNormalized(Vec2(0.86, 0.415));
-	//this->getPhysicsBody()->setMass(0);
 }
 
 //Knife Class:

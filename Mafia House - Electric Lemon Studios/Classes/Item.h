@@ -9,7 +9,7 @@ public:
 
 	void initObject(Vec2 startPos = Vec2(0,0));
 
-	virtual void initHeldItem(int itemTag);
+	virtual void initHeldItem();
 };
 
 class Knife : public Item

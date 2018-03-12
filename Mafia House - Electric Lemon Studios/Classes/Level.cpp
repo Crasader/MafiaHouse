@@ -35,7 +35,7 @@ void Level::onStart(float dt){
 	this->unschedule(schedule_selector(Level::onStart));
 
 	//physics debug drawing:
-	//this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	this->getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -72,14 +72,16 @@ void Level::update(float deltaTime){
 		enemies[i]->visionRays(&points, &start);
 		for (int j = 0; j < points.size(); j++) {
 			//visionRays->drawDot(points[j], 2, Color4F::WHITE);
-			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.1));
+			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.15));
 		}
 		points.clear();
 	}
 	this->addChild(visionRays);
 
+	//player update
+
 	//checking to see if player is picking up an item
-	player->pickUpItem();
+	player->pickUpItem(mainLayer);
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
@@ -119,7 +121,7 @@ void Level::update(float deltaTime){
 
 	//have player stay behind object they are hiding behind
 	if (player->hidden == true) {
-		auto hideObject = mainLayer->getChildByTag(player->objectHidingBehind);
+		auto hideObject = mainLayer->getChildByTag(player->objectToHideBehind);
 		if (player->hideStart == true) {
 			player->setGlobalZOrder(player->getGlobalZOrder() - 3);
 			if (player->heldItem != NULL) {
@@ -131,9 +133,9 @@ void Level::update(float deltaTime){
 		followBox(player, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 	}
 	else {
-		if (player->objectHidingBehind != -1) {
-			mainLayer->getChildByTag(player->objectHidingBehind)->setOpacity(255);
-			player->objectHidingBehind = -1;
+		if (player->objectToHideBehind != -1) {
+			mainLayer->getChildByTag(player->objectToHideBehind)->setOpacity(255);
+			player->objectToHideBehind = -1;
 			player->setGlobalZOrder(player->getGlobalZOrder() + 3);
 			if (player->heldItem != NULL) {
 				player->heldItem->setGlobalZOrder(player->heldItem->getGlobalZOrder() + 3);
@@ -151,19 +153,19 @@ void Level::update(float deltaTime){
 
 	//use stairs
 	for (int i = 0; i < stairs.size(); i++) {
-		if (stairs[i]->getTag() == player->stairEntered) {
+		if (stairs[i]->getTag() == player->stairToUse) {
 			if (stairs[i]->type == 1) {
 				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() + 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
 			}
 			else if (stairs[i]->type == 2) {
 				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() - 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
 			}
-			player->stairEntered = -1;
+			player->stairToUse = -1;
 		}
 	}
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
-	//having camera 'chase' player
+	//having camera follow player
 	followBox(camPos, player, camBoundingBox, camOffset);
 	camera->setPosition(camPos->getPosition());
 
@@ -178,19 +180,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	Node *b = contact.getShapeB()->getBody()->getNode();
 
 	if (a != NULL && b != NULL) {
-
-		// check if player has collided with a vision cone
-		if ((a->getName() == "player" && b->getName() == "vision_cone") || (a->getName() == "vision_cone" && b->getName() == "player"))
-		{
-			if (player->hidden != true) {
-				CCLOG("YOU HAVE BEEN SPOTTED");
-			}
-			else {
-				CCLOG("YOU AVOIDED DETECTION");
-			}
-			return false;
-		}
-
 		// check if player has collided with an enemy
 		if ((a->getName() == "player" && b->getName() == "enemy") || (a->getName() == "enemy" && b->getName() == "player"))
 		{
@@ -211,7 +200,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			CCLOG("CAN PICK UP ITEM");
 			if (space_press == true) {
 				player->itemToPickUp = b->getParent()->getTag();
-				b->getParent()->removeFromParent();
 			}
 			return false;
 		}
@@ -220,7 +208,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			CCLOG("CAN PICK UP ITEM");
 			if (space_press == true) {
 				player->itemToPickUp = a->getParent()->getTag();
-				a->getParent()->removeFromParent();
 			}
 			return false;
 		}
@@ -239,7 +226,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				if (player->hidden == false) {
 					player->hideStart = true;
 					player->hidden = true;
-					player->objectHidingBehind = b->getTag();
+					player->objectToHideBehind = b->getTag();
 				}
 				else {
 					player->hidden = false;
@@ -255,7 +242,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				if (player->hidden == false) {
 					player->hideStart = true;
 					player->hidden = true;
-					player->objectHidingBehind = a->getTag();
+					player->objectToHideBehind = a->getTag();
 				}
 				else {
 					player->hidden = false;
@@ -269,7 +256,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			CCLOG("CAN GO THROUGH STAIRWAY");
 			if (ctrl_press == true) {
-				player->stairEntered = b->getTag();
+				player->stairToUse = b->getTag();
 			}
 			return false;
 		}
@@ -277,7 +264,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			CCLOG("CAN GO THROUGH STAIRWAY");
 			if (ctrl_press == true) {
-				player->stairEntered = a->getTag();
+				player->stairToUse = a->getTag();
 			}
 			return false;
 		}

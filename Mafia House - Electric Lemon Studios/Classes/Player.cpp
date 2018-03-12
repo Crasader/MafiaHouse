@@ -24,26 +24,19 @@ void Player::initObject(Vec2 startPos) {
 //functions for player actions:
 
 //called if space bar is pressed and player is colliding with item
-void Player::pickUpItem() {
+void Player::pickUpItem(Node* mainLayer) {
 	if (itemToPickUp != -1) {
-		Item* item = NULL;
-		if (itemToPickUp >= 10100 && itemToPickUp <= 10199) {//10100 - 10199 for knives
-			item = Knife::create();
-		}
+		heldItem = static_cast<Item*>(mainLayer->getChildByTag(itemToPickUp));
+		heldItem->retain();
+		mainLayer->removeChildByTag(itemToPickUp, true);
+		heldItem->initHeldItem();
 
-		if (item != NULL) {
-			item->initHeldItem(itemToPickUp);
+		inventory.push_back(heldItem);
 
-			items.push_back(item);
+		removeChild(heldItem, true);
+		addChild(heldItem);
 
-			this->removeChildByName("held_item", true);
-
-			heldItem = items.back();
-
-			this->addChild(heldItem);
-
-			itemToPickUp = -1;
-		}
+		itemToPickUp = -1;
 	}
 }
 
