@@ -1,6 +1,7 @@
 #pragma once
 #include "cocos2d.h"
 #include "InputHandler.h"
+#include "Functions.h"
 #include <vector>
 #include <string>
 #include<fstream>
@@ -36,17 +37,16 @@ public:
 
 	void update(float deltaTime);
 
-	void onStart(float dt);
+	void onStart(float deltaTime);
 
 protected:
+	float gameTime = 0.0f;
 
 	Director* director = Director::getInstance();
 
 	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera
 
-	Node* mainLayer;//a node which everything in the scene is attached to, moved around to act as a camera following player
-
-	Node* camPos;//an invisible node used to position the "camera"
+	Node* mainLayer;//a node which everything in the scene is attached to
 
 	Sprite* background;//the background image of the level
 	float backgroundScale = 1.0f;
@@ -54,6 +54,8 @@ protected:
 	Player* player;//the player character
 	
 	vector<Enemy*> enemies;//the enemies in the level
+
+	DrawNode* visionRays;//used for drawing vision cones
 
 	vector<Item*> items;//the items in the level
 
@@ -65,24 +67,15 @@ protected:
 
 	vector<Stair*> stairs;
 
+	Node* camPos;//an invisible node used to position the camera
+	Camera* camera = NULL;
 	Vec2 camBoundingBox = Vec2(200, 0);
 	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
 	float camZoom = 1.0f;
 
-	Camera* camera = NULL;
-
 	bool onContactBegin(PhysicsContact &contact);
 
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
-
-	void followRadius(Node* nodeA, Node* nodeB, float radius = 0.0f, Vec2 offset = Vec2(0,0));//used to make one node follow another
-	//nodeA will 'chase' nodeB; you can also use this to 'leash' nodeA to nodeB instead
-
-	void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset = Vec2(0, 0));//like the followRadius function, but uses a rectangular bounding box instead of circular radius
-
-	//for keyboard inputs, becuase getKeyPress doesn't work from within onConctactPresolve for some reason
-	bool space_press = false;
-	bool ctrl_press = false;
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
 	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height);

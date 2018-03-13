@@ -16,10 +16,10 @@ class Stair : public GameObject
 public:
 	Stair();
 	~Stair();
-
 	CREATE_SPRITE_FUNC(Stair, "stair.png");
-
 	void initObject();
+
+	void use(GameObject* user, Node* mainLayer);
 
 	int pairNum = 0;//the number of the pair of stairways this stairway belongs to; ex. stairways 1A and 1B are both part of the number 1 pair
 	int type = 0;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B

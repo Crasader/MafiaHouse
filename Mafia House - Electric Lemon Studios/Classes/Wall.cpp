@@ -17,7 +17,7 @@ Wall::~Wall(){
 }
 
 void Wall::initObject(Vec2 startPos, Size size) {
-	this->setContentSize(size);//set the size of the wall
+	setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
 }
 
@@ -37,7 +37,7 @@ Door::~Door() {
 }
 
 void Door::initObject(Vec2 startPos) {
-	this->setContentSize(size);//set the size of the wall
+	setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
 
 	auto useRadius = Node::create();
@@ -50,9 +50,10 @@ void Door::initObject(Vec2 startPos) {
 	radiusBody->setCollisionBitmask(1);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
 	radiusBody->setTag(10000);
+	radiusBody->setName("door_radius");
 	useRadius->setPhysicsBody(radiusBody);
 
-	this->addChild(useRadius);
+	addChild(useRadius);
 }
 
 void Door::initObject(int orient, Vec2 startPos) {
@@ -68,17 +69,28 @@ void Door::initObject(int orient, Vec2 startPos) {
 }
 
 void Door::use() {
-	if (isOpen == false) {
-		isOpen = true;
-		this->getPhysicsBody()->setEnabled(false);
-		this->setGlobalZOrder(2);
-		this->setOpacity(100);
+	if (locked == false) {
+		if (isOpen == false) {
+			isOpen = true;
+			getPhysicsBody()->setEnabled(false);
+			setGlobalZOrder(2);
+			setOpacity(100);
+		}
+		else {
+			isOpen = false;
+			getPhysicsBody()->setEnabled(true);
+			setGlobalZOrder(5);
+			setOpacity(255);
+		}
+	}
+}
+
+void Door::unlock() {
+	if (locked == true) {
+		locked = false;
 	}
 	else {
-		isOpen = false;
-		this->getPhysicsBody()->setEnabled(true);
-		this->setGlobalZOrder(5);
-		this->setOpacity(255);
+		locked = true;
 	}
 }
 
@@ -116,19 +128,6 @@ Room::Room() {
 Room::~Room() {
 }
 
-Room* Room::create() {
-	Room * ret = new (std::nothrow) Room();
-	if (ret && ret->init())
-	{
-		ret->autorelease();
-	}
-	else
-	{
-		CC_SAFE_DELETE(ret);
-	}
-	return ret;
-}
-
 bool sortByPosition(DoorData a, DoorData b) {return a.pos < b.pos;}//function for sorting vector of DoorData
 
 void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size size, vector<DoorData> doorData)
@@ -157,7 +156,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					w = Wall::create();
 					w->initObject(newPos, Size(size.width, length));
 					if (length > 0) {
-						this->addChild(w);
+						addChild(w);
 					}
 				}
 				else {//on odd number iterations, make a door or vent
@@ -180,7 +179,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 			length = size.height - newPos.y + position.y;
 			w = Wall::create();
 			w->initObject(newPos, Size(size.width, length));
-			this->addChild(w);
+			addChild(w);
 		}
 		else if (orientation == 2) {//horizontal
 			for (int i = 0; i < loops; i++) {
@@ -190,7 +189,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					w = Wall::create();
 					w->initObject(newPos, Size(length, size.height));
 					if (length > 0) {
-						this->addChild(w);
+						addChild(w);
 					}
 				}
 				else {//on odd number iterations, make a door or vent
@@ -213,21 +212,28 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 			length = size.width - newPos.x + position.x;
 			w = Wall::create();
 			w->initObject(newPos, Size(length, size.height));
-			this->addChild(w);
+			addChild(w);
 		}
 	}
 	else {//no doors or vents
 		w = Wall::create();
 		w->initObject(position, size);
-		this->addChild(w);
+		addChild(w);
 	}
 }
 
 //creates a room, made of 4 walls, can have doors/vents and stairways
 void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, RoomData roomData, int height)
 {	//setting size of room
-	this->setContentSize(Size(roomData.width, height));
-	this->setAnchorPoint(Vec2(0, 0));
+	setContentSize(Size(roomData.width, height));
+	setAnchorPoint(Vec2(0, 0));
+
+	background = Sprite::create(roomData.bgName);
+	background->setContentSize(getContentSize() + Size(fullThick, fullThick));
+	background->setGlobalZOrder(0);
+	background->setAnchorPoint(Vec2(0, 0));
+	background->setPosition(position - Vec2(thick, thick));
+	addChild(background);
 
 	//setting player position
 	if (player->startRoom == roomData.room) {

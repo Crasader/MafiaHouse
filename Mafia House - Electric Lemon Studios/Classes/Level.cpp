@@ -6,7 +6,7 @@ void Level::setup(){
 
 	//node everything in level is attached to
 	mainLayer = Node::create();
-	this->addChild(mainLayer);
+	addChild(mainLayer);
 
 	//initializing player
 	player = Player::create();
@@ -21,126 +21,127 @@ void Level::setup(){
 	//necessary for collision detection
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(Level::onContactBegin, this);
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
 	contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
 	//for running the update function
-	this->schedule(schedule_selector(Level::onStart));
+	schedule(schedule_selector(Level::onStart));
 }
 
-void Level::onStart(float dt){
-	this->unschedule(schedule_selector(Level::onStart));
+void Level::onStart(float deltaTime){
+	unschedule(schedule_selector(Level::onStart));
 
 	//physics debug drawing:
-	//this->getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
-	this->getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
+	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
 	//getting scene's default camera
-	camera = this->getDefaultCamera();
+	camera = getDefaultCamera();
 	//setting 'zoom' level using Z positoin of camera
 	camera->setPositionZ(459.42983 / camZoom);
 
 	//scheduling update to start running after this
-	this->scheduleUpdate();
+	scheduleUpdate();
 }
 
 void Level::update(float deltaTime){
-	//clearing input flags
-	ctrl_press = false;
-	space_press = false;
+	//updating time
+	gameTime += deltaTime;
+
+	//for drawing vision rays
+	if (visionRays)
+	{
+		removeChild(visionRays, true);
+	}
+	visionRays = DrawNode::create();
+	visionRays->setGlobalZOrder(10);
+
+	//enemy update
+	vector<Vec2> points;
+	Vec2 start;
+	for (int i = 0; i < enemies.size(); i++) {
+		enemies[i]->walk(gameTime);
+		enemies[i]->visionRays(&points, &start);
+		for (int j = 0; j < points.size(); j++) {
+			//visionRays->drawDot(points[j], 2, Color4F::WHITE);
+			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.15));
+		}
+		points.clear();
+	}
+	addChild(visionRays);
+
+	//player update:
 
 	//checking to see if player is picking up an item
-	player->pickUpItem();
+	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
+		player->pickUpItem(mainLayer);
+		//player->handleInput(Player::PICKUP);
+	}
+	//check if player is dropping item
+	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
+		player->dropItem(mainLayer);
+		//player->handleInput(Player::DROP);
+	}
+	//check if player is using item
+	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {
+		//player->handleInput(Player::USE);
+		//player->useItem();
+	}
+
+	//check if player is going to hide behind object
+	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
+		//player->handleInput(Player::HIDE);
+		player->hide(mainLayer);
+	}
+	//check if player is going to interact with door/stairway
+	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
+		//player->handleInput(Player::INTERACT);
+		player->useDoor(mainLayer);
+		player->useStair(mainLayer);
+	}
+
+	//change between standing/crouching
+	if (INPUTS->getKey(KeyCode::KEY_W)) {
+		//player->handleInput(Player::MOVE_UP);
+	}
+	if (INPUTS->getKey(KeyCode::KEY_S)) {
+		//player->handleInput(Player::MOVE_DOWN);
+	}
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
-		//player->getPhysicsBody()->applyImpulse(Vec2(6000, 0));
-		player->move(Vec2(25.0f, 0));
+		//player->handleInput(Player::MOVE_RIGHT);
 		if (player->turned == true) {
 			player->turned = false;
-			player->flip();
+			player->flipX();
 		}
+		player->move(Vec2(10.0f, 0));
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
-		//player->getPhysicsBody()->applyImpulse(Vec2(-6000, 0));
-		player->move(Vec2(-25.0f, 0));
+		//player->handleInput(Player::MOVE_LEFT);
 		if (player->turned == false) {
 			player->turned = true;
-			player->flip();
+			player->flipX();
 		}
+		player->move(Vec2(10.0f, 0));
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
-		player->getPhysicsBody()->setVelocity(Vec2(0, 0));
+		//player->handleInput(Player::STOP);
+		player->stop();
 	}
 
-	//flying, for testing only
-	if (INPUTS->getKey(KeyCode::KEY_W)) {
-		player->move(Vec2(0, 25.0f));
-	}
-	if (INPUTS->getKey(KeyCode::KEY_S)) {
-		player->move(Vec2(0, -25.0f));
-	}
+	//keeps player behind object they are hiding behind
+	player->hiding(mainLayer);
 
-	//picking up items
-	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {
-		space_press = true;
-	}
-	//hiding
-	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
-		ctrl_press = true;
-	}
-
-	//have player stay behind object they are hiding behind
-	if (player->hidden == true) {
-		auto hideObject = mainLayer->getChildByTag(player->objectHidingBehind);
-		if (player->hideStart == true) {
-			player->setGlobalZOrder(player->getGlobalZOrder() - 3);
-			if (player->heldItem != NULL) {
-				player->heldItem->setGlobalZOrder(player->heldItem->getGlobalZOrder() - 3);
-			}
-			hideObject->setOpacity(175);
-			player->hideStart = false;
-		}
-		followBox(player, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
-	}
-	else {
-		if (player->objectHidingBehind != -1) {
-			mainLayer->getChildByTag(player->objectHidingBehind)->setOpacity(255);
-			player->objectHidingBehind = -1;
-			player->setGlobalZOrder(player->getGlobalZOrder() + 3);
-			if (player->heldItem != NULL) {
-				player->heldItem->setGlobalZOrder(player->heldItem->getGlobalZOrder() + 3);
-			}
-		}
-	}
-
-	//open and close doors
-	for (int i = 0; i < doors.size(); i++) {
-		if (doors[i]->getTag() == player->doorToUse) {
-			doors[i]->use();
-			player->doorToUse = -1;
-		}
-	}
-
-	//use stairs
-	for (int i = 0; i < stairs.size(); i++) {
-		if (stairs[i]->getTag() == player->stairEntered) {
-			if (stairs[i]->type == 1) {
-				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() + 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
-			}
-			else if (stairs[i]->type == 2) {
-				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() - 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
-			}
-			player->stairEntered = -1;
-		}
-	}
+	//must be called after checking all player actions
+	player->resetActionChecks();
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
-	//having camera 'chase' player
+	//having camera follow player
 	followBox(camPos, player, camBoundingBox, camOffset);
 	camera->setPosition(camPos->getPosition());
 
@@ -150,30 +151,17 @@ void Level::update(float deltaTime){
 
 //check if 2 objects are touching, do something and set whether they collide or not after
 bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve) {
-	//solve.setRestitution(10.0);
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
 
 	if (a != NULL && b != NULL) {
-
-		// check if player has collided with a vision cone
-		if ((a->getName() == "player" && b->getName() == "vision_cone") || (a->getName() == "vision_cone" && b->getName() == "player"))
-		{
-			if (player->hidden != true) {
-				CCLOG("YOU HAVE BEEN SPOTTED");
-			}
-			else {
-				CCLOG("YOU AVOIDED DETECTION");
-			}
-			return false;
-		}
-
 		// check if player has collided with an enemy
 		if ((a->getName() == "player" && b->getName() == "enemy") || (a->getName() == "enemy" && b->getName() == "player"))
 		{
 			if (player->hidden != true) {
 				CCLOG("YOU TOUCHED AN ENEMY");
 				//return true;
+				//solve.setRestitution(0.0f);
 				return false;
 			}
 			else {
@@ -186,19 +174,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "item_radius")
 		{
 			CCLOG("CAN PICK UP ITEM");
-			if (space_press == true) {
-				player->itemToPickUp = b->getParent()->getTag();
-				b->getParent()->removeFromParent();
-			}
+			player->itemToPickUp = b->getParent()->getTag();
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "player")
 		{
 			CCLOG("CAN PICK UP ITEM");
-			if (space_press == true) {
-				player->itemToPickUp = a->getParent()->getTag();
-				a->getParent()->removeFromParent();
-			}
+			player->itemToPickUp = a->getParent()->getTag();
 			return false;
 		}
 
@@ -212,32 +194,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "env_object")
 		{
 			CCLOG("CAN HIDE BEHIND THING");
-			if (ctrl_press == true) {
-				if (player->hidden == false) {
-					player->hideStart = true;
-					player->hidden = true;
-					player->objectHidingBehind = b->getTag();
-				}
-				else {
-					player->hidden = false;
-				}
-			}
+			player->objectToHideBehind = b->getTag();
 			return false;
 		}
 		else if (a->getName() == "env_object" && b->getName() == "player")
 		{
 			CCLOG("CAN HIDE BEHIND THING");
-
-			if (ctrl_press == true) {
-				if (player->hidden == false) {
-					player->hideStart = true;
-					player->hidden = true;
-					player->objectHidingBehind = a->getTag();
-				}
-				else {
-					player->hidden = false;
-				}
-			}
+			player->objectToHideBehind = a->getTag();
 			return false;
 		}
 
@@ -245,17 +208,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "stair")
 		{
 			CCLOG("CAN GO THROUGH STAIRWAY");
-			if (ctrl_press == true) {
-				player->stairEntered = b->getTag();
-			}
+			player->stairToUse = b->getTag();
 			return false;
 		}
 		else if (a->getName() == "stair" && b->getName() == "player")
 		{
 			CCLOG("CAN GO THROUGH STAIRWAY");
-			if (ctrl_press == true) {
-				player->stairEntered = a->getTag();
-			}
+			player->stairToUse = a->getTag();
 			return false;
 		}
 
@@ -263,17 +222,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "door_radius")
 		{
 			CCLOG("CAN OPEN DOOR");
-			if (ctrl_press == true) {
-				player->doorToUse = b->getParent()->getTag();
-			}
+			player->doorToUse = b->getParent()->getTag();
 			return false;
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "player")
 		{
 			CCLOG("CAN OPEN DOOR");
-			if (ctrl_press == true) {
-				player->doorToUse = a->getParent()->getTag();
-			}
+			player->doorToUse = a->getParent()->getTag();
 			return false;
 		}
 
@@ -295,30 +250,6 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	return true;
 }
 
-void Level::followRadius(Node* nodeA, Node* nodeB, float radius, Vec2 offset) {
-	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
-	float distance = displacement.getLength();
-	if (distance > radius) {
-		nodeA->setPosition((nodeB->getPosition() + offset) + (displacement.getNormalized() * radius));
-	}
-}
-
-void Level::followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
-	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
-	if (displacement.x > range.x) {
-		nodeA->setPositionX((nodeB->getPositionX() + offset.x) + range.x);
-	}
-	else if (displacement.x < -range.x) {
-		nodeA->setPositionX((nodeB->getPositionX() + offset.x) - range.x);
-	}
-	if (displacement.y > range.y) {
-		nodeA->setPositionY((nodeB->getPositionY() + offset.y) + range.y);
-	}
-	else if (displacement.y < -range.y) {
-		nodeA->setPositionY((nodeB->getPositionY() + offset.y) - range.y);
-	}
-}
-
 void Level::setBackground(string bgName, float scale) {
 	backgroundScale = scale;
 	//setting background image
@@ -333,7 +264,7 @@ void Level::setBackground(string bgName, float scale) {
 	//disabling anti-aliasing!!! (looks like blurry poop without this)
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	background->getTexture()->setTexParameters(texParams);
-	
+	background->setGlobalZOrder(-1);
 	mainLayer->addChild(background);
 
 	//creating collision box on edge of game area
@@ -441,7 +372,10 @@ bool Level::initLevel(string filename){
 			}
 
 			//setting data based on component type:
-			if (pieces[0] == "door") {
+			if (pieces[0] == "bg") {
+				roomData.bgName = pieces[1];
+			}
+			else if (pieces[0] == "door") {
 				DoorData doorData;
 				doorData.type = 1;
 				if (pieces.size() > 2) {//set door's position on wall
@@ -573,12 +507,12 @@ bool Level::initLevel(string filename){
 		enemies[i]->setTag(enemies[i]->getTag() + i);//giving a unique tag to each enemy
 		mainLayer->addChild(enemies[i]);
 		//guard moves automatically, put this into Enemy class
-		auto movement = MoveBy::create(5, Vec2(400, 0));
+		/*auto movement = MoveBy::create(5, Vec2(400, 0));
 		auto turn = ScaleBy::create(0.0f, -1.0f, 1.0f);
 		auto wait = MoveBy::create(0.5, Vec2(0, 0));
 		auto moveback = MoveBy::create(5, Vec2(-400, 0));
 		auto sequence = Sequence::create(movement, wait, turn, moveback, wait, turn, NULL);
-		enemies[i]->runAction(RepeatForever::create(sequence));
+		enemies[i]->runAction(RepeatForever::create(sequence));*/
 	}
 
 	return true;
