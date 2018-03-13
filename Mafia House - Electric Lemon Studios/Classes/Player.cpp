@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Wall.h"
 
 Player::Player()
 {
@@ -58,6 +59,49 @@ void Player::dropItem(Node* mainLayer) {
 		removeChild(heldItem, true);
 		mainLayer->addChild(heldItem);
 		heldItem = NULL;
+	}
+}
+
+void Player::useDoor(Node* mainLayer) {
+	if (doorToUse != -1) {
+		Door* door = static_cast<Door*>(mainLayer->getChildByTag(doorToUse));
+		door->use();
+	}
+}
+
+void Player::useStair(Node* mainLayer) {
+	if (stairToUse != -1) {
+		Stair* stair = static_cast<Stair*>(mainLayer->getChildByTag(stairToUse));
+		stair->use(this, mainLayer);
+	}
+}
+
+void Player::hide(Node* mainLayer) {
+	if (objectToHideBehind != -1) {
+		auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
+		if (hidden == false) {
+			hidden = true;
+			setGlobalZOrder(getGlobalZOrder() - 3);
+			if (heldItem != NULL) {
+				heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() - 3);
+			}
+			hideObject->setOpacity(175);
+		}
+		else {
+			hidden = false;
+			setGlobalZOrder(getGlobalZOrder() + 3);
+			if (heldItem != NULL) {
+				heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() + 3);
+			}
+			hideObject->setOpacity(255);
+		}
+	}
+}
+//have player stay behind object they are hiding behind
+void Player::hiding(Node* mainLayer) {
+	if (hidden == true) {
+		auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
+		followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 	}
 }
 

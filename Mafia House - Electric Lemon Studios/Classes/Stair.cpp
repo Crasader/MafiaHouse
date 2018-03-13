@@ -12,9 +12,7 @@ Stair::Stair() {
 	category = 4;
 	collision = 0xFFFFFFFF;
 }
-
 Stair::~Stair() {
-
 }
 
 void Stair::initObject() {
@@ -28,5 +26,14 @@ void Stair::initObject() {
 	}
 	else if (type == 1){
 		setTag(tag + pairNum);
+	}
+}
+
+void Stair::use(GameObject* user, Node* mainLayer) {
+	if (type == 1) {
+		user->setPosition(mainLayer->getChildByTag(getTag() + 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 0));
+	}
+	else if (type == 2) {
+		user->setPosition(mainLayer->getChildByTag(getTag() - 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 0));
 	}
 }

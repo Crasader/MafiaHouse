@@ -1,5 +1,6 @@
 #pragma once
 #include "cocos2d.h"
+#include "Functions.h"
 #include <string>
 #include <vector>
 #include <algorithm>

@@ -78,6 +78,9 @@
     <ClCompile Include="..\Classes\Stages.cpp">
       <Filter>Classes\Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\Functions.cpp">
+      <Filter>Classes\Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\Stages.h">
       <Filter>Classes\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Functions.h">
+      <Filter>Classes\Tools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

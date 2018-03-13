@@ -91,12 +91,12 @@ void Level::update(float deltaTime){
 
 	//check if player is going to hide behind object
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
-		//player->hide(mainLayer);
+		player->hide(mainLayer);
 	}
 	//check if player is going to interact with door/stairway
 	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
-		//player->useDoor(mainLayer);
-		//player->useStair(mainLayer);
+		player->useDoor(mainLayer);
+		player->useStair(mainLayer);
 	}
 
 	//player movement input checking
@@ -125,50 +125,9 @@ void Level::update(float deltaTime){
 		player->move(Vec2(0, -20.0f));
 	}
 
-	//have player stay behind object they are hiding behind
-	if (player->hidden == true) {
-		auto hideObject = mainLayer->getChildByTag(player->objectToHideBehind);
-		if (player->hideStart == true) {
-			player->setGlobalZOrder(player->getGlobalZOrder() - 3);
-			if (player->heldItem != NULL) {
-				player->heldItem->setGlobalZOrder(player->heldItem->getGlobalZOrder() - 3);
-			}
-			hideObject->setOpacity(175);
-			player->hideStart = false;
-		}
-		followBox(player, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (player->getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
-	}
-	else {
-		if (player->objectToHideBehind != -1) {
-			mainLayer->getChildByTag(player->objectToHideBehind)->setOpacity(255);
-			player->objectToHideBehind = -1;
-			player->setGlobalZOrder(player->getGlobalZOrder() + 3);
-			if (player->heldItem != NULL) {
-				player->heldItem->setGlobalZOrder(player->heldItem->getGlobalZOrder() + 3);
-			}
-		}
-	}
+	//keeps player behind object they are hiding behind
+	player->hiding(mainLayer);
 
-	//open and close doors
-	/*for (int i = 0; i < doors.size(); i++) {
-		if (doors[i]->getTag() == player->doorToUse) {
-			doors[i]->use();
-			player->doorToUse = -1;
-		}
-	}*/
-
-	//use stairs
-	/*for (int i = 0; i < stairs.size(); i++) {
-		if (stairs[i]->getTag() == player->stairToUse) {
-			if (stairs[i]->type == 1) {
-				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() + 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
-			}
-			else if (stairs[i]->type == 2) {
-				player->setPosition(mainLayer->getChildByTag(stairs[i]->getTag() - 1000)->getPosition() + Vec2(stairs[0]->getContentSize().width / 2, 0) - Vec2(player->getContentSize().width / 2, 0));
-			}
-			player->stairToUse = -1;
-		}
-	}*/
 	//must be called after checking all player actions
 	player->resetActionChecks();
 
@@ -280,30 +239,6 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	}*/
 
 	return true;
-}
-
-void Level::followRadius(Node* nodeA, Node* nodeB, float radius, Vec2 offset) {
-	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
-	float distance = displacement.getLength();
-	if (distance > radius) {
-		nodeA->setPosition((nodeB->getPosition() + offset) + (displacement.getNormalized() * radius));
-	}
-}
-
-void Level::followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
-	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
-	if (displacement.x > range.x) {
-		nodeA->setPositionX((nodeB->getPositionX() + offset.x) + range.x);
-	}
-	else if (displacement.x < -range.x) {
-		nodeA->setPositionX((nodeB->getPositionX() + offset.x) - range.x);
-	}
-	if (displacement.y > range.y) {
-		nodeA->setPositionY((nodeB->getPositionY() + offset.y) + range.y);
-	}
-	else if (displacement.y < -range.y) {
-		nodeA->setPositionY((nodeB->getPositionY() + offset.y) - range.y);
-	}
 }
 
 void Level::setBackground(string bgName, float scale) {

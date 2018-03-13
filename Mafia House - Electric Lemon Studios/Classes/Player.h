@@ -16,6 +16,12 @@ public:
 	void pickUpItem(Node* mainLayer);
 	void dropItem(Node* mainLayer);
 
+	void useDoor(Node* mainLayer);
+	void useStair(Node* mainLayer);
+
+	void hide(Node* mainLayer);
+	void hiding(Node* mainLayer);
+
 	//for Interacting with objects:
 	int doorToUse = -1;//the tag of the door the player can open/close
 	int stairToUse = -1;//the tag of the stairway the player can use

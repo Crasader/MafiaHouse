@@ -1,6 +1,7 @@
 #pragma once
 #include "cocos2d.h"
 #include "InputHandler.h"
+#include "Functions.h"
 #include <vector>
 #include <string>
 #include<fstream>
@@ -75,10 +76,6 @@ protected:
 	bool onContactBegin(PhysicsContact &contact);
 
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
-
-	void followRadius(Node* nodeA, Node* nodeB, float radius = 0.0f, Vec2 offset = Vec2(0,0));//used to make one node follow another
-	//nodeA will 'chase' nodeB; you can also use this to 'leash' nodeA to nodeB instead
-	void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset = Vec2(0, 0));//like the followRadius function, but uses a rectangular bounding box instead of circular radius
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
 	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height);
