@@ -64,6 +64,7 @@ public:
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
 	//movement functions
+	void stopX();
 	void stop();
 	void slowStop();
 

@@ -80,6 +80,11 @@ void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
 	setPosition(roomPos + position);
 }
 
+void GameObject::stopX() {
+	getPhysicsBody()->setVelocity(Vec2(0, getPhysicsBody()->getVelocity().y));
+	getPhysicsBody()->resetForces();
+}
+
 void GameObject::stop() {
 	getPhysicsBody()->setVelocity(Vec2(0, 0));
 	getPhysicsBody()->resetForces();

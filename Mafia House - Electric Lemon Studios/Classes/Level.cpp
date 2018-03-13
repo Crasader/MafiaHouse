@@ -75,67 +75,63 @@ void Level::update(float deltaTime){
 	addChild(visionRays);
 
 	//player update:
+	player->update(gameTime, mainLayer);
 
-	//checking to see if player is picking up an item
-	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
-		player->pickUpItem(mainLayer);
-		//player->handleInput(Player::PICKUP);
+	//check if player is going to interact with door/stairway
+	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
+		if (player->stairToUse != -1) {
+			player->handleInput(USE_STAIR, mainLayer);
+		}
+		else if (player->doorToUse != -1) {
+			player->handleInput(USE_DOOR, mainLayer);
+		}
 	}
 	//check if player is dropping item
 	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
-		player->dropItem(mainLayer);
-		//player->handleInput(Player::DROP);
+		if (player->heldItem != NULL) {
+			player->handleInput(DROP, mainLayer);
+		}
 	}
 	//check if player is using item
 	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {
-		//player->handleInput(Player::USE);
-		//player->useItem();
+		if (player->heldItem != NULL) {
+			//player->handleInput(USE_ITEM, mainLayer);
+		}
 	}
-
+	//checking to see if player is picking up an item
+	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
+		if (player->itemToPickUp != -1 && player->heldItem == NULL) {
+			player->handleInput(PICKUP, mainLayer);
+		}
+	}
 	//check if player is going to hide behind object
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
-		//player->handleInput(Player::HIDE);
-		player->hide(mainLayer);
-	}
-	//check if player is going to interact with door/stairway
-	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
-		//player->handleInput(Player::INTERACT);
-		player->useDoor(mainLayer);
-		player->useStair(mainLayer);
+		if (player->objectToHideBehind != -1) {
+			player->handleInput(HIDE, mainLayer);
+		}
 	}
 
 	//change between standing/crouching
 	if (INPUTS->getKey(KeyCode::KEY_W)) {
-		//player->handleInput(Player::MOVE_UP);
+		player->handleInput(MOVE_UP, mainLayer);
 	}
 	if (INPUTS->getKey(KeyCode::KEY_S)) {
-		//player->handleInput(Player::MOVE_DOWN);
+		player->handleInput(MOVE_DOWN, mainLayer);
 	}
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
-		//player->handleInput(Player::MOVE_RIGHT);
-		if (player->turned == true) {
-			player->turned = false;
-			player->flipX();
-		}
-		player->move(Vec2(10.0f, 0));
+		player->handleInput(MOVE_RIGHT, mainLayer);
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
-		//player->handleInput(Player::MOVE_LEFT);
-		if (player->turned == false) {
-			player->turned = true;
-			player->flipX();
-		}
-		player->move(Vec2(10.0f, 0));
+		player->handleInput(MOVE_LEFT, mainLayer);
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
-		//player->handleInput(Player::STOP);
-		player->stop();
+		player->handleInput(STOP, mainLayer);
 	}
-
-	//keeps player behind object they are hiding behind
-	player->hiding(mainLayer);
+	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {//for testing purposes only, do not abuse
+		player->handleInput(NO_CLIP, mainLayer);
+	}
 
 	//must be called after checking all player actions
 	player->resetActionChecks();

@@ -229,7 +229,7 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 	setAnchorPoint(Vec2(0, 0));
 
 	background = Sprite::create(roomData.bgName);
-	background->setContentSize(getContentSize() + Size(fullThick, fullThick));
+	background->setContentSize(getContentSize() + Size(fullThick + 1, fullThick + 1));
 	background->setGlobalZOrder(0);
 	background->setAnchorPoint(Vec2(0, 0));
 	background->setPosition(position - Vec2(thick, thick));

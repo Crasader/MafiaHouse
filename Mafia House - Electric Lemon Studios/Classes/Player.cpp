@@ -58,39 +58,35 @@ void Player::walk(Input input) {
 	}
 	else if (input == STOP) {
 		//run standing animation
-		stop();
+		stopX();
 	}
 }
 
 void Player::pickUpItem(Node* mainLayer) {
-	if (itemToPickUp != -1 && heldItem == NULL) {
-		heldItem = static_cast<Item*>(mainLayer->getChildByTag(itemToPickUp));
-		mainLayer->removeChildByTag(itemToPickUp, true);
+	heldItem = static_cast<Item*>(mainLayer->getChildByTag(itemToPickUp));
+	mainLayer->removeChildByTag(itemToPickUp, true);
 
-		removeChild(heldItem, true);
-		addChild(heldItem);
-		heldItem->initHeldItem();
-		inventory.push_back(heldItem);
+	removeChild(heldItem, true);
+	addChild(heldItem);
+	heldItem->initHeldItem();
+	inventory.push_back(heldItem);
 
-		itemToPickUp = -1;
-	}
+	itemToPickUp = -1;
 }
 
 void Player::dropItem(Node* mainLayer) {
-	if (heldItem != NULL) {
-		//removing dropped item from inventory
-		for (int i = 0; i < inventory.size(); i++) {
-			if (inventory[i] == heldItem) {
-				inventory.erase(inventory.begin() + i);
-				break;
-			}
+	//removing dropped item from inventory
+	for (int i = 0; i < inventory.size(); i++) {
+		if (inventory[i] == heldItem) {
+			inventory.erase(inventory.begin() + i);
+			break;
 		}
-		heldItem->initDroppedItem(convertToWorldSpace(heldItem->getPosition()), flippedX);
-
-		removeChild(heldItem, true);
-		mainLayer->addChild(heldItem);
-		heldItem = NULL;
 	}
+	heldItem->initDroppedItem(convertToWorldSpace(heldItem->getPosition()), flippedX);
+
+	removeChild(heldItem, true);
+	mainLayer->addChild(heldItem);
+	heldItem = NULL;
 }
 
 void Player::useItem() {
@@ -98,46 +94,38 @@ void Player::useItem() {
 }
 
 void Player::useDoor(Node* mainLayer) {
-	if (doorToUse != -1) {
-		Door* door = static_cast<Door*>(mainLayer->getChildByTag(doorToUse));
-		door->use();
-	}
+	Door* door = static_cast<Door*>(mainLayer->getChildByTag(doorToUse));
+	door->use();
 }
 
 void Player::useStair(Node* mainLayer) {
-	if (stairToUse != -1) {
-		Stair* stair = static_cast<Stair*>(mainLayer->getChildByTag(stairToUse));
-		stair->use(this, mainLayer);
-	}
+	Stair* stair = static_cast<Stair*>(mainLayer->getChildByTag(stairToUse));
+	stair->use(this, mainLayer);
 }
 
 void Player::hide(Node* mainLayer) {
-	if (objectToHideBehind != -1) {
-		auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
-		if (hidden == false) {
-			hidden = true;
-			setGlobalZOrder(getGlobalZOrder() - 3);
-			if (heldItem != NULL) {
-				heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() - 3);
-			}
-			hideObject->setOpacity(175);
+	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
+	if (hidden == false) {
+		hidden = true;
+		setGlobalZOrder(getGlobalZOrder() - 3);
+		if (heldItem != NULL) {
+			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() - 3);
 		}
-		else {
-			hidden = false;
-			setGlobalZOrder(getGlobalZOrder() + 3);
-			if (heldItem != NULL) {
-				heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() + 3);
-			}
-			hideObject->setOpacity(255);
+		hideObject->setOpacity(175);
+	}
+	else {
+		hidden = false;
+		setGlobalZOrder(getGlobalZOrder() + 3);
+		if (heldItem != NULL) {
+			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() + 3);
 		}
+		hideObject->setOpacity(255);
 	}
 }
 //have player stay behind object they are hiding behind
 void Player::hiding(Node* mainLayer) {
-	if (hidden == true) {
-		auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
-		followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
-	}
+	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
+	followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 }
 
 void Player::noclip() {
@@ -151,33 +139,135 @@ void Player::noclip() {
 	}
 }
 
-void Player::handleInput(Input input) {
-	newState = state->handleInput(this, input);
+//Input Handling:
+void Player::handleInput(Input input, Node* mainLayer) {
+	newState = state->handleInput(this, input, mainLayer);
 	if (newState != NULL)
 	{
-		//delete state;
+		state->exit(this, mainLayer);
+
+		if (prevState != NULL && newState != prevState){delete prevState;}
+		prevState = state;
 		state = newState;
 		newState = NULL;
 
-		state->enter(this);
+		state->enter(this, mainLayer);
+	}
+}
+//Update Checking:
+void Player::update(float time, Node* mainLayer) {
+	newState = state->update(this, time, mainLayer);
+	if (newState != NULL)
+	{
+		state->exit(this, mainLayer);
+
+		if (prevState != NULL && newState != prevState) { delete prevState; }
+		prevState = state;
+		state = newState;
+		newState = NULL;
+
+		state->enter(this, mainLayer);
 	}
 }
 
 //Player States:
-Player::PlayerState::~PlayerState() {}
-
-Player::PlayerState* Player::PlayerState::handleInput(Player* player, Input input) {
-	return new PlayerState;
+void Player::PlayerState::enter(Player* player, Node* mainLayer) {
+}
+Player::PlayerState* Player::PlayerState::handleInput(Player* player, Input input, Node* mainLayer) {
+	return nullptr;
+}
+Player::PlayerState* Player::PlayerState::update(Player* player, float time, Node* mainLayer) {
+	return nullptr;
+}
+void Player::PlayerState::exit(Player* player, Node* mainLayer) {
 }
 
-void Player::PlayerState::enter(Player* player) {}
-
-Player::PlayerState* Player::NeutralState::handleInput(Player* player, Input input) {
-	if (input == USE_ITEM) {
-		return new AttackState();
+//Neutral State:
+Player::PlayerState* Player::NeutralState::handleInput(Player* player, Input input, Node* mainLayer) {
+	if (input == USE_DOOR) {
+		player->useDoor(mainLayer);
 	}
+	if (input == USE_STAIR) {
+		player->useStair(mainLayer);
+	}
+	if (input == DROP) {
+		player->dropItem(mainLayer);
+	}
+	if (input == USE_ITEM) {
+		return new AttackState;
+	}
+	if (input == PICKUP) {
+		player->pickUpItem(mainLayer);
+	}
+	if (input == HIDE) {
+		return new HideState;
+	}
+	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
+		player->walk(input);
+	}
+	if (input == NO_CLIP) {
+		return new NoClipState;
+	}
+	return nullptr;
 }
 
-void Player::AttackState::enter(Player* player) {
+//Hide State:
+void Player::HideState::enter(Player* player, Node* mainLayer) {
+	player->hide(mainLayer);
+}
+Player::PlayerState* Player::HideState::update(Player* player, float time, Node* mainLayer) {
+	player->hiding(mainLayer);
+	return nullptr;
+}
+Player::PlayerState* Player::HideState::handleInput(Player* player, Input input, Node* mainLayer) {
+	if (input == HIDE) {
+		return player->prevState;
+	}
+	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
+		player->walk(input);
+	}
+	return nullptr;
+}
+void Player::HideState::exit(Player* player, Node* mainLayer) {
+	player->hide(mainLayer);
+}
+
+//Attack State(using items):
+void Player::AttackState::enter(Player* player, Node* mainLayer) {
 	player->useItem();
+}
+
+//No Clip state:
+void Player::NoClipState::enter(Player* player, Node* mainLayer) {
+	player->noclip();
+}
+Player::PlayerState* Player::NoClipState::handleInput(Player* player, Input input, Node* mainLayer) {
+	if (input == USE_DOOR) {
+		player->useDoor(mainLayer);
+	}
+	if (input == USE_STAIR) {
+		player->useStair(mainLayer);
+	}
+	if (input == USE_ITEM) {
+		return new AttackState;
+	}
+	if (input == HIDE) {
+		return new HideState;
+	}
+	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
+		player->walk(input);
+	}
+	if (input == MOVE_UP) {
+		player->move(Vec2(0, 25));
+	}
+	else if (input == MOVE_DOWN) {
+		player->move(Vec2(0, -25));
+	}
+	if (input == NO_CLIP) {
+		return new NeutralState;
+	}
+	return nullptr;
+}
+void Player::NoClipState::exit(Player* player, Node* mainLayer) {
+	player->noclip();
 }
