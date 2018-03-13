@@ -69,17 +69,28 @@ void Door::initObject(int orient, Vec2 startPos) {
 }
 
 void Door::use() {
-	if (isOpen == false) {
-		isOpen = true;
-		getPhysicsBody()->setEnabled(false);
-		setGlobalZOrder(2);
-		setOpacity(100);
+	if (locked == false) {
+		if (isOpen == false) {
+			isOpen = true;
+			getPhysicsBody()->setEnabled(false);
+			setGlobalZOrder(2);
+			setOpacity(100);
+		}
+		else {
+			isOpen = false;
+			getPhysicsBody()->setEnabled(true);
+			setGlobalZOrder(5);
+			setOpacity(255);
+		}
+	}
+}
+
+void Door::unlock() {
+	if (locked == true) {
+		locked = false;
 	}
 	else {
-		isOpen = false;
-		getPhysicsBody()->setEnabled(true);
-		setGlobalZOrder(5);
-		setOpacity(255);
+		locked = true;
 	}
 }
 
@@ -115,19 +126,6 @@ void Vent::initObject(int orient, Vec2 startPos) {
 Room::Room() {
 }
 Room::~Room() {
-}
-
-Room* Room::create() {
-	Room * ret = new (std::nothrow) Room();
-	if (ret && ret->init())
-	{
-		ret->autorelease();
-	}
-	else
-	{
-		CC_SAFE_DELETE(ret);
-	}
-	return ret;
 }
 
 bool sortByPosition(DoorData a, DoorData b) {return a.pos < b.pos;}//function for sorting vector of DoorData
@@ -229,6 +227,13 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 {	//setting size of room
 	setContentSize(Size(roomData.width, height));
 	setAnchorPoint(Vec2(0, 0));
+
+	background = Sprite::create(roomData.bgName);
+	background->setContentSize(getContentSize() + Size(fullThick, fullThick));
+	background->setGlobalZOrder(0);
+	background->setAnchorPoint(Vec2(0, 0));
+	background->setPosition(position - Vec2(thick, thick));
+	addChild(background);
 
 	//setting player position
 	if (player->startRoom == roomData.room) {

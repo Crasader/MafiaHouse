@@ -29,13 +29,18 @@ public:
 
 	void use();
 
-	bool isOpen = false;
+	void unlock();
 
 	float radius = 60.0f;
 
 	Size size = Size(20, 110);
 
 	Size useBox = Size(radius, radius);
+
+protected:
+	bool locked = false;
+
+	bool isOpen = false;
 };
 
 class Vent : public Door
@@ -65,6 +70,8 @@ public:
 
 	int width;//length of the room
 
+	string bgName = "guestRoom.png";
+
 	vector<DoorData> rightDoors;//the locations of the vents and doors on the right wall
 	vector<DoorData> leftDoors;//the locations of the vents and doors on the left wall
 	vector<DoorData> ceilingDoors;//the locations of the vents and doors on the ceiling
@@ -88,7 +95,9 @@ public:
 	Room();
 	~Room();
 
-	static Room* Room::create();
+	Sprite* background;
+
+	CREATE_FUNC(Room);
 
 	int fullThick = 20;//thickness of the walls for level generation
 	int thick = fullThick / 2;//thickness of an individual wall

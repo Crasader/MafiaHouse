@@ -155,7 +155,7 @@ void Player::handleInput(Input input) {
 	newState = state->handleInput(this, input);
 	if (newState != NULL)
 	{
-		delete state;
+		//delete state;
 		state = newState;
 		newState = NULL;
 
@@ -163,12 +163,21 @@ void Player::handleInput(Input input) {
 	}
 }
 
-PlayerState* NeutralState::handleInput(Player* player, Input input) {
+//Player States:
+Player::PlayerState::~PlayerState() {}
+
+Player::PlayerState* Player::PlayerState::handleInput(Player* player, Input input) {
+	return new PlayerState;
+}
+
+void Player::PlayerState::enter(Player* player) {}
+
+Player::PlayerState* Player::NeutralState::handleInput(Player* player, Input input) {
 	if (input == USE_ITEM) {
 		return new AttackState();
 	}
 }
 
-void AttackState::enter(Player* player) {
+void Player::AttackState::enter(Player* player) {
 	player->useItem();
 }

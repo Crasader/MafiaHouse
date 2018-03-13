@@ -56,13 +56,34 @@ public:
 	int itemToPickUp = -1;//the tag of the item the player can picking up
 	int bodyToPickUp = -1;
 
+	bool hidden = false;
+
+	bool turned = false;
+
 	enum Profile {
 		STAND,
 		CROUCH
 	};
 
 private:
-	PlayerState * state = new NeutralState();
+	class PlayerState {
+	public:
+		virtual ~PlayerState();
+		virtual PlayerState* handleInput(Player* player, Input input);
+		virtual void enter(Player* player);
+	};
+
+	class NeutralState : public PlayerState {
+	public:
+		PlayerState* handleInput(Player* player, Input input);
+	};
+
+	class AttackState : public PlayerState {
+	public:
+		void enter(Player* player);
+	};
+
+	PlayerState* state = new NeutralState;
 	PlayerState* newState = NULL;
 	PlayerState* prevState = NULL;
 
@@ -73,10 +94,11 @@ private:
 	Animation* crawlAnimation;
 	Animation* stabAnimation;
 	Animation* swingAnimation;
-	Animation* readyThrowAnimation;
-	Animation* throwAnimation;
+	//Animation* readyThrowAnimation;
+	//Animation* throwAnimation;
 	Animation* crouchStabAnimation;
 	Animation* crouchSwingAnimation;
+	//Animation* stairAnimation;
 	//Animation* pickupAnimation;
 	//Animation* interactAnimation;
 
@@ -85,25 +107,7 @@ private:
 	std::vector<Item*> inventory;//items the player is carrying
 	Item* heldItem = NULL;//for using held item
 
-	bool turned = false;
+	//bool turned = false;
 
-	bool hidden = false;
 	bool hideStart = false;//used for setting the object you are hiding behind transparent
-};
-
-class PlayerState {
-public:
-	virtual ~PlayerState() {}
-	virtual PlayerState* handleInput(Player* player, Input input) {}
-	virtual void enter(Player* player) {}
-};
-
-class NeutralState : public PlayerState {
-public:
-	PlayerState* handleInput(Player* player, Input input);
-};
-
-class AttackState : public PlayerState {
-public:
-	void enter(Player* player);
 };

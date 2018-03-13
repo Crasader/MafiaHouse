@@ -68,10 +68,8 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 Knife::Knife()
 {
 	Item::Item();
-	//sprite properties
-	//scale = 0.38f;
-	//physics body properties
 	tag = 10100;//10100 - 10199 for knives
+	attackType = STAB;
 }
 Knife::~Knife(){
 }

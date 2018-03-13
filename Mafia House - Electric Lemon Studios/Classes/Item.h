@@ -12,6 +12,14 @@ public:
 
 	virtual void initHeldItem();
 	virtual void initDroppedItem(Vec2 pos, bool flip);
+
+	enum AttackType {
+		STAB,
+		SWING
+	};
+
+protected:
+	AttackType attackType;
 };
 
 class Knife : public Item

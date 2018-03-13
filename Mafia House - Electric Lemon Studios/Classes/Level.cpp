@@ -264,7 +264,7 @@ void Level::setBackground(string bgName, float scale) {
 	//disabling anti-aliasing!!! (looks like blurry poop without this)
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	background->getTexture()->setTexParameters(texParams);
-	
+	background->setGlobalZOrder(-1);
 	mainLayer->addChild(background);
 
 	//creating collision box on edge of game area
@@ -372,7 +372,10 @@ bool Level::initLevel(string filename){
 			}
 
 			//setting data based on component type:
-			if (pieces[0] == "door") {
+			if (pieces[0] == "bg") {
+				roomData.bgName = pieces[1];
+			}
+			else if (pieces[0] == "door") {
 				DoorData doorData;
 				doorData.type = 1;
 				if (pieces.size() > 2) {//set door's position on wall
