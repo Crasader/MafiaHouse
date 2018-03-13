@@ -37,7 +37,7 @@ public:
 
 	void update(float deltaTime);
 
-	void onStart(float dt);
+	void onStart(float deltaTime);
 
 protected:
 	float gameTime = 0.0f;

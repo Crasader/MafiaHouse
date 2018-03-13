@@ -22,6 +22,14 @@ void Player::initObject(Vec2 startPos) {
 	GameObject::initObject(startPos);
 }
 
+void Player::initAnimations() {
+	//auto frames = getAnimation("player/stand/%04d.png", 10);//change number of frames to correct number
+	//standAnimation = Animation::createWithSpriteFrames(frames, 1.0f / 8.0f);//change number to correct speed for 
+	//frames = getAnimation("player/walk/%04d.png", 10);//change number of frames to correct number
+	//walkAnimation = Animation::createWithSpriteFrames(frames, 1.0f / 8.0f);//change number to correct speed for animation
+	//etc...
+}
+
 //functions for player actions:
 void Player::resetActionChecks() {
 	doorToUse = -1;
@@ -29,6 +37,29 @@ void Player::resetActionChecks() {
 	objectToHideBehind = -1;
 	itemToPickUp = -1;
 	bodyToPickUp = -1;
+}
+
+void Player::walk(Input input) {
+	if (input == MOVE_LEFT) {
+		if (turned == false) {
+			//run walking animation
+			turned = true;
+			flipX();
+		}
+		move(Vec2(10.0f, 0));
+	}
+	else if (input == MOVE_RIGHT) {
+		if (turned == true) {
+			//run walking animation
+			turned = false;
+			flipX();
+		}
+		move(Vec2(10.0f, 0));
+	}
+	else if (input == STOP) {
+		//run standing animation
+		stop();
+	}
 }
 
 void Player::pickUpItem(Node* mainLayer) {
@@ -60,6 +91,10 @@ void Player::dropItem(Node* mainLayer) {
 		mainLayer->addChild(heldItem);
 		heldItem = NULL;
 	}
+}
+
+void Player::useItem() {
+	runAction(Animate::create(stabAnimation));
 }
 
 void Player::useDoor(Node* mainLayer) {
@@ -114,4 +149,26 @@ void Player::noclip() {
 		clip = false;
 		getPhysicsBody()->setCollisionBitmask(22);
 	}
+}
+
+void Player::handleInput(Input input) {
+	newState = state->handleInput(this, input);
+	if (newState != NULL)
+	{
+		delete state;
+		state = newState;
+		newState = NULL;
+
+		state->enter(this);
+	}
+}
+
+PlayerState* NeutralState::handleInput(Player* player, Input input) {
+	if (input == USE_ITEM) {
+		return new AttackState();
+	}
+}
+
+void AttackState::enter(Player* player) {
+	player->useItem();
 }
