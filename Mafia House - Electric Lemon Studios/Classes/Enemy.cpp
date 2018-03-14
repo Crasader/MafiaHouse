@@ -12,7 +12,7 @@ Enemy::Enemy()
 	category = 4;
 	collision = 3;
 
-	maxSpeed = 50;
+	maxSpeed = 55;
 }
 Enemy::~Enemy(){
 }
@@ -37,7 +37,7 @@ void Enemy::walk(float time) {
 		stopTime = -1;
 	}
 	else if (stopTime == -1){
-		move(Vec2(4, 0));
+		move(Vec2(4.5f, 0));
 	}
 }
 

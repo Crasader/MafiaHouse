@@ -6,6 +6,8 @@ GameObject::~GameObject(){
 }
 
 void GameObject::initObject() {
+	//initAnimations();
+
 	setPositionZ(0.0f);
 	//set the anchor point to bottom left corner
 	setAnchorPoint(Vec2(0, 0));

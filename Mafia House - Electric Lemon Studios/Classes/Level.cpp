@@ -67,7 +67,7 @@ void Level::update(float deltaTime){
 		enemies[i]->walk(gameTime);
 		enemies[i]->visionRays(&points, &start);
 		for (int j = 0; j < points.size(); j++) {
-			//visionRays->drawDot(points[j], 2, Color4F::WHITE);
+			//visionRays->drawDot(points[j], 1, Color4F::WHITE);
 			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.15));
 		}
 		points.clear();
@@ -75,62 +75,67 @@ void Level::update(float deltaTime){
 	addChild(visionRays);
 
 	//player update:
-	player->update(gameTime, mainLayer);
+	player->update(mainLayer, gameTime);
 
 	//check if player is going to interact with door/stairway
 	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
 		if (player->stairToUse != -1) {
-			player->handleInput(USE_STAIR, mainLayer);
+			player->handleInput(mainLayer, gameTime, USE_STAIR);
 		}
 		else if (player->doorToUse != -1) {
-			player->handleInput(USE_DOOR, mainLayer);
+			player->handleInput(mainLayer, gameTime, USE_DOOR);
 		}
 	}
 	//check if player is dropping item
 	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
 		if (player->heldItem != NULL) {
-			player->handleInput(DROP, mainLayer);
+			player->handleInput(mainLayer, gameTime, DROP);
 		}
 	}
 	//check if player is using item
 	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {
 		if (player->heldItem != NULL) {
-			//player->handleInput(USE_ITEM, mainLayer);
+			player->handleInput(mainLayer, gameTime, USE_ITEM);
+		}
+	}
+	if (INPUTS->getKeyRelease(KeyCode::KEY_SPACE)) {
+		if (player->heldItem != NULL) {
+			player->handleInput(mainLayer, gameTime, USE_RELEASE);
 		}
 	}
 	//checking to see if player is picking up an item
 	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
 		if (player->itemToPickUp != -1 && player->heldItem == NULL) {
-			player->handleInput(PICKUP, mainLayer);
+			player->handleInput(mainLayer, gameTime, PICKUP);
 		}
 	}
 	//check if player is going to hide behind object
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
 		if (player->objectToHideBehind != -1) {
-			player->handleInput(HIDE, mainLayer);
+			player->handleInput(mainLayer, gameTime, HIDE);
 		}
 	}
 
 	//change between standing/crouching
 	if (INPUTS->getKey(KeyCode::KEY_W)) {
-		player->handleInput(MOVE_UP, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_UP);
 	}
 	if (INPUTS->getKey(KeyCode::KEY_S)) {
-		player->handleInput(MOVE_DOWN, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_DOWN);
 	}
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
-		player->handleInput(MOVE_RIGHT, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_RIGHT);
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
-		player->handleInput(MOVE_LEFT, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_LEFT);
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
-		player->handleInput(STOP, mainLayer);
+		player->handleInput(mainLayer, gameTime, STOP);
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {//for testing purposes only, do not abuse
-		player->handleInput(NO_CLIP, mainLayer);
+		player->handleInput(mainLayer, gameTime, NO_CLIP);
 	}
 
 	//must be called after checking all player actions
@@ -502,13 +507,6 @@ bool Level::initLevel(string filename){
 	for (int i = 0; i < enemies.size(); i++) {
 		enemies[i]->setTag(enemies[i]->getTag() + i);//giving a unique tag to each enemy
 		mainLayer->addChild(enemies[i]);
-		//guard moves automatically, put this into Enemy class
-		/*auto movement = MoveBy::create(5, Vec2(400, 0));
-		auto turn = ScaleBy::create(0.0f, -1.0f, 1.0f);
-		auto wait = MoveBy::create(0.5, Vec2(0, 0));
-		auto moveback = MoveBy::create(5, Vec2(-400, 0));
-		auto sequence = Sequence::create(movement, wait, turn, moveback, wait, turn, NULL);
-		enemies[i]->runAction(RepeatForever::create(sequence));*/
 	}
 
 	return true;

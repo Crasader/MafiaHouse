@@ -7,6 +7,7 @@ enum Input {
 	PICKUP,
 	DROP,
 	USE_ITEM,
+	USE_RELEASE,
 	USE_STAIR,
 	USE_DOOR,
 	HIDE,
@@ -32,16 +33,18 @@ public:
 	bool clip = false;
 
 	//functions for player actions:
-	void update(float time, Node* mainLayer);
-	void handleInput(Input input, Node* mainLayer);
+	void update(Node* mainLayer, float time);
+	void handleInput(Node* mainLayer, float time, Input input);
 
 	void resetActionChecks();//resets variables used to track what objects/items player will interact with/use
 
 	void walk(Input input);
+	void setSpeed(float speed);
 
 	void pickUpItem(Node* mainLayer);
 	void dropItem(Node* mainLayer);
 
+	void beginUseItem();
 	void useItem();
 
 	void useDoor(Node* mainLayer);
@@ -72,34 +75,37 @@ private:
 	class PlayerState {
 	public:
 		virtual ~PlayerState() {}
-		virtual void enter(Player* player, Node* mainLayer);
-		virtual PlayerState* update(Player* player, float time, Node* mainLayer);
-		virtual PlayerState* handleInput(Player* player, Input input, Node* MainLayer);
+		virtual void enter(Player* player, Node* mainLayer, float time);
+		virtual PlayerState* update(Player* player, Node* mainLayer, float time);
+		virtual PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 		virtual void exit(Player* player, Node* mainLayer);
 	};
 
 	class NeutralState : public PlayerState {
 	public:
-		PlayerState* handleInput(Player* player, Input input, Node* mainLayer);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 	};
 
 	class HideState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer);
-		PlayerState* update(Player* player, float time, Node* mainLayer);
-		PlayerState* handleInput(Player* player, Input input, Node* MainLayer);
+		void enter(Player* player, Node* mainLayer, float time);
+		PlayerState* update(Player* player, Node* mainLayer, float time);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 		void exit(Player* player, Node* mainLayer);
 	};
 
 	class AttackState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer);
+		void enter(Player* player, Node* mainLayer, float time);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
+		PlayerState* update(Player* player, Node* mainLayer, float time);
+		void exit(Player* player, Node* mainLayer);
 	};
 
 	class NoClipState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer);
-		PlayerState* handleInput(Player* player, Input input, Node* MainLayer);
+		void enter(Player* player, Node* mainLayer, float time);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 		void exit(Player* player, Node* mainLayer);
 	};
 
@@ -130,6 +136,13 @@ private:
 	std::vector<Item*> inventory;//items the player is carrying
 
 	bool turned = false;//used for walking
-
 	bool hideStart = false;//used for setting the object you are hiding behind transparent
+
+	float moveSpeed = 1.0f;
+
+	//variables used for the timing of attacking/using items:
+	float attackPrepareTime = -1.0f;//time player begins to prepare and attack
+	float attackStartTime = -1.0f;//time player actually begins the attack after release
+	float attackEndTime = -1.0f;//time attack ends and englag begins
+	bool attackRelease = false;
 };
