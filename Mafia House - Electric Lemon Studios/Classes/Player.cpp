@@ -177,6 +177,7 @@ void Player::hide(Node* mainLayer) {
 	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
 	if (hidden == false) {
 		hidden = true;
+		setTag(2);
 		getPhysicsBody()->setTag(2);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() - 3);
 		if (heldItem != NULL) {
@@ -186,6 +187,7 @@ void Player::hide(Node* mainLayer) {
 	}
 	else {
 		hidden = false;
+		setTag(1);
 		getPhysicsBody()->setTag(1);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() + 3);
 		if (heldItem != NULL) {

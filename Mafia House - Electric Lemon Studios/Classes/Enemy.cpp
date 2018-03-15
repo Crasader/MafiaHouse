@@ -13,6 +13,8 @@ Enemy::Enemy()
 	collision = 11;
 
 	maxSpeed = 50;
+
+	suspicionLevel = 0;
 }
 Enemy::~Enemy(){
 }
@@ -45,7 +47,12 @@ void Enemy::chase(Node* target) {
 	Vec2 displacement = getPosition() - target->getPosition();
 	Vec2 moveDirection = displacement.getNormalized();
 
-	move(moveDirection * 8);
+	if (flippedX == true) {
+		move(moveDirection * 8);
+	}
+	else {
+		move(moveDirection * -8);
+	}
 }
 
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
@@ -137,9 +144,11 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, Node* mainLayer, float t
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
 		enemy->suspicionLevel += 10;
+		enemy->suspicionLevel = enemy->suspicionLevel >= 600 ? 600 : enemy->suspicionLevel;
 	}
 	else {
-		enemy->suspicionLevel--;
+		enemy->suspicionLevel-=2;
+		enemy->suspicionLevel = enemy->suspicionLevel <= 0 ? 0 : enemy->suspicionLevel;
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= 600) {
@@ -158,9 +167,11 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, Node* mainLayer, float tim
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
 		enemy->suspicionLevel+= 10;
+		enemy->suspicionLevel = enemy->suspicionLevel >= 600 ? 600 : enemy->suspicionLevel;
 	}
 	else {
-		enemy->suspicionLevel--;
+		enemy->suspicionLevel-=2;
+		enemy->suspicionLevel = enemy->suspicionLevel <= 0 ? 0 : enemy->suspicionLevel;
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {

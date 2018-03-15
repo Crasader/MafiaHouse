@@ -48,7 +48,7 @@ void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -241,7 +241,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			enemyHit = a->getTag();
 			return true;
 		}
-		else if (a->getName() == "held_item" && b->getName() == "enemy")
+		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
 			CCLOG("ENEMY HIT");
 			enemyHit = b->getTag();

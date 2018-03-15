@@ -64,3 +64,10 @@ protected:
 	float previousTurnTime = -1;
 	float stopTime = -1;
 };
+
+class Boss : public Enemy
+{
+	Boss();
+	~Boss();
+	CREATE_SPRITE_FUNC(Boss, "boss.png");
+};
