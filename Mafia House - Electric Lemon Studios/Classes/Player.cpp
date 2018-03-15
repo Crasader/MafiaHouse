@@ -112,7 +112,7 @@ void Player::walk(Input input) {
 	}
 }
 
-void Player::pickUpItem(Node* mainLayer) {
+void Player::pickUpItem(GameLayer* mainLayer) {
 	heldItem = static_cast<Item*>(mainLayer->getChildByTag(itemToPickUp));
 	mainLayer->removeChildByTag(itemToPickUp, true);
 
@@ -124,7 +124,7 @@ void Player::pickUpItem(Node* mainLayer) {
 	itemToPickUp = -1;
 }
 
-void Player::dropItem(Node* mainLayer) {
+void Player::dropItem(GameLayer* mainLayer) {
 	//removing dropped item from inventory
 	for (int i = 0; i < inventory.size(); i++) {
 		if (inventory[i] == heldItem) {
@@ -163,17 +163,17 @@ void Player::useItem() {
 	}
 }
 
-void Player::useDoor(Node* mainLayer) {
+void Player::useDoor(GameLayer* mainLayer) {
 	Door* door = static_cast<Door*>(mainLayer->getChildByTag(doorToUse));
 	door->use();
 }
 
-void Player::useStair(Node* mainLayer) {
+void Player::useStair(GameLayer* mainLayer) {
 	Stair* stair = static_cast<Stair*>(mainLayer->getChildByTag(stairToUse));
 	stair->use(this, mainLayer);
 }
 
-void Player::hide(Node* mainLayer) {
+void Player::hide(GameLayer* mainLayer) {
 	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
 	if (hidden == false) {
 		hidden = true;
@@ -197,7 +197,7 @@ void Player::hide(Node* mainLayer) {
 	}
 }
 //have player stay behind object they are hiding behind
-void Player::hiding(Node* mainLayer) {
+void Player::hiding(GameLayer* mainLayer) {
 	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
 	followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 }
@@ -214,7 +214,7 @@ void Player::noclip() {
 }
 
 //Update Checking:
-void Player::update(Node* mainLayer, float time) {
+void Player::update(GameLayer* mainLayer, float time) {
 	newState = state->update(this, mainLayer, time);
 	if (newState != NULL)
 	{
@@ -229,7 +229,7 @@ void Player::update(Node* mainLayer, float time) {
 	}
 }
 //Input Handling:
-void Player::handleInput(Node* mainLayer, float time, Input input) {
+void Player::handleInput(GameLayer* mainLayer, float time, Input input) {
 	newState = state->handleInput(this, mainLayer, time, input);
 	if (newState != NULL)
 	{
@@ -245,22 +245,22 @@ void Player::handleInput(Node* mainLayer, float time, Input input) {
 }
 
 //Player States:
-void Player::PlayerState::enter(Player* player, Node* mainLayer, float time) {
+void Player::PlayerState::enter(Player* player, GameLayer* mainLayer, float time) {
 }
-Player::PlayerState* Player::PlayerState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
+Player::PlayerState* Player::PlayerState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	return nullptr;
 }
-Player::PlayerState* Player::PlayerState::update(Player* player, Node* mainLayer, float time) {
+Player::PlayerState* Player::PlayerState::update(Player* player, GameLayer* mainLayer, float time) {
 	return nullptr;
 }
-void Player::PlayerState::exit(Player* player, Node* mainLayer) {
+void Player::PlayerState::exit(Player* player, GameLayer* mainLayer) {
 }
 
-void Player::NeutralState::enter(Player* player, Node* mainLayer, float time) {
+void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->setSpriteFrame(player->standing.animation->getFrames().at(0)->getSpriteFrame());
 }
 //Neutral State:
-Player::PlayerState* Player::NeutralState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
+Player::PlayerState* Player::NeutralState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
 		player->useDoor(mainLayer);
 	}
@@ -289,14 +289,14 @@ Player::PlayerState* Player::NeutralState::handleInput(Player* player, Node* mai
 }
 
 //Hide State:
-void Player::HideState::enter(Player* player, Node* mainLayer, float time) {
+void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->hide(mainLayer);
 }
-Player::PlayerState* Player::HideState::update(Player* player, Node* mainLayer, float time) {
+Player::PlayerState* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
 	player->hiding(mainLayer);
 	return nullptr;
 }
-Player::PlayerState* Player::HideState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
+Player::PlayerState* Player::HideState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == HIDE) {
 		return player->prevState;
 	}
@@ -305,18 +305,18 @@ Player::PlayerState* Player::HideState::handleInput(Player* player, Node* mainLa
 	}
 	return nullptr;
 }
-void Player::HideState::exit(Player* player, Node* mainLayer) {
+void Player::HideState::exit(Player* player, GameLayer* mainLayer) {
 	player->hide(mainLayer);
 }
 
 //Attack State(using items):
-void Player::AttackState::enter(Player* player, Node* mainLayer, float time) {
+void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->moveSpeed = (0.3f);
 	player->setSpeed(player->moveSpeed);
 	player->attackPrepareTime = time;
 	player->beginUseItem();
 }
-Player::PlayerState* Player::AttackState::update(Player* player, Node* mainLayer, float time) {
+Player::PlayerState* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
 		player->attackStartTime = time;
 		player->useItem();
@@ -335,7 +335,7 @@ Player::PlayerState* Player::AttackState::update(Player* player, Node* mainLayer
 	}
 	return nullptr;
 }
-Player::PlayerState* Player::AttackState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
+Player::PlayerState* Player::AttackState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 		player->walk(input);
 		player->setSpriteFrame(player->stabbing.animation->getFrames().at(0)->getSpriteFrame());
@@ -346,17 +346,23 @@ Player::PlayerState* Player::AttackState::handleInput(Player* player, Node* main
 	}
 	return nullptr;
 }
-void Player::AttackState::exit(Player* player, Node* mainLayer) {
+void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);
-	player->heldItem->initHeldItem();
+	if (player->heldItem->getTag() == mainLayer->itemUsed) {
+		player->heldItem->breakItem();
+		mainLayer->itemUsed = -1;
+	}
+	else{
+		player->heldItem->initHeldItem();
+	}
 }
 
 //No Clip state:
-void Player::NoClipState::enter(Player* player, Node* mainLayer, float time) {
+void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->noclip();
 }
-Player::PlayerState* Player::NoClipState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
+Player::PlayerState* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
 		player->useDoor(mainLayer);
 	}
@@ -383,6 +389,6 @@ Player::PlayerState* Player::NoClipState::handleInput(Player* player, Node* main
 	}
 	return nullptr;
 }
-void Player::NoClipState::exit(Player* player, Node* mainLayer) {
+void Player::NoClipState::exit(Player* player, GameLayer* mainLayer) {
 	player->noclip();
 }

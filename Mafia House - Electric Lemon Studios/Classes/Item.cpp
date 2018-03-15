@@ -75,6 +75,11 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 	initRadius();
 }
 
+void Item::breakItem() {
+	release();
+	getParent()->removeChild(this, true);
+}
+
 void Item::beginStab() {
 	setPosition(Vec2(10, 55));
 	this->setRotation(45);

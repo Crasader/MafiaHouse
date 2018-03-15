@@ -47,12 +47,25 @@ void Enemy::chase(Node* target) {
 	Vec2 displacement = getPosition() - target->getPosition();
 	Vec2 moveDirection = displacement.getNormalized();
 
-	if (flippedX == true) {
+	if (displacement.x < 0) {//player is to the left
+		if (flippedX == true) {
+			flipX();
+		}
+	}
+	else if (displacement.x >= 0) {//player is to the lright
+		if (flippedX == false) {
+			flipX();
+		}
+	}
+
+	move(moveDirection * 8);
+
+	/*if (flippedX == true) {
 		move(moveDirection * 8);
 	}
 	else {
 		move(moveDirection * -8);
-	}
+	}*/
 }
 
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
@@ -110,8 +123,18 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	}
 }
 
+void Enemy::changeSuspicion(int num) {
+	suspicionLevel += num;
+	suspicionLevel = suspicionLevel > 600 ? 600 : suspicionLevel;
+	suspicionLevel = suspicionLevel < 0 ? 0 : suspicionLevel;
+}
+
+void Enemy::setSuspicion(int num) {
+	suspicionLevel = num;
+}
+
 //Update Checking:
-void Enemy::update(Node* mainLayer, float time, Node* target) {
+void Enemy::update(GameLayer* mainLayer, float time, Node* target) {
 	newState = state->update(this, mainLayer, time, target);
 	if (newState != NULL)
 	{
@@ -127,51 +150,52 @@ void Enemy::update(Node* mainLayer, float time, Node* target) {
 }
 
 //Enemy States
-void Enemy::State::enter(Enemy* enemy, Node* mainLayer, float time) {
+void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 }
-Enemy::State* Enemy::State::update(Enemy* enemy, Node* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
 	return nullptr;
 }
-void Enemy::State::exit(Enemy* enemy, Node* mainLayer) {
+void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
 }
 
 //Default State
-void Enemy::DefaultState::enter(Enemy* enemy, Node* mainLayer, float time) {
+void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setSpeed(1.0f);
 	enemy->setName("enemy");
 }
-Enemy::State* Enemy::DefaultState::update(Enemy* enemy, Node* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->suspicionLevel += 10;
-		enemy->suspicionLevel = enemy->suspicionLevel >= 600 ? 600 : enemy->suspicionLevel;
+		enemy->changeSuspicion(10);
 	}
 	else {
-		enemy->suspicionLevel-=2;
-		enemy->suspicionLevel = enemy->suspicionLevel <= 0 ? 0 : enemy->suspicionLevel;
+		enemy->changeSuspicion(-2);
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= 600) {
 		return new AlertState;
-	}
+	} 
 	enemy->walk(time);
+	if (enemy->touchedPlayer == true) {
+		enemy->setSuspicion(580);
+		enemy->chase(target);
+		enemy->touchedPlayer = false;
+	}
 	return nullptr;
 }
 
 //Alert State
-void Enemy::AlertState::enter(Enemy* enemy, Node* mainLayer, float time) {
-	enemy->setSpeed(1.9f);
+void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->setSpeed(2.0f);
 	enemy->setName("enemy_alert");
 }
-Enemy::State* Enemy::AlertState::update(Enemy* enemy, Node* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->suspicionLevel+= 10;
-		enemy->suspicionLevel = enemy->suspicionLevel >= 600 ? 600 : enemy->suspicionLevel;
+		enemy->changeSuspicion(10);
 	}
 	else {
-		enemy->suspicionLevel-=2;
-		enemy->suspicionLevel = enemy->suspicionLevel <= 0 ? 0 : enemy->suspicionLevel;
+		enemy->changeSuspicion(-2);
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {

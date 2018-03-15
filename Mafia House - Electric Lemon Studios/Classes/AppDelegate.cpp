@@ -69,12 +69,12 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto scene = CocoLogo::createScene();
 
     // run scene
-	auto transitions = TransitionFade::create(2.0f, scene);
-	director->replaceScene(transitions);
+	//auto transitions = TransitionFade::create(2.0f, scene);
+	//director->replaceScene(transitions);
 
 	//for testing, go straight into level
-	/*auto level1 = Stage1::createScene();
-	director->runWithScene(level1);*/
+	auto level1 = Stage1::createScene();
+	director->runWithScene(level1);
 
 	//Set up the input handler
 	INPUTS->init();

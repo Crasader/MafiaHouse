@@ -35,24 +35,24 @@ public:
 	bool clip = false;
 
 	//functions for player actions:
-	void update(Node* mainLayer, float time);
-	void handleInput(Node* mainLayer, float time, Input input);
+	void update(GameLayer* mainLayer, float time);
+	void handleInput(GameLayer* mainLayer, float time, Input input);
 
 	void resetActionChecks();//resets variables used to track what objects/items player will interact with/use
 
 	void walk(Input input);
 
-	void pickUpItem(Node* mainLayer);
-	void dropItem(Node* mainLayer);
+	void pickUpItem(GameLayer* mainLayer);
+	void dropItem(GameLayer* mainLayer);
 
 	void beginUseItem();
 	void useItem();
 
-	void useDoor(Node* mainLayer);
-	void useStair(Node* mainLayer);
+	void useDoor(GameLayer* mainLayer);
+	void useStair(GameLayer* mainLayer);
 
-	void hide(Node* mainLayer);
-	void hiding(Node* mainLayer);
+	void hide(GameLayer* mainLayer);
+	void hiding(GameLayer* mainLayer);
 
 	//for Interacting with objects:
 	int doorToUse = -1;//the tag of the door the player can open/close
@@ -77,39 +77,39 @@ private:
 	class PlayerState {
 	public:
 		virtual ~PlayerState() {}
-		virtual void enter(Player* player, Node* mainLayer, float time);
-		virtual PlayerState* update(Player* player, Node* mainLayer, float time);
-		virtual PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
-		virtual void exit(Player* player, Node* mainLayer);
+		virtual void enter(Player* player, GameLayer* mainLayer, float time);
+		virtual PlayerState* update(Player* player, GameLayer* mainLayer, float time);
+		virtual PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		virtual void exit(Player* player, GameLayer* mainLayer);
 	};
 
 	class NeutralState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer, float time);
-		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 	};
 
 	class HideState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer, float time);
-		PlayerState* update(Player* player, Node* mainLayer, float time);
-		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
-		void exit(Player* player, Node* mainLayer);
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		PlayerState* update(Player* player, GameLayer* mainLayer, float time);
+		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		void exit(Player* player, GameLayer* mainLayer);
 	};
 
 	class AttackState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer, float time);
-		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
-		PlayerState* update(Player* player, Node* mainLayer, float time);
-		void exit(Player* player, Node* mainLayer);
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		PlayerState* update(Player* player, GameLayer* mainLayer, float time);
+		void exit(Player* player, GameLayer* mainLayer);
 	};
 
 	class NoClipState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer, float time);
-		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
-		void exit(Player* player, Node* mainLayer);
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		void exit(Player* player, GameLayer* mainLayer);
 	};
 
 	PlayerState* state = new NeutralState;

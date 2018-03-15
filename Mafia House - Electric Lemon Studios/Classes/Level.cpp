@@ -13,7 +13,7 @@ void Level::setup(){
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/hide.wav");
 
 	//node everything in level is attached to
-	mainLayer = Node::create();
+	mainLayer = GameLayer::create();
 	addChild(mainLayer);
 
 	//initializing player
@@ -48,7 +48,7 @@ void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -62,7 +62,8 @@ void Level::onStart(float deltaTime){
 }
 
 void Level::resetCollisionChecks() {
-	enemyHit = -1;
+	mainLayer->enemyHit = -1;
+	mainLayer->enemyTouched = -1;
 }
 
 void Level::update(float deltaTime){
@@ -85,13 +86,18 @@ void Level::update(float deltaTime){
 	vector<Vec2> points;
 	Vec2 start;
 	for (int i = 0; i < enemies.size(); i++) {
-		if (enemyHit != -1) {//temporary
-			if (enemies[i]->getTag() == enemyHit) {
+		if (mainLayer->enemyHit != -1) {//temporary
+			if (enemies[i]->getTag() == mainLayer->enemyHit) {
 				//enemies[i]->kill();
 				mainLayer->removeChild(enemies[i]);
 				enemies.erase(enemies.begin() + i);
 				i--;
 				continue;
+			}
+		}
+		if (mainLayer->enemyTouched != -1) {
+			if (enemies[i]->getTag() == mainLayer->enemyTouched) {
+				enemies[i]->touchedPlayer = true;
 			}
 		}
 		//enemy vision:
@@ -206,30 +212,43 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 
 	if (a != NULL && b != NULL) {
 		// check if player has collided with an enemy
-		if ((a->getName() == "player" && b->getName() == "enemy") || (a->getName() == "enemy" && b->getName() == "player"))
+		if ((a->getName() == "player" && b->getName() == "enemy"))
 		{
 			if (player->hidden != true) {
-				CCLOG("YOU TOUCHED AN ENEMY");
-				//return true;
-				//solve.setRestitution(0.0f);
-				return false;
+				//CCLOG("YOU TOUCHED AN ENEMY");
+				mainLayer->enemyTouched = b->getTag();
+				solve.setRestitution(10.0f);
+				return true;
 			}
 			else {
-				CCLOG("YOU AVOIDED DETECTION");
+				//CCLOG("YOU AVOIDED DETECTION");
 				return false;
 			}
 		}
+		else if ((a->getName() == "enemy" && b->getName() == "player")) {
+			if (player->hidden != true) {
+				//CCLOG("YOU TOUCHED AN ENEMY");
+				mainLayer->enemyTouched = a->getTag();
+				solve.setRestitution(10.0f);
+				return true;
+			}
+			else {
+				//CCLOG("YOU AVOIDED DETECTION");
+				return false;
+			}
+		}
+
 		// check if player has collided with an enemy
 		if ((a->getName() == "player" && b->getName() == "enemy_alert") || (a->getName() == "enemy_alert" && b->getName() == "player"))
 		{
 			if (player->hidden != true) {
-				CCLOG("YOU TOUCHED AN ENEMY");
+				//CCLOG("YOU TOUCHED AN ENEMY");
 				player->caught = true;
 				solve.setRestitution(0.0f);
 				return true;
 			}
 			else {
-				CCLOG("YOU AVOIDED DETECTION");
+				//CCLOG("YOU AVOIDED DETECTION");
 				return false;
 			}
 		}
@@ -237,27 +256,29 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//check if enemy has been hit by player's attack
 		if (a->getName() == "enemy" && b->getName() == "held_item")
 		{
-			CCLOG("ENEMY HIT");
-			enemyHit = a->getTag();
+			//CCLOG("ENEMY HIT");
+			mainLayer->enemyHit = a->getTag();
+			mainLayer->itemUsed = b->getTag();
 			return true;
 		}
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
-			CCLOG("ENEMY HIT");
-			enemyHit = b->getTag();
+			//CCLOG("ENEMY HIT");
+			mainLayer->enemyHit = b->getTag();
+			mainLayer->itemUsed = a->getTag();
 			return true;
 		}
 
 		//check if player can pick up item
 		if (a->getName() == "player" && b->getName() == "item_radius")
 		{
-			CCLOG("CAN PICK UP ITEM");
+			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = b->getParent()->getTag();
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "player")
 		{
-			CCLOG("CAN PICK UP ITEM");
+			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = a->getParent()->getTag();
 			return false;
 		}
@@ -277,13 +298,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and env. object
 		if (a->getName() == "player" && b->getName() == "env_object")
 		{
-			CCLOG("CAN HIDE BEHIND THING");
+			//CCLOG("CAN HIDE BEHIND THING");
 			player->objectToHideBehind = b->getTag();
 			return false;
 		}
 		else if (a->getName() == "env_object" && b->getName() == "player")
 		{
-			CCLOG("CAN HIDE BEHIND THING");
+			//CCLOG("CAN HIDE BEHIND THING");
 			player->objectToHideBehind = a->getTag();
 			return false;
 		}
@@ -291,13 +312,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and stairway
 		if (a->getName() == "player" && b->getName() == "stair")
 		{
-			CCLOG("CAN GO THROUGH STAIRWAY");
+			//CCLOG("CAN GO THROUGH STAIRWAY");
 			player->stairToUse = b->getTag();
 			return false;
 		}
 		else if (a->getName() == "stair" && b->getName() == "player")
 		{
-			CCLOG("CAN GO THROUGH STAIRWAY");
+			//CCLOG("CAN GO THROUGH STAIRWAY");
 			player->stairToUse = a->getTag();
 			return false;
 		}
@@ -305,13 +326,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and door
 		if (a->getName() == "player" && b->getName() == "door_radius")
 		{
-			CCLOG("CAN OPEN DOOR");
+			//CCLOG("CAN OPEN DOOR");
 			player->doorToUse = b->getParent()->getTag();
 			return false;
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "player")
 		{
-			CCLOG("CAN OPEN DOOR");
+			//CCLOG("CAN OPEN DOOR");
 			player->doorToUse = a->getParent()->getTag();
 			return false;
 		}

@@ -56,9 +56,9 @@ protected:
 
 	Director* director = Director::getInstance();
 
-	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera
+	GameLayer* hudLayer;//the layer for the HUD/UI, doesn't move with camera
 
-	Node* mainLayer;//a node which everything in the scene is attached to
+	GameLayer* mainLayer;//a node which everything in the scene is attached to
 
 	Sprite* background;//the background image of the level
 	float backgroundScale = 1.0f;
@@ -66,7 +66,6 @@ protected:
 	Player* player;//the player character
 	
 	vector<Enemy*> enemies;//the enemies in the level
-	int enemyHit = -1;
 
 	DrawNode* visionRays;//used for drawing vision cones
 

@@ -11,42 +11,47 @@ public:
 
 	void initObject(Vec2 startPos = Vec2(0,0));
 
-	void update(Node* mainLayer, float time, Node* target);
+	void update(GameLayer* mainLayer, float time, Node* target);
 
 	void walk(float time);
 
 	void chase(Node* target);
 
+	void changeSuspicion(int num);
+	void setSuspicion(int num);
+
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
 
 	bool seeingPlayer() { return playerInVision; }
 
-	int suspicionLevel = 0;//1000 is max
+	bool touchedPlayer = false;
 
 protected:
 	class State {
 	public:
 		virtual ~State() {}
-		virtual void enter(Enemy* enemy, Node* mainLayer, float time);
-		virtual State* update(Enemy* enemy, Node* mainLayer, float time, Node* target);
-		virtual void exit(Enemy* enemy, Node* mainLayer);
+		virtual void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		virtual State* update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		virtual void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class DefaultState : public State {
 	public:
-		void enter(Enemy* enemy, Node* mainLayer, float time);
-		State* update(Enemy* enemy, Node* mainLayer, float time, Node* target);
-		//void exit(Enemy* enemy, Node* mainLayer);
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class AlertState : public State {
 	public:
-		void enter(Enemy* enemy, Node* mainLayer, float time);
-		State * update(Enemy* enemy, Node* mainLayer, float time, Node* target);
-		//void exit(Enemy* enemy, Node* mainLayer);
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 
 	State* state = new DefaultState;
 	State* newState = NULL;
 	State* prevState = NULL;
+
+	int suspicionLevel = 0;//600 is max
 
 	//Stuff for Vision Fields:
 	bool didRun;
@@ -63,11 +68,4 @@ protected:
 	float waitTime = 2.0f;
 	float previousTurnTime = -1;
 	float stopTime = -1;
-};
-
-class Boss : public Enemy
-{
-	Boss();
-	~Boss();
-	CREATE_SPRITE_FUNC(Boss, "boss.png");
 };

@@ -23,6 +23,7 @@ public:
 	virtual void initHeldItem();
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 
+	virtual void breakItem();
 
 	virtual void beginStab();
 	virtual void beginSwing();
