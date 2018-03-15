@@ -14,7 +14,7 @@ Player::Player()
 	category = 1;
 	collision = 22;
 
-	maxSpeed = 110;
+	maxSpeed = 70;
 }
 Player::~Player(){
 }
@@ -44,19 +44,27 @@ void Player::walk(Input input) {
 				turned = true;
 				flipX();
 			}
-		}
-		if (moveDirection == 1) {
-			moveAbsolute(Vec2(-9.0f * moveSpeed, 0));
-			//run walking animation
-			walking.action->setSpeed(moveSpeed);
+			stopActionByTag(MOONWALK);
 			if (getActionByTag(WALK) == NULL) {
 				runAction(walking.action);
 			}
+			setSpeed(moveSpeed);
+		}
+		if (moveDirection == 1) {
+			walking.action->setSpeed(moveSpeed);
+			moveAbsolute(Vec2(-9.0f * moveSpeed, 0));
+			//run walking animation
 		}
 		else if (moveDirection == 2) {
+			setSpeed(moveSpeed * 1.4f);
+			moonwalking.action->setSpeed(moveSpeed);
 			if (turned == false) {
 				turned = true;
 				flipX();
+				stopActionByTag(WALK);
+				if (getActionByTag(MOONWALK) == NULL) {
+					runAction(moonwalking.action);
+				}
 			}
 		}
 	}
@@ -67,19 +75,27 @@ void Player::walk(Input input) {
 				turned = false;
 				flipX();
 			}
-		}
-		if (moveDirection == 2) {
-			moveAbsolute(Vec2(9.0f * moveSpeed, 0));
-			//run walking animation
-			walking.action->setSpeed(moveSpeed);
+			stopActionByTag(MOONWALK);
 			if (getActionByTag(WALK) == NULL) {
 				runAction(walking.action);
 			}
+			setSpeed(moveSpeed);
+		}
+		if (moveDirection == 2) {
+			walking.action->setSpeed(moveSpeed);
+			moveAbsolute(Vec2(9.0f * moveSpeed, 0));
+			//run walking animation
 		}
 		else if (moveDirection == 1) {
+			setSpeed(moveSpeed * 1.4f);
+			moonwalking.action->setSpeed(moveSpeed);
 			if (turned == true) {
 				turned = false;
 				flipX();
+				stopActionByTag(WALK);
+				if (getActionByTag(MOONWALK) == NULL) {
+					runAction(moonwalking.action);
+				}
 			}
 		}
 	}
@@ -87,16 +103,14 @@ void Player::walk(Input input) {
 		moveDirection = 0;
 		//run standing animation
 		setSpriteFrame(frameCache->getSpriteFrameByName("player/player.png"));
-		if (getActionByTag(WALK) != NULL) {
-			stopActionByTag(WALK);
-		}
+		stopActionByTag(WALK);
+		stopActionByTag(MOONWALK);
 		stopX();
 	}
 }
 
 void Player::setSpeed(float speed) {
 	getPhysicsBody()->setVelocityLimit(maxSpeed * speed);//max object speed
-	moveSpeed = speed;
 }
 
 void Player::pickUpItem(Node* mainLayer) {
@@ -163,6 +177,7 @@ void Player::hide(Node* mainLayer) {
 	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
 	if (hidden == false) {
 		hidden = true;
+		getPhysicsBody()->setTag(2);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() - 3);
 		if (heldItem != NULL) {
 			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() - 3);
@@ -171,6 +186,7 @@ void Player::hide(Node* mainLayer) {
 	}
 	else {
 		hidden = false;
+		getPhysicsBody()->setTag(1);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() + 3);
 		if (heldItem != NULL) {
 			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() + 3);
@@ -290,7 +306,8 @@ void Player::HideState::exit(Player* player, Node* mainLayer) {
 
 //Attack State(using items):
 void Player::AttackState::enter(Player* player, Node* mainLayer, float time) {
-	player->setSpeed(0.45f);
+	player->moveSpeed = (0.3f);
+	player->setSpeed(player->moveSpeed);
 	player->attackPrepareTime = time;
 	player->beginUseItem();
 }
@@ -313,17 +330,18 @@ Player::PlayerState* Player::AttackState::update(Player* player, Node* mainLayer
 	return nullptr;
 }
 Player::PlayerState* Player::AttackState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
-	if (input == USE_RELEASE) {
-		player->attackRelease = true;
-		player->stop();
-	}
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 		player->walk(input);
+	}
+	if (input == USE_RELEASE) {
+		player->attackRelease = true;
+		player->walk(STOP);
 	}
 	return nullptr;
 }
 void Player::AttackState::exit(Player* player, Node* mainLayer) {
-	player->setSpeed(1.0f);
+	player->moveSpeed = (1.0f);
+	player->setSpeed(player->moveSpeed);
 	player->heldItem->initHeldItem();
 }
 

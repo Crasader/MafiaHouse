@@ -84,13 +84,17 @@ void Level::update(float deltaTime){
 		//drawing vision rays
 		for (int j = 0; j < points.size(); j++) {
 			//visionRays->drawDot(points[j], 1, Color4F::WHITE);
-			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.15));
+			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.2));
 		}
 		points.clear();
 
 		//checking if enemy spotted player
 		if (enemies[i]->seeingPlayer() == true) {
 			enemies[i]->suspicionLevel++;
+		}
+		//check if an enemy has become alerted
+		if (enemies[i]->suspicionLevel >= 100) {
+			resetLevel();
 		}
 	}
 	addChild(visionRays);

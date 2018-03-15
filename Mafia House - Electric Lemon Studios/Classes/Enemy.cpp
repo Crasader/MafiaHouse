@@ -12,7 +12,7 @@ Enemy::Enemy()
 	category = 4;
 	collision = 11;
 
-	maxSpeed = 55;
+	maxSpeed = 50;
 }
 Enemy::~Enemy(){
 }
@@ -59,7 +59,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 			return false;
 		}
 		//enemy sees the player
-		else if (visionContactName == "player"){
+		else if (visionContactTag == 1){//1 = player, 2 = hidden player
 			playerInVision = true;
 			points->push_back(info.contact);
 			didRun = true;

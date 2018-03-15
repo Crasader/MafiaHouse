@@ -116,22 +116,23 @@ private:
 	PlayerState* prevState = NULL;
 
 	//animations:
-	Speed* standAnimation;
-	GameAnimation walking = GameAnimation(WALK, "player/walk2/%03d.png", 7, 8 FRAMES);
-	Speed* crouchAnimation;
-	Speed* crawlAnimation;
-	Speed* stabAnimation;
-	Speed* swingAnimation;
-	//Speed* readyThrowAnimation;
-	//Speed* throwAnimation;
-	Speed* crouchStabAnimation;
-	Speed* crouchSwingAnimation;
-	//Speed* crouchReadyThrowAnimation;
-	//Speed* crouchThrowAnimation;
-	//Speed* stairAnimation;
-	//Speed* hideAnimation;
-	//Speed* pickupAnimation;
-	//Speed* interactAnimation;
+	//GameAnimation standAnimation;
+	GameAnimation walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
+	GameAnimation moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
+	//GameAnimation crouchAnimation;
+	//GameAnimation crawlAnimation;
+	//GameAnimation stabAnimation;
+	//GameAnimation swingAnimation;
+	//GameAnimation readyThrowAnimation;
+	//GameAnimation throwAnimation;
+	//GameAnimation crouchStabAnimation;
+	//GameAnimation crouchSwingAnimation;
+	//GameAnimation crouchReadyThrowAnimation;
+	//GameAnimation crouchThrowAnimation;
+	//GameAnimation stairAnimation;
+	//GameAnimation hideAnimation;
+	//GameAnimation pickupAnimation;
+	//GameAnimation interactAnimation;
 
 	Profile profile = STAND;
 

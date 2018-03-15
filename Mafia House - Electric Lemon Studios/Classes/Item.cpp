@@ -63,6 +63,7 @@ void Item::initHeldItem() {
 void Item::initDroppedItem(Vec2 pos, bool flip) {
 	getPhysicsBody()->setCategoryBitmask(16);
 	getPhysicsBody()->setCollisionBitmask(3);
+	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setDynamic(true);
 	setName("item");
 	getPhysicsBody()->setName("item");

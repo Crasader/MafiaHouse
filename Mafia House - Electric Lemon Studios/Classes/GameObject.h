@@ -48,6 +48,7 @@ static __TYPE__* createWithSpriteFrameName(const std::string& spriteFrameName = 
 enum AnimationTag {
 	STAND,
 	WALK,
+	MOONWALK,
 	STAB
 };
 
