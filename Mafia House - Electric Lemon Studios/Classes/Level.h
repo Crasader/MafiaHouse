@@ -1,5 +1,6 @@
 #pragma once
 #include "cocos2d.h"
+#include "SimpleAudioEngine.h"
 #include "InputHandler.h"
 #include "Functions.h"
 #include <vector>
@@ -76,6 +77,8 @@ protected:
 	bool onContactBegin(PhysicsContact &contact);
 
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
+
+	unsigned walkingID;
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
 	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height);

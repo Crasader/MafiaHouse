@@ -4,6 +4,14 @@ void Level::setup(){
 	//loading sprite sheet into sprite frame cache
 	//SpriteFrameCache::getInstance()->addSpriteFramesWithFile("mafiahouse.plist");
 
+	//initialize(preload) sound effects here 
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/equip.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/unequip.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/walk.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/openDoor.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/stairs.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/hide.wav");
+
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	addChild(mainLayer);
@@ -80,15 +88,18 @@ void Level::update(float deltaTime){
 	//check if player is going to interact with door/stairway
 	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
 		if (player->stairToUse != -1) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stairs.wav");
 			player->handleInput(USE_STAIR, mainLayer);
 		}
 		else if (player->doorToUse != -1) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/openDoor.wav");
 			player->handleInput(USE_DOOR, mainLayer);
 		}
 	}
 	//check if player is dropping item
 	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
 		if (player->heldItem != NULL) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/unequip.wav");
 			player->handleInput(DROP, mainLayer);
 		}
 	}
@@ -101,12 +112,14 @@ void Level::update(float deltaTime){
 	//checking to see if player is picking up an item
 	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
 		if (player->itemToPickUp != -1 && player->heldItem == NULL) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
 			player->handleInput(PICKUP, mainLayer);
 		}
 	}
 	//check if player is going to hide behind object
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
 		if (player->objectToHideBehind != -1) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/hide.wav");
 			player->handleInput(HIDE, mainLayer);
 		}
 	}
@@ -117,6 +130,16 @@ void Level::update(float deltaTime){
 	}
 	if (INPUTS->getKey(KeyCode::KEY_S)) {
 		player->handleInput(MOVE_DOWN, mainLayer);
+	}
+
+	//player movement input checking for sounds effect
+	if (INPUTS->getKeyPress(KeyCode::KEY_D) || INPUTS->getKeyPress(KeyCode::KEY_A))
+	{
+		walkingID = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
+	}
+	if ((INPUTS->getKeyRelease(KeyCode::KEY_D) && !(INPUTS->getKey(KeyCode::KEY_A))) || (INPUTS->getKeyRelease(KeyCode::KEY_A) && !(INPUTS->getKey(KeyCode::KEY_D)))) 
+	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingID);
 	}
 
 	//player movement input checking
