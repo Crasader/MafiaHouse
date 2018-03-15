@@ -2,7 +2,7 @@
 
 void Level::setup(){
 	//loading sprite sheet into sprite frame cache
-	//SpriteFrameCache::getInstance()->addSpriteFramesWithFile("mafiahouse.plist");
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("mafiahouse.plist");
 
 	//initialize(preload) sound effects here 
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/equip.wav");
@@ -17,7 +17,7 @@ void Level::setup(){
 	addChild(mainLayer);
 
 	//initializing player
-	player = Player::create();
+	player = Player::createWithSpriteFrameName();
 	player->initObject();
 	mainLayer->addChild(player);
 	//player->noclip();
@@ -56,9 +56,17 @@ void Level::onStart(float deltaTime){
 	scheduleUpdate();
 }
 
+void Level::resetCollisionChecks() {
+	enemyHit = -1;
+}
+
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
+
+	if (player->caught == true){
+		resetLevel();
+	}
 
 	//for drawing vision rays
 	if (visionRays)
@@ -72,26 +80,40 @@ void Level::update(float deltaTime){
 	vector<Vec2> points;
 	Vec2 start;
 	for (int i = 0; i < enemies.size(); i++) {
-		enemies[i]->walk(gameTime);
+		if (enemyHit != -1) {//temporary
+			if (enemies[i]->getTag() == enemyHit) {
+				//enemies[i]->kill();
+				mainLayer->removeChild(enemies[i]);
+				enemies.erase(enemies.begin() + i);
+				i--;
+				continue;
+			}
+		}
+		//enemy vision:
 		enemies[i]->visionRays(&points, &start);
+		//drawing vision rays
 		for (int j = 0; j < points.size(); j++) {
-			//visionRays->drawDot(points[j], 2, Color4F::WHITE);
-			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.15));
+			//visionRays->drawDot(points[j], 1, Color4F::WHITE);
+			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.2));
 		}
 		points.clear();
+
+		enemies[i]->update(mainLayer, gameTime, player);
 	}
 	addChild(visionRays);
 
 	//player update:
-	player->update(gameTime, mainLayer);
+	player->update(mainLayer, gameTime);
 
 	//check if player is going to interact with door/stairway
 	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
 		if (player->stairToUse != -1) {
+			player->handleInput(mainLayer, gameTime, USE_STAIR);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stairs.wav");
 			player->handleInput(USE_STAIR, mainLayer);
 		}
 		else if (player->doorToUse != -1) {
+			player->handleInput(mainLayer, gameTime, USE_DOOR);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/openDoor.wav");
 			player->handleInput(USE_DOOR, mainLayer);
 		}
@@ -99,6 +121,7 @@ void Level::update(float deltaTime){
 	//check if player is dropping item
 	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
 		if (player->heldItem != NULL) {
+			player->handleInput(mainLayer, gameTime, DROP);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/unequip.wav");
 			player->handleInput(DROP, mainLayer);
 		}
@@ -106,12 +129,18 @@ void Level::update(float deltaTime){
 	//check if player is using item
 	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {
 		if (player->heldItem != NULL) {
-			//player->handleInput(USE_ITEM, mainLayer);
+			player->handleInput(mainLayer, gameTime, USE_ITEM);
+		}
+	}
+	if (INPUTS->getKeyRelease(KeyCode::KEY_SPACE)) {
+		if (player->heldItem != NULL) {
+			player->handleInput(mainLayer, gameTime, USE_RELEASE);
 		}
 	}
 	//checking to see if player is picking up an item
 	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
 		if (player->itemToPickUp != -1 && player->heldItem == NULL) {
+			player->handleInput(mainLayer, gameTime, PICKUP);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
 			player->handleInput(PICKUP, mainLayer);
 		}
@@ -119,6 +148,7 @@ void Level::update(float deltaTime){
 	//check if player is going to hide behind object
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
 		if (player->objectToHideBehind != -1) {
+			player->handleInput(mainLayer, gameTime, HIDE);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/hide.wav");
 			player->handleInput(HIDE, mainLayer);
 		}
@@ -126,10 +156,10 @@ void Level::update(float deltaTime){
 
 	//change between standing/crouching
 	if (INPUTS->getKey(KeyCode::KEY_W)) {
-		player->handleInput(MOVE_UP, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_UP);
 	}
 	if (INPUTS->getKey(KeyCode::KEY_S)) {
-		player->handleInput(MOVE_DOWN, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_DOWN);
 	}
 
 	//player movement input checking for sounds effect
@@ -144,20 +174,21 @@ void Level::update(float deltaTime){
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
-		player->handleInput(MOVE_RIGHT, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_RIGHT);
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
-		player->handleInput(MOVE_LEFT, mainLayer);
+		player->handleInput(mainLayer, gameTime, MOVE_LEFT);
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
-		player->handleInput(STOP, mainLayer);
+		player->handleInput(mainLayer, gameTime, STOP);
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {//for testing purposes only, do not abuse
-		player->handleInput(NO_CLIP, mainLayer);
+		player->handleInput(mainLayer, gameTime, NO_CLIP);
 	}
 
 	//must be called after checking all player actions
 	player->resetActionChecks();
+	resetCollisionChecks();
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera follow player
@@ -188,6 +219,34 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				return false;
 			}
 		}
+		// check if player has collided with an enemy
+		if ((a->getName() == "player" && b->getName() == "enemy_alert") || (a->getName() == "enemy_alert" && b->getName() == "player"))
+		{
+			if (player->hidden != true) {
+				CCLOG("YOU TOUCHED AN ENEMY");
+				player->caught = true;
+				solve.setRestitution(0.0f);
+				return true;
+			}
+			else {
+				CCLOG("YOU AVOIDED DETECTION");
+				return false;
+			}
+		}
+
+		//check if enemy has been hit by player's attack
+		if (a->getName() == "enemy" && b->getName() == "held_item")
+		{
+			CCLOG("ENEMY HIT");
+			enemyHit = a->getTag();
+			return true;
+		}
+		else if (a->getName() == "held_item" && b->getName() == "enemy")
+		{
+			CCLOG("ENEMY HIT");
+			enemyHit = b->getTag();
+			return true;
+		}
 
 		//check if player can pick up item
 		if (a->getName() == "player" && b->getName() == "item_radius")
@@ -200,6 +259,12 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = a->getParent()->getTag();
+			return false;
+		}
+
+		//player and item
+		if ((a->getName() == "player" && b->getName() == "item") || (a->getName() == "item" && b->getName() == "player"))
+		{
 			return false;
 		}
 
@@ -525,13 +590,6 @@ bool Level::initLevel(string filename){
 	for (int i = 0; i < enemies.size(); i++) {
 		enemies[i]->setTag(enemies[i]->getTag() + i);//giving a unique tag to each enemy
 		mainLayer->addChild(enemies[i]);
-		//guard moves automatically, put this into Enemy class
-		/*auto movement = MoveBy::create(5, Vec2(400, 0));
-		auto turn = ScaleBy::create(0.0f, -1.0f, 1.0f);
-		auto wait = MoveBy::create(0.5, Vec2(0, 0));
-		auto moveback = MoveBy::create(5, Vec2(-400, 0));
-		auto sequence = Sequence::create(movement, wait, turn, moveback, wait, turn, NULL);
-		enemies[i]->runAction(RepeatForever::create(sequence));*/
 	}
 
 	return true;

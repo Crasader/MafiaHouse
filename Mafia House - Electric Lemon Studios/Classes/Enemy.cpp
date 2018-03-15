@@ -10,7 +10,7 @@ Enemy::Enemy()
 	//physics body properties
 	dynamic = true;
 	category = 4;
-	collision = 3;
+	collision = 11;
 
 	maxSpeed = 50;
 }
@@ -37,10 +37,16 @@ void Enemy::walk(float time) {
 		stopTime = -1;
 	}
 	else if (stopTime == -1){
-		move(Vec2(4, 0));
+		move(Vec2(4.5f, 0));
 	}
 }
 
+void Enemy::chase(Node* target) {
+	Vec2 displacement = getPosition() - target->getPosition();
+	Vec2 moveDirection = displacement.getNormalized();
+
+	move(moveDirection * 8);
+}
 
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 {
@@ -59,7 +65,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 			return false;
 		}
 		//enemy sees the player
-		else if (visionContactName == "player"){
+		else if (visionContactTag == 1){//1 = player, 2 = hidden player
 			playerInVision = true;
 			points->push_back(info.contact);
 			didRun = true;
@@ -95,4 +101,71 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 		}
 		didRun = false;
 	}
+}
+
+//Update Checking:
+void Enemy::update(Node* mainLayer, float time, Node* target) {
+	newState = state->update(this, mainLayer, time, target);
+	if (newState != NULL)
+	{
+		state->exit(this, mainLayer);
+
+		if (prevState != NULL && newState != prevState) { delete prevState; }
+		prevState = state;
+		state = newState;
+		newState = NULL;
+
+		state->enter(this, mainLayer, time);
+	}
+}
+
+//Enemy States
+void Enemy::State::enter(Enemy* enemy, Node* mainLayer, float time) {
+}
+Enemy::State* Enemy::State::update(Enemy* enemy, Node* mainLayer, float time, Node* target) {
+	return nullptr;
+}
+void Enemy::State::exit(Enemy* enemy, Node* mainLayer) {
+}
+
+//Default State
+void Enemy::DefaultState::enter(Enemy* enemy, Node* mainLayer, float time) {
+	enemy->setSpeed(1.0f);
+	enemy->setName("enemy");
+}
+Enemy::State* Enemy::DefaultState::update(Enemy* enemy, Node* mainLayer, float time, Node* target) {
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->suspicionLevel += 10;
+	}
+	else {
+		enemy->suspicionLevel--;
+	}
+	//check if an enemy has become alerted
+	if (enemy->suspicionLevel >= 600) {
+		return new AlertState;
+	}
+	enemy->walk(time);
+	return nullptr;
+}
+
+//Alert State
+void Enemy::AlertState::enter(Enemy* enemy, Node* mainLayer, float time) {
+	enemy->setSpeed(1.9f);
+	enemy->setName("enemy_alert");
+}
+Enemy::State* Enemy::AlertState::update(Enemy* enemy, Node* mainLayer, float time, Node* target) {
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->suspicionLevel+= 10;
+	}
+	else {
+		enemy->suspicionLevel--;
+	}
+	//check if an enemy has become unalerted
+	if (enemy->suspicionLevel <= 0) {
+		return new DefaultState;
+	}
+	enemy->chase(target);
+	return nullptr;
 }

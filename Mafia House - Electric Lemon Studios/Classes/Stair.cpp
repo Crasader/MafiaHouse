@@ -9,7 +9,7 @@ Stair::Stair() {
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 4;
+	category = 16;
 	collision = 0xFFFFFFFF;
 }
 Stair::~Stair() {
