@@ -45,6 +45,13 @@ static __TYPE__* createWithSpriteFrameName(const std::string& spriteFrameName = 
 //    CCASSERT(frame != nullptr, msg); \
 //#endif
 
+enum AnimationTag {
+	STAND,
+	WALK,
+	MOONWALK,
+	STAB
+};
+
 class GameObject: public Sprite
 {
 public:
@@ -58,17 +65,21 @@ public:
 	virtual void initObject(Vec2 startPos);
 
 	virtual void initAnimations();
-	Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
 
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
+
+	//void setPosition(Vec2 pos);
 
 	//movement functions
 	void stopX();
 	void stop();
 	void slowStop();
 
-	void move(Vec2 velocity);
+	void move(Vec2 velocity);//moves relative to direction object is facing
+	void moveAbsolute(Vec2 velocity);//moves in absolute direction, positive is right, up
+
+	void setSpeed(float speed);
 
 	void flipX();//flips object on X-axis
 
@@ -94,4 +105,21 @@ protected:
 	int collision = 1;//collision group bitmask for collisions
 
 	Director* director = Director::getInstance();
+	SpriteFrameCache* frameCache = SpriteFrameCache::getInstance();
+};
+
+Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
+
+class GameAnimation {
+public:
+	GameAnimation(int tag, char* path, int numFrames, float frameTime) {
+		auto frames = getAnimation(path, numFrames);//change number of frames to correct number
+		animation = Animation::createWithSpriteFrames(frames, frameTime);//change number to correct speed for animation
+		animation->retain();
+		action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
+		action->retain();
+		action->setTag(tag);
+	}
+	Speed* action;
+	Animation* animation;
 };

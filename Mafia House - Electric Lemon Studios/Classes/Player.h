@@ -7,6 +7,7 @@ enum Input {
 	PICKUP,
 	DROP,
 	USE_ITEM,
+	USE_RELEASE,
 	USE_STAIR,
 	USE_DOOR,
 	HIDE,
@@ -24,6 +25,8 @@ public:
 	Player();
 	~Player();
 	CREATE_SPRITE_FUNC(Player, "player.png");
+	CREATE_WITH_FRAME(Player);
+	CREATE_WITH_FRAME_NAME(Player, "player/stand/001.png");
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
 	void initAnimations();
@@ -32,8 +35,8 @@ public:
 	bool clip = false;
 
 	//functions for player actions:
-	void update(float time, Node* mainLayer);
-	void handleInput(Input input, Node* mainLayer);
+	void update(Node* mainLayer, float time);
+	void handleInput(Node* mainLayer, float time, Input input);
 
 	void resetActionChecks();//resets variables used to track what objects/items player will interact with/use
 
@@ -42,6 +45,7 @@ public:
 	void pickUpItem(Node* mainLayer);
 	void dropItem(Node* mainLayer);
 
+	void beginUseItem();
 	void useItem();
 
 	void useDoor(Node* mainLayer);
@@ -62,6 +66,7 @@ public:
 	Item* heldItem = NULL;//for using held item
 
 	bool hidden = false;
+	bool caught = false;
 
 	enum Profile {
 		STAND,
@@ -72,34 +77,38 @@ private:
 	class PlayerState {
 	public:
 		virtual ~PlayerState() {}
-		virtual void enter(Player* player, Node* mainLayer);
-		virtual PlayerState* update(Player* player, float time, Node* mainLayer);
-		virtual PlayerState* handleInput(Player* player, Input input, Node* MainLayer);
+		virtual void enter(Player* player, Node* mainLayer, float time);
+		virtual PlayerState* update(Player* player, Node* mainLayer, float time);
+		virtual PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 		virtual void exit(Player* player, Node* mainLayer);
 	};
 
 	class NeutralState : public PlayerState {
 	public:
-		PlayerState* handleInput(Player* player, Input input, Node* mainLayer);
+		void enter(Player* player, Node* mainLayer, float time);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 	};
 
 	class HideState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer);
-		PlayerState* update(Player* player, float time, Node* mainLayer);
-		PlayerState* handleInput(Player* player, Input input, Node* MainLayer);
+		void enter(Player* player, Node* mainLayer, float time);
+		PlayerState* update(Player* player, Node* mainLayer, float time);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 		void exit(Player* player, Node* mainLayer);
 	};
 
 	class AttackState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer);
+		void enter(Player* player, Node* mainLayer, float time);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
+		PlayerState* update(Player* player, Node* mainLayer, float time);
+		void exit(Player* player, Node* mainLayer);
 	};
 
 	class NoClipState : public PlayerState {
 	public:
-		void enter(Player* player, Node* mainLayer);
-		PlayerState* handleInput(Player* player, Input input, Node* MainLayer);
+		void enter(Player* player, Node* mainLayer, float time);
+		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 		void exit(Player* player, Node* mainLayer);
 	};
 
@@ -108,28 +117,37 @@ private:
 	PlayerState* prevState = NULL;
 
 	//animations:
-	Animation* standAnimation;
-	Animation* walkAnimation;
-	Animation* crouchAnimation;
-	Animation* crawlAnimation;
-	Animation* stabAnimation;
-	Animation* swingAnimation;
-	//Animation* readyThrowAnimation;
-	//Animation* throwAnimation;
-	Animation* crouchStabAnimation;
-	Animation* crouchSwingAnimation;
-	//Animation* crouchReadyThrowAnimation;
-	//Animation* crouchThrowAnimation;
-	//Animation* stairAnimation;
-	//Animation* hideAnimation;
-	//Animation* pickupAnimation;
-	//Animation* interactAnimation;
+	GameAnimation standing = GameAnimation(STAND, "player/stand/%03d.png", 1, 10 FRAMES);
+	GameAnimation walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
+	GameAnimation moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
+	//GameAnimation crouchAnimation;
+	//GameAnimation crawlAnimation;
+	GameAnimation stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);;
+	//GameAnimation swingAnimation;
+	//GameAnimation readyThrowAnimation;
+	//GameAnimation throwAnimation;
+	//GameAnimation crouchStabAnimation;
+	//GameAnimation crouchSwingAnimation;
+	//GameAnimation crouchReadyThrowAnimation;
+	//GameAnimation crouchThrowAnimation;
+	//GameAnimation stairAnimation;
+	//GameAnimation hideAnimation;
+	//GameAnimation pickupAnimation;
+	//GameAnimation interactAnimation;
 
 	Profile profile = STAND;
 
 	std::vector<Item*> inventory;//items the player is carrying
 
 	bool turned = false;//used for walking
-
 	bool hideStart = false;//used for setting the object you are hiding behind transparent
+
+	float moveSpeed = 1.0f;
+	int moveDirection = 0;
+
+	//variables used for the timing of attacking/using items:
+	float attackPrepareTime = -1.0f;//time player begins to prepare and attack
+	float attackStartTime = -1.0f;//time player actually begins the attack after release
+	float attackEndTime = -1.0f;//time attack ends and englag begins
+	bool attackRelease = false;
 };
