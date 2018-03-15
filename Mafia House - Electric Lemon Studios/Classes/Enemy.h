@@ -13,18 +13,24 @@ public:
 
 	void walk(float time);
 
-	//Stuff for Vision Fields:
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
+
+	bool seeingPlayer() { return playerInVision; }
+
+	int suspicionLevel = 0;//100 is max
+
+protected:
+	//Stuff for Vision Fields:
 	bool didRun;
 	int visionDegrees = 65;//width of angle of vision
 	int visionRadius = 130;//how far vision reaches
+	
+	bool playerInVision = false;
 
 	string visionContactName;
 	int visionContactTag;
 
-	bool playerInVision = false;
-
-protected:
+	//stuff for walking:
 	float walkTime = 6.0f;
 	float waitTime = 2.0f;
 	float previousTurnTime = -1;

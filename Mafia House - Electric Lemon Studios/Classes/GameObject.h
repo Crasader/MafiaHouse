@@ -45,6 +45,12 @@ static __TYPE__* createWithSpriteFrameName(const std::string& spriteFrameName = 
 //    CCASSERT(frame != nullptr, msg); \
 //#endif
 
+enum AnimationTag {
+	STAND,
+	WALK,
+	STAB
+};
+
 class GameObject: public Sprite
 {
 public:
@@ -94,4 +100,5 @@ protected:
 	int collision = 1;//collision group bitmask for collisions
 
 	Director* director = Director::getInstance();
+	SpriteFrameCache* frameCache = SpriteFrameCache::getInstance();
 };

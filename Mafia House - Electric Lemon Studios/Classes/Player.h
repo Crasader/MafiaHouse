@@ -25,6 +25,8 @@ public:
 	Player();
 	~Player();
 	CREATE_SPRITE_FUNC(Player, "player.png");
+	CREATE_WITH_FRAME(Player);
+	CREATE_WITH_FRAME_NAME(Player, "player/player.png");
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
 	void initAnimations();
@@ -114,22 +116,22 @@ private:
 	PlayerState* prevState = NULL;
 
 	//animations:
-	Animation* standAnimation;
-	Animation* walkAnimation;
-	Animation* crouchAnimation;
-	Animation* crawlAnimation;
-	Animation* stabAnimation;
-	Animation* swingAnimation;
-	//Animation* readyThrowAnimation;
-	//Animation* throwAnimation;
-	Animation* crouchStabAnimation;
-	Animation* crouchSwingAnimation;
-	//Animation* crouchReadyThrowAnimation;
-	//Animation* crouchThrowAnimation;
-	//Animation* stairAnimation;
-	//Animation* hideAnimation;
-	//Animation* pickupAnimation;
-	//Animation* interactAnimation;
+	Speed* standAnimation;
+	Speed* walkAnimation;
+	Speed* crouchAnimation;
+	Speed* crawlAnimation;
+	Speed* stabAnimation;
+	Speed* swingAnimation;
+	//Speed* readyThrowAnimation;
+	//Speed* throwAnimation;
+	Speed* crouchStabAnimation;
+	Speed* crouchSwingAnimation;
+	//Speed* crouchReadyThrowAnimation;
+	//Speed* crouchThrowAnimation;
+	//Speed* stairAnimation;
+	//Speed* hideAnimation;
+	//Speed* pickupAnimation;
+	//Speed* interactAnimation;
 
 	Profile profile = STAND;
 

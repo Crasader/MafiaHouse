@@ -6,7 +6,8 @@ GameObject::~GameObject(){
 }
 
 void GameObject::initObject() {
-	//initAnimations();
+	//load animations from frame cache
+	initAnimations();
 
 	setPositionZ(0.0f);
 	//set the anchor point to bottom left corner

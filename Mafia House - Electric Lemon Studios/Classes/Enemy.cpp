@@ -10,7 +10,7 @@ Enemy::Enemy()
 	//physics body properties
 	dynamic = true;
 	category = 4;
-	collision = 3;
+	collision = 11;
 
 	maxSpeed = 55;
 }

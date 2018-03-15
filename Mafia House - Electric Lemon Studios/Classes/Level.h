@@ -39,6 +39,8 @@ public:
 
 	void onStart(float deltaTime);
 
+	void resetCollisionChecks();//resets variables used for collision detection checking
+
 protected:
 	float gameTime = 0.0f;
 
@@ -54,6 +56,7 @@ protected:
 	Player* player;//the player character
 	
 	vector<Enemy*> enemies;//the enemies in the level
+	int enemyHit = -1;
 
 	DrawNode* visionRays;//used for drawing vision cones
 

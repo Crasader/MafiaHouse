@@ -2,14 +2,14 @@
 
 void Level::setup(){
 	//loading sprite sheet into sprite frame cache
-	//SpriteFrameCache::getInstance()->addSpriteFramesWithFile("mafiahouse.plist");
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("mafiahouse.plist");
 
 	//node everything in level is attached to
 	mainLayer = Node::create();
 	addChild(mainLayer);
 
 	//initializing player
-	player = Player::create();
+	player = Player::createWithSpriteFrameName();
 	player->initObject();
 	mainLayer->addChild(player);
 	//player->noclip();
@@ -48,6 +48,10 @@ void Level::onStart(float deltaTime){
 	scheduleUpdate();
 }
 
+void Level::resetCollisionChecks() {
+	enemyHit = -1;
+}
+
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
@@ -64,13 +68,30 @@ void Level::update(float deltaTime){
 	vector<Vec2> points;
 	Vec2 start;
 	for (int i = 0; i < enemies.size(); i++) {
+		if (enemyHit != -1) {
+			if (enemies[i]->getTag() == enemyHit) {
+				//enemies[i]->kill();
+				mainLayer->removeChild(enemies[i]);
+				enemies.erase(enemies.begin() + i);
+				i--;
+				continue;
+			}
+		}
+		//enemies[i]->update(mainLayer, gameTime);
 		enemies[i]->walk(gameTime);
+		//enemy vision:
 		enemies[i]->visionRays(&points, &start);
+		//drawing vision rays
 		for (int j = 0; j < points.size(); j++) {
 			//visionRays->drawDot(points[j], 1, Color4F::WHITE);
 			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.15));
 		}
 		points.clear();
+
+		//checking if enemy spotted player
+		if (enemies[i]->seeingPlayer() == true) {
+			enemies[i]->suspicionLevel++;
+		}
 	}
 	addChild(visionRays);
 
@@ -140,6 +161,7 @@ void Level::update(float deltaTime){
 
 	//must be called after checking all player actions
 	player->resetActionChecks();
+	resetCollisionChecks();
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera follow player
@@ -171,6 +193,20 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 		}
 
+		//check if enemy has been hit by player's attack
+		if (a->getName() == "enemy" && b->getName() == "held_item")
+		{
+			CCLOG("ENEMY HIT");
+			enemyHit = a->getTag();
+			return true;
+		}
+		else if (a->getName() == "held_item" && b->getName() == "enemy")
+		{
+			CCLOG("ENEMY HIT");
+			enemyHit = b->getTag();
+			return true;
+		}
+
 		//check if player can pick up item
 		if (a->getName() == "player" && b->getName() == "item_radius")
 		{
@@ -182,6 +218,12 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = a->getParent()->getTag();
+			return false;
+		}
+
+		//player and item
+		if ((a->getName() == "player" && b->getName() == "item") || (a->getName() == "item" && b->getName() == "player"))
+		{
 			return false;
 		}
 

@@ -6,7 +6,7 @@ Item::Item()
 	//sprite properties
 	zOrder = 6;
 	//physics body properties
-	category = 8;
+	category = 16;
 	collision = 3;
 	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
@@ -49,6 +49,8 @@ void Item::initHeldItem() {
 	removeChildByName("item_radius", true);
 	getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setDynamic(false);
+	getPhysicsBody()->setCategoryBitmask(8);
+	getPhysicsBody()->setCollisionBitmask(7);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	setPosition(Vec2(24, 39));
@@ -59,6 +61,8 @@ void Item::initHeldItem() {
 }
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
+	getPhysicsBody()->setCategoryBitmask(16);
+	getPhysicsBody()->setCollisionBitmask(3);
 	getPhysicsBody()->setDynamic(true);
 	setName("item");
 	getPhysicsBody()->setName("item");

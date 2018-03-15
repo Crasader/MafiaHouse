@@ -3,6 +3,7 @@
 
 Player::Player()
 {
+	//reversedX = true;
 	//sprite properties
 	zOrder = 5;
 	scale = 1.0f;
@@ -24,9 +25,11 @@ void Player::initObject(Vec2 startPos) {
 
 void Player::initAnimations() {
 	//auto frames = getAnimation("player/stand/%04d.png", 10);//change number of frames to correct number
-	//standAnimation = Animation::createWithSpriteFrames(frames, 1.0f / 8.0f);//change number to correct speed for 
-	//frames = getAnimation("player/walk/%04d.png", 10);//change number of frames to correct number
-	//walkAnimation = Animation::createWithSpriteFrames(frames, 1.0f / 8.0f);//change number to correct speed for animation
+	auto frames = getAnimation("player/walk2/%03d.png", 7);//change number of frames to correct number
+	auto animation = Animation::createWithSpriteFrames(frames, 8 FRAMES);//change number to correct speed for animation
+	walkAnimation = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
+	walkAnimation->retain();
+	walkAnimation->setTag(WALK);
 	//etc...
 }
 
@@ -41,16 +44,24 @@ void Player::resetActionChecks() {
 
 void Player::walk(Input input) {
 	if (input == MOVE_LEFT) {
+		//run walking animation
+		walkAnimation->setSpeed(moveSpeed);
+		if (getActionByTag(WALK) == NULL) {
+			runAction(walkAnimation);
+		}
 		if (turned == false) {
-			//run walking animation
 			turned = true;
 			flipX();
 		}
 		move(Vec2(9.0f * moveSpeed, 0));
 	}
 	else if (input == MOVE_RIGHT) {
+		//run walking animation
+		walkAnimation->setSpeed(moveSpeed);
+		if (getActionByTag(WALK) == NULL) {
+			runAction(walkAnimation);
+		}
 		if (turned == true) {
-			//run walking animation
 			turned = false;
 			flipX();
 		}
@@ -58,6 +69,10 @@ void Player::walk(Input input) {
 	}
 	else if (input == STOP) {
 		//run standing animation
+		this->setSpriteFrame(frameCache->getSpriteFrameByName("player/player.png"));
+		if (getActionByTag(WALK) != NULL) {
+			stopActionByTag(WALK);
+		}
 		stopX();
 	}
 }
