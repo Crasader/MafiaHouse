@@ -3,6 +3,7 @@
 #include "DisplayHandler.h"
 #include "InputHandler.h"
 #include "HelloWorldScene.h"
+#include "Stages.h"
 #include "Tutorial.h"
 #include <iostream> 
 
@@ -265,7 +266,7 @@ void MenuScreen::update(float deltaTime)
 		//will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 		// switch to tutorial scene
-		director->replaceScene(TransitionFade::create(2.0f, HelloWorld::create()));
+		director->replaceScene(Stage1::createScene());
 	}
 	// Select Level
 	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionSelect))

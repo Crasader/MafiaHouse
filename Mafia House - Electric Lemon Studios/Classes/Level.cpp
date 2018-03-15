@@ -35,6 +35,11 @@ void Level::setup(){
 	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
+	auto label1 = Label::createWithTTF("Space for Pick Up", "fonts/Pixel-Noir Skinny Short.ttf", 24);
+	label1->setPosition(player->getPosition());
+	label1->setGlobalZOrder(10);
+	mainLayer->addChild(label1, 3000);
+
 	//for running the update function
 	schedule(schedule_selector(Level::onStart));
 }
