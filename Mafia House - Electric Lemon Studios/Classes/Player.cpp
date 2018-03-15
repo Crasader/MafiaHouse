@@ -25,12 +25,6 @@ void Player::initObject(Vec2 startPos) {
 
 void Player::initAnimations() {
 	//auto frames = getAnimation("player/stand/%04d.png", 10);//change number of frames to correct number
-	auto frames = getAnimation("player/walk2/%03d.png", 7);//change number of frames to correct number
-	auto animation = Animation::createWithSpriteFrames(frames, 8 FRAMES);//change number to correct speed for animation
-	walkAnimation = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
-	walkAnimation->retain();
-	walkAnimation->setTag(WALK);
-	//etc...
 }
 
 //functions for player actions:
@@ -44,32 +38,55 @@ void Player::resetActionChecks() {
 
 void Player::walk(Input input) {
 	if (input == MOVE_LEFT) {
-		//run walking animation
-		walkAnimation->setSpeed(moveSpeed);
-		if (getActionByTag(WALK) == NULL) {
-			runAction(walkAnimation);
+		if (moveDirection == 0){
+			moveDirection = 1;
+			if (turned == false) {
+				turned = true;
+				flipX();
+			}
 		}
-		if (turned == false) {
-			turned = true;
-			flipX();
+		if (moveDirection == 1) {
+			moveAbsolute(Vec2(-9.0f * moveSpeed, 0));
+			//run walking animation
+			walking.action->setSpeed(moveSpeed);
+			if (getActionByTag(WALK) == NULL) {
+				runAction(walking.action);
+			}
 		}
-		move(Vec2(9.0f * moveSpeed, 0));
+		else if (moveDirection == 2) {
+			if (turned == false) {
+				turned = true;
+				flipX();
+			}
+		}
 	}
-	else if (input == MOVE_RIGHT) {
-		//run walking animation
-		walkAnimation->setSpeed(moveSpeed);
-		if (getActionByTag(WALK) == NULL) {
-			runAction(walkAnimation);
+	if (input == MOVE_RIGHT) {
+		if (moveDirection == 0) {
+			moveDirection = 2;
+			if (turned == true) {
+				turned = false;
+				flipX();
+			}
 		}
-		if (turned == true) {
-			turned = false;
-			flipX();
+		if (moveDirection == 2) {
+			moveAbsolute(Vec2(9.0f * moveSpeed, 0));
+			//run walking animation
+			walking.action->setSpeed(moveSpeed);
+			if (getActionByTag(WALK) == NULL) {
+				runAction(walking.action);
+			}
 		}
-		move(Vec2(9.0f * moveSpeed, 0));
+		else if (moveDirection == 1) {
+			if (turned == true) {
+				turned = false;
+				flipX();
+			}
+		}
 	}
-	else if (input == STOP) {
+	if (input == STOP) {
+		moveDirection = 0;
 		//run standing animation
-		this->setSpriteFrame(frameCache->getSpriteFrameByName("player/player.png"));
+		setSpriteFrame(frameCache->getSpriteFrameByName("player/player.png"));
 		if (getActionByTag(WALK) != NULL) {
 			stopActionByTag(WALK);
 		}

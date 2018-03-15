@@ -117,7 +117,7 @@ private:
 
 	//animations:
 	Speed* standAnimation;
-	Speed* walkAnimation;
+	GameAnimation walking = GameAnimation(WALK, "player/walk2/%03d.png", 7, 8 FRAMES);
 	Speed* crouchAnimation;
 	Speed* crawlAnimation;
 	Speed* stabAnimation;
@@ -141,6 +141,7 @@ private:
 	bool hideStart = false;//used for setting the object you are hiding behind transparent
 
 	float moveSpeed = 1.0f;
+	int moveDirection = 0;
 
 	//variables used for the timing of attacking/using items:
 	float attackPrepareTime = -1.0f;//time player begins to prepare and attack

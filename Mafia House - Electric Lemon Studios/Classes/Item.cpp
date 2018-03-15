@@ -75,14 +75,14 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 }
 
 void Item::beginStab() {
-	setPosition(10, 45);
+	setPosition(Vec2(10, 45));
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
 	//runAction(prepare);
 }
 
 void Item::beginSwing() {
 	this->setRotation(-90);
-	setPosition(5, 59);
+	setPosition(Vec2(10, 45));
 	//auto prepare = MoveBy::create(10 FRAMES, Vec2(-16, 20));
 	//auto rotate = RotateBy::create(10 FRAMES, -90);
 	//runAction(Spawn::create(prepare,rotate));

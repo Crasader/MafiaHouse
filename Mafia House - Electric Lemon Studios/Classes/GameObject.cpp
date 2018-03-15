@@ -10,7 +10,7 @@ void GameObject::initObject() {
 	initAnimations();
 
 	setPositionZ(0.0f);
-	//set the anchor point to bottom left corner
+	//set the anchor point to bottom left corner. nevermind this messes up animations an
 	setAnchorPoint(Vec2(0, 0));
 
 	//disabling anti-aliasing!!! (looks like blurry poop without this)
@@ -62,18 +62,6 @@ void GameObject::initAnimations() {
 
 }
 
-Vector<SpriteFrame*> GameObject::getAnimation(const char *format, int count){
-	auto spritecache = SpriteFrameCache::getInstance();
-	Vector<SpriteFrame*> animFrames;
-	char str[100];
-	for (int i = 1; i <= count; i++)
-	{
-		sprintf(str, format, i);
-		animFrames.pushBack(spritecache->getSpriteFrameByName(str));
-	}
-	return animFrames;
-}
-
 void GameObject::setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position) {
 	Vec2 offset = Vec2(position.x * roomSize.width, position.y * roomSize.height);
 	setPosition(roomPos + offset);
@@ -82,6 +70,10 @@ void GameObject::setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 pos
 void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
 	setPosition(roomPos + position);
 }
+
+//void GameObject::setPosition(Vec2 pos) {
+//	Node::setPosition(pos + Vec2(getContentSize().width / 2, getContentSize().height / 2));
+//}
 
 void GameObject::stopX() {
 	getPhysicsBody()->setVelocity(Vec2(0, getPhysicsBody()->getVelocity().y));
@@ -111,6 +103,14 @@ void GameObject::move(Vec2 velocity) {//positive values will always move them fo
 	getPhysicsBody()->applyImpulse(force);
 }
 
+void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
+	auto mass = getPhysicsBody()->getMass();
+
+	Vec2 force = mass * velocity;
+
+	getPhysicsBody()->applyImpulse(force);
+}
+
 void GameObject::flipX() {
 	setScaleX(getScaleX() * -1);//flips sprite and it's children by inverting x scale
 	if (flippedX == false) {
@@ -121,4 +121,16 @@ void GameObject::flipX() {
 		flippedX = false;
 		setAnchorPoint(Vec2(0, 0));
 	}
+}
+
+Vector<SpriteFrame*> getAnimation(const char *format, int count) {
+	auto spritecache = SpriteFrameCache::getInstance();
+	Vector<SpriteFrame*> animFrames;
+	char str[100];
+	for (int i = 1; i <= count; i++)
+	{
+		sprintf(str, format, i);
+		animFrames.pushBack(spritecache->getSpriteFrameByName(str));
+	}
+	return animFrames;
 }
