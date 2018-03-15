@@ -15,13 +15,16 @@
 # items/objects/enemies: item/object/enemy, type(what subclass it is), x_coordinate, y_coordinate
 # player: player, x_coordinate, y_coordinate
 #
-280
-700|bg,Hallway.png|door,right|vent,top,30|vent,top,350|stair,1,A,360,0|player,0,0|item,knife,300,0|item,knife,500,0|item,knife,100,0|object,plant,100,0|enemy,guard,600,0
-500|bg,Kitchen.png|door,right|door,left|item,knife,400,0
-300|door,left|stair,2,A,250,0|object,plant,150,0|enemy,guard,100,0
+300
+700|bg,Hallway.png|door,right|player,0,0|item,knife,300,0|item,knife,500,0|item,knife,100,0|object,plant,100,0
+600|bg,Kitchen.png|door,left|item,knife,400,0|stair,1,A,550,0|enemy,guard,400,0
 FLOOR_END
-220
-300|door,right|vent,bot,80|stair,2,B,160,0
-900|door,right|door,left|vent,bot,80|item,knife,650,0|enemy,guard,800,0
-400|door,left|stair,1,B,360,0|object,plant,300,0|enemy,guard,200,0
+300
+500|bg,LivingRoom.png|door,right|stair,2,A,25,0
+400|bg,Bathroom.png|door,right|door,left|item,knife,650,0|enemy,guard,200,0
+400|bg,guestRoom.png|door,left|stair,1,B,350,0|object,plant,100,0|enemy,guard,200,0
+FLOOR_END
+300
+600|bg,MasterBedroom.png|door,right|enemy,guard,300,0
+700|bg,UpperHallway.png|door,left|item,knife,650,0|stair,2,B,650,0
 FLOOR_END
