@@ -26,7 +26,7 @@ public:
 	~Player();
 	CREATE_SPRITE_FUNC(Player, "player.png");
 	CREATE_WITH_FRAME(Player);
-	CREATE_WITH_FRAME_NAME(Player, "player/player.png");
+	CREATE_WITH_FRAME_NAME(Player, "player/stand/001.png");
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
 	void initAnimations();
@@ -41,7 +41,6 @@ public:
 	void resetActionChecks();//resets variables used to track what objects/items player will interact with/use
 
 	void walk(Input input);
-	void setSpeed(float speed);
 
 	void pickUpItem(Node* mainLayer);
 	void dropItem(Node* mainLayer);
@@ -67,6 +66,7 @@ public:
 	Item* heldItem = NULL;//for using held item
 
 	bool hidden = false;
+	bool caught = false;
 
 	enum Profile {
 		STAND,
@@ -85,6 +85,7 @@ private:
 
 	class NeutralState : public PlayerState {
 	public:
+		void enter(Player* player, Node* mainLayer, float time);
 		PlayerState* handleInput(Player* player, Node* MainLayer, float time, Input input);
 	};
 
@@ -116,12 +117,12 @@ private:
 	PlayerState* prevState = NULL;
 
 	//animations:
-	//GameAnimation standAnimation;
+	GameAnimation standing = GameAnimation(STAND, "player/stand/%03d.png", 1, 10 FRAMES);
 	GameAnimation walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
 	GameAnimation moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
 	//GameAnimation crouchAnimation;
 	//GameAnimation crawlAnimation;
-	//GameAnimation stabAnimation;
+	GameAnimation stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);;
 	//GameAnimation swingAnimation;
 	//GameAnimation readyThrowAnimation;
 	//GameAnimation throwAnimation;

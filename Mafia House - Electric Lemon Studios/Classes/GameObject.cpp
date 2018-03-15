@@ -111,6 +111,10 @@ void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move
 	getPhysicsBody()->applyImpulse(force);
 }
 
+void GameObject::setSpeed(float speed) {
+	getPhysicsBody()->setVelocityLimit(maxSpeed * speed);//max object speed
+}
+
 void GameObject::flipX() {
 	setScaleX(getScaleX() * -1);//flips sprite and it's children by inverting x scale
 	if (flippedX == false) {

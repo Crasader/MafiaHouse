@@ -79,6 +79,8 @@ public:
 	void move(Vec2 velocity);//moves relative to direction object is facing
 	void moveAbsolute(Vec2 velocity);//moves in absolute direction, positive is right, up
 
+	void setSpeed(float speed);
+
 	void flipX();//flips object on X-axis
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position

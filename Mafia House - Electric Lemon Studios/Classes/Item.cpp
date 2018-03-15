@@ -76,7 +76,8 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 }
 
 void Item::beginStab() {
-	setPosition(Vec2(10, 45));
+	setPosition(Vec2(10, 55));
+	this->setRotation(45);
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
 	//runAction(prepare);
 }
@@ -90,9 +91,9 @@ void Item::beginSwing() {
 }
 
 void Item::stabSequence() {
-	auto move = MoveBy::create(1 FRAMES, Vec2(25, 0));
+	auto move = MoveBy::create(1 FRAMES, Vec2(25, 6));
 	auto hold = MoveBy::create(6 FRAMES, Vec2(0, 0));
-	auto moveback = MoveBy::create(1 FRAMES, Vec2(-25, 0));
+	auto moveback = MoveBy::create(1 FRAMES, Vec2(-25, -6));
 	auto sequence = Sequence::create(move, hold, moveback, NULL);
 	runAction(sequence);
 }

@@ -102,15 +102,11 @@ void Player::walk(Input input) {
 	if (input == STOP) {
 		moveDirection = 0;
 		//run standing animation
-		setSpriteFrame(frameCache->getSpriteFrameByName("player/player.png"));
+		setSpriteFrame(standing.animation->getFrames().at(0)->getSpriteFrame());
 		stopActionByTag(WALK);
 		stopActionByTag(MOONWALK);
 		stopX();
 	}
-}
-
-void Player::setSpeed(float speed) {
-	getPhysicsBody()->setVelocityLimit(maxSpeed * speed);//max object speed
 }
 
 void Player::pickUpItem(Node* mainLayer) {
@@ -143,7 +139,7 @@ void Player::dropItem(Node* mainLayer) {
 void Player::beginUseItem() {
 	if (heldItem->getAttackType() == Item::STAB) {
 		heldItem->beginStab();
-		//setSpriteFrame(stabAnimation->getFrames[0]);//setting player sprite to first frame of stab animation
+		setSpriteFrame(stabbing.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
 	}
 	else if (heldItem->getAttackType() == Item::SWING) {
 		heldItem->beginSwing();
@@ -155,6 +151,7 @@ void Player::useItem() {
 	heldItem->getPhysicsBody()->setEnabled(true);
 	if (heldItem->getAttackType() == Item::STAB) {
 		heldItem->stabSequence();
+		setSpriteFrame(stabbing.animation->getFrames().at(1)->getSpriteFrame());
 		//runAction(Animate::create(stabAnimation));//runs stabbing animation
 	}
 	else if (heldItem->getAttackType() == Item::SWING) {
@@ -254,6 +251,9 @@ Player::PlayerState* Player::PlayerState::update(Player* player, Node* mainLayer
 void Player::PlayerState::exit(Player* player, Node* mainLayer) {
 }
 
+void Player::NeutralState::enter(Player* player, Node* mainLayer, float time) {
+	player->setSpriteFrame(player->standing.animation->getFrames().at(0)->getSpriteFrame());
+}
 //Neutral State:
 Player::PlayerState* Player::NeutralState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
@@ -318,6 +318,7 @@ Player::PlayerState* Player::AttackState::update(Player* player, Node* mainLayer
 		player->attackPrepareTime = -1.0f;
 	}
 	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->heldItem->getAttackTime()) {
+		player->setSpriteFrame(player->stabbing.animation->getFrames().at(0)->getSpriteFrame());
 		player->heldItem->getPhysicsBody()->setEnabled(false);
 		player->attackEndTime = time;
 		player->attackStartTime = -1.0f;
@@ -332,6 +333,7 @@ Player::PlayerState* Player::AttackState::update(Player* player, Node* mainLayer
 Player::PlayerState* Player::AttackState::handleInput(Player* player, Node* mainLayer, float time, Input input) {
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 		player->walk(input);
+		player->setSpriteFrame(player->stabbing.animation->getFrames().at(0)->getSpriteFrame());
 	}
 	if (input == USE_RELEASE) {
 		player->attackRelease = true;

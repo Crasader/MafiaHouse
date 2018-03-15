@@ -56,6 +56,10 @@ void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
 
+	if (player->caught == true){
+		resetLevel();
+	}
+
 	//for drawing vision rays
 	if (visionRays)
 	{
@@ -68,7 +72,7 @@ void Level::update(float deltaTime){
 	vector<Vec2> points;
 	Vec2 start;
 	for (int i = 0; i < enemies.size(); i++) {
-		if (enemyHit != -1) {
+		if (enemyHit != -1) {//temporary
 			if (enemies[i]->getTag() == enemyHit) {
 				//enemies[i]->kill();
 				mainLayer->removeChild(enemies[i]);
@@ -77,8 +81,6 @@ void Level::update(float deltaTime){
 				continue;
 			}
 		}
-		//enemies[i]->update(mainLayer, gameTime);
-		enemies[i]->walk(gameTime);
 		//enemy vision:
 		enemies[i]->visionRays(&points, &start);
 		//drawing vision rays
@@ -88,14 +90,7 @@ void Level::update(float deltaTime){
 		}
 		points.clear();
 
-		//checking if enemy spotted player
-		if (enemies[i]->seeingPlayer() == true) {
-			enemies[i]->suspicionLevel++;
-		}
-		//check if an enemy has become alerted
-		if (enemies[i]->suspicionLevel >= 100) {
-			resetLevel();
-		}
+		enemies[i]->update(mainLayer, gameTime, player);
 	}
 	addChild(visionRays);
 
@@ -190,6 +185,20 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				//return true;
 				//solve.setRestitution(0.0f);
 				return false;
+			}
+			else {
+				CCLOG("YOU AVOIDED DETECTION");
+				return false;
+			}
+		}
+		// check if player has collided with an enemy
+		if ((a->getName() == "player" && b->getName() == "enemy_alert") || (a->getName() == "enemy_alert" && b->getName() == "player"))
+		{
+			if (player->hidden != true) {
+				CCLOG("YOU TOUCHED AN ENEMY");
+				player->caught = true;
+				solve.setRestitution(0.0f);
+				return true;
 			}
 			else {
 				CCLOG("YOU AVOIDED DETECTION");
