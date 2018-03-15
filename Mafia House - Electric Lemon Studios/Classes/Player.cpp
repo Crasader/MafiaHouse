@@ -46,6 +46,7 @@ void Player::walk(Input input) {
 			}
 			stopActionByTag(MOONWALK);
 			if (getActionByTag(WALK) == NULL) {
+				walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 				runAction(walking.action);
 			}
 			setSpeed(moveSpeed);
@@ -77,6 +78,7 @@ void Player::walk(Input input) {
 			}
 			stopActionByTag(MOONWALK);
 			if (getActionByTag(WALK) == NULL) {
+				walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 				runAction(walking.action);
 			}
 			setSpeed(moveSpeed);
@@ -102,6 +104,7 @@ void Player::walk(Input input) {
 	if (input == STOP) {
 		moveDirection = 0;
 		//run standing animation
+		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingSound);
 		setSpriteFrame(standing.animation->getFrames().at(0)->getSpriteFrame());
 		stopActionByTag(WALK);
 		stopActionByTag(MOONWALK);

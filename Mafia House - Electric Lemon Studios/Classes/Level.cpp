@@ -115,12 +115,10 @@ void Level::update(float deltaTime){
 		if (player->stairToUse != -1) {
 			player->handleInput(mainLayer, gameTime, USE_STAIR);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stairs.wav");
-			player->handleInput(USE_STAIR, mainLayer);
 		}
 		else if (player->doorToUse != -1) {
 			player->handleInput(mainLayer, gameTime, USE_DOOR);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/openDoor.wav");
-			player->handleInput(USE_DOOR, mainLayer);
 		}
 	}
 	//check if player is dropping item
@@ -128,7 +126,6 @@ void Level::update(float deltaTime){
 		if (player->heldItem != NULL) {
 			player->handleInput(mainLayer, gameTime, DROP);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/unequip.wav");
-			player->handleInput(DROP, mainLayer);
 		}
 	}
 	//check if player is using item
@@ -147,7 +144,6 @@ void Level::update(float deltaTime){
 		if (player->itemToPickUp != -1 && player->heldItem == NULL) {
 			player->handleInput(mainLayer, gameTime, PICKUP);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
-			player->handleInput(PICKUP, mainLayer);
 		}
 	}
 	//check if player is going to hide behind object
@@ -155,7 +151,6 @@ void Level::update(float deltaTime){
 		if (player->objectToHideBehind != -1) {
 			player->handleInput(mainLayer, gameTime, HIDE);
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/hide.wav");
-			player->handleInput(HIDE, mainLayer);
 		}
 	}
 

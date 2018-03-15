@@ -1,5 +1,6 @@
 #pragma once
 #include "cocos2d.h"
+#include "SimpleAudioEngine.h"
 #include "Functions.h"
 #include <string>
 #include <vector>

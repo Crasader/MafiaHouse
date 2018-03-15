@@ -144,6 +144,7 @@ private:
 
 	float moveSpeed = 1.0f;
 	int moveDirection = 0;
+	unsigned walkingSound;
 
 	//variables used for the timing of attacking/using items:
 	float attackPrepareTime = -1.0f;//time player begins to prepare and attack
