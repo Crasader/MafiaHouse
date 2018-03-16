@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "Item.h"
-USING_NS_CC;
+#include "GameLayer.h"
 
 enum Input {
 	PICKUP,
@@ -44,6 +44,7 @@ public:
 
 	void pickUpItem(GameLayer* mainLayer);
 	void dropItem(GameLayer* mainLayer);
+	void breakItem();
 
 	void beginUseItem();
 	void useItem();

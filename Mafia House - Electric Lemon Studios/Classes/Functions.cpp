@@ -24,15 +24,6 @@ void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
 	}
 }
 
-Stair* GameLayer::getPartnerStair(Stair* stair) {
-	if (stair->type == 1) {
-		return static_cast<Stair*>(getChildByTag(getTag() + 1000));
-	}
-	else if (stair->type == 2) {
-		return static_cast<Stair*>(getChildByTag(getTag() - 1000));
-	}
-}
-
 Floor::Floor(int n, int h, int t, int b) {
 	num = n;
 	height = h;

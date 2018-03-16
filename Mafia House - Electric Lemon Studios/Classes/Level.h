@@ -12,6 +12,7 @@
 #include "Wall.h"
 #include "EnvObject.h"
 #include "Stair.h"
+#include "GameLayer.h"
 USING_NS_CC;
 using std::vector;
 using std::string;

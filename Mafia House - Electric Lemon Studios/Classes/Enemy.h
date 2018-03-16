@@ -1,6 +1,6 @@
 #pragma once
 #include "GameObject.h"
-USING_NS_CC;
+#include "GameLayer.h"
 
 class Enemy : public GameObject
 {
@@ -11,13 +11,13 @@ public:
 
 	void initObject(Vec2 startPos = Vec2(0,0));
 
-	void update(GameLayer* mainLayer, float time, Node* target);
+	void update(GameLayer* mainLayer, float time, GameObject* target);
 
 	void walk(float time);
 
 	void chase(Node* target);
 
-	void pathTo(GameLayer* mainLayer, float positionX, int floorNum);
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
 	void moveTo(float positionX);
 
 	void changeSuspicion(float num);
@@ -34,25 +34,25 @@ protected:
 	public:
 		virtual ~State() {}
 		virtual void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		virtual State* update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		virtual State* update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
 		virtual void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class DefaultState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		State* update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class SuspectState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		State * update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class AlertState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		State * update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 

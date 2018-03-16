@@ -71,7 +71,7 @@ void Level::update(float deltaTime){
 	gameTime += deltaTime;
 
 	if (player->caught == true){
-		resetLevel();
+		//resetLevel();
 	}
 
 	//for drawing vision rays
@@ -589,7 +589,7 @@ bool Level::initLevel(string filename){
 	file.close();
 
 	//make the level
-	createLevel(&rooms, &doors, &mainLayer->stairs, &objects, &items, &enemies, player, background->getPosition(), background->getContentSize().width * backgroundScale, floors, &mainLayer->floors);
+	createLevel(&rooms, &doors, &mainLayer->stairs, &objects, &items, &enemies, player, background->getPosition(), background->getContentSize().width * backgroundScale, floors);
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 

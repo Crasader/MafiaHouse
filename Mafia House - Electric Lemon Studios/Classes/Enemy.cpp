@@ -62,7 +62,7 @@ void Enemy::chase(Node* target) {
 	moveAbsolute(moveDirection * 4.5 * moveSpeed);
 }
 //a recursive function!!! searches for a path to get to a certain floor
-Stair* search(GameLayer* mainLayer, int floorNum, vector<Stair*> stairs) {
+Stair* pathSearch(GameLayer* mainLayer, int floorNum, vector<Stair*> stairs) {
 	Stair* tempStair;
 	vector<Stair*> newSearchStairs;
 
@@ -78,20 +78,19 @@ Stair* search(GameLayer* mainLayer, int floorNum, vector<Stair*> stairs) {
 				}
 			}
 		}
-		search(mainLayer, mainLayer->getPartnerStair(stairs[i])->startRoom.y, newSearchStairs);
+		pathSearch(mainLayer, mainLayer->getPartnerStair(stairs[i])->startRoom.y, newSearchStairs);
 	}
 	return nullptr;//fails to find a successful path
 }
 
-void Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
+bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
 	float displacement = positionX - getPosition().x;
 	Stair* takeStair = NULL;
 
 	Stair* tempStair;
 	vector<Stair*> searchStairs;
 
-	if (floorNum != startRoom.y) {//destination is on different floor
-
+	if (floorNum != currentFloor) {//destination is on different floor
 		for (int i = 0; i < mainLayer->stairs.size(); i++) {
 			if (mainLayer->stairs[i]->startRoom.y == floorNum) {//stair is on destination floor
 				if (mainLayer->getPartnerStair(mainLayer->stairs[i])->startRoom.y == currentFloor) {//partner stair is on your floor
@@ -104,7 +103,9 @@ void Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
 			}
 		}
 
-		takeStair = search(mainLayer, floorNum, searchStairs);
+		if (takeStair == NULL) {
+			takeStair = pathSearch(mainLayer, floorNum, searchStairs);
+		}
 
 		//if they are not at location of stairs yet:
 		if (!(getPositionX() + getContentSize().width >= takeStair->getPositionX() && getPositionX() <= takeStair->getPositionX() + takeStair->getContentSize().width)) {
@@ -117,19 +118,25 @@ void Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
 	}
 	else {//already on the right floor
 		moveTo(positionX);
+		if (getPositionX() + (getContentSize().width / 2) >= positionX - 10 && getPositionX() + (getContentSize().width / 2) <= positionX + 10) {
+			return true;
+		}
 	}
+	return false;
 }
 
 void Enemy::moveTo(float positionX) {
 	float displacement = positionX - getPositionX();
-	Vec2 moveDirection = Vec2(displacement / displacement, 0);
+	Vec2 moveDirection;
 
 	if (displacement < 0) {//player is to the left
+		moveDirection = Vec2(-1, 0);
 		if (flippedX == false) {
 			flipX();
 		}
 	}
 	else if (displacement >= 0) {//player is to the right
+		moveDirection = Vec2(1, 0);
 		if (flippedX == true) {
 			flipX();
 		}
@@ -204,8 +211,8 @@ void Enemy::setSuspicion(float num) {
 }
 
 //Update Checking:
-void Enemy::update(GameLayer* mainLayer, float time, Node* target) {
-	updateFloor(mainLayer);
+void Enemy::update(GameLayer* mainLayer, float time, GameObject* target) {
+	//updateFloor(mainLayer->floors);
 	newState = state->update(this, mainLayer, time, target);
 	if (newState != NULL)
 	{
@@ -223,7 +230,7 @@ void Enemy::update(GameLayer* mainLayer, float time, Node* target) {
 //Enemy States
 void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 }
-Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
 	return nullptr;
 }
 void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
@@ -231,17 +238,18 @@ void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
 
 //Default State
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->returning = true;
 	enemy->moveSpeed = 1.0f;
 	enemy->setSpeed(enemy->moveSpeed);
 	enemy->setName("enemy");
 }
-Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / 1 SECONDS);//increases 1/60th of max every frame, takes 60 frames to alert guard
+		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));//increases 1/60th of max every frame, takes 60 frames to alert guard
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / 4 SECONDS);//takes 240 frames to drop back to 0 from max
+		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));//takes 240 frames to drop back to 0 from max
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
@@ -256,12 +264,14 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->walk(time);
 	}
 	else {//enemy is returining to start position
-		//enemy->moveTo(enemy->initialPos);
+		if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
+			enemy->returning = false;
+		}
 	}
 
 	if (enemy->touchedPlayer == true) {
-		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / 1 SECONDS));
-		enemy->chase(target);
+		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / (1 SECONDS)));
+		enemy->pathTo(mainLayer, target->getPositionX(), target->currentFloor);
 		enemy->touchedPlayer = false;
 	}
 	return nullptr;
@@ -273,19 +283,19 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->setSpeed(enemy->moveSpeed);
 	enemy->setName("enemy_alert");
 }
-Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(10);
+		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-2);
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (10 SECONDS));
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {
 		return new DefaultState;
 	}
-	enemy->chase(target);
+	enemy->pathTo(mainLayer, target->getPositionX(), target->currentFloor);
 	return nullptr;
 }
 
@@ -294,21 +304,21 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setSpeed(2.0f);
 	enemy->setName("enemy_alert");
 }
-Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / 1 SECONDS);
+		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / 4 SECONDS);
+		enemy->changeSuspicion(-enemy->maxSuspicion / (10 SECONDS));
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {
 		return new DefaultState;
 	}
-	else if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
+	else if (enemy->suspicionLevel <= enemy->maxSuspicion / 2) {
 		//return new SuspectState;
 	}
-	enemy->chase(target);
+	enemy->pathTo(mainLayer,target->getPositionX(), target->currentFloor);
 	return nullptr;
 }

@@ -139,6 +139,18 @@ void Player::dropItem(GameLayer* mainLayer) {
 	heldItem = NULL;
 }
 
+void Player::breakItem() {
+	//removing item from inventory
+	for (int i = 0; i < inventory.size(); i++) {
+		if (inventory[i] == heldItem) {
+			inventory.erase(inventory.begin() + i);
+			break;
+		}
+	}
+	heldItem->breakItem();
+	heldItem = NULL;
+}
+
 void Player::beginUseItem() {
 	if (heldItem->getAttackType() == Item::STAB) {
 		heldItem->beginStab();
@@ -215,7 +227,7 @@ void Player::noclip() {
 
 //Update Checking:
 void Player::update(GameLayer* mainLayer, float time) {
-	updateFloor(mainLayer);//checking if floor has changed
+	//updateFloor(mainLayer->floors);//checking if floor has changed
 	newState = state->update(this, mainLayer, time);
 	if (newState != NULL)
 	{
@@ -351,7 +363,7 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);
 	if (player->heldItem->getTag() == mainLayer->itemUsed) {
-		player->heldItem->breakItem();
+		player->breakItem();
 		mainLayer->itemUsed = -1;
 	}
 	else{

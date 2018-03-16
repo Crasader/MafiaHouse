@@ -1,10 +1,10 @@
 #pragma once
 #include "cocos2d.h"
 #include "SimpleAudioEngine.h"
-#include "Functions.h"
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "Functions.h"
 USING_NS_CC;
 using std::string;
 using std::vector;
@@ -70,7 +70,7 @@ public:
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
-	void updateFloor(GameLayer* mainLayer);
+	void updateFloor(vector<Floor> floors);
 
 	//void setPosition(Vec2 pos);
 	//Vec2 getPosition(Vec2 pos);
