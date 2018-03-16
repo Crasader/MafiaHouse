@@ -20,6 +20,8 @@ public:
 	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
 	void moveTo(float positionX);
 
+	void useDoor(GameLayer* mainLayer);
+
 	void changeSuspicion(float num);
 	void setSuspicion(float num);
 
@@ -28,6 +30,8 @@ public:
 	bool seeingPlayer() { return playerInVision; }
 
 	bool touchedPlayer = false;
+
+	int doorToUse = -1;//the tag of the door the enemy can open/close
 
 protected:
 	class State {

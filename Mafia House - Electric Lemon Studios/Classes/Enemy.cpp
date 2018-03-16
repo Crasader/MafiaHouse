@@ -1,4 +1,5 @@
 #include "Enemy.h"
+#include "Wall.h"
 
 Enemy::Enemy()
 {
@@ -145,6 +146,14 @@ void Enemy::moveTo(float positionX) {
 	moveAbsolute(moveDirection * 4.5 * moveSpeed);
 }
 
+void Enemy::useDoor(GameLayer* mainLayer) {
+	if (doorToUse != -1) {
+		Door* door = static_cast<Door*>(mainLayer->getChildByTag(doorToUse));
+		door->use();
+		doorToUse = -1;
+	}
+}
+
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 {
 	playerInVision = false;
@@ -179,14 +188,15 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	int direction;
 
 	if (flippedX == false) {
-		startPoint = getPosition() + Vec2(getContentSize().width - 5, 87);
+		startPoint = getPosition() + Vec2(getContentSize().width - 12, 87);
+		*start = startPoint + Vec2(6, 0);//shift visuals forward a bit
 		direction = 1;
 	}
 	else {
-		startPoint = getPosition() + Vec2(5, 87);
+		startPoint = getPosition() + Vec2(12, 87);
+		*start = startPoint + Vec2(-6, 0);//shift visuals forward a bit
 		direction =  -1;
 	}
-	*start = startPoint;
 
 	float angle = 0 - (visionDegrees / 2);
 	for (int i = 0; i < visionDegrees; i++) {
@@ -212,6 +222,7 @@ void Enemy::setSuspicion(float num) {
 
 //Update Checking:
 void Enemy::update(GameLayer* mainLayer, float time, GameObject* target) {
+	useDoor(mainLayer);
 	//updateFloor(mainLayer->floors);
 	newState = state->update(this, mainLayer, time, target);
 	if (newState != NULL)
@@ -249,7 +260,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));//increases 1/60th of max every frame, takes 60 frames to alert guard
 	}
 	else {
-		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));//takes 240 frames to drop back to 0 from max
+		enemy->changeSuspicion(-enemy->maxSuspicion / (4 SECONDS));//takes 240 frames to drop back to 0 from max
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {

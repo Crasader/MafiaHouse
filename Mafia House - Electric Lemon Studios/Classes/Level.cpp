@@ -337,6 +337,20 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return false;
 		}
 
+		//enemy and door
+		if ((a->getName() == "enemy"  || a->getName() == "enemy_alert") && b->getName() == "door")
+		{
+			//CCLOG("CAN OPEN DOOR");
+			static_cast<Enemy*>(a)->doorToUse = b->getTag();
+			return false;
+		}
+		else if (a->getName() == "door" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
+		{
+			//CCLOG("CAN OPEN DOOR");
+			static_cast<Enemy*>(b)->doorToUse = a->getTag();
+			return false;
+		}
+
 	}
 	return true;
 }
