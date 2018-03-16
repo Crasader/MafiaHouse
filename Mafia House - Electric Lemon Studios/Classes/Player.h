@@ -68,6 +68,8 @@ public:
 	bool hidden = false;
 	bool caught = false;
 
+	bool beingChased = false;
+
 	enum Profile {
 		STAND,
 		CROUCH

@@ -17,8 +17,11 @@ public:
 
 	void chase(Node* target);
 
-	void changeSuspicion(int num);
-	void setSuspicion(int num);
+	void pathTo(GameLayer* mainLayer, float positionX, int floorNum);
+	void moveTo(float positionX);
+
+	void changeSuspicion(float num);
+	void setSuspicion(float num);
 
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
 
@@ -40,6 +43,12 @@ protected:
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
+	class SuspectState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		//void exit(Enemy* enemy, GameLayer* mainLayer);
+	};
 	class AlertState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
@@ -51,7 +60,8 @@ protected:
 	State* newState = NULL;
 	State* prevState = NULL;
 
-	int suspicionLevel = 0;//600 is max
+	float suspicionLevel = 0;
+	float maxSuspicion = 1200;
 
 	//Stuff for Vision Fields:
 	bool didRun;
@@ -68,4 +78,9 @@ protected:
 	float waitTime = 2.0f;
 	float previousTurnTime = -1;
 	float stopTime = -1;
+
+	float moveSpeed = 1.0f;
+
+	Vec2 initialPos;
+	bool returning = false;
 };

@@ -77,8 +77,6 @@ protected:
 
 	vector<Door*> doors;
 
-	vector<Stair*> stairs;
-
 	Node* camPos;//an invisible node used to position the camera
 	Camera* camera = NULL;
 	Vec2 camBoundingBox = Vec2(200, 0);

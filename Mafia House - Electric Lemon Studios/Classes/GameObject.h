@@ -70,7 +70,10 @@ public:
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
+	void updateFloor(GameLayer* mainLayer);
+
 	//void setPosition(Vec2 pos);
+	//Vec2 getPosition(Vec2 pos);
 
 	//movement functions
 	void stopX();
@@ -85,7 +88,10 @@ public:
 	void flipX();//flips object on X-axis
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position
-	Vec2 startRoom = Vec2(0,0);//coordinates of room the object starts in
+	Vec2 startRoom = Vec2(0,0);//NOT POSITION COORDINATES, the room the object starts in
+	//startRoom.y == floor number
+	//startRoom.x == room nuumber
+	int currentFloor;
 
 protected:
 	bool flippedX = false;//false = facing right

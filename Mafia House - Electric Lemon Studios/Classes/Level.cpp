@@ -415,6 +415,9 @@ void Level::createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair
 
 	//generating floors
 	for (int i = 0; i < floorData.size(); i++) {
+		Floor floor(i, floorData[i].height, position.y + floorData[i].height, position.y);
+		mainLayer->floors.push_back(floor);//adding floor information to list of floors
+
 		createFloor(rooms, doors, stairs, objects, items, enemies, player, position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
 
 		position = position + Vec2(0, floorData[i].height + r.fullThick);//adding height of created floor to set position for next floor
@@ -438,9 +441,9 @@ bool Level::initLevel(string filename){
 	string line;
 	int roomNum = -1;
 	while (getline(file, line)) {//each interation gets a single line from the file; gets data for a single room
-		RoomData roomData;
-
 		if (line[0] == '#') { continue; }//ignoring comment lines, which begin with the '#' character
+
+		RoomData roomData;
 
 		if (line == "FLOOR_END") {//indicates to move to next floor in floors vector
 			floors.push_back(floorData);
@@ -520,6 +523,7 @@ bool Level::initLevel(string filename){
 					roomData.bottomDoors.push_back(ventData);
 				}
 			}
+			//Stairs
 			else if (pieces[0] == "stair") {
 				Stair* stair = Stair::create();
 				stair->pairNum = atof(pieces[1].c_str());
@@ -532,8 +536,9 @@ bool Level::initLevel(string filename){
 				stair->initObject();
 				stair->roomStartPos = Vec2(atof(pieces[3].c_str()), atof(pieces[4].c_str()));
 				stair->startRoom = Vec2(roomNum, floorNum);
-				stairs.push_back(stair);
+				mainLayer->stairs.push_back(stair);
 			}
+			//Environmental Objects
 			else if (pieces[0] == "object") {
 				EnvObject* object;
 				if (pieces[1] == "plant") {
@@ -544,6 +549,7 @@ bool Level::initLevel(string filename){
 				object->startRoom = Vec2(roomNum, floorNum);
 				objects.push_back(object);
 			}
+			//Items
 			else if (pieces[0] == "item") {
 				Item* item;
 				if (pieces[1] == "knife") {
@@ -554,6 +560,7 @@ bool Level::initLevel(string filename){
 				item->startRoom = Vec2(roomNum, floorNum);
 				items.push_back(item);
 			}
+			//Enemies
 			else if (pieces[0] == "enemy") {
 				Enemy* enemy;
 				if (pieces[1] == "guard") {
@@ -562,10 +569,13 @@ bool Level::initLevel(string filename){
 				enemy->initObject();
 				enemy->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				enemy->startRoom = Vec2(roomNum, floorNum);
+				enemy->currentFloor = floorNum;
 				enemies.push_back(enemy);
 			}
 			else if (pieces[0] == "player") {//set player position in room
 				player->roomStartPos = Vec2(atof(pieces[1].c_str()), atof(pieces[2].c_str()));
+				player->startRoom = Vec2(roomNum, floorNum);
+				player->currentFloor = floorNum;
 			}
 
 			pieces.clear();
@@ -579,7 +589,7 @@ bool Level::initLevel(string filename){
 	file.close();
 
 	//make the level
-	createLevel(&rooms, &doors, &stairs, &objects, &items, &enemies, player, background->getPosition(), background->getContentSize().width * backgroundScale, floors);
+	createLevel(&rooms, &doors, &mainLayer->stairs, &objects, &items, &enemies, player, background->getPosition(), background->getContentSize().width * backgroundScale, floors, &mainLayer->floors);
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 
@@ -594,8 +604,8 @@ bool Level::initLevel(string filename){
 		mainLayer->addChild(doors[i]);
 	}
 	//stairways
-	for (int i = 0; i < stairs.size(); i++) {
-		mainLayer->addChild(stairs[i]);//Do Not give unique tag to each stairway, already done elsewhere
+	for (int i = 0; i < mainLayer->stairs.size(); i++) {
+		mainLayer->addChild(mainLayer->stairs[i]);//Do Not give unique tag to each stairway, already done elsewhere
 	}
 	//objects
 	for (int i = 0; i < objects.size(); i++) {
