@@ -45,23 +45,6 @@ void Enemy::walk(float time) {
 	}
 }
 
-void Enemy::chase(Node* target) {
-	Vec2 displacement = target->getPosition() - getPosition();
-	Vec2 moveDirection = displacement.getNormalized();
-
-	if (displacement.x < 0) {//player is to the left
-		if (flippedX == false) {
-			flipX();
-		}
-	}
-	else if (displacement.x >= 0) {//player is to the right
-		if (flippedX == true) {
-			flipX();
-		}
-	}
-
-	moveAbsolute(moveDirection * 4.5 * moveSpeed);
-}
 //a recursive function!!! searches for a path to get to a certain floor
 Stair* pathSearch(GameLayer* mainLayer, int floorNum, vector<Stair*> stairs) {
 	Stair* tempStair;

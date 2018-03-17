@@ -11,7 +11,7 @@ void GameObject::initObject() {
 
 	setPositionZ(0.0f);
 	//set the anchor point to bottom left corner. nevermind this messes up animations an
-	setAnchorPoint(Vec2(0, 0));
+	//setAnchorPoint(Vec2(0, 0));
 
 	//disabling anti-aliasing!!! (looks like blurry poop without this)
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
@@ -86,12 +86,13 @@ void GameObject::updateFloor(vector<Floor> floors) {
 	}
 }
 
-//void GameObject::setPosition(Vec2 pos) {
-//	Node::setPosition(pos + Vec2(getContentSize().width / 2, getContentSize().height / 2));
-//}
-//Vec2 GameObject::getPosition() {
-//	Node::getPosition(pos - Vec2(getContentSize().width / 2, getContentSize().height / 2));
-//}
+void GameObject::setPosition(Vec2 pos) {
+	Node::setPosition(pos + Vec2(getContentSize().width / 2, getContentSize().height / 2));
+}
+Vec2 GameObject::getPosition() {
+	Vec2 pos = Node::getPosition();
+	return pos - Vec2(getContentSize().width / 2, getContentSize().height / 2);
+}
 
 void GameObject::stopX() {
 	getPhysicsBody()->setVelocity(Vec2(0, getPhysicsBody()->getVelocity().y));
@@ -137,11 +138,11 @@ void GameObject::flipX() {
 	setScaleX(getScaleX() * -1);//flips sprite and it's children by inverting x scale
 	if (flippedX == false) {
 		flippedX = true;
-		setAnchorPoint(Vec2(1, 0));//have to change anchor point to opposite corner after flipping or the sprite will change position
+		//setAnchorPoint(Vec2(1, 0));//have to change anchor point to opposite corner after flipping or the sprite will change position
 	}
 	else {
 		flippedX = false;
-		setAnchorPoint(Vec2(0, 0));
+		//setAnchorPoint(Vec2(0, 0));
 	}
 }
 

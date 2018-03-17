@@ -180,12 +180,15 @@ void Level::update(float deltaTime){
 
 	//player movement input checking
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
+		//player->getPhysicsBody()->applyImpulse(Vec2(1000, 0));
 		player->handleInput(mainLayer, gameTime, MOVE_RIGHT);
 	}
 	if (INPUTS->getKey(KeyCode::KEY_A)) {
+		//player->getPhysicsBody()->applyImpulse(Vec2(-1000, 0));
 		player->handleInput(mainLayer, gameTime, MOVE_LEFT);
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
+		//player->getPhysicsBody()->setVelocity(Vec2(0, 0));
 		player->handleInput(mainLayer, gameTime, STOP);
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {//for testing purposes only, do not abuse

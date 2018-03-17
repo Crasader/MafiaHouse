@@ -50,7 +50,7 @@ enum AnimationTag {
 	STAND,
 	WALK,
 	MOONWALK,
-	STAB
+	STABBING
 };
 
 class GameObject: public Sprite
@@ -72,8 +72,8 @@ public:
 
 	void updateFloor(vector<Floor> floors);
 
-	//void setPosition(Vec2 pos);
-	//Vec2 getPosition(Vec2 pos);
+	void setPosition(Vec2 pos);
+	Vec2 getPosition();
 
 	//movement functions
 	void stopX();
@@ -119,9 +119,9 @@ Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets
 
 class GameAnimation {
 public:
-	GameAnimation(int tag, char* path, int numFrames, float frameTime) {
+	GameAnimation(int tag, char* path, int numFrames, float frameTime, Vec2 offset = Vec2(0,0)) {
 		auto frames = getAnimation(path, numFrames);//change number of frames to correct number
-		animation = Animation::createWithSpriteFrames(frames, frameTime);//change number to correct speed for animation
+		animation = Animation::createWithSpriteFrames(frames, 0);//change number to correct speed for animation
 		animation->retain();
 		action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
 		action->retain();

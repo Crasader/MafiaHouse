@@ -15,8 +15,6 @@ public:
 
 	void walk(float time);
 
-	void chase(Node* target);
-
 	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
 	void moveTo(float positionX);
 

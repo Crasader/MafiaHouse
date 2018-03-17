@@ -125,7 +125,7 @@ private:
 	GameAnimation moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
 	//GameAnimation crouchAnimation;
 	//GameAnimation crawlAnimation;
-	GameAnimation stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);;
+	GameAnimation stabbing = GameAnimation(STABBING, "player/stab/%03d.png", 2, 10 FRAMES, Vec2(1,0));
 	//GameAnimation swingAnimation;
 	//GameAnimation readyThrowAnimation;
 	//GameAnimation throwAnimation;
