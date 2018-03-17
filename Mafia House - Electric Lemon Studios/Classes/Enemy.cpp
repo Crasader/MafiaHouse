@@ -1,4 +1,5 @@
 #include "Enemy.h"
+#include "Wall.h"
 
 Enemy::Enemy()
 {
@@ -22,6 +23,7 @@ Enemy::~Enemy(){
 void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
+	initialPos = startPos;
 }
 
 void Enemy::walk(float time) {
@@ -44,28 +46,112 @@ void Enemy::walk(float time) {
 }
 
 void Enemy::chase(Node* target) {
-	Vec2 displacement = getPosition() - target->getPosition();
+	Vec2 displacement = target->getPosition() - getPosition();
 	Vec2 moveDirection = displacement.getNormalized();
 
 	if (displacement.x < 0) {//player is to the left
-		if (flippedX == true) {
-			flipX();
-		}
-	}
-	else if (displacement.x >= 0) {//player is to the lright
 		if (flippedX == false) {
 			flipX();
 		}
 	}
-
-	move(moveDirection * 8);
-
-	/*if (flippedX == true) {
-		move(moveDirection * 8);
+	else if (displacement.x >= 0) {//player is to the right
+		if (flippedX == true) {
+			flipX();
+		}
 	}
-	else {
-		move(moveDirection * -8);
-	}*/
+
+	moveAbsolute(moveDirection * 4.5 * moveSpeed);
+}
+//a recursive function!!! searches for a path to get to a certain floor
+Stair* pathSearch(GameLayer* mainLayer, int floorNum, vector<Stair*> stairs) {
+	Stair* tempStair;
+	vector<Stair*> newSearchStairs;
+
+	for (int i = 0; i < stairs.size(); i++) {//searches for stair to take to get to a certain floor
+		for (int j = 0; j < mainLayer->stairs.size(); j++) {//each loop checks for a partner stair that is on same floor as enemy
+			if (mainLayer->stairs[j]->startRoom.y == mainLayer->getPartnerStair(stairs[i])->startRoom.y) {//stair is on same floor as the partner stair
+				if (mainLayer->getPartnerStair(mainLayer->stairs[j])->startRoom.y == floorNum) {//partner stair of this stair is on same floor as player
+					return mainLayer->getPartnerStair(mainLayer->stairs[j]);//take this stair
+				}
+				else {
+					tempStair = mainLayer->stairs[i];
+					newSearchStairs.push_back(tempStair);
+				}
+			}
+		}
+		pathSearch(mainLayer, mainLayer->getPartnerStair(stairs[i])->startRoom.y, newSearchStairs);
+	}
+	return nullptr;//fails to find a successful path
+}
+
+bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
+	float displacement = positionX - getPosition().x;
+	Stair* takeStair = NULL;
+
+	Stair* tempStair;
+	vector<Stair*> searchStairs;
+
+	if (floorNum != currentFloor) {//destination is on different floor
+		for (int i = 0; i < mainLayer->stairs.size(); i++) {
+			if (mainLayer->stairs[i]->startRoom.y == floorNum) {//stair is on destination floor
+				if (mainLayer->getPartnerStair(mainLayer->stairs[i])->startRoom.y == currentFloor) {//partner stair is on your floor
+					takeStair = mainLayer->getPartnerStair(mainLayer->stairs[i]);//take this stair
+				}
+				else {
+					tempStair = mainLayer->stairs[i];
+					searchStairs.push_back(tempStair);
+				}
+			}
+		}
+
+		if (takeStair == NULL) {
+			takeStair = pathSearch(mainLayer, floorNum, searchStairs);
+		}
+
+		//if they are not at location of stairs yet:
+		if (!(getPositionX() + getContentSize().width >= takeStair->getPositionX() && getPositionX() <= takeStair->getPositionX() + takeStair->getContentSize().width)) {
+			moveTo(takeStair->getPositionX());//move towards stairs
+		}
+		//if they are at location of stairs:
+		else {
+			takeStair->use(this, mainLayer);//use the stairs
+		}
+	}
+	else {//already on the right floor
+		moveTo(positionX);
+		if (getPositionX() + (getContentSize().width / 2) >= positionX - 10 && getPositionX() + (getContentSize().width / 2) <= positionX + 10) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Enemy::moveTo(float positionX) {
+	float displacement = positionX - getPositionX();
+	Vec2 moveDirection;
+
+	if (displacement < 0) {//player is to the left
+		moveDirection = Vec2(-1, 0);
+		if (flippedX == false) {
+			flipX();
+		}
+	}
+	else if (displacement >= 0) {//player is to the right
+		moveDirection = Vec2(1, 0);
+		if (flippedX == true) {
+			flipX();
+		}
+	}
+
+	moveAbsolute(moveDirection * 4.5 * moveSpeed);
+}
+
+void Enemy::useDoor(GameLayer* mainLayer) {
+	if (doorToUse != -1) {
+		Door* door = static_cast<Door*>(mainLayer->getChildByTag(doorToUse));
+		door->use();
+		doorToUse = -1;
+	}
 }
 
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
@@ -102,14 +188,15 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	int direction;
 
 	if (flippedX == false) {
-		startPoint = getPosition() + Vec2(getContentSize().width - 5, 87);
+		startPoint = getPosition() + Vec2(getContentSize().width - 12, 87);
+		*start = startPoint + Vec2(6, 0);//shift visuals forward a bit
 		direction = 1;
 	}
 	else {
-		startPoint = getPosition() + Vec2(5, 87);
+		startPoint = getPosition() + Vec2(12, 87);
+		*start = startPoint + Vec2(-6, 0);//shift visuals forward a bit
 		direction =  -1;
 	}
-	*start = startPoint;
 
 	float angle = 0 - (visionDegrees / 2);
 	for (int i = 0; i < visionDegrees; i++) {
@@ -123,18 +210,20 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	}
 }
 
-void Enemy::changeSuspicion(int num) {
+void Enemy::changeSuspicion(float num) {
 	suspicionLevel += num;
-	suspicionLevel = suspicionLevel > 600 ? 600 : suspicionLevel;
+	suspicionLevel = suspicionLevel > maxSuspicion ? maxSuspicion : suspicionLevel;
 	suspicionLevel = suspicionLevel < 0 ? 0 : suspicionLevel;
 }
 
-void Enemy::setSuspicion(int num) {
+void Enemy::setSuspicion(float num) {
 	suspicionLevel = num;
 }
 
 //Update Checking:
-void Enemy::update(GameLayer* mainLayer, float time, Node* target) {
+void Enemy::update(GameLayer* mainLayer, float time, GameObject* target) {
+	useDoor(mainLayer);
+	//updateFloor(mainLayer->floors);
 	newState = state->update(this, mainLayer, time, target);
 	if (newState != NULL)
 	{
@@ -152,7 +241,7 @@ void Enemy::update(GameLayer* mainLayer, float time, Node* target) {
 //Enemy States
 void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 }
-Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
 	return nullptr;
 }
 void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
@@ -160,27 +249,64 @@ void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
 
 //Default State
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->setSpeed(1.0f);
+	enemy->returning = true;
+	enemy->moveSpeed = 1.0f;
+	enemy->setSpeed(enemy->moveSpeed);
 	enemy->setName("enemy");
 }
-Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(10);
+		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));//increases 1/60th of max every frame, takes 60 frames to alert guard
 	}
 	else {
-		enemy->changeSuspicion(-2);
+		enemy->changeSuspicion(-enemy->maxSuspicion / (4 SECONDS));//takes 240 frames to drop back to 0 from max
 	}
 	//check if an enemy has become alerted
-	if (enemy->suspicionLevel >= 600) {
+	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
 		return new AlertState;
-	} 
-	enemy->walk(time);
+	}
+	else if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
+		//return new SuspectState;
+	}
+
+	if (enemy->returning == false) {//enemy is following default path
+		//enemy->followPath(time);
+		enemy->walk(time);
+	}
+	else {//enemy is returining to start position
+		if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
+			enemy->returning = false;
+		}
+	}
+
 	if (enemy->touchedPlayer == true) {
-		enemy->setSuspicion(580);
-		enemy->chase(target);
+		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / (1 SECONDS)));
+		enemy->pathTo(mainLayer, target->getPositionX(), target->currentFloor);
 		enemy->touchedPlayer = false;
 	}
+	return nullptr;
+}
+
+//Suspect State
+void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->moveSpeed = 2.0f;
+	enemy->setSpeed(enemy->moveSpeed);
+	enemy->setName("enemy_alert");
+}
+Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
+	}
+	else {
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (10 SECONDS));
+	}
+	//check if an enemy has become unalerted
+	if (enemy->suspicionLevel <= 0) {
+		return new DefaultState;
+	}
+	enemy->pathTo(mainLayer, target->getPositionX(), target->currentFloor);
 	return nullptr;
 }
 
@@ -189,18 +315,21 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setSpeed(2.0f);
 	enemy->setName("enemy_alert");
 }
-Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target) {
+Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(10);
+		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-2);
+		enemy->changeSuspicion(-enemy->maxSuspicion / (10 SECONDS));
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {
 		return new DefaultState;
 	}
-	enemy->chase(target);
+	else if (enemy->suspicionLevel <= enemy->maxSuspicion / 2) {
+		//return new SuspectState;
+	}
+	enemy->pathTo(mainLayer,target->getPositionX(), target->currentFloor);
 	return nullptr;
 }

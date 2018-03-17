@@ -12,6 +12,7 @@
 #include "Wall.h"
 #include "EnvObject.h"
 #include "Stair.h"
+#include "GameLayer.h"
 USING_NS_CC;
 using std::vector;
 using std::string;
@@ -76,8 +77,6 @@ protected:
 	vector<Room*> rooms;//the rooms the level is made up of
 
 	vector<Door*> doors;
-
-	vector<Stair*> stairs;
 
 	Node* camPos;//an invisible node used to position the camera
 	Camera* camera = NULL;

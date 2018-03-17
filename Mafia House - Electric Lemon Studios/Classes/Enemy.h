@@ -1,6 +1,6 @@
 #pragma once
 #include "GameObject.h"
-USING_NS_CC;
+#include "GameLayer.h"
 
 class Enemy : public GameObject
 {
@@ -11,14 +11,19 @@ public:
 
 	void initObject(Vec2 startPos = Vec2(0,0));
 
-	void update(GameLayer* mainLayer, float time, Node* target);
+	void update(GameLayer* mainLayer, float time, GameObject* target);
 
 	void walk(float time);
 
 	void chase(Node* target);
 
-	void changeSuspicion(int num);
-	void setSuspicion(int num);
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
+	void moveTo(float positionX);
+
+	void useDoor(GameLayer* mainLayer);
+
+	void changeSuspicion(float num);
+	void setSuspicion(float num);
 
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
 
@@ -26,24 +31,32 @@ public:
 
 	bool touchedPlayer = false;
 
+	int doorToUse = -1;//the tag of the door the enemy can open/close
+
 protected:
 	class State {
 	public:
 		virtual ~State() {}
 		virtual void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		virtual State* update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		virtual State* update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
 		virtual void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class DefaultState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		State* update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
+		//void exit(Enemy* enemy, GameLayer* mainLayer);
+	};
+	class SuspectState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class AlertState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		State * update(Enemy* enemy, GameLayer* mainLayer, float time, Node* target);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time, GameObject* target);
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 
@@ -51,7 +64,8 @@ protected:
 	State* newState = NULL;
 	State* prevState = NULL;
 
-	int suspicionLevel = 0;//600 is max
+	float suspicionLevel = 0;
+	float maxSuspicion = 1200;
 
 	//Stuff for Vision Fields:
 	bool didRun;
@@ -68,4 +82,9 @@ protected:
 	float waitTime = 2.0f;
 	float previousTurnTime = -1;
 	float stopTime = -1;
+
+	float moveSpeed = 1.0f;
+
+	Vec2 initialPos;
+	bool returning = false;
 };

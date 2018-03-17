@@ -81,6 +81,9 @@
     <ClCompile Include="..\Classes\Functions.cpp">
       <Filter>Classes\Tools</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\GameLayer.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -142,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\Functions.h">
       <Filter>Classes\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\GameLayer.h">
+      <Filter>Classes\Objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

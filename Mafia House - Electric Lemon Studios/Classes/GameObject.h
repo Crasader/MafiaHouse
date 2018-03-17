@@ -1,10 +1,10 @@
 #pragma once
 #include "cocos2d.h"
 #include "SimpleAudioEngine.h"
-#include "Functions.h"
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "Functions.h"
 USING_NS_CC;
 using std::string;
 using std::vector;
@@ -63,6 +63,9 @@ public:
 	CREATE_WITH_FRAME_NAME(GameObject, "default.png");//use this function to create a sprite when using sprite sheet
 
 	virtual void initObject();
+	virtual void initAutoBody();
+	virtual void initBoxBody(Size size);
+	virtual void initObjectNoPhysics(Vec2 startPos);
 	virtual void initObject(Vec2 startPos);
 
 	virtual void initAnimations();
@@ -70,7 +73,10 @@ public:
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
+	void updateFloor(vector<Floor> floors);
+
 	//void setPosition(Vec2 pos);
+	//Vec2 getPosition(Vec2 pos);
 
 	//movement functions
 	void stopX();
@@ -85,7 +91,10 @@ public:
 	void flipX();//flips object on X-axis
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position
-	Vec2 startRoom = Vec2(0,0);//coordinates of room the object starts in
+	Vec2 startRoom = Vec2(0,0);//NOT POSITION COORDINATES, the room the object starts in
+	//startRoom.y == floor number
+	//startRoom.x == room nuumber
+	int currentFloor;
 
 protected:
 	bool flippedX = false;//false = facing right

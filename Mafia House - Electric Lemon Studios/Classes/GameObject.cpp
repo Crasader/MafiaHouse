@@ -31,9 +31,31 @@ void GameObject::initObject() {
 
 	//set tag
 	setTag(tag);
+}
 
+void GameObject::initAutoBody() {
 	//creating physics body
 	auto body = PhysicsBody::createBox(getContentSize());
+	body->setTag(tag);
+	body->setName(name);
+
+	//not necessary, will change from object to object:
+	body->setDynamic(dynamic);
+	body->setCategoryBitmask(category);
+	body->setCollisionBitmask(collision);
+
+	//necessary stuff, will not change between objects:
+	body->setRotationEnable(rotate);
+	body->setContactTestBitmask(0xFFFFFFFF);
+
+	body->setVelocityLimit(maxSpeed);//max object speed
+
+	setPhysicsBody(body);
+}
+
+void GameObject::initBoxBody(Size size) {
+	//creating physics body
+	auto body = PhysicsBody::createBox(size);
 	body->setTag(tag);
 	body->setName(name);
 
@@ -55,7 +77,15 @@ void GameObject::initObject(Vec2 startPos) {
 	//set position of sprite
 	setPosition(startPos);
 
-	GameObject::initObject();
+	initObject();
+	initAutoBody();
+}
+
+void GameObject::initObjectNoPhysics(Vec2 startPos) {
+	//set position of sprite
+	setPosition(startPos);
+
+	initObject();
 }
 
 void GameObject::initAnimations() {
@@ -71,8 +101,26 @@ void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
 	setPosition(roomPos + position);
 }
 
+void GameObject::updateFloor(vector<Floor> floors) {
+	/*if (getPosition().y < mainLayer->floors[currentFloor].bot) {//bottom of player is above top of floor
+		currentFloor++;//go up one floor
+	}
+	else if (getPosition().y + getContentSize().height > mainLayer->floors[currentFloor].top) {//top of player is below bottom of floor
+		currentFloor--;//go down one floor
+	}*/
+	for (int i = 0; i < floors.size(); i++) {
+		if ((getPosition().y < floors[i].bot )&& (getPosition().y + getContentSize().height > floors[i].top)) {//player in on the floor, inbetween top and bottom
+			currentFloor = i;
+			break;
+		}
+	}
+}
+
 //void GameObject::setPosition(Vec2 pos) {
 //	Node::setPosition(pos + Vec2(getContentSize().width / 2, getContentSize().height / 2));
+//}
+//Vec2 GameObject::getPosition() {
+//	Node::getPosition(pos - Vec2(getContentSize().width / 2, getContentSize().height / 2));
 //}
 
 void GameObject::stopX() {

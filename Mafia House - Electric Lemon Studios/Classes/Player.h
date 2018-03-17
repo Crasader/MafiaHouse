@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "Item.h"
-USING_NS_CC;
+#include "GameLayer.h"
 
 enum Input {
 	PICKUP,
@@ -44,6 +44,7 @@ public:
 
 	void pickUpItem(GameLayer* mainLayer);
 	void dropItem(GameLayer* mainLayer);
+	void breakItem();
 
 	void beginUseItem();
 	void useItem();
@@ -67,6 +68,8 @@ public:
 
 	bool hidden = false;
 	bool caught = false;
+
+	bool beingChased = false;
 
 	enum Profile {
 		STAND,
@@ -151,4 +154,7 @@ private:
 	float attackStartTime = -1.0f;//time player actually begins the attack after release
 	float attackEndTime = -1.0f;//time attack ends and englag begins
 	bool attackRelease = false;
+
+	//for physics body:
+	Size bodySize = Size(26, 90);//main player hitbox
 };
