@@ -31,9 +31,31 @@ void GameObject::initObject() {
 
 	//set tag
 	setTag(tag);
+}
 
+void GameObject::initAutoBody() {
 	//creating physics body
 	auto body = PhysicsBody::createBox(getContentSize());
+	body->setTag(tag);
+	body->setName(name);
+
+	//not necessary, will change from object to object:
+	body->setDynamic(dynamic);
+	body->setCategoryBitmask(category);
+	body->setCollisionBitmask(collision);
+
+	//necessary stuff, will not change between objects:
+	body->setRotationEnable(rotate);
+	body->setContactTestBitmask(0xFFFFFFFF);
+
+	body->setVelocityLimit(maxSpeed);//max object speed
+
+	setPhysicsBody(body);
+}
+
+void GameObject::initBoxBody(Size size) {
+	//creating physics body
+	auto body = PhysicsBody::createBox(size);
 	body->setTag(tag);
 	body->setName(name);
 
@@ -55,7 +77,15 @@ void GameObject::initObject(Vec2 startPos) {
 	//set position of sprite
 	setPosition(startPos);
 
-	GameObject::initObject();
+	initObject();
+	initAutoBody();
+}
+
+void GameObject::initObjectNoPhysics(Vec2 startPos) {
+	//set position of sprite
+	setPosition(startPos);
+
+	initObject();
 }
 
 void GameObject::initAnimations() {

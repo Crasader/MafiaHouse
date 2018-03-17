@@ -63,6 +63,9 @@ public:
 	CREATE_WITH_FRAME_NAME(GameObject, "default.png");//use this function to create a sprite when using sprite sheet
 
 	virtual void initObject();
+	virtual void initAutoBody();
+	virtual void initBoxBody(Size size);
+	virtual void initObjectNoPhysics(Vec2 startPos);
 	virtual void initObject(Vec2 startPos);
 
 	virtual void initAnimations();

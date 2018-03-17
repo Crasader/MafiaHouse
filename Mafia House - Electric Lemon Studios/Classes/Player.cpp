@@ -20,7 +20,8 @@ Player::~Player(){
 }
 
 void Player::initObject(Vec2 startPos) {
-	GameObject::initObject(startPos);
+	GameObject::initObjectNoPhysics(startPos);
+	initBoxBody(bodySize);
 }
 
 void Player::initAnimations() {

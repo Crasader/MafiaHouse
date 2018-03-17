@@ -154,4 +154,7 @@ private:
 	float attackStartTime = -1.0f;//time player actually begins the attack after release
 	float attackEndTime = -1.0f;//time attack ends and englag begins
 	bool attackRelease = false;
+
+	//for physics body:
+	Size bodySize = Size(26, 90);//main player hitbox
 };
