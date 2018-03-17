@@ -61,6 +61,7 @@ void Item::initHeldItem() {
 }
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
+	enemyCanUse = true;
 	getPhysicsBody()->setCategoryBitmask(16);
 	getPhysicsBody()->setCollisionBitmask(3);
 	getPhysicsBody()->setEnabled(true);

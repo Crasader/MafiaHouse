@@ -19,6 +19,7 @@ public:
 
 	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
 	void moveTo(float positionX);
+	bool moveToObject(Node* target);
 
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
 
@@ -66,6 +67,12 @@ protected:
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class UseDoorState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer);
+	};
+	class GetItemState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);

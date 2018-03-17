@@ -128,6 +128,14 @@ void Enemy::moveTo(float positionX) {
 	moveAbsolute(moveDirection * 4.5 * moveSpeed);
 }
 
+bool Enemy::moveToObject(Node* target) {
+	if (!(getPositionX() + getContentSize().width >= target->getPositionX() && getPositionX() <= target->getPositionX() + target->getContentSize().width)) {
+		moveTo(target->getPositionX());//move towards stairs
+		return false;
+	}
+	return true;
+}
+
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 {
 	detectedTag = -1;
@@ -138,6 +146,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	{
 		int visionContactTag = info.shape->getBody()->getTag();
 		string visionContactName = info.shape->getBody()->getName();
+		Node* visionContact = info.shape->getBody()->getNode();
 
 		//enemy vision is blocked by walls, doors
 		if (visionContactName == "wall" || visionContactName == "door") {
@@ -152,6 +161,14 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 			points->push_back(info.contact);
 			didRun = true;
 			return false;
+		}
+		//enemy sees an item
+		else if (visionContactName == "item") {
+			if (static_cast<Item*>(visionContact)->enemyCanUse == true) {
+				itemToPickUp = static_cast<Item*>(visionContact);//enemy can pick item up
+				return false;
+			}
+			return true;//enemy cannot pick item up
 		}
 		//things to ingore collisions with
 		else {
@@ -232,9 +249,13 @@ void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	}
 }
 Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	//check if enemy is walking into a aoor
+	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
+	}
+	//check if ee=nemy has seen an item
+	if (enemy->itemToPickUp != NULL) {
+		return new GetItemState;
 	}
 	//enemy is following default path
 	if (enemy->returning == false) {
@@ -346,4 +367,18 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 void Enemy::UseDoorState::exit(Enemy* enemy, GameLayer* mainLayer) {
 	enemy->useDoor();
 	enemy->doorToUse = NULL;
+}
+
+//Get Item State:
+void Enemy::GetItemState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+}
+Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->moveToObject(enemy->itemToPickUp) == true) {
+		enemy->pickUpItem(mainLayer);
+		return enemy->prevState;
+	}
+	return nullptr;
+}
+void Enemy::GetItemState::exit(Enemy* enemy, GameLayer* mainLayer) {
+	enemy->itemToPickUp = NULL;
 }
