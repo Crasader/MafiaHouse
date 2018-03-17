@@ -95,6 +95,8 @@ public:
 	int currentFloor;
 
 protected:
+	Vec2 initialPos;
+
 	bool flippedX = false;//false = facing right
 	bool flippedY = false;//false = facing upright
 

@@ -66,7 +66,7 @@ void Door::initObject(Vec2 startPos) {
 	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(1);
+	radiusBody->setCollisionBitmask(5);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
 	radiusBody->setTag(10000);
 	radiusBody->setName("door_radius");

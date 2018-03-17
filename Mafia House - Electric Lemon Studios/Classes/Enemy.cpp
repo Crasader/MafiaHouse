@@ -11,7 +11,7 @@ Enemy::Enemy()
 	//physics body properties
 	dynamic = true;
 	category = 4;
-	collision = 11;
+	collision = 15;
 
 	maxSpeed = 50;
 }
@@ -21,7 +21,6 @@ Enemy::~Enemy(){
 void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
-	initialPos = startPos;
 }
 
 void Enemy::walk(float time) {
@@ -89,18 +88,20 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
 			takeStair = pathSearch(mainLayer, floorNum, searchStairs);
 		}
 
-		//if they are not at location of stairs yet:
-		if (!(getPositionX() + getContentSize().width >= takeStair->getPositionX() && getPositionX() <= takeStair->getPositionX() + takeStair->getContentSize().width)) {
-			moveTo(takeStair->getPositionX());//move towards stairs
-		}
-		//if they are at location of stairs:
-		else {
-			takeStair->use(this, mainLayer);//use the stairs
+		if (takeStair != NULL) {
+			//if they are not at location of stairs yet:
+			if (!(getPositionX() + getContentSize().width >= takeStair->getPositionX() && getPositionX() <= takeStair->getPositionX() + takeStair->getContentSize().width)) {
+				moveTo(takeStair->getPositionX());//move towards stairs
+			}
+			//if they are at location of stairs:
+			else {
+				takeStair->use(this, mainLayer);//use the stairs
+			}
 		}
 	}
 	else {//already on the right floor
 		moveTo(positionX);
-		if (getPositionX() + (getContentSize().width / 2) >= positionX - 10 && getPositionX() + (getContentSize().width / 2) <= positionX + 10) {
+		if (getPositionX() + (getContentSize().width / 2) >= positionX - 30 && getPositionX() + (getContentSize().width / 2) <= positionX + 30) {
 			return true;
 		}
 	}
@@ -217,20 +218,23 @@ void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	return nullptr;
 }
-Enemy::State* Enemy::State::handleInput(Enemy* enemy, GameLayer* mainLayer, float time, Input input) {
-	return nullptr;
-}
 void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
 }
 
 //Default State:
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->returning = true;
-	enemy->moveSpeed = 1.0f;
-	enemy->setSpeed(enemy->moveSpeed);
-	enemy->setName("enemy");
+	if (enemy->prevState->type == "alert") {
+		enemy->returning = true;
+		enemy->moveSpeed = 1.0f;
+		enemy->setSpeed(enemy->moveSpeed);
+		enemy->setName("enemy");
+	}
 }
 Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	//check if enemy is walking into a aoor
+	if (enemy->doorToUse != NULL) {
+		return new UseDoorState;
+	}
 	//enemy is following default path
 	if (enemy->returning == false) {
 		//enemy->followPath(time);
@@ -295,6 +299,11 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setName("enemy_alert");
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	//check if enemy is walking into a aoor
+	if (enemy->doorToUse != NULL) {
+		enemy->useDoor();
+		enemy->doorToUse = NULL;
+	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
 		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
@@ -311,4 +320,28 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	enemy->pathTo(mainLayer,enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
 	return nullptr;
+}
+
+//Use Door State:
+void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->doorToUse->checkOpen() == false) {
+		enemy->useDoor();//only use the door if it's not open yet
+	}
+	if (enemy->flippedX == false) {
+		enemy->doorUsePos = enemy->getPositionX() + enemy->getContentSize().width;
+	}
+	else {
+		enemy->doorUsePos = enemy->getPositionX() - enemy->getContentSize().width;
+	}
+}
+Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
+		return enemy->prevState;
+	}
+	enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+	return nullptr;
+}
+void Enemy::UseDoorState::exit(Enemy* enemy, GameLayer* mainLayer) {
+	enemy->useDoor();
+	enemy->doorToUse = NULL;
 }

@@ -40,10 +40,10 @@ public:
 protected:
 	class State {
 	public:
+		string type = "default";
 		virtual ~State() {}
 		virtual void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		virtual State* update(Enemy* enemy, GameLayer* mainLayer, float time);
-		virtual State* handleInput(Enemy* enemy, GameLayer* mainLayer, float time, Input input);
 		virtual void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class DefaultState : public State {
@@ -60,9 +60,16 @@ protected:
 	};
 	class AlertState : public State {
 	public:
+		AlertState() { type = "alert"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		//void exit(Enemy* enemy, GameLayer* mainLayer);
+	};
+	class UseDoorState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	State* state = new DefaultState;
 	State* newState = NULL;
@@ -90,6 +97,8 @@ protected:
 	float stopTime = -1;
 
 	//for returning to starting position:
-	Vec2 initialPos;
 	bool returning = false;
+
+	//for using doors:
+	float doorUsePos;
 };

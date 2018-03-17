@@ -308,17 +308,37 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return false;
 		}
 
-		//enemy and door
-		if ((a->getName() == "enemy"  || a->getName() == "enemy_alert") && b->getName() == "door")
+		//alert enemy and door
+		if (a->getName() == "enemy_alert" && b->getName() == "door")
 		{
 			//CCLOG("CAN OPEN DOOR");
 			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b);
 			return false;
 		}
-		else if (a->getName() == "door" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
+		else if (a->getName() == "door" && b->getName() == "enemy_alert")
 		{
 			//CCLOG("CAN OPEN DOOR");
 			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a);
+			return false;
+		}
+
+		//enemy and door radius
+		if (a->getName() == "enemy" && b->getName() == "door_radius")
+		{
+			//CCLOG("CAN OPEN DOOR");
+			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
+			return false;
+		}
+		else if (a->getName() == "door_radius" && b->getName() == "enemy")
+		{
+			//CCLOG("CAN OPEN DOOR");
+			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
+			return false;
+		}
+
+		//enemy and item radius
+		if ((a->getName() == "enemy" && b->getName() == "item_radius") || (a->getName() == "item_radius" && b->getName() == "enemy"))
+		{
 			return false;
 		}
 

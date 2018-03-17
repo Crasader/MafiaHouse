@@ -80,7 +80,7 @@ protected:
 	Camera* camera = NULL;
 	Vec2 camBoundingBox = Vec2(200, 0);
 	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
-	float camZoom = 1.0f;
+	float camZoom = 0.5f;
 
 	bool onContactBegin(PhysicsContact &contact);
 

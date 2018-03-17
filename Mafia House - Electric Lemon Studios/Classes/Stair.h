@@ -43,11 +43,13 @@ public:
 
 	void unlock();
 
-	float radius = 60.0f;
+	bool checkOpen() { return isOpen; }
+
+	float radius = 54.0f;//12px on each side of door
 
 	Size size = Size(20, 110);
 
-	Size useBox = Size(radius, radius);
+	Size useBox;
 
 protected:
 	bool locked = false;

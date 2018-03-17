@@ -122,10 +122,12 @@ void GameObject::initAnimations() {
 void GameObject::setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position) {
 	Vec2 offset = Vec2(position.x * roomSize.width, position.y * roomSize.height);
 	setPosition(roomPos + offset);
+	initialPos = getPosition();
 }
 
 void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
 	setPosition(roomPos + position);
+	initialPos = getPosition();
 }
 
 void GameObject::updateFloor(vector<Floor> floors) {
