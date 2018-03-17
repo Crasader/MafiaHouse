@@ -27,7 +27,7 @@ void Item::initObject(Vec2 startPos)
 }
 //initializing pickup radius:
 void Item::initRadius() {
-	Size pickUpBox = getContentSize() * 2.0;
+	Size pickUpBox = getContentSize() * 1.7;
 	auto pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("item_radius");
@@ -53,8 +53,8 @@ void Item::initHeldItem() {
 	getPhysicsBody()->setCollisionBitmask(7);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
-	setPosition(Vec2(24, 39));
-	setRotation(0.0f);
+	setPosition(Vec2(50, 32));
+	setRotation(-45.0f);
 	if (flippedX == true) {
 		flipX();
 	}
@@ -72,6 +72,7 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 		setAnchorPoint(Vec2(0, 0));
 	}
 	setPosition(pos);
+	setRotation(0);
 	initRadius();
 }
 
@@ -85,14 +86,14 @@ void Item::used() {
 }
 
 void Item::beginStab() {
-	setPosition(Vec2(10, 55));
-	this->setRotation(45);
+	setPosition(Vec2(25, 45));
+	setRotation(0);
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
 	//runAction(prepare);
 }
 
 void Item::beginSwing() {
-	this->setRotation(-90);
+	setRotation(-135);
 	setPosition(Vec2(10, 45));
 	//auto prepare = MoveBy::create(10 FRAMES, Vec2(-16, 20));
 	//auto rotate = RotateBy::create(10 FRAMES, -90);
