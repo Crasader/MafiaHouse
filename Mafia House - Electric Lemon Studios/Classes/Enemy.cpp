@@ -43,14 +43,14 @@ void Enemy::walk(float time) {
 }
 
 //a recursive function!!! searches for a path to get to a certain floor
-Stair* pathSearch(GameLayer* mainLayer, int floorNum, vector<Stair*> stairs) {
+Stair* pathSearch(GameLayer* mainLayer, int currentFloor, vector<Stair*> stairs) {
 	Stair* tempStair;
 	vector<Stair*> newSearchStairs;
 
 	for (int i = 0; i < stairs.size(); i++) {//searches for stair to take to get to a certain floor
 		for (int j = 0; j < mainLayer->stairs.size(); j++) {//each loop checks for a partner stair that is on same floor as enemy
 			if (mainLayer->stairs[j]->startRoom.y == mainLayer->getPartnerStair(stairs[i])->startRoom.y) {//stair is on same floor as the partner stair
-				if (mainLayer->getPartnerStair(mainLayer->stairs[j])->startRoom.y == floorNum) {//partner stair of this stair is on same floor as target
+				if (mainLayer->getPartnerStair(mainLayer->stairs[j])->startRoom.y == currentFloor) {//partner stair of this stair is on same floor as target
 					return mainLayer->getPartnerStair(mainLayer->stairs[j]);//take this stair
 				}
 				else {
@@ -250,14 +250,14 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));//increases 1/60th of max every frame, takes 60 frames to alert guard
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
 	}
 	else {
 		enemy->changeSuspicion(-enemy->maxSuspicion / (4 SECONDS));//takes 240 frames to drop back to 0 from max
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
-		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / (1 SECONDS)));
+		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / (0.8f SECONDS)));
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
@@ -311,7 +311,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
 	}
 	else {
-		//enemy->changeSuspicion(-enemy->maxSuspicion / (30 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (30 SECONDS));
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {
