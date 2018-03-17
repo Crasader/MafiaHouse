@@ -154,7 +154,7 @@ void Player::hide() {
 }
 //have player stay behind object they are hiding behind
 void Player::hiding() {
-	followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
+	followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (bodySize.width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 }
 
 void Player::noclip() {
