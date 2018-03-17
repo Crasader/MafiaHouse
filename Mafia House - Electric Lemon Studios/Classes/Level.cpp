@@ -47,6 +47,8 @@ void Level::setup(){
 void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
+	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
+
 	//physics debug drawing:
 	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
@@ -61,18 +63,9 @@ void Level::onStart(float deltaTime){
 	scheduleUpdate();
 }
 
-void Level::resetCollisionChecks() {
-	mainLayer->enemyHit = -1;
-	mainLayer->enemyTouched = -1;
-}
-
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
-
-	if (player->caught == true){
-		//resetLevel();
-	}
 
 	//for drawing vision rays
 	if (visionRays)
@@ -86,19 +79,11 @@ void Level::update(float deltaTime){
 	vector<Vec2> points;
 	Vec2 start;
 	for (int i = 0; i < enemies.size(); i++) {
-		if (mainLayer->enemyHit != -1) {//temporary
-			if (enemies[i]->getTag() == mainLayer->enemyHit) {
-				//enemies[i]->kill();
-				mainLayer->removeChild(enemies[i]);
-				enemies.erase(enemies.begin() + i);
-				i--;
-				continue;
-			}
-		}
-		if (mainLayer->enemyTouched != -1) {
-			if (enemies[i]->getTag() == mainLayer->enemyTouched) {
-				enemies[i]->touchedPlayer = true;
-			}
+		if (enemies.at(i)->checkHit() == true) {
+			enemies.at(i)->removeFromParentAndCleanup(true);
+			enemies.erase(enemies.begin() + i);
+			i--;
+			continue;
 		}
 		//enemy vision:
 		enemies[i]->visionRays(&points, &start);
@@ -109,7 +94,7 @@ void Level::update(float deltaTime){
 		}
 		points.clear();
 
-		enemies[i]->update(mainLayer, gameTime, player);
+		enemies[i]->update(mainLayer, gameTime);
 	}
 	addChild(visionRays);
 
@@ -118,20 +103,17 @@ void Level::update(float deltaTime){
 
 	//check if player is going to interact with door/stairway
 	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
-		if (player->stairToUse != -1) {
+		if (player->stairToUse != NULL) {
 			player->handleInput(mainLayer, gameTime, USE_STAIR);
-			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stairs.wav");
 		}
-		else if (player->doorToUse != -1) {
+		else if (player->doorToUse != NULL) {
 			player->handleInput(mainLayer, gameTime, USE_DOOR);
-			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/openDoor.wav");
 		}
 	}
 	//check if player is dropping item
 	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
 		if (player->heldItem != NULL) {
 			player->handleInput(mainLayer, gameTime, DROP);
-			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/unequip.wav");
 		}
 	}
 	//check if player is using item
@@ -147,16 +129,14 @@ void Level::update(float deltaTime){
 	}
 	//checking to see if player is picking up an item
 	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
-		if (player->itemToPickUp != -1 && player->heldItem == NULL) {
+		if (player->itemToPickUp != NULL && player->heldItem == NULL) {
 			player->handleInput(mainLayer, gameTime, PICKUP);
-			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
 		}
 	}
 	//check if player is going to hide behind object
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
-		if (player->objectToHideBehind != -1) {
+		if (player->objectToHideBehind != NULL) {
 			player->handleInput(mainLayer, gameTime, HIDE);
-			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/hide.wav");
 		}
 	}
 
@@ -166,16 +146,6 @@ void Level::update(float deltaTime){
 	}
 	if (INPUTS->getKey(KeyCode::KEY_S)) {
 		player->handleInput(mainLayer, gameTime, MOVE_DOWN);
-	}
-
-	//player movement input checking for sounds effect
-	if (INPUTS->getKeyPress(KeyCode::KEY_D) || INPUTS->getKeyPress(KeyCode::KEY_A))
-	{
-		walkingID = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
-	}
-	if ((INPUTS->getKeyRelease(KeyCode::KEY_D) && !(INPUTS->getKey(KeyCode::KEY_A))) || (INPUTS->getKeyRelease(KeyCode::KEY_A) && !(INPUTS->getKey(KeyCode::KEY_D)))) 
-	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingID);
 	}
 
 	//player movement input checking
@@ -193,8 +163,7 @@ void Level::update(float deltaTime){
 	}
 
 	//must be called after checking all player actions
-	player->resetActionChecks();
-	resetCollisionChecks();
+	player->resetCollisionChecks();
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera follow player
@@ -214,10 +183,11 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		// check if player has collided with an enemy
 		if ((a->getName() == "player" && b->getName() == "enemy"))
 		{
-			if (player->hidden != true) {
+			if (player->isHidden() != true) {
 				//CCLOG("YOU TOUCHED AN ENEMY");
-				mainLayer->enemyTouched = b->getTag();
-				solve.setRestitution(10.0f);
+				static_cast<Enemy*>(b)->playerTouch();
+				static_cast<Enemy*>(b)->detectedPlayer = player;
+				solve.setRestitution(20.0f);
 				return true;
 			}
 			else {
@@ -226,10 +196,11 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 		}
 		else if ((a->getName() == "enemy" && b->getName() == "player")) {
-			if (player->hidden != true) {
+			if (player->isHidden() != true) {
 				//CCLOG("YOU TOUCHED AN ENEMY");
-				mainLayer->enemyTouched = a->getTag();
-				solve.setRestitution(10.0f);
+				static_cast<Enemy*>(a)->playerTouch();
+				static_cast<Enemy*>(a)->detectedPlayer = player;
+				solve.setRestitution(20.0f);
 				return true;
 			}
 			else {
@@ -241,14 +212,15 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		// check if player has collided with an enemy
 		if ((a->getName() == "player" && b->getName() == "enemy_alert") || (a->getName() == "enemy_alert" && b->getName() == "player"))
 		{
-			if (player->hidden != true) {
+			if (player->isHidden() != true) {
 				//CCLOG("YOU TOUCHED AN ENEMY");
-				player->caught = true;
 				solve.setRestitution(0.0f);
 				return true;
 			}
 			else {
 				//CCLOG("YOU AVOIDED DETECTION");
+				player->hit();
+				solve.setRestitution(10.0f);
 				return false;
 			}
 		}
@@ -257,15 +229,15 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "enemy" && b->getName() == "held_item")
 		{
 			//CCLOG("ENEMY HIT");
-			mainLayer->enemyHit = a->getTag();
-			mainLayer->itemUsed = b->getTag();
+			static_cast<Enemy*>(a)->hit();
+			static_cast<Item*>(b)->used();
 			return true;
 		}
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
 			//CCLOG("ENEMY HIT");
-			mainLayer->enemyHit = b->getTag();
-			mainLayer->itemUsed = a->getTag();
+			static_cast<Enemy*>(b)->hit();
+			static_cast<Item*>(a)->used();
 			return true;
 		}
 
@@ -273,13 +245,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "item_radius")
 		{
 			//CCLOG("CAN PICK UP ITEM");
-			player->itemToPickUp = b->getParent()->getTag();
+			player->itemToPickUp = static_cast<Item*>(b->getParent());
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "player")
 		{
 			//CCLOG("CAN PICK UP ITEM");
-			player->itemToPickUp = a->getParent()->getTag();
+			player->itemToPickUp = static_cast<Item*>(a->getParent());
 			return false;
 		}
 
@@ -299,27 +271,26 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "env_object")
 		{
 			//CCLOG("CAN HIDE BEHIND THING");
-			player->objectToHideBehind = b->getTag();
+			player->objectToHideBehind = static_cast<EnvObject*>(b);
 			return false;
 		}
 		else if (a->getName() == "env_object" && b->getName() == "player")
 		{
 			//CCLOG("CAN HIDE BEHIND THING");
-			player->objectToHideBehind = a->getTag();
-			return false;
+			player->objectToHideBehind = static_cast<EnvObject*>(a);
 		}
 
 		//player and stairway
 		if (a->getName() == "player" && b->getName() == "stair")
 		{
 			//CCLOG("CAN GO THROUGH STAIRWAY");
-			player->stairToUse = b->getTag();
+			player->stairToUse = static_cast<Stair*>(b);
 			return false;
 		}
 		else if (a->getName() == "stair" && b->getName() == "player")
 		{
 			//CCLOG("CAN GO THROUGH STAIRWAY");
-			player->stairToUse = a->getTag();
+			player->stairToUse = static_cast<Stair*>(a);
 			return false;
 		}
 
@@ -327,13 +298,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "door_radius")
 		{
 			//CCLOG("CAN OPEN DOOR");
-			player->doorToUse = b->getParent()->getTag();
+			player->doorToUse = static_cast<Door*>(b->getParent());
 			return false;
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "player")
 		{
 			//CCLOG("CAN OPEN DOOR");
-			player->doorToUse = a->getParent()->getTag();
+			player->doorToUse = static_cast<Door*>(a->getParent());
 			return false;
 		}
 
@@ -341,13 +312,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if ((a->getName() == "enemy"  || a->getName() == "enemy_alert") && b->getName() == "door")
 		{
 			//CCLOG("CAN OPEN DOOR");
-			static_cast<Enemy*>(a)->doorToUse = b->getTag();
+			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b);
 			return false;
 		}
 		else if (a->getName() == "door" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
 		{
 			//CCLOG("CAN OPEN DOOR");
-			static_cast<Enemy*>(b)->doorToUse = a->getTag();
+			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a);
 			return false;
 		}
 
@@ -357,15 +328,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 
 //check if 2 objects collide and do something
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
-	/*PhysicsBody *a = contact.getShapeA()->getBody();
-	PhysicsBody *b = contact.getShapeB()->getBody();
-
-	// check if player has collided with a vision cone
-	if ((a->getTag() == 1 && b->getTag() == 2) || (b->getTag() == 1 && a->getTag() == 2))
-	{
-	CCLOG("BEGIN COLLISION HAS OCCURED");
-	}*/
-
 	return true;
 }
 

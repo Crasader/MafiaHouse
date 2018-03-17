@@ -26,3 +26,41 @@ public:
 
 	const Size stairSize = Size(45, 105);
 };
+
+//Door Class
+class Door : public GameObject
+{
+public:
+	Door();
+	~Door();
+	CREATE_SPRITE_FUNC(Door, "door.png");
+
+	virtual void initObject(Vec2 startPos = Vec2(0, 0));
+
+	virtual void initObject(int orient, Vec2 startPos = Vec2(0, 0));
+
+	void use();
+
+	void unlock();
+
+	float radius = 60.0f;
+
+	Size size = Size(20, 110);
+
+	Size useBox = Size(radius, radius);
+
+protected:
+	bool locked = false;
+
+	bool isOpen = false;
+};
+
+class Vent : public Door
+{
+public:
+	Vent();
+	~Vent();
+	CREATE_SPRITE_FUNC(Vent, "door.png");
+
+	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
+};

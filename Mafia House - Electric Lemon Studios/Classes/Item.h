@@ -24,6 +24,8 @@ public:
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 
 	virtual void breakItem();
+	void used();
+	bool checkUsed() { return isUsed; }
 
 	virtual void beginStab();
 	virtual void beginSwing();
@@ -32,10 +34,13 @@ public:
 	virtual void swingSequence();
 
 protected:
+	//attack/use action parameters:
 	AttackType attackType;
-	float startTime;
-	float attackTime;
-	float lagTime;
+	float startTime;//startup time of attack
+	float attackTime;//duration of active frames
+	float lagTime;//enlag time of attack
+	
+	bool isUsed = false;//to check whether item has been used
 };
 
 class Knife : public Item

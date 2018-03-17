@@ -80,6 +80,10 @@ void Item::breakItem() {
 	getParent()->removeChild(this, true);
 }
 
+void Item::used() {
+	isUsed = true;
+}
+
 void Item::beginStab() {
 	setPosition(Vec2(10, 55));
 	this->setRotation(45);

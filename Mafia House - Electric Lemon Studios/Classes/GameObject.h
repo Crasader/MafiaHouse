@@ -63,6 +63,7 @@ public:
 	CREATE_WITH_FRAME_NAME(GameObject, "default.png");//use this function to create a sprite when using sprite sheet
 
 	virtual void initObject();
+	virtual void initObjectNoPhysics();
 	virtual void initAutoBody();
 	virtual void initBoxBody(Size size);
 	virtual void initObjectNoPhysics(Vec2 startPos);
@@ -74,9 +75,6 @@ public:
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
 	void updateFloor(vector<Floor> floors);
-
-	//void setPosition(Vec2 pos);
-	//Vec2 getPosition(Vec2 pos);
 
 	//movement functions
 	void stopX();
@@ -100,7 +98,7 @@ protected:
 	bool flippedX = false;//false = facing right
 	bool flippedY = false;//false = facing upright
 
-	float maxSpeed = 100.0f;
+	float maxSpeed = 1000.0f;
 
 	std::string name = "name";//can set name to identify sprite type, used for collision detection
 	float zOrder = 0;//determines what is drawn over top of what
@@ -122,6 +120,7 @@ Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets
 
 class GameAnimation {
 public:
+	GameAnimation() {}
 	GameAnimation(int tag, char* path, int numFrames, float frameTime) {
 		auto frames = getAnimation(path, numFrames);//change number of frames to correct number
 		animation = Animation::createWithSpriteFrames(frames, frameTime);//change number to correct speed for animation

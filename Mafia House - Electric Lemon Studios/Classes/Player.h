@@ -1,25 +1,11 @@
 #pragma once
-#include "GameObject.h"
+#include "Character.h"
 #include "Item.h"
+#include "Stair.h"
+#include "EnvObject.h"
 #include "GameLayer.h"
 
-enum Input {
-	PICKUP,
-	DROP,
-	USE_ITEM,
-	USE_RELEASE,
-	USE_STAIR,
-	USE_DOOR,
-	HIDE,
-	MOVE_LEFT,
-	MOVE_RIGHT,
-	MOVE_UP,
-	MOVE_DOWN,
-	STOP,
-	NO_CLIP
-};
-
-class Player : public GameObject
+class Player : public Character
 {
 public:
 	Player();
@@ -27,134 +13,99 @@ public:
 	CREATE_SPRITE_FUNC(Player, "player.png");
 	CREATE_WITH_FRAME(Player);
 	CREATE_WITH_FRAME_NAME(Player, "player/stand/001.png");
-	void initObject(Vec2 startPos = Vec2(0, 0));
-
-	void initAnimations();
 
 	void noclip();
 	bool clip = false;
 
 	//functions for player actions:
-	void update(GameLayer* mainLayer, float time);
-	void handleInput(GameLayer* mainLayer, float time, Input input);
-
-	void resetActionChecks();//resets variables used to track what objects/items player will interact with/use
+	void resetCollisionChecks();//resets variables used to track what objects/items player will interact with/use
 
 	void walk(Input input);
 
 	void pickUpItem(GameLayer* mainLayer);
 	void dropItem(GameLayer* mainLayer);
-	void breakItem();
 
-	void beginUseItem();
-	void useItem();
-
-	void useDoor(GameLayer* mainLayer);
+	void useDoor();
 	void useStair(GameLayer* mainLayer);
 
-	void hide(GameLayer* mainLayer);
-	void hiding(GameLayer* mainLayer);
+	void hide();
+	void hiding();
+	
+	//getters:
+	bool isHidden() { return hidden; }
 
-	//for Interacting with objects:
-	int doorToUse = -1;//the tag of the door the player can open/close
-	int stairToUse = -1;//the tag of the stairway the player can use
-	int objectToHideBehind = -1;//the tag of the object the player can hide behind
+	//pointers for interacting with objects:
+	EnvObject* objectToHideBehind = NULL;//the tag of the object the player can hide behind
+	//DeadBody* bodyToPickUp = NULL;
 
-	//for Picking Up items:
-	int itemToPickUp = -1;//the tag of the item the player can picking up
-	int bodyToPickUp = -1;
-
-	Item* heldItem = NULL;//for using held item
-
-	bool hidden = false;
-	bool caught = false;
-
-	bool beingChased = false;
-
-	enum Profile {
-		STAND,
-		CROUCH
-	};
+	void update(GameLayer* mainLayer, float time);
+	void handleInput(GameLayer* mainLayer, float time, Input input);
 
 private:
-	class PlayerState {
+	class State {
 	public:
-		virtual ~PlayerState() {}
+		virtual ~State() {}
 		virtual void enter(Player* player, GameLayer* mainLayer, float time);
-		virtual PlayerState* update(Player* player, GameLayer* mainLayer, float time);
-		virtual PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		virtual State* update(Player* player, GameLayer* mainLayer, float time);
+		virtual State* handleInput(Player* player, GameLayer* mainLayer, float time, Input input);
 		virtual void exit(Player* player, GameLayer* mainLayer);
 	};
-
-	class NeutralState : public PlayerState {
+	class NeutralState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
-		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 	};
 
-	class HideState : public PlayerState {
+	class HideState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
-		PlayerState* update(Player* player, GameLayer* mainLayer, float time);
-		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		State* update(Player* player, GameLayer* mainLayer, float time);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		void exit(Player* player, GameLayer* mainLayer);
 	};
 
-	class AttackState : public PlayerState {
+	class AttackState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
-		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
-		PlayerState* update(Player* player, GameLayer* mainLayer, float time);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		State* update(Player* player, GameLayer* mainLayer, float time);
 		void exit(Player* player, GameLayer* mainLayer);
 	};
 
-	class NoClipState : public PlayerState {
+	class NoClipState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
-		PlayerState* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		void exit(Player* player, GameLayer* mainLayer);
 	};
+	//initial state
+	State* state = new NeutralState;
+	State* newState = NULL;
+	State* prevState = NULL;
 
-	PlayerState* state = new NeutralState;
-	PlayerState* newState = NULL;
-	PlayerState* prevState = NULL;
+	//for hiding:
+	bool hidden = false;
 
-	//animations:
-	GameAnimation standing = GameAnimation(STAND, "player/stand/%03d.png", 1, 10 FRAMES);
-	GameAnimation walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
-	GameAnimation moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
-	//GameAnimation crouchAnimation;
-	//GameAnimation crawlAnimation;
-	GameAnimation stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);;
-	//GameAnimation swingAnimation;
-	//GameAnimation readyThrowAnimation;
-	//GameAnimation throwAnimation;
-	//GameAnimation crouchStabAnimation;
-	//GameAnimation crouchSwingAnimation;
-	//GameAnimation crouchReadyThrowAnimation;
-	//GameAnimation crouchThrowAnimation;
-	//GameAnimation stairAnimation;
-	//GameAnimation hideAnimation;
-	//GameAnimation pickupAnimation;
-	//GameAnimation interactAnimation;
-
-	Profile profile = STAND;
-
-	std::vector<Item*> inventory;//items the player is carrying
-
-	bool turned = false;//used for walking
-	bool hideStart = false;//used for setting the object you are hiding behind transparent
-
-	float moveSpeed = 1.0f;
+	//for walking:
+	bool turned = false;
 	int moveDirection = 0;
+
+	//for playing audio:
 	unsigned walkingSound;
 
-	//variables used for the timing of attacking/using items:
-	float attackPrepareTime = -1.0f;//time player begins to prepare and attack
-	float attackStartTime = -1.0f;//time player actually begins the attack after release
-	float attackEndTime = -1.0f;//time attack ends and englag begins
+	//for the timing of attacks/using items:
 	bool attackRelease = false;
+	bool throwRelease = false;
 
-	//for physics body:
-	Size bodySize = Size(26, 90);//main player hitbox
+	EnvObject* hideObject = NULL;//object player is hiding behind
+
+	//animations:
+	GameAnimation moonwalking;
+	//GameAnimation crouchAnimation;
+	//GameAnimation crawlAnimation;
+	//GameAnimation crouchStabAnimation;
+	//GameAnimation crouchSwingAnimation;
+	//GameAnimation crouchThrowAnimation;
+	//GameAnimation hideAnimation;//reverse for uniding
+	//GameAnimation climbAnimation;//reverse for climbing down
 };

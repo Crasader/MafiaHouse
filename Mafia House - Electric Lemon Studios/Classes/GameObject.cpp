@@ -31,6 +31,36 @@ void GameObject::initObject() {
 
 	//set tag
 	setTag(tag);
+
+	initAutoBody();
+}
+
+void GameObject::initObjectNoPhysics() {
+	//load animations from frame cache
+	initAnimations();
+
+	setPositionZ(0.0f);
+	//set the anchor point to bottom left corner. nevermind this messes up animations an
+	setAnchorPoint(Vec2(0, 0));
+
+	//disabling anti-aliasing!!! (looks like blurry poop without this)
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	getTexture()->setTexParameters(texParams);
+
+	//set name of sprite
+	setName(name);
+
+	//set Z order
+	setGlobalZOrder(zOrder);
+
+	//set scale of sprite
+	setScale(scale);
+
+	//set whether sprite is flipped or not
+	setFlippedX(reversedX);
+
+	//set tag
+	setTag(tag);
 }
 
 void GameObject::initAutoBody() {
@@ -76,16 +106,13 @@ void GameObject::initBoxBody(Size size) {
 void GameObject::initObject(Vec2 startPos) {
 	//set position of sprite
 	setPosition(startPos);
-
 	initObject();
-	initAutoBody();
 }
 
 void GameObject::initObjectNoPhysics(Vec2 startPos) {
 	//set position of sprite
 	setPosition(startPos);
-
-	initObject();
+	initObjectNoPhysics();
 }
 
 void GameObject::initAnimations() {
@@ -115,13 +142,6 @@ void GameObject::updateFloor(vector<Floor> floors) {
 		}
 	}
 }
-
-//void GameObject::setPosition(Vec2 pos) {
-//	Node::setPosition(pos + Vec2(getContentSize().width / 2, getContentSize().height / 2));
-//}
-//Vec2 GameObject::getPosition() {
-//	Node::getPosition(pos - Vec2(getContentSize().width / 2, getContentSize().height / 2));
-//}
 
 void GameObject::stopX() {
 	getPhysicsBody()->setVelocity(Vec2(0, getPhysicsBody()->getVelocity().y));

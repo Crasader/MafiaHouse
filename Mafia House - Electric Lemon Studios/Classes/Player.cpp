@@ -3,38 +3,34 @@
 
 Player::Player()
 {
-	//reversedX = true;
 	//sprite properties
 	zOrder = 5;
 	scale = 1.0f;
 	name = "player";
 	//physics body properties
+	bodySize = Size(26, 90);
 	tag = 1;
 	dynamic = true;
 	category = 1;
 	collision = 22;
-
+	//max movement speed
 	maxSpeed = 70;
+	//initializing animations
+	standing = GameAnimation(STAND, "player/stand/%03d.png", 1, 10 FRAMES);
+	moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
+	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
+	stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);
 }
 Player::~Player(){
 }
 
-void Player::initObject(Vec2 startPos) {
-	GameObject::initObjectNoPhysics(startPos);
-	initBoxBody(bodySize);
-}
-
-void Player::initAnimations() {
-	//auto frames = getAnimation("player/stand/%04d.png", 10);//change number of frames to correct number
-}
-
 //functions for player actions:
-void Player::resetActionChecks() {
-	doorToUse = -1;
-	stairToUse = -1;
-	objectToHideBehind = -1;
-	itemToPickUp = -1;
-	bodyToPickUp = -1;
+void Player::resetCollisionChecks() {
+	doorToUse = NULL;
+	stairToUse = NULL;
+	objectToHideBehind = NULL;
+	itemToPickUp = NULL;
+	//bodyToPickUp = NULL;
 }
 
 void Player::walk(Input input) {
@@ -114,80 +110,27 @@ void Player::walk(Input input) {
 }
 
 void Player::pickUpItem(GameLayer* mainLayer) {
-	heldItem = static_cast<Item*>(mainLayer->getChildByTag(itemToPickUp));
-	mainLayer->removeChildByTag(itemToPickUp, true);
-
-	removeChild(heldItem, true);
-	addChild(heldItem);
-	heldItem->initHeldItem();
-	inventory.push_back(heldItem);
-
-	itemToPickUp = -1;
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
+	Character::pickUpItem(mainLayer);
 }
 
 void Player::dropItem(GameLayer* mainLayer) {
-	//removing dropped item from inventory
-	for (int i = 0; i < inventory.size(); i++) {
-		if (inventory[i] == heldItem) {
-			inventory.erase(inventory.begin() + i);
-			break;
-		}
-	}
-	heldItem->initDroppedItem(convertToWorldSpace(heldItem->getPosition()), flippedX);
-
-	removeChild(heldItem, true);
-	mainLayer->addChild(heldItem);
-	heldItem = NULL;
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/unequip.wav");
+	Character::dropItem(mainLayer);
 }
 
-void Player::breakItem() {
-	//removing item from inventory
-	for (int i = 0; i < inventory.size(); i++) {
-		if (inventory[i] == heldItem) {
-			inventory.erase(inventory.begin() + i);
-			break;
-		}
-	}
-	heldItem->breakItem();
-	heldItem = NULL;
-}
-
-void Player::beginUseItem() {
-	if (heldItem->getAttackType() == Item::STAB) {
-		heldItem->beginStab();
-		setSpriteFrame(stabbing.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
-	}
-	else if (heldItem->getAttackType() == Item::SWING) {
-		heldItem->beginSwing();
-		//setSpriteFrame(swingAnimation->getFrames[0]);//setting player sprite to first frame of stab animation
-	}
-}
-
-void Player::useItem() {
-	heldItem->getPhysicsBody()->setEnabled(true);
-	if (heldItem->getAttackType() == Item::STAB) {
-		heldItem->stabSequence();
-		setSpriteFrame(stabbing.animation->getFrames().at(1)->getSpriteFrame());
-		//runAction(Animate::create(stabAnimation));//runs stabbing animation
-	}
-	else if (heldItem->getAttackType() == Item::SWING) {
-		heldItem->swingSequence();
-		//runAction(Animate::create(swingAnimation));//runs swinging animation
-	}
-}
-
-void Player::useDoor(GameLayer* mainLayer) {
-	Door* door = static_cast<Door*>(mainLayer->getChildByTag(doorToUse));
-	door->use();
+void Player::useDoor() {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/openDoor.wav");
+	Character::useDoor();
 }
 
 void Player::useStair(GameLayer* mainLayer) {
-	Stair* stair = static_cast<Stair*>(mainLayer->getChildByTag(stairToUse));
-	stair->use(this, mainLayer);
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stairs.wav");
+	Character::useStair(mainLayer);
 }
 
-void Player::hide(GameLayer* mainLayer) {
-	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
+void Player::hide() {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/hide.wav");
 	if (hidden == false) {
 		hidden = true;
 		setTag(2);
@@ -210,8 +153,7 @@ void Player::hide(GameLayer* mainLayer) {
 	}
 }
 //have player stay behind object they are hiding behind
-void Player::hiding(GameLayer* mainLayer) {
-	auto hideObject = mainLayer->getChildByTag(objectToHideBehind);
+void Player::hiding() {
 	followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
 }
 
@@ -228,7 +170,7 @@ void Player::noclip() {
 
 //Update Checking:
 void Player::update(GameLayer* mainLayer, float time) {
-	//updateFloor(mainLayer->floors);//checking if floor has changed
+	updateFloor(mainLayer->floors);//checking if floor has changed
 	newState = state->update(this, mainLayer, time);
 	if (newState != NULL)
 	{
@@ -242,6 +184,7 @@ void Player::update(GameLayer* mainLayer, float time) {
 		state->enter(this, mainLayer, time);
 	}
 }
+
 //Input Handling:
 void Player::handleInput(GameLayer* mainLayer, float time, Input input) {
 	newState = state->handleInput(this, mainLayer, time, input);
@@ -259,24 +202,24 @@ void Player::handleInput(GameLayer* mainLayer, float time, Input input) {
 }
 
 //Player States:
-void Player::PlayerState::enter(Player* player, GameLayer* mainLayer, float time) {
+void Player::State::enter(Player* player, GameLayer* mainLayer, float time) {
 }
-Player::PlayerState* Player::PlayerState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+Player::State* Player::State::update(Player* player, GameLayer* mainLayer, float time) {
 	return nullptr;
 }
-Player::PlayerState* Player::PlayerState::update(Player* player, GameLayer* mainLayer, float time) {
+Player::State* Player::State::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	return nullptr;
 }
-void Player::PlayerState::exit(Player* player, GameLayer* mainLayer) {
+void Player::State::exit(Player* player, GameLayer* mainLayer) {
 }
 
+//Neutral State:
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->setSpriteFrame(player->standing.animation->getFrames().at(0)->getSpriteFrame());
 }
-//Neutral State:
-Player::PlayerState* Player::NeutralState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
-		player->useDoor(mainLayer);
+		player->useDoor();
 	}
 	if (input == USE_STAIR) {
 		player->useStair(mainLayer);
@@ -304,13 +247,17 @@ Player::PlayerState* Player::NeutralState::handleInput(Player* player, GameLayer
 
 //Hide State:
 void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {
-	player->hide(mainLayer);
+	player->hideObject = player->objectToHideBehind;
+	player->hide();
 }
-Player::PlayerState* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
-	player->hiding(mainLayer);
+Player::State* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
+	if (player->isHit == true) {//force exit hiding if hit by enemy
+		return player->prevState;
+	}
+	player->hiding();
 	return nullptr;
 }
-Player::PlayerState* Player::HideState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == HIDE) {
 		return player->prevState;
 	}
@@ -320,7 +267,7 @@ Player::PlayerState* Player::HideState::handleInput(Player* player, GameLayer* m
 	return nullptr;
 }
 void Player::HideState::exit(Player* player, GameLayer* mainLayer) {
-	player->hide(mainLayer);
+	player->hide();
 }
 
 //Attack State(using items):
@@ -330,7 +277,7 @@ void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time
 	player->attackPrepareTime = time;
 	player->beginUseItem();
 }
-Player::PlayerState* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
+Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
 		player->attackStartTime = time;
 		player->useItem();
@@ -349,7 +296,7 @@ Player::PlayerState* Player::AttackState::update(Player* player, GameLayer* main
 	}
 	return nullptr;
 }
-Player::PlayerState* Player::AttackState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 		player->walk(input);
 		player->setSpriteFrame(player->stabbing.animation->getFrames().at(0)->getSpriteFrame());
@@ -363,9 +310,8 @@ Player::PlayerState* Player::AttackState::handleInput(Player* player, GameLayer*
 void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);
-	if (player->heldItem->getTag() == mainLayer->itemUsed) {
+	if (player->heldItem->checkUsed() == true) {
 		player->breakItem();
-		mainLayer->itemUsed = -1;
 	}
 	else{
 		player->heldItem->initHeldItem();
@@ -376,9 +322,9 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->noclip();
 }
-Player::PlayerState* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
-		player->useDoor(mainLayer);
+		player->useDoor();
 	}
 	if (input == USE_STAIR) {
 		player->useStair(mainLayer);

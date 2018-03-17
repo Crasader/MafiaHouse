@@ -13,9 +13,4 @@ public:
 	vector<Floor> floors;
 
 	Stair* getPartnerStair(Stair* stair);//returns a stair's partner, the one it leads to
-
-	int itemUsed = -1;
-	int enemyHit = -1;
-	int enemyTouched = -1;
-	int playerStairUsed = -1;
 };
