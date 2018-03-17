@@ -84,8 +84,8 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
-	int visionDegrees = 65;//width of angle of vision
-	int visionRadius = 130;//how far vision reaches
+	int visionDegrees = 80;//width of angle of vision
+	int visionRadius = 135;//how far vision reaches
 
 	//for keepign track of if enemy spotted player:
 	bool playerInVision = false;

@@ -138,7 +138,7 @@ void GameObject::updateFloor(vector<Floor> floors) {
 		currentFloor--;//go down one floor
 	}*/
 	for (int i = 0; i < floors.size(); i++) {
-		if ((getPosition().y < floors[i].bot )&& (getPosition().y + getContentSize().height > floors[i].top)) {//player in on the floor, inbetween top and bottom
+		if ((getPosition().y > floors[i].bot ) && (getPosition().y + getContentSize().height < floors[i].top)) {//player in on the floor, inbetween top and bottom
 			currentFloor = i;
 			break;
 		}
