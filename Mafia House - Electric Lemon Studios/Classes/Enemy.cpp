@@ -18,10 +18,33 @@ Enemy::Enemy()
 Enemy::~Enemy(){
 }
 
+void Enemy::flipX() {
+	GameObject::flipX();
+	if (flippedX == true) {
+		qMark->setFlippedX(true);
+	}
+	else {
+		qMark->setFlippedX(false);
+	}
+}
+
 void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
-	if (pathTag == "STAND_LEFT") {
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	exMark = Sprite::create("exMark.png");
+	exMark->setAnchorPoint(Vec2(0.5, 0));
+	exMark->setPositionNormalized(Vec2(0.5, 1.05));
+	exMark->getTexture()->setTexParameters(texParams);
+	exMark->setVisible(false);
+	addChild(exMark);
+	qMark = Sprite::create("qMark.png");
+	qMark->setAnchorPoint(Vec2(0.5, 0));
+	qMark->setPositionNormalized(Vec2(0.5, 1.05));
+	qMark->getTexture()->setTexParameters(texParams);
+	qMark->setVisible(false);
+	addChild(qMark);
+	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
 		flipX();
 	}
 }
@@ -305,17 +328,18 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (40 SECONDS));//takes 240 frames to drop back to 0 from max
+		enemy->changeSuspicion(-enemy->maxSuspicion / (40 SECONDS));//takes 20 seconds to drop from half to 0
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
-		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / (0.8f SECONDS)));
+		enemy->setSuspicion(enemy->maxSuspicion / 1.75f);
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
+		return new SuspectState;
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
@@ -328,7 +352,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 
 	//Default Movement:
 	//enemy has no path to follow
-	if (enemy->pathTag == "NONE") {
+	if (enemy->pathTag == "NONE" || enemy->pathTag == "LEFT") {
 		if (enemy->returning == false) {
 			enemy->walk(time);
 		}
@@ -368,10 +392,13 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 
 //Suspicious State:
 void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->qMark->setVisible(true);
 	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
+	enemy->walkTime *= 0.65f;
+	enemy->waitTime *= 0.65f;
 	enemy->setName("enemy");
-	enemy->turnTime *= 1.5f;
+	enemy->turnTime *= 0.65f;
 	enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.3;
 }
@@ -386,10 +413,16 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / (1.1f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (36 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (22 SECONDS));
+	}
+	//check if player bumped enemy
+	if (enemy->isTouched == true) {
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+		enemy->isTouched = false;
+		enemy->detectedPlayer = NULL;
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
@@ -403,7 +436,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 
 	//Same as Default Movement
 	//enemy has no path to follow
-	if (enemy->pathTag == "NONE") {
+	if (enemy->pathTag == "NONE" || enemy->pathTag == "LEFT") {
 		enemy->walk(time);
 	}
 	//enemy does not move
@@ -420,12 +453,16 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	return nullptr;
 }
 void Enemy::SuspectState::exit(Enemy* enemy, GameLayer* mainLayer) {
-	enemy->turnTime /= 1.5f;
+	enemy->qMark->setVisible(false);
+	enemy->walkTime /= 0.65f;
+	enemy->waitTime /= 0.65f;
+	enemy->turnTime /= 0.65f;
 	enemy->returning = true;
 }
 
 //Alerted State:
 void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->exMark->setVisible(true);
 	enemy->setSpeed(2.09f);
 	enemy->setName("enemy_alert");
 	enemy->getPhysicsBody()->setCollisionBitmask(41);
@@ -438,10 +475,10 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / (1.0f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (24 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (28 SECONDS));
 	}
 	//enemy has somehow dropped straight to 0 supicion
 	if (enemy->suspicionLevel <= 0) {
@@ -455,6 +492,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	return nullptr;
 }
 void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer) {
+	enemy->exMark->setVisible(false);
 	enemy->returning = true;
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
 	enemy->slowStop();

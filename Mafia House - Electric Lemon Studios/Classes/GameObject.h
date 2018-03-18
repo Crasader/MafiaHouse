@@ -86,7 +86,7 @@ public:
 
 	void setSpeed(float speed);
 
-	void flipX();//flips object on X-axis
+	virtual void flipX();//flips object on X-axis
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position
 	Vec2 startRoom = Vec2(0,0);//NOT POSITION COORDINATES, the room the object starts in

@@ -28,6 +28,7 @@ public:
 	~Enemy();
 	CREATE_SPRITE_FUNC(Enemy, "guard.png");
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
+	void flipX();
 
 	//actions for enemies:
 	void turnOnSpot(float time);//enemy stands still and turns around
@@ -102,6 +103,9 @@ protected:
 	State* state = new DefaultState;
 	State* newState = NULL;
 	State* prevState = NULL;
+
+	Sprite* qMark;
+	Sprite* exMark;
 
 	//to check if enemy has been touched by player
 	bool isTouched = false;
