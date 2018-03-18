@@ -47,7 +47,7 @@ void Level::setup(){
 void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
-	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -250));
+	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
 	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
@@ -562,13 +562,13 @@ bool Level::initLevel(string filename){
 				if (pieces[1] == "guard") {
 					enemy = Enemy::create();//should be Guard subclass
 				}
-				enemy->initObject();
 				enemy->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				enemy->startRoom = Vec2(roomNum, floorNum);
 				enemy->currentFloor = floorNum;
 				if (pieces.size() > 4) {
-					enemy->setPathTag(pieces[4]);//3rd number is the pahtTag
+					enemy->setPathTag(pieces[4]);//"STAND_LEFT", "STAND_RIGHT", "STAND_SWITCH",  indicate the enemy will stand still facing that direction, switch turns in both direcitons
 				}
+				enemy->initObject();
 				enemies.push_back(enemy);
 			}
 			//Path Nodes

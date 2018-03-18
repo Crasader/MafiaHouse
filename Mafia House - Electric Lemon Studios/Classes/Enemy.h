@@ -30,6 +30,7 @@ public:
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
 
 	//actions for enemies:
+	void turnOnSpot(float time);//enemy stands still and turns around
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
 
@@ -77,7 +78,7 @@ protected:
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
-		//void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class AlertState : public State {
 	public:
@@ -111,8 +112,10 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
-	int visionDegrees = 60;//width of angle of vision
-	int visionRadius = 150;//how far vision reaches
+	int defaultDegrees = 65;
+	int visionDegrees = defaultDegrees;//width of angle of vision
+	int defaultRadius = 150;
+	int visionRadius = defaultRadius;//how far vision reaches
 
 	//for keepign track of if enemy spotted player:
 	bool playerInVision = false;
@@ -122,6 +125,8 @@ protected:
 	float waitTime = 2.0f;
 	float previousTurnTime = -1;
 	float stopTime = -1;
+	//for turning on spot
+	float turnTime = 6.0f;
 
 	//for returning to starting position:
 	bool returning = false;

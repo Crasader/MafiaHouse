@@ -16,7 +16,7 @@ Player::Player()
 	//max movement speed
 	maxSpeed = 70;
 	//initializing animations
-	standing = GameAnimation(STAND, "player/stand/%03d.png", 1, 10 FRAMES);
+	standing = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES);
 	moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
 	stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);

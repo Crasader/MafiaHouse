@@ -21,6 +21,19 @@ Enemy::~Enemy(){
 void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
+	if (pathTag == "STAND_LEFT") {
+		flipX();
+	}
+}
+
+void Enemy::turnOnSpot(float time) {
+	if (previousTurnTime == -1) {
+		previousTurnTime = time;
+	}
+	if (time - previousTurnTime >= turnTime) {
+		flipX();
+		previousTurnTime = time;
+	}
 }
 
 void Enemy::walk(float time) {
@@ -275,12 +288,11 @@ void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
 
 //Default State:
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (enemy->prevState->type == "alert" && enemy->pathTag == "NONE") {//if they are coming from an alert state
-		enemy->returning = true;
-	}
 	enemy->moveSpeed = 1.0f;
 	enemy->setSpeed(enemy->moveSpeed);
 	enemy->setName("enemy");
+	enemy->visionDegrees = enemy->defaultDegrees;
+	enemy->visionRadius = enemy->defaultRadius;
 }
 Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//check if enemy is walking into a door
@@ -326,8 +338,29 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			}
 		}
 	}
+	//enemy does not move
+	else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
+		if (enemy->returning == true) {
+			if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
+				enemy->returning = false;
+				enemy->slowStop();
+				if (enemy->pathTag == "STAND_LEFT") {
+					if (enemy->flippedX == false) { enemy->flipX(); }
+				}
+				else if (enemy->pathTag == "STAND_RIGHT") {
+					if (enemy->flippedX == true) { enemy->flipX(); }
+				}
+			}
+		}
+		else {//not returning
+			if (enemy->pathTag == "STAND_SWITCH") {
+				enemy->turnOnSpot(time);
+			}
+		}
+	}
 	//enemy has a path to follow
 	else {
+		enemy->returning = false;
 		enemy->followPath(mainLayer, time);
 	}
 	return nullptr;
@@ -335,9 +368,12 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 
 //Suspicious State:
 void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->moveSpeed = 1.6f;
+	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
 	enemy->setName("enemy");
+	enemy->turnTime *= 1.5f;
+	enemy->visionDegrees = enemy->defaultDegrees * 1.1;
+	enemy->visionRadius = enemy->defaultRadius * 1.3;
 }
 Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//check if enemy is walking into a door
@@ -353,7 +389,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (32 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (36 SECONDS));
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
@@ -370,12 +406,22 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->pathTag == "NONE") {
 		enemy->walk(time);
 	}
+	//enemy does not move
+	else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
+		if (enemy->pathTag == "STAND_SWITCH") {
+			enemy->turnOnSpot(time);
+		}
+	}
 	//enemy has a path to follow
 	else {
 		enemy->followPath(mainLayer, time);
 	}
 
 	return nullptr;
+}
+void Enemy::SuspectState::exit(Enemy* enemy, GameLayer* mainLayer) {
+	enemy->turnTime /= 1.5f;
+	enemy->returning = true;
 }
 
 //Alerted State:
@@ -395,7 +441,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (16 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (24 SECONDS));
 	}
 	//enemy has somehow dropped straight to 0 supicion
 	if (enemy->suspicionLevel <= 0) {
@@ -409,7 +455,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	return nullptr;
 }
 void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer) {
+	enemy->returning = true;
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
+	enemy->slowStop();
 }
 
 //Use Door State:

@@ -33,7 +33,7 @@ public:
 	virtual void stabSequence();
 	virtual void swingSequence();
 
-	bool enemyCanUse = true;
+	bool enemyCanUse = false;
 
 protected:
 	//attack/use action parameters:

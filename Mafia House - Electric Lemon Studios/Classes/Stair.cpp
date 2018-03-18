@@ -30,6 +30,7 @@ void Stair::initObject() {
 }
 
 void Stair::use(GameObject* user, Node* mainLayer) {
+	user->stop();
 	if (type == 1) {
 		user->setPosition(mainLayer->getChildByTag(getTag() + 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 0));
 		user->currentFloor = static_cast<Stair*>(mainLayer->getChildByTag(getTag() + 1000))->startRoom.y;//setting user's current floor to the floor the stair is on
