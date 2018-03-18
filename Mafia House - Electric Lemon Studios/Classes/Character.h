@@ -48,9 +48,9 @@ public:
 	//for storing held item:
 	Item* heldItem = NULL;
 
-protected:
 	std::vector<Item*> inventory;//items the character is carrying
 
+protected:
 	//to check if character has been hit:
 	bool isHit = false;
 

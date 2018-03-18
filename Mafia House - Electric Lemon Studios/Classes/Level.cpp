@@ -568,6 +568,17 @@ bool Level::initLevel(string filename){
 				if (pieces.size() > 4) {
 					enemy->setPathTag(pieces[4]);//"STAND_LEFT", "STAND_RIGHT", "STAND_SWITCH",  indicate the enemy will stand still facing that direction, switch turns in both direcitons
 				}
+				if (pieces.size() > 5) {
+					Item* item;
+					if (pieces[5] == "knife") {
+						item = Knife::create();
+					}
+					item->initObject();
+					item->initHeldItem();
+					enemy->heldItem = item;
+					enemy->inventory.push_back(item);
+					enemy->addChild(item);
+				}
 				enemy->initObject();
 				enemies.push_back(enemy);
 			}
