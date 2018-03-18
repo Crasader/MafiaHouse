@@ -6,6 +6,21 @@
 #include "GameLayer.h"
 #include "Player.h"
 
+class PathNode : public GameObject {
+public:
+	CREATE_FUNC(PathNode);
+	int xPos;
+	string pathTag;//tag coressponding to enemy with same pathTag
+	int num;//number of node in sequence
+	float waitTime;//amount of time enemy will pause at node's location, in seconds
+	void initNode(int pos, int number, float wait_time, string tag) {
+		xPos = pos;
+		pathTag = tag;
+		num = number;
+		waitTime = wait_time;
+	}
+};
+
 class Enemy : public Character
 {
 public:
@@ -15,7 +30,8 @@ public:
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
 
 	//actions for enemies:
-	void walk(float time);//will be deprecated
+	void walk(float time);//enemies that do not have a path to follow walk back and forth
+	void followPath(GameLayer* mainLayer, float time);
 
 	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
 	void moveTo(float positionX);
@@ -31,12 +47,16 @@ public:
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
 	bool checkHit() { return isHit; }
+	string getPathTag() { return pathTag; }
+	void setPathTag(string pathtag) { pathTag = pathtag; }
 
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
 	int detectedTag = -1;
 
 	virtual void update(GameLayer* mainLayer, float time);
+
+	vector<PathNode*> pathNodes;
 
 protected:
 	class State {
@@ -64,7 +84,7 @@ protected:
 		AlertState() { type = "alert"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
-		//void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer);
 	};
 	class UseDoorState : public State {
 	public:
@@ -91,7 +111,7 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
-	int visionDegrees = 80;//width of angle of vision
+	int visionDegrees = 65;//width of angle of vision
 	int visionRadius = 135;//how far vision reaches
 
 	//for keepign track of if enemy spotted player:
@@ -108,4 +128,11 @@ protected:
 
 	//for using doors:
 	float doorUsePos;
+
+	//for following path:
+	string pathTag = "NONE";
+	int pathNum = 1;
+	bool reachedNode = false;
+	float reachedNodeTime = -1;
+	int pathIterator = 1;
 };

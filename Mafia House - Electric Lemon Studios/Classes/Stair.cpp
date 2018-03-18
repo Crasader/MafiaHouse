@@ -10,7 +10,7 @@ Stair::Stair() {
 	//physics body properties
 	dynamic = false;
 	category = 16;
-	collision = 0xFFFFFFFF;
+	collision = 1;
 }
 Stair::~Stair() {
 }
@@ -49,7 +49,7 @@ Door::Door() {
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 2;
+	category = 0xFFFFFFFF;
 	collision = 0xFFFFFFFF;
 }
 Door::~Door() {
@@ -66,7 +66,7 @@ void Door::initObject(Vec2 startPos) {
 	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(5);
+	radiusBody->setCollisionBitmask(3);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
 	radiusBody->setTag(10000);
 	radiusBody->setName("door_radius");
@@ -123,7 +123,7 @@ Vent::Vent() {
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 2;
+	category = 0xFFFFFFFF;
 	collision = 0xFFFFFFFF;
 }
 Vent::~Vent() {

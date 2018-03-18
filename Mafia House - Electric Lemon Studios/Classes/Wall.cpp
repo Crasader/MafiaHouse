@@ -9,7 +9,7 @@ Wall::Wall()
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 2;
+	category = 0xFFFFFFFF;
 	collision = 0xFFFFFFFF;
 }
 
@@ -122,12 +122,15 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 	}
 }
 
+bool sortByNumber(PathNode* a, PathNode* b) { return (a->num) < (b->num); }//function for sorting vector of PathNodes
+
 //creates a room, made of 4 walls, can have doors/vents and stairways
-void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, RoomData roomData, int height)
+void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData roomData, int height)
 {	//setting size of room
 	setContentSize(Size(roomData.width, height));
 	setAnchorPoint(Vec2(0, 0));
 
+	//setting background image for room
 	background = Sprite::create(roomData.bgName);
 	background->setContentSize(getContentSize() + Size(fullThick + 1, fullThick + 1));
 	background->setGlobalZOrder(0);
@@ -167,12 +170,36 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 			}
 		}
 	}
+	//setting path node positions
+	if (pathNodes->size() > 0) {
+		for (int i = 0; i < pathNodes->size(); i++) {
+			//positioning path node
+			if ((*pathNodes)[i]->startRoom == roomData.room) {
+				(*pathNodes)[i]->setRoomPosition(position, (*pathNodes)[i]->roomStartPos);
+				//assigning path node to correct enemy
+				for (int j = 0; j < enemies->size(); j++) {
+					if ((*enemies)[j]->getPathTag() == (*pathNodes)[i]->pathTag) {//if tags match
+						(*enemies)[j]->pathNodes.push_back((*pathNodes)[i]);//add path node to enemies list of path nodes
+					}
+				}
+			}
+		}
+	}
 	//setting enemy positions
 	if (enemies->size() > 0) {
 		for (int i = 0; i < enemies->size(); i++) {
 			if ((*enemies)[i]->startRoom == roomData.room) {
 				//(*enemies)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*enemies)[i]->roomStartPos);
 				(*enemies)[i]->setRoomPosition(position, (*enemies)[i]->roomStartPos);
+				//adding starting position as a path node
+				PathNode* startNode = new PathNode();
+				startNode->initNode((*enemies)[i]->getPositionX(), 0, 3.0f, (*enemies)[i]->getPathTag());
+				startNode->startRoom = (*enemies)[i]->startRoom;
+				startNode->setPosition((*enemies)[i]->getPosition());
+				pathNodes->push_back(startNode);
+				(*enemies)[i]->pathNodes.push_back(startNode);
+				//sorting list of path nodes
+				std::sort((*enemies)[i]->pathNodes.begin(), (*enemies)[i]->pathNodes.end(), sortByNumber);
 			}
 		}
 	}

@@ -65,6 +65,7 @@ protected:
 	Player* player;//the player character
 	
 	vector<Enemy*> enemies;//the enemies in the level
+	vector<PathNode*> pathNodes;//the path nodes for the enemies
 
 	DrawNode* visionRays;//used for drawing vision cones
 

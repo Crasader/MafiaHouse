@@ -12,7 +12,7 @@ Player::Player()
 	tag = 1;
 	dynamic = true;
 	category = 1;
-	collision = 22;
+	collision = 30;
 	//max movement speed
 	maxSpeed = 70;
 	//initializing animations
@@ -160,11 +160,11 @@ void Player::hiding() {
 void Player::noclip() {
 	if (clip == false) {
 		clip = true;
-		getPhysicsBody()->setCollisionBitmask(20);
+		getPhysicsBody()->setCollisionBitmask(0);
 	}
 	else {
 		clip = false;
-		getPhysicsBody()->setCollisionBitmask(22);
+		getPhysicsBody()->setCollisionBitmask(30);
 	}
 }
 

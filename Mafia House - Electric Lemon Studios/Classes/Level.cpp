@@ -381,7 +381,7 @@ void Level::createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair
 	for (int i = 0; i < roomData.size(); i++) {
 		room = Room::create();
 
-		room->createRoom(doors, stairs, objects, items, enemies, player, position, roomData[i], height);
+		room->createRoom(doors, stairs, objects, items, enemies, &pathNodes, player, position, roomData[i], height);
 
 		position = position + Vec2(roomData[i].width + room->fullThick, 0);//adding length of created room to set position for next room
 
@@ -566,8 +566,20 @@ bool Level::initLevel(string filename){
 				enemy->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				enemy->startRoom = Vec2(roomNum, floorNum);
 				enemy->currentFloor = floorNum;
+				if (pieces.size() > 4) {
+					enemy->setPathTag(pieces[4]);//3rd number is the pahtTag
+				}
 				enemies.push_back(enemy);
 			}
+			//Path Nodes
+			else if (pieces[0] == "node") {
+				PathNode* pathNode = PathNode::create();
+				pathNode->initNode(atoi(pieces[1].c_str()), atoi(pieces[2].c_str()), atof(pieces[3].c_str()), pieces[4]);
+				pathNode->startRoom = Vec2(roomNum, floorNum);
+				pathNode->roomStartPos = Vec2(atoi(pieces[1].c_str()), 0);
+				pathNodes.push_back(pathNode);
+			}
+			//Player
 			else if (pieces[0] == "player") {//set player position in room
 				player->roomStartPos = Vec2(atof(pieces[1].c_str()), atof(pieces[2].c_str()));
 				player->startRoom = Vec2(roomNum, floorNum);
@@ -617,6 +629,10 @@ bool Level::initLevel(string filename){
 	for (int i = 0; i < enemies.size(); i++) {
 		enemies[i]->setTag(enemies[i]->getTag() + i);//giving a unique tag to each enemy
 		mainLayer->addChild(enemies[i]);
+	}
+	//path nodes
+	for (int i = 0; i < pathNodes.size(); i++) {
+		mainLayer->addChild(pathNodes[i]);
 	}
 
 	return true;

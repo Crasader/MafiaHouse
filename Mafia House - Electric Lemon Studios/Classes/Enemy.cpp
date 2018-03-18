@@ -10,10 +10,10 @@ Enemy::Enemy()
 	scale = 1.0f;
 	//physics body properties
 	dynamic = true;
-	category = 4;
-	collision = 15;
+	category = 2;
+	collision = 13;
 
-	maxSpeed = 50;
+	maxSpeed = 150;
 }
 Enemy::~Enemy(){
 }
@@ -39,6 +39,34 @@ void Enemy::walk(float time) {
 	}
 	else if (stopTime == -1){
 		move(Vec2(4.5f, 0));
+	}
+}
+
+void Enemy::followPath(GameLayer* mainLayer, float time) {
+	if (reachedNode == false) {
+		if (pathTo(mainLayer, pathNodes.at(pathNum)->getPositionX(), pathNodes.at(pathNum)->startRoom.y) == true) {//if player has reached current path node
+			reachedNode = true;
+			reachedNodeTime = time;
+		}
+	}
+	else if (reachedNode == true){//reached node == true
+		if (((time - reachedNodeTime) >= (pathNodes.at(pathNum)->waitTime)) && (pathNum < (pathNodes.size() - 1)) && (pathNum > 0)) {//if this is not the last node in the list
+			pathNum+= pathIterator;
+			reachedNode = false;
+			reachedNodeTime = -1;
+		}
+		else if (time - reachedNodeTime >= pathNodes.at(pathNum)->waitTime && pathNum == (pathNodes.size() - 1)){//if the node reached is the last node in the list
+			pathIterator = -1;//make it so you start going backwards through the list
+			pathNum += pathIterator;
+			reachedNode = false;
+			reachedNodeTime = -1;
+		}
+		else if (time - reachedNodeTime >= pathNodes.at(pathNum)->waitTime && pathNum == 0) {//if the node reached is the first
+			pathIterator = 1;//make it so you start going forwards through the list
+			pathNum += pathIterator;
+			reachedNode = false;
+			reachedNodeTime = -1;
+		}
 	}
 }
 
@@ -240,13 +268,12 @@ void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
 
 //Default State:
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (enemy->prevState->type == "alert") {//if they are coming from an alert state
+	if (enemy->prevState->type == "alert" && enemy->pathTag == "NONE") {//if they are coming from an alert state
 		enemy->returning = true;
-		enemy->moveSpeed = 1.0f;
-		enemy->setSpeed(enemy->moveSpeed);
-		enemy->setName("enemy");
-		enemy->getPhysicsBody()->setCollisionBitmask(15);
 	}
+	enemy->moveSpeed = 1.0f;
+	enemy->setSpeed(enemy->moveSpeed);
+	enemy->setName("enemy");
 }
 Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//check if enemy is walking into a door
@@ -257,16 +284,22 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->itemToPickUp != NULL) {
 		return new GetItemState;
 	}
-	//enemy is following default path
-	if (enemy->returning == false) {
-		//enemy->followPath(time);
-		enemy->walk(time);
-	}
-	//enemy is returining to start position
-	else {
-		if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
-			enemy->returning = false;
+
+	//Default Movement:
+	//enemy has no path to follow
+	if (enemy->pathTag == "NONE") {
+		if (enemy->returning == false) {
+			enemy->walk(time);
 		}
+		else {
+			if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
+				enemy->returning = false;
+			}
+		}
+	}
+	//enemy has a path to follow
+	else {
+		enemy->followPath(mainLayer, time);
 	}
 
 	//checking if enemy spotted player
@@ -303,10 +336,10 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (15 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (10 SECONDS));
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {
@@ -319,7 +352,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setSpeed(2.09f);
 	enemy->setName("enemy_alert");
-	enemy->getPhysicsBody()->setCollisionBitmask(11);
+	enemy->getPhysicsBody()->setCollisionBitmask(41);
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//check if enemy is walking into a aoor
@@ -329,10 +362,10 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (1 SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (30 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (20 SECONDS));
 	}
 	//check if an enemy has become unalerted
 	if (enemy->suspicionLevel <= 0) {
@@ -343,6 +376,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	enemy->pathTo(mainLayer,enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
 	return nullptr;
+}
+void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer) {
+	enemy->getPhysicsBody()->setCollisionBitmask(13);
 }
 
 //Use Door State:
