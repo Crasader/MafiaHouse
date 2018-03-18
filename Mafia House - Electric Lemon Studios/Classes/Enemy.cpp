@@ -49,6 +49,30 @@ void Enemy::initObject(Vec2 startPos)
 	}
 }
 
+void Enemy::openDoor() {
+	if (hasKey == true) {
+		doorToUse->unlock();//try to unlock all doors, nothing happens if it isn't locked
+	}
+	doorToUse->use();
+}
+void Enemy::closeDoor() {
+	if (hasKey == true) {
+		if (doorToUse->defaultLocked == true) {//only lock doors that are set to be locked in the level
+			doorToUse->lock();
+		}
+	}
+	doorToUse->use();
+}
+
+void Enemy::breakDoor(float time) {
+	if (startBreakTime == -1) {
+		startBreakTime = time;
+	}
+	if (time - startBreakTime >= breakTime) {
+		doorToUse->unlock();//unlock the door after a certain amount of time
+	}
+}
+
 void Enemy::pause(float time) {
 	if (startPauseTime == -1) {
 		stop();
@@ -133,13 +157,13 @@ void Enemy::followPath(GameLayer* mainLayer, float time) {
 			reachedNode = false;
 			reachedNodeTime = -1;
 		}
-		else if (time - reachedNodeTime >= pathNodes.at(pathNum)->waitTime && pathNum == (pathNodes.size() - 1)){//if the node reached is the last node in the list
+		else if (time - reachedNodeTime >= pathNodes.at(pathNum)->waitTime && pathNum >= (pathNodes.size() - 1)){//if the node reached is the last node in the list
 			pathIterator = -1;//make it so you start going backwards through the list
 			pathNum += pathIterator;
 			reachedNode = false;
 			reachedNodeTime = -1;
 		}
-		else if (time - reachedNodeTime >= pathNodes.at(pathNum)->waitTime && pathNum == 0) {//if the node reached is the first
+		else if (time - reachedNodeTime >= pathNodes.at(pathNum)->waitTime && pathNum <= 0) {//if the node reached is the first
 			pathIterator = 1;//make it so you start going forwards through the list
 			pathNum += pathIterator;
 			reachedNode = false;
@@ -472,9 +496,13 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
 	}
-	//check if ee=nemy has seen an item
+	//check if enemy has seen an item
 	if (enemy->itemToPickUp != NULL) {
 		return new GetItemState;
+	}
+	//check if enemy has heard a noise
+	if (enemy->noiseLocation != NULL) {
+		return new SearchState;
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
@@ -556,8 +584,7 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//check if enemy is walking into a aoor
 	if (enemy->doorToUse != NULL) {
-		enemy->useDoor();
-		enemy->doorToUse = NULL;
+		return new UseDoorState;
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
@@ -592,7 +619,7 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->startPauseTime = -1;
 	enemy->doorStartTime = time;
 	if (enemy->doorToUse->checkOpen() == false) {
-		enemy->useDoor();//only use the door if it's not open yet
+		enemy->openDoor();//only use the door if it's not open yet
 	}
 	if (enemy->flippedX == false) {
 		enemy->doorUsePos = enemy->getPositionX() + enemy->getContentSize().width;
@@ -602,45 +629,77 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	}
 }
 Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (enemy->paused == false){
-		if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
-			return enemy->prevState;
+	if (enemy->prevState->type != "alert") {//enemy is not coming from alert state
+		if (enemy->doorToUse->checkLock() == true) {//they couldn't actually open the door, if they have a key they will use it automatically to unlock the door
+			enemy->changeSuspicion(enemy->maxSuspicion / 2);//increases suspicion by a half
+			enemy->stop();
+			enemy->reachedNode = true;
+			enemy->reachedNodeTime = time;
+			if (enemy->pathIterator == 1) {//turn around if they can't open the door
+				enemy->pathIterator = -1;
+			}
+			else if (enemy->pathIterator == -1) {
+				enemy->pathIterator = 1;
+			}
+			enemy->flipX();
+			if (enemy->flippedX == true) {
+				enemy->setPosition(enemy->getPosition() + Vec2(-10, 0));//to ensure they do not try to open the door again right away
+			}
+			else {
+				enemy->setPosition(enemy->getPosition() + Vec2(10, 0));//to ensure they do not try to open the door again right away
+			}
+			return new DefaultState;
+		}
+		if (enemy->paused == false) {
+			if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
+				return enemy->prevState;
+			}
+			else {
+				enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+			}
 		}
 		else {
-			enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+			enemy->pause(time);
+		}
+
+		//checking if enemy spotted player
+		if (enemy->seeingPlayer() == true) {
+			enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+		}
+		else {
+			enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
+		}
+		//check if player bumped enemy
+		if (enemy->isTouched == true) {
+			enemy->startPauseTime = -1;
+			enemy->timeToPauseFor = 3.0f;
+			enemy->paused = true;
+			enemy->wasFlipped = enemy->flippedX;
+			enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+			enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+			enemy->isTouched = false;
+			enemy->detectedPlayer = NULL;
+		}
+		//check if an enemy has become alerted
+		if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+			return new AlertState;
 		}
 	}
-	else {
-		enemy->pause(time);
-	}
-
-	//checking if enemy spotted player
-	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
-	}
-	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
-	}
-	//check if player bumped enemy
-	if (enemy->isTouched == true) {
-		enemy->startPauseTime = -1;
-		enemy->timeToPauseFor = 3.0f;
-		enemy->paused = true;
-		enemy->wasFlipped = enemy->flippedX;
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
-		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
-		enemy->isTouched = false;
-		enemy->detectedPlayer = NULL;
-	}
-	//check if an enemy has become alerted
-	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-		return new AlertState;
+	else if (enemy->prevState->type == "alert"){//enemy was in alert state, just open door and run
+		if (enemy->doorToUse->checkLock() == true) {//they didn't actually open the door
+			enemy->breakDoor(time);
+		}
+		else {//if door is unlocked
+			return enemy->prevState;
+		}
 	}
 	return nullptr;
 }
 void Enemy::UseDoorState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->useDoor();
+	if (enemy->prevState->type != "alert") {//alert enemies don't close doors behind them, even if they were locked before
+		enemy->closeDoor();
+	}
 	enemy->doorToUse = NULL;
 	//adding door use time to other time trackers
 	enemy->doorUseTime = time - enemy->doorStartTime;
@@ -717,4 +776,119 @@ void Enemy::GetItemState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->stopTime != -1 && enemy->stopTime != -3) {
 		enemy->stopTime += enemy->itemPickupTime;
 	}
+}
+
+
+//Search State:
+void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->paused = false;
+	enemy->startPauseTime = -1;
+	enemy->qMark->setVisible(true);
+}
+Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->paused == false) {
+		if (enemy->reachedLocation == false) {
+			if (enemy->pathTo(mainLayer, enemy->noiseLocation->getPositionX(), enemy->noiseLocation->startRoom.y) == true) {
+				enemy->reachedLocation = true;
+			}
+		}
+		else {//they have reached location
+			enemy->walk(time);//start patrolling the area
+			enemy->changeSuspicion(-1 * enemy->maxSuspicion / (22 SECONDS));
+		}
+		//check if enemy is walking into a door
+		if (enemy->doorToUse != NULL) {
+			return new UseDoorState;
+		}
+	}
+	else {
+		enemy->pause(time);
+	}
+
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+	}
+	//check if player bumped enemy
+	if (enemy->isTouched == true) {
+		enemy->startPauseTime = -1;
+		enemy->timeToPauseFor = 3.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+		enemy->isTouched = false;
+		enemy->detectedPlayer = NULL;
+	}
+	//check if an enemy has become alerted
+	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		return new AlertState;
+	}
+	//enemy has dropped to 0 supicion
+	else if (enemy->suspicionLevel <= 0) {
+		return new DefaultState;
+	}
+	return nullptr;
+}
+void Enemy::SearchState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->noiseLocation = NULL;
+	enemy->returning = true;
+}
+
+//Seen Body State:
+void Enemy::SeenBodyState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->paused = false;
+	enemy->startPauseTime = -1;
+	enemy->qMark->setVisible(true);
+}
+Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->paused == false) {
+		if (enemy->reachedLocation == false) {
+			if (enemy->moveToObject(enemy->bodySeen)== true) {
+				enemy->reachedLocation = true;
+			}
+		}
+		else {//they have reached location
+			enemy->turnOnSpot(time);//stay where body is and look around
+			enemy->changeSuspicion(enemy->maxSuspicion / (40 SECONDS));//suspicion will steadily increase until the become alerted
+		}
+		//check if enemy is walking into a door
+		if (enemy->doorToUse != NULL) {
+			return new UseDoorState;
+		}
+	}
+	else {
+		enemy->pause(time);
+	}
+
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->setSuspicion(enemy->maxSuspicion);//will instantly detect the player
+	}
+	//check if player bumped enemy
+	if (enemy->isTouched == true) {
+		enemy->startPauseTime = -1;
+		enemy->timeToPauseFor = 3.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+		enemy->setSuspicion(enemy->maxSuspicion);
+		enemy->isTouched = false;
+		enemy->detectedPlayer = NULL;
+	}
+	//check if an enemy has become alerted
+	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		return new AlertState;
+	}
+	//enemy has dropped to 0 supicion somehow...
+	else if (enemy->suspicionLevel <= 0) {
+		return new DefaultState;
+	}
+	return nullptr;
+}
+void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->bodySeen = NULL;
+	enemy->returning = true;
 }

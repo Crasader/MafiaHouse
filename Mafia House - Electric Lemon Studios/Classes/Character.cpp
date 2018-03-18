@@ -78,14 +78,12 @@ void Character::useItem() {
 
 void Character::useDoor() {
 	if (doorToUse != NULL) {
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/openDoor.wav");
 		doorToUse->use();
 	}
 }
 
 void Character::useStair(GameLayer* mainLayer) {
 	if (stairToUse != NULL) {
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stairs.wav");
 		stairToUse->use(this, mainLayer);
 	}
 }

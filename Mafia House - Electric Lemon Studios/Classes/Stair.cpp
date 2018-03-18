@@ -108,9 +108,14 @@ void Door::use() {
 void Door::unlock() {
 	if (locked == true) {
 		locked = false;
+		setColor(ccc3(255,155,0));
 	}
-	else {
+}
+
+void Door::lock() {
+	if (locked == false) {
 		locked = true;
+		setColor(ccc3(255,0,0));
 	}
 }
 

@@ -39,9 +39,13 @@ public:
 
 	virtual void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 
+	bool checkLock() { return locked; }
+
 	void use();
 
 	void unlock();
+
+	void lock();
 
 	bool checkOpen() { return isOpen; }
 
@@ -50,6 +54,8 @@ public:
 	Size size = Size(20, 110);
 
 	Size useBox;
+
+	bool defaultLocked = false;//whether enemies should lock the door or not, also if it starts locked
 
 protected:
 	bool locked = false;

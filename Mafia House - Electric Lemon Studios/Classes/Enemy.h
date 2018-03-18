@@ -30,6 +30,10 @@ public:
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
 	void flipX();
 
+	void openDoor();
+	void closeDoor();
+	void breakDoor(float time);//alert enemies will break down locked doors
+
 	//actions for enemies:
 	void pause(float time);
 	void turnOnSpot(float time);//enemy stands still and turns around
@@ -103,12 +107,30 @@ protected:
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
+	class SearchState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
+	};
+	class SeenBodyState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
+	};
 	State* state = new DefaultState;
 	State* newState = NULL;
 	State* prevState = NULL;
 
+	//for suspicion indicators
 	Sprite* qMark;
 	Sprite* exMark;
+
+	//for going to noises, going to bodies
+	GameObject* noiseLocation = NULL;
+	GameObject* bodySeen = NULL;
+	bool reachedLocation = false;
 
 	//to check if enemy has been touched by player
 	bool isTouched = false;
@@ -153,6 +175,12 @@ protected:
 
 	//for returning to starting position:
 	bool returning = false;
+
+	//for locking/unlocking doors
+	bool hasKey = true;
+	//for breakin doors:
+	float startBreakTime = -1;
+	float breakTime = 8.0f;//time in seconds it takes for an enemy to break down a door
 
 	//for using doors:
 	float doorUsePos;
