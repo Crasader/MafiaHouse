@@ -49,6 +49,35 @@ void Enemy::initObject(Vec2 startPos)
 	}
 }
 
+void Enemy::pause(float time) {
+	if (startPauseTime == -1) {
+		stop();
+		startPauseTime = time;
+	}
+	if (startPauseTime != -1 && time - startPauseTime >= timeToPauseFor) {
+		paused = false;
+		prevPauseTime = time;
+		startPauseTime = -1;
+		pauseTime = time - startPauseTime;
+		//adding pausetime to other time trackers
+		if (previousTurnTime != -1) {
+			previousTurnTime += pauseTime;
+		}
+		if (stopTime != -1 && stopTime != -3) {
+			stopTime += pauseTime;
+		}
+		//setting enemy back to direction they were facing before they paused
+		if (pathTag == "NONE" || pathTag == "LEFT") {
+			if (wasFlipped == true && flippedX == false) {
+				flipX();
+			}
+			else if (wasFlipped == false && flippedX == true) {
+				flipX();
+			}
+		}
+	}
+}
+
 void Enemy::turnOnSpot(float time) {
 	if (previousTurnTime == -1) {
 		previousTurnTime = time;
@@ -67,7 +96,7 @@ void Enemy::walk(float time) {
 			stopTime = -3;//so they will turn straight away
 		}
 		else if (hitWalltime != -1 && time - hitWalltime >= hitWallDelay) {
-			stopTime = -3;//only happens again
+			stopTime = -3;//only happens again after delay interval
 			hitWalltime = time;
 		}
 	}
@@ -221,18 +250,18 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 
 	PhysicsRayCastCallbackFunc func = [this, points](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
 	{
-		int visionContactTag = info.shape->getBody()->getTag();
-		string visionContactName = info.shape->getBody()->getName();
+		int visionContactTag = info.shape->getBody()->getNode()->getTag();
+		string visionContactName = info.shape->getBody()->getNode()->getName();
 		Node* visionContact = info.shape->getBody()->getNode();
 
 		//enemy vision is blocked by walls, doors
-		if (visionContactName == "wall" || visionContactName == "door") {
+		if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "door") {
 			points->push_back(info.contact);
 			didRun = true;
 			return false;
 		}
 		//vision blocked by other enemies
-		if ((visionContact->getTag() != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
+		if ((visionContactTag != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
 			points->push_back(info.contact);
 			didRun = true;
 			return false;
@@ -301,7 +330,7 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	newState = state->update(this, mainLayer, time);
 	if (newState != NULL)
 	{
-		state->exit(this, mainLayer);
+		state->exit(this, mainLayer, time);
 
 		if (prevState != NULL && newState != prevState) { delete prevState; }
 		prevState = state;
@@ -312,6 +341,11 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	}
 	//resetting collision checks:
 	didHitWall = false;
+	itemToPickUp = NULL;
+	//updating color of question mark, turns more red as suspicion increases
+	float BluePercentage = suspicionLevel / maxSuspicion;
+	float GreenPercentage = abs(BluePercentage - 1);//inverts the percentage
+	qMark->setColor(ccc3(255, 255 * GreenPercentage, 255 * BluePercentage));
 }
 
 //Enemy States:
@@ -320,11 +354,12 @@ void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	return nullptr;
 }
-void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer) {
+void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 }
 
 //Default State:
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->paused = false;
 	enemy->moveSpeed = 1.0f;
 	enemy->setSpeed(enemy->moveSpeed);
 	enemy->setName("enemy");
@@ -336,7 +371,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
 	}
-	//check if ee=nemy has seen an item
+	//check if enemy has seen an item
 	if (enemy->itemToPickUp != NULL) {
 		return new GetItemState;
 	}
@@ -345,15 +380,18 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (40 SECONDS));//takes 20 seconds to drop from half to 0
+		enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
+		enemy->startPauseTime = -1;
+		enemy->timeToPauseFor = 4.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
 		enemy->setSuspicion(enemy->maxSuspicion / 1.75f);
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
-		return new SuspectState;
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
@@ -363,49 +401,62 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	else if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
 		return new SuspectState;
 	}
+	//setting visibility of question mark
+	if (enemy->suspicionLevel > 0) {
+		enemy->qMark->setVisible(true);
+	}
+	else {
+		enemy->qMark->setVisible(false);
+	}
 
 	//Default Movement:
-	//enemy has no path to follow
-	if (enemy->pathTag == "NONE" || enemy->pathTag == "LEFT") {
-		if (enemy->returning == false) {
-			enemy->walk(time);
+	if (enemy->paused != true) {
+		//enemy has no path to follow
+		if (enemy->pathTag == "NONE" || enemy->pathTag == "LEFT") {
+			if (enemy->returning == false) {
+				enemy->walk(time);
+			}
+			else {
+				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
+					enemy->returning = false;
+				}
+			}
 		}
+		//enemy does not move
+		else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
+			if (enemy->returning == true) {
+				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
+					enemy->returning = false;
+					enemy->slowStop();
+					if (enemy->pathTag == "STAND_LEFT") {
+						if (enemy->flippedX == false) { enemy->flipX(); }
+					}
+					else if (enemy->pathTag == "STAND_RIGHT") {
+						if (enemy->flippedX == true) { enemy->flipX(); }
+					}
+				}
+			}
+			else {//not returning
+				if (enemy->pathTag == "STAND_SWITCH") {
+					enemy->turnOnSpot(time);
+				}
+			}
+		}
+		//enemy has a path to follow
 		else {
-			if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
-				enemy->returning = false;
-			}
+			enemy->returning = false;
+			enemy->followPath(mainLayer, time);
 		}
 	}
-	//enemy does not move
-	else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
-		if (enemy->returning == true) {
-			if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y) == true) {
-				enemy->returning = false;
-				enemy->slowStop();
-				if (enemy->pathTag == "STAND_LEFT") {
-					if (enemy->flippedX == false) { enemy->flipX(); }
-				}
-				else if (enemy->pathTag == "STAND_RIGHT") {
-					if (enemy->flippedX == true) { enemy->flipX(); }
-				}
-			}
-		}
-		else {//not returning
-			if (enemy->pathTag == "STAND_SWITCH") {
-				enemy->turnOnSpot(time);
-			}
-		}
-	}
-	//enemy has a path to follow
 	else {
-		enemy->returning = false;
-		enemy->followPath(mainLayer, time);
+		enemy->pause(time);
 	}
 	return nullptr;
 }
 
 //Suspicious State:
 void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->prevPauseTime = time;
 	enemy->qMark->setVisible(true);
 	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
@@ -434,7 +485,11 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
+		enemy->timeToPauseFor = 5.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
 	}
@@ -447,27 +502,41 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	else if (enemy->suspicionLevel <= 0) {
 		return new DefaultState;
 	}
-
-	//Same as Default Movement
-	//enemy has no path to follow
-	if (enemy->pathTag == "NONE" || enemy->pathTag == "LEFT") {
-		enemy->walk(time);
-	}
-	//enemy does not move
-	else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
-		if (enemy->pathTag == "STAND_SWITCH") {
-			enemy->turnOnSpot(time);
+	//random chance of turning around and pausing
+	if (enemy->paused == false && time - enemy->prevPauseTime >= enemy->minPauseInterval) {
+		if (randNum(1, 100) % 25 == 0) {//4% chance to stop, 4/100 nums are divisible by 25
+			enemy->wasFlipped = enemy->flippedX;
+			enemy->timeToPauseFor = static_cast<float>(randNum(1, 6));//will pause for between 1 and 6 seconds
+			enemy->startPauseTime = -1;
+			enemy->paused = true;
+			enemy->flipX();
 		}
 	}
-	//enemy has a path to follow
+
+	//Same as Default Movement
+	if (enemy->paused != true) {
+		//enemy has no path to follow
+		if (enemy->pathTag == "NONE" || enemy->pathTag == "LEFT") {
+			enemy->walk(time);
+		}
+		//enemy does not move
+		else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
+			if (enemy->pathTag == "STAND_SWITCH") {
+				enemy->turnOnSpot(time);
+			}
+		}
+		//enemy has a path to follow
+		else {
+			enemy->followPath(mainLayer, time);
+		}
+	}
 	else {
-		enemy->followPath(mainLayer, time);
+		enemy->pause(time);
 	}
 
 	return nullptr;
 }
-void Enemy::SuspectState::exit(Enemy* enemy, GameLayer* mainLayer) {
-	enemy->qMark->setVisible(false);
+void Enemy::SuspectState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->walkTime /= 0.65f;
 	enemy->waitTime /= 0.65f;
 	enemy->turnTime /= 0.65f;
@@ -476,6 +545,9 @@ void Enemy::SuspectState::exit(Enemy* enemy, GameLayer* mainLayer) {
 
 //Alerted State:
 void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->paused = false;
+	enemy->startPauseTime = -1;
+	enemy->qMark->setVisible(false);
 	enemy->exMark->setVisible(true);
 	enemy->setSpeed(2.09f);
 	enemy->setName("enemy_alert");
@@ -505,7 +577,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	enemy->pathTo(mainLayer,enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
 	return nullptr;
 }
-void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer) {
+void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->exMark->setVisible(false);
 	enemy->returning = true;
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
@@ -516,6 +588,9 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer) {
 
 //Use Door State:
 void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->paused = false;
+	enemy->startPauseTime = -1;
+	enemy->doorStartTime = time;
 	if (enemy->doorToUse->checkOpen() == false) {
 		enemy->useDoor();//only use the door if it's not open yet
 	}
@@ -527,27 +602,119 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	}
 }
 Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
-		return enemy->prevState;
+	if (enemy->paused == false){
+		if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
+			return enemy->prevState;
+		}
+		else {
+			enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+		}
 	}
-	enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+	else {
+		enemy->pause(time);
+	}
+
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+	}
+	else {
+		enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
+	}
+	//check if player bumped enemy
+	if (enemy->isTouched == true) {
+		enemy->startPauseTime = -1;
+		enemy->timeToPauseFor = 3.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+		enemy->isTouched = false;
+		enemy->detectedPlayer = NULL;
+	}
+	//check if an enemy has become alerted
+	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		return new AlertState;
+	}
 	return nullptr;
 }
-void Enemy::UseDoorState::exit(Enemy* enemy, GameLayer* mainLayer) {
+void Enemy::UseDoorState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->useDoor();
 	enemy->doorToUse = NULL;
+	//adding door use time to other time trackers
+	enemy->doorUseTime = time - enemy->doorStartTime;
+	if (enemy->previousTurnTime != -1) {
+		enemy->previousTurnTime += enemy->doorUseTime;
+	}
+	if (enemy->stopTime != -1 && enemy->stopTime != -3) {
+		enemy->stopTime += enemy->doorUseTime;
+	}
 }
 
 //Get Item State:
 void Enemy::GetItemState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->paused = false;
+	//adding item pick up time to other time trackers
+	enemy->pickupStartTime = time;
+	enemy->changeSuspicion(enemy->maxSuspicion / 3);//seeing an item increases their suspicion by a third
+	enemy->qMark->setVisible(true);
+
 }
 Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (enemy->moveToObject(enemy->itemToPickUp) == true) {
-		enemy->pickUpItem(mainLayer);
-		return enemy->prevState;
+	if (enemy->paused == false) {
+		if (enemy->itemToPickUp == NULL) {
+			return new DefaultState;
+		}
+		if (enemy->moveToObject(enemy->itemToPickUp) == true) {
+			enemy->pickUpItem(mainLayer);
+			if (enemy->prevState->type == "use_door") {//if they are coming from a use door state
+				return new DefaultState;//go to default state instead of previous state
+			}
+			return enemy->prevState;
+		}
+		//check if enemy is walking into a door
+		if (enemy->doorToUse != NULL) {
+			return new UseDoorState;
+		}
+	}
+	else {
+		enemy->pause(time);
+	}
+
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+	}
+	else {
+		enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
+	}
+	//check if player bumped enemy
+	if (enemy->isTouched == true) {
+		enemy->startPauseTime = -1;
+		enemy->timeToPauseFor = 3.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+		enemy->isTouched = false;
+		enemy->detectedPlayer = NULL;
+	}
+	//check if an enemy has become alerted
+	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		return new AlertState;
 	}
 	return nullptr;
 }
-void Enemy::GetItemState::exit(Enemy* enemy, GameLayer* mainLayer) {
+void Enemy::GetItemState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->itemToPickUp = NULL;
+	//adding item pickup time to other time trackers
+	enemy->itemPickupTime = time - enemy->pickupStartTime;
+	if (enemy->previousTurnTime != -1) {
+		enemy->previousTurnTime += enemy->itemPickupTime;
+	}
+	if (enemy->stopTime != -1 && enemy->stopTime != -3) {
+		enemy->stopTime += enemy->itemPickupTime;
+	}
 }

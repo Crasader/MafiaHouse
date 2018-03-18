@@ -24,6 +24,11 @@ void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
 	}
 }
 
+int randNum(int min, int max) {//takes in the minimum value and maximum value for random number to be generated
+	int num = min + (rand() % max - min);
+	return num;
+}
+
 Floor::Floor(int n, int h, int t, int b) {
 	num = n;
 	height = h;

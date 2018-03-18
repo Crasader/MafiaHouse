@@ -15,6 +15,8 @@ USING_NS_CC;
 void followRadius(Node* nodeA, Node* nodeB, float radius, Vec2 offset);
  //like the followRadius function, but uses a rectangular bounding box instead of circular radius
 void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset);
+//for genrating random numbers
+int randNum(int min, int max);
 
 class Floor {//just for keeping track of what floor characters are on
 public:

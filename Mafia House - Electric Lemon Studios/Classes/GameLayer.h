@@ -9,6 +9,8 @@ class GameLayer : public Node {
 public:
 	CREATE_FUNC(GameLayer);
 
+	RandomHelper* randomHelper = new RandomHelper;
+
 	vector<Stair*> stairs;
 	vector<Floor> floors;
 

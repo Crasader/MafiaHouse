@@ -322,6 +322,7 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->noclip();
 	player->moveSpeed = 3;
+	player->setTag(2);
 }
 Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
@@ -353,4 +354,5 @@ Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainL
 void Player::NoClipState::exit(Player* player, GameLayer* mainLayer) {
 	player->noclip();
 	player->moveSpeed = 1;
+	player->setTag(1);
 }

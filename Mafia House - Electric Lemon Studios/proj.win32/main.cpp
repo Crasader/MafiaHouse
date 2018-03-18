@@ -14,6 +14,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
 	DISPLAY->createDebugConsole();
+	srand(time(NULL));//set seed for random number generation
 
     // create the application instance
     AppDelegate app;

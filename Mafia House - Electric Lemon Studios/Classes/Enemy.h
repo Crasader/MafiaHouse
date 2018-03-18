@@ -31,6 +31,7 @@ public:
 	void flipX();
 
 	//actions for enemies:
+	void pause(float time);
 	void turnOnSpot(float time);//enemy stands still and turns around
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
@@ -68,38 +69,39 @@ protected:
 		virtual ~State() {}
 		virtual void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		virtual State* update(Enemy* enemy, GameLayer* mainLayer, float time);
-		virtual void exit(Enemy* enemy, GameLayer* mainLayer);
+		virtual void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class DefaultState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
-		//void exit(Enemy* enemy, GameLayer* mainLayer);
+		//void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class SuspectState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
-		void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class AlertState : public State {
 	public:
 		AlertState() { type = "alert"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
-		void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class UseDoorState : public State {
 	public:
+		UseDoorState() { type = "use_door"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
-		void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class GetItemState : public State {
 	public:
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
-		void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	State* state = new DefaultState;
 	State* newState = NULL;
@@ -138,11 +140,27 @@ protected:
 	//for turning on spot
 	float turnTime = 6.0f;
 
+	//for pausing temporaroly
+	bool paused = false;
+	float pauseTime = 0;//how much time they were paused for
+	float startPauseTime = -1;//when they paused
+	float timeToPauseFor = 3.0f;//time in seconds to pause for
+	bool wasFlipped;
+
+	//for random pausing
+	float prevPauseTime = -4;
+	float minPauseInterval = 3.0f;//minimum time between random pauses
+
 	//for returning to starting position:
 	bool returning = false;
 
 	//for using doors:
 	float doorUsePos;
+	float doorUseTime;
+	float doorStartTime = -1;
+	//for picking up items:
+	float itemPickupTime = -1;
+	float pickupStartTime;
 
 	//for following path:
 	string pathTag = "NONE";
