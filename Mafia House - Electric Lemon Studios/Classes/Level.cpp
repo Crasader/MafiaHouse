@@ -47,7 +47,7 @@ void Level::setup(){
 void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
-	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
+	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -250));
 
 	//physics debug drawing:
 	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);

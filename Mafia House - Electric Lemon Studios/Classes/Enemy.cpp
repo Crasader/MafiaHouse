@@ -13,7 +13,7 @@ Enemy::Enemy()
 	category = 2;
 	collision = 13;
 
-	maxSpeed = 150;
+	maxSpeed = 50;
 }
 Enemy::~Enemy(){
 }
@@ -45,6 +45,7 @@ void Enemy::walk(float time) {
 void Enemy::followPath(GameLayer* mainLayer, float time) {
 	if (reachedNode == false) {
 		if (pathTo(mainLayer, pathNodes.at(pathNum)->getPositionX(), pathNodes.at(pathNum)->startRoom.y) == true) {//if player has reached current path node
+			slowStop();
 			reachedNode = true;
 			reachedNodeTime = time;
 		}
@@ -182,6 +183,12 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 			didRun = true;
 			return false;
 		}
+		//vision blocked by other enemies
+		if ((visionContact->getTag() != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
+			points->push_back(info.contact);
+			didRun = true;
+			return false;
+		}
 		//enemy sees the player
 		else if (visionContactTag == 1){//1 = player, 2 = hidden player
 			detectedTag = visionContactTag;
@@ -284,6 +291,28 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->itemToPickUp != NULL) {
 		return new GetItemState;
 	}
+	//checking if enemy spotted player
+	if (enemy->seeingPlayer() == true) {
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+	}
+	else {
+		enemy->changeSuspicion(-enemy->maxSuspicion / (40 SECONDS));//takes 240 frames to drop back to 0 from max
+	}
+	//check if player bumped enemy
+	if (enemy->isTouched == true) {
+		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / (0.8f SECONDS)));
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+		enemy->isTouched = false;
+		enemy->detectedPlayer = NULL;
+	}
+	//check if an enemy has become alerted
+	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		return new AlertState;
+	}
+	else if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
+		return new SuspectState;
+	}
 
 	//Default Movement:
 	//enemy has no path to follow
@@ -301,50 +330,51 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	else {
 		enemy->followPath(mainLayer, time);
 	}
+	return nullptr;
+}
 
+//Suspicious State:
+void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->moveSpeed = 1.6f;
+	enemy->setSpeed(enemy->moveSpeed);
+	enemy->setName("enemy");
+}
+Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	//check if enemy is walking into a door
+	if (enemy->doorToUse != NULL) {
+		return new UseDoorState;
+	}
+	//check if ee=nemy has seen an item
+	if (enemy->itemToPickUp != NULL) {
+		return new GetItemState;
+	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (4 SECONDS));//takes 240 frames to drop back to 0 from max
-	}
-	//check if player bumped enemy
-	if (enemy->isTouched == true) {
-		enemy->setSuspicion(enemy->maxSuspicion - (enemy->maxSuspicion / (0.8f SECONDS)));
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
-		enemy->isTouched = false;
-		enemy->detectedPlayer = NULL;
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (32 SECONDS));
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
 		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
 		return new AlertState;
 	}
-	else if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
-		//return new SuspectState;
-	}
-	return nullptr;
-}
-
-//Suspicious State:
-void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->moveSpeed = 1.5f;
-	enemy->setSpeed(enemy->moveSpeed);
-	enemy->setName("enemy_alert");
-}
-Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	//checking if enemy spotted player
-	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
-	}
-	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (10 SECONDS));
-	}
 	//check if an enemy has become unalerted
-	if (enemy->suspicionLevel <= 0) {
+	else if (enemy->suspicionLevel <= 0) {
 		return new DefaultState;
 	}
+
+	//Same as Default Movement
+	//enemy has no path to follow
+	if (enemy->pathTag == "NONE") {
+		enemy->walk(time);
+	}
+	//enemy has a path to follow
+	else {
+		enemy->followPath(mainLayer, time);
+	}
+
 	return nullptr;
 }
 
@@ -365,14 +395,15 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (20 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (16 SECONDS));
 	}
-	//check if an enemy has become unalerted
+	//enemy has somehow dropped straight to 0 supicion
 	if (enemy->suspicionLevel <= 0) {
 		return new DefaultState;
 	}
+	//check if an enemy has become unalerted
 	else if (enemy->suspicionLevel <= enemy->maxSuspicion / 2) {
-		//return new SuspectState;
+		return new SuspectState;
 	}
 	enemy->pathTo(mainLayer,enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
 	return nullptr;

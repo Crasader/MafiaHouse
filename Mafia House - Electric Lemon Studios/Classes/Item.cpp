@@ -102,20 +102,24 @@ void Item::beginSwing() {
 }
 
 void Item::stabSequence() {
-	auto move = MoveBy::create(1 FRAMES, Vec2(25, 6));
-	auto hold = MoveBy::create(6 FRAMES, Vec2(0, 0));
-	auto moveback = MoveBy::create(1 FRAMES, Vec2(-25, -6));
+	auto move = MoveBy::create(attackTime * 0.125, Vec2(25, 6));
+	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));
+	auto moveback = MoveBy::create(attackTime * 0.125, Vec2(-25, -6));
 	auto sequence = Sequence::create(move, hold, moveback, NULL);
 	runAction(sequence);
 }
 
 void Item::swingSequence() {
 	auto move = MoveBy::create(4 FRAMES, Vec2(20, -25));
-	auto rotate = RotateBy::create(4 FRAMES, 90);
+	auto rotate = RotateBy::create(4 FRAMES, 135);
+
 	auto hold = MoveBy::create(6 FRAMES, Vec2(0, 0));
-	auto moveback = MoveBy::create(6 FRAMES, Vec2(-10, 5));
-	auto rotateback = RotateBy::create(6 FRAMES, -90);
-	auto sequence = Sequence::create(Spawn::create(move, rotate), hold, Spawn::create(moveback, rotateback), NULL);
+
+	//auto moveback = MoveBy::create(6 FRAMES, Vec2(-10, 5));
+	//auto rotateback = RotateBy::create(6 FRAMES, -135);
+	//Spawn::create(moveback, rotateback)
+
+	auto sequence = Sequence::create(Spawn::create(move, rotate), hold, NULL);
 	runAction(sequence);
 }
 
