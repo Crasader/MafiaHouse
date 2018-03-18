@@ -65,7 +65,7 @@ public:
 	int fullThick = 20;//thickness of the walls for level generation
 	int thick = fullThick / 2;//thickness of an individual wall
 
-	void createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size sizefloat, vector<DoorData> doorData = vector<DoorData>());
+	void createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size sizefloat, vector<DoorData> doorData = vector<DoorData>(), string name = "floor");
 
 	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData roomData, int height);
 };

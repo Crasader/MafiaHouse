@@ -2,7 +2,7 @@
 
 Wall::Wall()
 {
-	name = "wall";
+	name = "floor";
 	tag = 0;
 	//sprite properties
 	zOrder = 6;
@@ -30,7 +30,7 @@ Room::~Room() {
 
 bool sortByPosition(DoorData a, DoorData b) {return a.pos < b.pos;}//function for sorting vector of DoorData
 
-void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size size, vector<DoorData> doorData)
+void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size size, vector<DoorData> doorData, string name)
 {
 	Wall* w;
 	if (doorData.size() > 0) {//has doors or vents
@@ -55,6 +55,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					length =  doorData[j].pos - newPos.y + position.y;
 					w = Wall::create();
 					w->initObject(newPos, Size(size.width, length));
+					w->setName(name);
 					if (length > 0) {
 						addChild(w);
 					}
@@ -79,6 +80,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 			length = size.height - newPos.y + position.y;
 			w = Wall::create();
 			w->initObject(newPos, Size(size.width, length));
+			w->setName(name);
 			addChild(w);
 		}
 		else if (orientation == 2) {//horizontal
@@ -88,6 +90,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					length = doorData[j].pos - newPos.x + position.x;
 					w = Wall::create();
 					w->initObject(newPos, Size(length, size.height));
+					w->setName(name);
 					if (length > 0) {
 						addChild(w);
 					}
@@ -112,12 +115,14 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 			length = size.width - newPos.x + position.x;
 			w = Wall::create();
 			w->initObject(newPos, Size(length, size.height));
+			w->setName(name);
 			addChild(w);
 		}
 	}
 	else {//no doors or vents
 		w = Wall::create();
 		w->initObject(position, size);
+		w->setName(name);
 		addChild(w);
 	}
 }
@@ -208,14 +213,14 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 	Vec2 wallPos = position - Vec2(thick, thick);//the position for generating the walls of the room
 
 	//floor
-	createWall(doors, 2, 2, wallPos, Size(roomData.width + fullThick, thick), roomData.bottomDoors);
+	createWall(doors, 2, 2, wallPos, Size(roomData.width + fullThick, thick), roomData.bottomDoors, "floor");
 
 	//ceiling
-	createWall(doors, 2, 1, wallPos + Vec2(0, height + thick), Size(roomData.width + fullThick, thick), roomData.ceilingDoors);
+	createWall(doors, 2, 1, wallPos + Vec2(0, height + thick), Size(roomData.width + fullThick, thick), roomData.ceilingDoors, "floor");
 
 	//left wall
-	createWall(doors, 1, 2, wallPos + Vec2(0, thick), Size(thick, height), roomData.leftDoors);
+	createWall(doors, 1, 2, wallPos + Vec2(0, thick), Size(thick, height), roomData.leftDoors, "wall");
 
 	//right wall
-	createWall(doors, 1, 1, wallPos + Vec2(roomData.width + thick, thick), Size(thick, height), roomData.rightDoors);
+	createWall(doors, 1, 1, wallPos + Vec2(roomData.width + thick, thick), Size(thick, height), roomData.rightDoors, "wall");
 }

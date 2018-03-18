@@ -61,19 +61,19 @@ void Item::initHeldItem() {
 }
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
-	enemyCanUse = true;
 	getPhysicsBody()->setCategoryBitmask(32);
 	getPhysicsBody()->setCollisionBitmask(8);
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setDynamic(true);
 	setName("item");
 	getPhysicsBody()->setName("item");
+	setPosition(pos);
+	//setRotation(20);
 	if (flip == true) {
 		flipX();
 		setAnchorPoint(Vec2(0, 0));
+		setRotation(-getRotation());
 	}
-	setPosition(pos);
-	setRotation(0);
 	initRadius();
 }
 

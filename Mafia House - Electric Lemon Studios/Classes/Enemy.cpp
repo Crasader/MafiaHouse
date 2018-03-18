@@ -60,6 +60,18 @@ void Enemy::turnOnSpot(float time) {
 }
 
 void Enemy::walk(float time) {
+	//check if they hit a wall and make them turn around right away
+	if (didHitWall == true) {
+		if (hitWalltime == -1) {
+			hitWalltime = time;
+			stopTime = -3;//so they will turn straight away
+		}
+		else if (hitWalltime != -1 && time - hitWalltime >= hitWallDelay) {
+			stopTime = -3;//only happens again
+			hitWalltime = time;
+		}
+	}
+
 	if (previousTurnTime == -1) {
 		previousTurnTime = time;
 	}
@@ -298,6 +310,8 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 
 		state->enter(this, mainLayer, time);
 	}
+	//resetting collision checks:
+	didHitWall = false;
 }
 
 //Enemy States:
@@ -496,6 +510,8 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer) {
 	enemy->returning = true;
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
 	enemy->slowStop();
+	enemy->previousTurnTime = -1;
+	enemy->stopTime = -1;
 }
 
 //Use Door State:

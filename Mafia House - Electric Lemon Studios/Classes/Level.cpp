@@ -50,7 +50,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -209,16 +209,16 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 		}
 
-		// check if player has collided with an enemy
+		// check if player has collided with an alerted enemy
 		if ((a->getName() == "player" && b->getName() == "enemy_alert") || (a->getName() == "enemy_alert" && b->getName() == "player"))
 		{
 			if (player->isHidden() != true) {
 				//CCLOG("YOU TOUCHED AN ENEMY");
-				solve.setRestitution(0.0f);
+				solve.setRestitution(10.0f);
 				return true;
 			}
 			else {
-				//CCLOG("YOU AVOIDED DETECTION");
+				//player is forced out of hiding
 				player->hit();
 				solve.setRestitution(10.0f);
 				return false;
@@ -306,6 +306,22 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			//CCLOG("CAN OPEN DOOR");
 			player->doorToUse = static_cast<Door*>(a->getParent());
 			return false;
+		}
+
+		//enemy and wall
+		if (a->getName() == "enemy" && b->getName() == "wall")
+		{
+			//CCLOG("CAN OPEN DOOR");
+			solve.setRestitution(20.0f);
+			static_cast<Enemy*>(a)->hitWall();
+			return true;
+		}
+		else if (a->getName() == "wall" && b->getName() == "enemy")
+		{
+			//CCLOG("CAN OPEN DOOR");
+			solve.setRestitution(20.0f);
+			static_cast<Enemy*>(b)->hitWall();
+			return true;
 		}
 
 		//alert enemy and door

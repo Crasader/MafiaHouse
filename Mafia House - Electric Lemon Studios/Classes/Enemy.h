@@ -45,13 +45,14 @@ public:
 	void setSuspicion(float num);//set it to a specific value instantly
 
 	void playerTouch() { isTouched = true; }
+	void hitWall() { didHitWall = true; }
 
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
 	bool checkHit() { return isHit; }
 	string getPathTag() { return pathTag; }
 	void setPathTag(string pathtag) { pathTag = pathtag; }
-
+	
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
 	int detectedTag = -1;
@@ -123,6 +124,11 @@ protected:
 
 	//for keepign track of if enemy spotted player:
 	bool playerInVision = false;
+
+	//check if enemy has walked into a wall
+	bool didHitWall = false;
+	float hitWalltime = -1;
+	float hitWallDelay = 3;//time between wall hits to prevent continuous hitting
 
 	//stuff for walking:
 	float walkTime = 6.0f;
