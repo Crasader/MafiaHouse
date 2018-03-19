@@ -57,7 +57,7 @@ Door::~Door() {
 }
 
 void Door::initObject(Vec2 startPos) {
-	setColor(ccc3(255, 155, 0));//orange
+	//setColor(ccc3(255, 155, 0));//orange
 	setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
 
@@ -87,6 +87,17 @@ void Door::initObject(int orient, Vec2 startPos) {
 		useBox = Size(radius, 110);
 	}
 	Door::initObject(startPos);
+}
+
+void Door::updateColour() {
+	float percentage = hp / 10.0f;
+	float inversePercentage = abs(percentage - 1);//inverts the percentage
+	if (locked == false) {
+		setColor(ccc3(255 * percentage, 155 * percentage, 255 * inversePercentage));
+	}
+	else {
+		setColor(ccc3(255 * percentage, 0 * inversePercentage, 255 * inversePercentage));
+	}
 }
 
 void Door::itemHit(Item* item) {
@@ -133,7 +144,7 @@ void Door::unlock() {
 	if (broken == false) {//can't unlock if it's broken
 		if (locked == true) {
 			locked = false;
-			setColor(ccc3(255, 155, 0));//orange
+			//setColor(ccc3(255, 155, 0));//orange
 		}
 	}
 }
@@ -142,7 +153,7 @@ void Door::lock() {
 	if (broken == false) {//can't lock if it's broken
 		if (locked == false) {
 			locked = true;
-			setColor(ccc3(255, 0, 0));//red
+			//setColor(ccc3(255, 0, 0));//red
 		}
 	}
 }

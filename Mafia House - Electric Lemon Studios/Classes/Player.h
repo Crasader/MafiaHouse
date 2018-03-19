@@ -30,6 +30,9 @@ public:
 
 	void hide();
 	void hiding();
+
+	//void wasHit(Item* item);//being hit by an enemy attack
+	//void wasTouched();//for when player is touched by an alert enemy while hiding
 	
 	//getters:
 	bool isHidden() { return hidden; }
@@ -40,6 +43,9 @@ public:
 
 	void update(GameLayer* mainLayer, float time);
 	void handleInput(GameLayer* mainLayer, float time, Input input);
+
+	bool inVision = false;
+	bool wasSeen = false;
 
 private:
 	class State {

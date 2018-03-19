@@ -11,6 +11,7 @@ public:
 
 	RandomHelper* randomHelper = new RandomHelper;
 
+	vector<Item*> items;//the items in the level
 	vector<Stair*> stairs;
 	vector<Floor> floors;
 

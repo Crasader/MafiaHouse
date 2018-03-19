@@ -69,8 +69,6 @@ protected:
 
 	DrawNode* visionRays;//used for drawing vision cones
 
-	vector<Item*> items;//the items in the level
-
 	vector<EnvObject*> objects;//the environmental objects in the level
 
 	vector<Room*> rooms;//the rooms the level is made up of

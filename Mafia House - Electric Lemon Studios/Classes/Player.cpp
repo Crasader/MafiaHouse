@@ -30,8 +30,13 @@ void Player::resetCollisionChecks() {
 	stairToUse = NULL;
 	objectToHideBehind = NULL;
 	itemToPickUp = NULL;
+	inVision = false;
 	//bodyToPickUp = NULL;
 }
+
+//void Player::wasHit() {
+
+//}
 
 void Player::walk(Input input) {
 	if (input == MOVE_LEFT) {
@@ -132,6 +137,9 @@ void Player::useStair(GameLayer* mainLayer) {
 void Player::hide() {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/hide.wav");
 	if (hidden == false) {
+		if (inVision == true) {//if player was in enemy vision upon entering hiding
+			wasSeen = true;
+		}
 		hidden = true;
 		setTag(2);
 		getPhysicsBody()->setTag(2);//for enemy vision rays
@@ -143,6 +151,7 @@ void Player::hide() {
 	}
 	else {
 		hidden = false;
+		wasSeen = false;
 		setTag(1);
 		getPhysicsBody()->setTag(1);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() + 3);
@@ -315,7 +324,7 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);
 	if (player->heldItem->hp <= 0) {//if item is broken, no hp left
-		player->breakItem();
+		player->breakItem(mainLayer);
 	}
 	else{
 		player->heldItem->initHeldItem();

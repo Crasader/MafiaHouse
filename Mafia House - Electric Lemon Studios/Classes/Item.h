@@ -16,6 +16,18 @@ public:
 		STAB,
 		SWING
 	};
+	enum Effect {
+		NONE,
+		KNOCKOUT,
+		KILL
+	};
+	enum State {
+		GROUND,
+		HELD,
+		THROWN
+	};
+
+	State getState() { return state; }
 
 	AttackType getAttackType() { return attackType; }
 	float getStartTime() { return startTime; }
@@ -24,6 +36,7 @@ public:
 
 	virtual void initHeldItem();
 	virtual void initDroppedItem(Vec2 pos, bool flip);
+	virtual void initGroundItem();
 
 	virtual void breakItem();
 	void used();
@@ -36,7 +49,13 @@ public:
 	virtual void stabSequence();
 	virtual void swingSequence();
 
+	void checkSpeed();
+
+	void playerInRange();
+	void hasMoved();
 	bool enemyCanUse = false;
+
+	bool playerRange = false;//is the player in range to pick up item
 
 	int hp = 1;//keeps track fo how much item has been used
 	int dmg = 10;
@@ -46,6 +65,7 @@ public:
 	bool didHitWall = false;
 
 protected:
+	State state = GROUND;
 	Node * pickUpRadius;
 	Sprite* outline;
 	//attack/use action parameters:

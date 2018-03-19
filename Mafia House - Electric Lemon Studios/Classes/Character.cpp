@@ -36,12 +36,19 @@ void Character::dropItem(GameLayer* mainLayer) {
 	}
 }
 
-void Character::breakItem() {
+void Character::breakItem(GameLayer* mainLayer) {
 	if (heldItem != NULL) {
 		//removing item from inventory
 		for (int i = 0; i < inventory.size(); i++) {
 			if (inventory[i] == heldItem) {
 				inventory.erase(inventory.begin() + i);
+				break;
+			}
+		}
+		//removing item from the main Layer's list of items
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			if (mainLayer->items[i] == heldItem) {
+				mainLayer->items.erase(mainLayer->items.begin() + i);
 				break;
 			}
 		}

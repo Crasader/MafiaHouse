@@ -67,14 +67,32 @@ void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
 
+	//door update
+	for (int i = 0; i < doors.size(); i++) {
+		//updating color of question mark, turns more red as suspicion increases
+		doors[i]->updateColour();
+	}
+
+	//items update
+	for (int i = 0; i < mainLayer->items.size(); i++) {
+		if (mainLayer->items[i]->getState() == Item::GROUND) {
+			mainLayer->items[i]->hasMoved();
+			mainLayer->items[i]->playerInRange();
+		}
+		else if (mainLayer->items[i]->getState() == Item::HELD) {
+
+		}
+		else if (mainLayer->items[i]->getState() == Item::THROWN) {
+			mainLayer->items[i]->checkSpeed();
+		}
+	}
+
 	//for drawing vision rays
-	if (visionRays)
-	{
+	if (visionRays){
 		removeChild(visionRays, true);
 	}
 	visionRays = DrawNode::create();
 	visionRays->setGlobalZOrder(10);
-
 	//enemy update
 	vector<Vec2> points;
 	Vec2 start;
@@ -210,17 +228,22 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		// check if player has collided with an alerted enemy
-		if ((a->getName() == "player" && b->getName() == "enemy_alert") || (a->getName() == "enemy_alert" && b->getName() == "player"))
+		if ((a->getName() == "player" && b->getName() == "enemy_alert"))
 		{
 			if (player->isHidden() != true) {
-				//CCLOG("YOU TOUCHED AN ENEMY");
-				solve.setRestitution(10.0f);
+				static_cast<Enemy*>(b)->playerTouch();
 				return true;
 			}
 			else {
-				//player is forced out of hiding
-				//player->hit();
-				solve.setRestitution(10.0f);
+				return false;
+			}
+		}
+		else if ((a->getName() == "enemy_alert" && b->getName() == "player")) {
+			if (player->isHidden() != true) {
+				static_cast<Enemy*>(a)->playerTouch();
+				return true;
+			}
+			else {
 				return false;
 			}
 		}
@@ -244,12 +267,14 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = static_cast<Item*>(b->getParent());
+			static_cast<Item*>(b->getParent())->playerRange = true;
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "player")
 		{
 			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = static_cast<Item*>(a->getParent());
+			static_cast<Item*>(a->getParent())->playerRange = true;
 			return false;
 		}
 
@@ -626,7 +651,7 @@ bool Level::initLevel(string filename){
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				item->startRoom = Vec2(roomNum, floorNum);
-				items.push_back(item);
+				mainLayer->items.push_back(item);
 			}
 			//Enemies
 			else if (pieces[0] == "enemy") {
@@ -650,6 +675,7 @@ bool Level::initLevel(string filename){
 					enemy->heldItem = item;
 					enemy->inventory.push_back(item);
 					enemy->addChild(item);
+					mainLayer->items.push_back(item);
 				}
 				enemy->initObject();
 				enemies.push_back(enemy);
@@ -680,7 +706,7 @@ bool Level::initLevel(string filename){
 	file.close();
 
 	//make the level
-	createLevel(&rooms, &doors, &mainLayer->stairs, &objects, &items, &enemies, player, background->getPosition(), background->getContentSize().width * backgroundScale, floors);
+	createLevel(&rooms, &doors, &mainLayer->stairs, &objects, &mainLayer->items, &enemies, player, background->getPosition(), background->getContentSize().width * backgroundScale, floors);
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 
@@ -704,9 +730,11 @@ bool Level::initLevel(string filename){
 		mainLayer->addChild(objects[i]);
 	}
 	//items
-	for (int i = 0; i < items.size(); i++) {
-		items[i]->setTag(items[i]->getTag() + i);//giving a unique tag to each item
-		mainLayer->addChild(items[i]);
+	for (int i = 0; i < mainLayer->items.size(); i++) {
+		mainLayer->items[i]->setTag(mainLayer->items[i]->getTag() + i);//giving a unique tag to each item
+		if (mainLayer->items[i]->getParent() == NULL) {
+			mainLayer->addChild(mainLayer->items[i]);
+		}
 	}
 	//enemies
 	for (int i = 0; i < enemies.size(); i++) {

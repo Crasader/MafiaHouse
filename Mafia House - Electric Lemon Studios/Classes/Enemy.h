@@ -65,6 +65,7 @@ public:
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
 	int detectedTag = -1;
+	Node* lastSeenLocation;
 
 	virtual void update(GameLayer* mainLayer, float time);
 
@@ -205,4 +206,8 @@ protected:
 	bool reachedNode = false;
 	float reachedNodeTime = -1;
 	int pathIterator = 1;
+
+	//for chasing player
+	bool lostPlayer = false;
+	bool reachedLastSeen = false;
 };

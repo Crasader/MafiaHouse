@@ -52,6 +52,7 @@ void Item::initRadius() {
 
 //used when player picks up item
 void Item::initHeldItem() {
+	state = HELD;
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setEnabled(false);
@@ -69,6 +70,18 @@ void Item::initHeldItem() {
 }
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
+	initGroundItem();
+	setPosition(pos);
+	//setRotation(-20);
+	if (flip == true) {
+		flipX();
+		setAnchorPoint(Vec2(0, 0));
+		setRotation(-getRotation());
+	}
+}
+//used when thrown item becomes ground item
+void Item::initGroundItem() {
+	state = GROUND;
 	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
 	getPhysicsBody()->setCollisionBitmask(8);
@@ -77,13 +90,6 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 	getPhysicsBody()->setDynamic(true);
 	setName("item");
 	getPhysicsBody()->setName("item");
-	setPosition(pos);
-	//setRotation(20);
-	if (flip == true) {
-		flipX();
-		setAnchorPoint(Vec2(0, 0));
-		setRotation(-getRotation());
-	}
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 }
 
@@ -99,6 +105,31 @@ void Item::used() {
 void Item::hitWall() {
 	didHitWall = true;
 	getPhysicsBody()->setEnabled(false);
+}
+
+void Item::playerInRange() {
+	if (playerRange == true){
+		outline->setColor(ccc3(100, 255, 100));//green
+	}
+	playerRange = false;
+}
+
+void Item::hasMoved() {
+	if (abs((getPosition() - initialPos).getLengthSq()) > 50 * 50) {//if item is not within a 50 px radius of it's starting position
+		enemyCanUse = true;
+		outline->setColor(ccc3(255,100,100));//red
+	}
+	else {
+		enemyCanUse = false;
+		outline->setColor(ccc3(100,100,255));//blue
+	}
+}
+
+void Item::checkSpeed() {
+	float speedSq = getPhysicsBody()->getVelocity().getLengthSq();//squared speed
+		if (speedSq < 50 * 50) {//check if speed has gone below threshold
+			initGroundItem();
+	}
 }
 
 void Item::beginStab() {

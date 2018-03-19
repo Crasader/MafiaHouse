@@ -29,7 +29,7 @@ public:
 	//functions for character actions:
 	virtual void pickUpItem(GameLayer* mainLayer);
 	virtual void dropItem(GameLayer* mainLayer);
-	virtual void breakItem();
+	virtual void breakItem(GameLayer* mainLayer);
 
 	virtual void beginUseItem();
 	virtual void useItem();

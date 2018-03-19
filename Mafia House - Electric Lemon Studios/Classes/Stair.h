@@ -44,6 +44,8 @@ public:
 
 	virtual void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 
+	void updateColour();
+
 	void itemHit(Item* item);
 
 	void breakDoor();

@@ -51,6 +51,8 @@ void Enemy::initObject(Vec2 startPos)
 	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
 		flipX();
 	}
+	lastSeenLocation = Node::create();
+	addChild(lastSeenLocation);
 }
 
 void Enemy::openDoor() {
@@ -309,6 +311,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 		}
 		//enemy sees the player
 		else if (visionContactTag == 1){//1 = player, 2 = hidden player
+			static_cast<Player*>(visionContact)->inVision = true;
 			detectedTag = visionContactTag;
 			playerInVision = true;
 			points->push_back(info.contact);
@@ -615,6 +618,8 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->exMark->setVisible(true);
 	enemy->setSpeed(2.09f);
 	enemy->setName("enemy_alert");
+	enemy->lostPlayer = false;
+	enemy->reachedLastSeen = false;
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -631,9 +636,18 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
 		enemy->changeSuspicion(enemy->maxSuspicion / (1.0f SECONDS));
+		enemy->lostPlayer = false;
+		enemy->reachedLastSeen = false;
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (28 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (32 SECONDS));
+	}
+	//check if player bumped enemy
+	if (enemy->isTouched == true) {
+		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+		enemy->isTouched = false;
+		enemy->lostPlayer = false;
+		enemy->reachedLastSeen = false;
 	}
 	//enemy has somehow dropped straight to 0 supicion
 	if (enemy->suspicionLevel <= 0) {
@@ -643,7 +657,30 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	else if (enemy->suspicionLevel <= enemy->maxSuspicion / 2) {
 		return new SuspectState;
 	}
-	enemy->pathTo(mainLayer,enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+
+	//check if the player is hidden
+	if (enemy->detectedPlayer->isHidden() == true) {
+		//if the player wasn't seen going into hiding
+		if (enemy->detectedPlayer->wasSeen == false) {
+			enemy->lostPlayer = true;
+			enemy->lastSeenLocation->setPositionX(enemy->detectedPlayer->getPositionX());
+			enemy->lastSeenLocation->setPositionY(enemy->detectedPlayer->currentFloor);//use y position for floor player was on
+		}
+	}
+
+	//enemy still knows where they player is
+	if (enemy->lostPlayer == false) {
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor);
+	}
+	//enemy didn't see player hide
+	else {
+		if (enemy->reachedLastSeen == false) {
+			enemy->reachedLastSeen = enemy->pathTo(mainLayer, enemy->lastSeenLocation->getPositionX(), enemy->lastSeenLocation->getPositionY());
+		}
+		else {//they have reached player's last seen location
+			enemy->walk(time);
+		}
+	}
 	return nullptr;
 }
 void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
@@ -651,6 +688,8 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->slowStop();
 	enemy->previousTurnTime = -1;
 	enemy->stopTime = -1;
+	enemy->lostPlayer = false;
+	enemy->reachedLastSeen = false;
 }
 
 //Use Door State:
