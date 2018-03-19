@@ -110,14 +110,14 @@ void Enemy::pause(float time) {
 			stopTime += pauseTime;
 		}
 		//setting enemy back to direction they were facing before they paused
-		if (pathTag == "NONE" || pathTag == "LEFT") {
+		/*if (pathTag == "NONE" || pathTag == "LEFT") {
 			if (wasFlipped == true && flippedX == false) {
 				flipX();
 			}
 			else if (wasFlipped == false && flippedX == true) {
 				flipX();
 			}
-		}
+		}*/
 	}
 }
 
@@ -303,8 +303,20 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 			didRun = true;
 			return false;
 		}
+		else if (visionContactName == "door_radius") {
+			if (static_cast<Door*>(visionContact->getParent())->checkOpen() == false) {
+				if (flippedX == true) {
+					points->push_back(info.contact + Vec2(-12, 0));
+				}
+				else if (flippedX == false) {
+					points->push_back(info.contact + Vec2(12, 0));
+				}
+				didRun = true;
+				return false;
+			}
+		}
 		//vision blocked by other enemies
-		if ((visionContactTag != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
+		else if ((visionContactTag != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
 			points->push_back(info.contact);
 			didRun = true;
 			return false;

@@ -53,7 +53,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				if (i % 2 == 0) {//on even number iterations, make a wall segment
 					//length = (size.height * doorData[j].pos) - newPos.y + position.y;
 					length =  doorData[j].pos - newPos.y + position.y;
-					w = Wall::create();
+					w = Wall::createWithSpriteFrameName();
 					w->initObject(newPos, Size(size.width, length));
 					w->setName(name);
 					if (length > 0) {
@@ -82,7 +82,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				newPos = newPos + Vec2(0, length);//setting position for next chunk of the wall
 			}
 			length = size.height - newPos.y + position.y;
-			w = Wall::create();
+			w = Wall::createWithSpriteFrameName();
 			w->initObject(newPos, Size(size.width, length));
 			w->setName(name);
 			addChild(w);
@@ -92,7 +92,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				if (i % 2 == 0) {//on even number iterations, make a wall segment
 					//length = (size.width * doorData[j].pos) - newPos.x + position.x;
 					length = doorData[j].pos - newPos.x + position.x;
-					w = Wall::create();
+					w = Wall::createWithSpriteFrameName();
 					w->initObject(newPos, Size(length, size.height));
 					w->setName(name);
 					if (length > 0) {
@@ -121,14 +121,14 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				newPos = newPos + Vec2(length, 0);//setting position for next chunk of the wall
 			}
 			length = size.width - newPos.x + position.x;
-			w = Wall::create();
+			w = Wall::createWithSpriteFrameName();
 			w->initObject(newPos, Size(length, size.height));
 			w->setName(name);
 			addChild(w);
 		}
 	}
 	else {//no doors or vents
-		w = Wall::create();
+		w = Wall::createWithSpriteFrameName();
 		w->initObject(position, size);
 		w->setName(name);
 		addChild(w);

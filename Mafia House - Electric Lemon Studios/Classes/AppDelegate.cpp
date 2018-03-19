@@ -79,6 +79,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	//Set up the input handler
 	INPUTS->init();
 
+	//set seed for random number generation
+	srand(time(NULL));
+
     return true;
 }
 
