@@ -310,7 +310,7 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);
-	if (player->heldItem->checkUsed() == true) {
+	if (player->heldItem->hp <= 0) {//if item is broken, no hp left
 		player->breakItem();
 	}
 	else{

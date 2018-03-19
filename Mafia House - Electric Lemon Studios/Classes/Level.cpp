@@ -50,7 +50,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -308,53 +308,43 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return false;
 		}
 
-		//enemy and wall
-		if (a->getName() == "enemy" && b->getName() == "wall")
+		//enemy and item radius
+		if ((a->getName() == "enemy" && b->getName() == "item_radius") || (a->getName() == "item_radius" && b->getName() == "enemy"))
 		{
-			//CCLOG("CAN OPEN DOOR");
-			solve.setRestitution(20.0f);
-			static_cast<Enemy*>(a)->hitWall();
-			return true;
-		}
-		else if (a->getName() == "wall" && b->getName() == "enemy")
-		{
-			//CCLOG("CAN OPEN DOOR");
-			solve.setRestitution(20.0f);
-			static_cast<Enemy*>(b)->hitWall();
-			return true;
-		}
-
-		//alert enemy and door
-		if (a->getName() == "enemy_alert" && b->getName() == "door")
-		{
-			//CCLOG("CAN OPEN DOOR");
-			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b);
 			return false;
 		}
-		else if (a->getName() == "door" && b->getName() == "enemy_alert")
+		//alert enemy and item radius
+		if (a->getName() == "enemy_alert" && b->getName() == "item_radius")
 		{
-			//CCLOG("CAN OPEN DOOR");
-			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a);
+			static_cast<Enemy*>(a)->itemToPickUp = static_cast<Item*>(b->getParent());
+			return false;
+		}
+		else if (a->getName() == "item_radius" && b->getName() == "enemy_alert")
+		{
+			static_cast<Enemy*>(b)->itemToPickUp = static_cast<Item*>(a->getParent());
 			return false;
 		}
 
 		//enemy and door radius
 		if (a->getName() == "enemy" && b->getName() == "door_radius")
 		{
-			//CCLOG("CAN OPEN DOOR");
 			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
 			return false;
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "enemy")
 		{
-			//CCLOG("CAN OPEN DOOR");
 			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
 			return false;
 		}
-
-		//enemy and item radius
-		if ((a->getName() == "enemy" && b->getName() == "item_radius") || (a->getName() == "item_radius" && b->getName() == "enemy"))
+		//alert enemy and door radius
+		if (a->getName() == "enemy_alert" && b->getName() == "door_radius")
 		{
+			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
+			return false;
+		}
+		else if (a->getName() == "door_radius" && b->getName() == "enemy_alert")
+		{
+			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
 			return false;
 		}
 
@@ -364,6 +354,31 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 
 //check if 2 objects collide and do something
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
+	Node *a = contact.getShapeA()->getBody()->getNode();
+	Node *b = contact.getShapeB()->getBody()->getNode();
+	//enemy and wall
+	if (a->getName() == "enemy" && b->getName() == "wall")
+	{
+		static_cast<Enemy*>(a)->hitWall();
+		return true;
+	}
+	else if (a->getName() == "wall" && b->getName() == "enemy")
+	{
+		static_cast<Enemy*>(b)->hitWall();
+		return true;
+	}
+
+	//items and door
+	if (a->getName() == "held_item" && b->getName() == "door")
+	{
+		static_cast<Door*>(b)->itemHit(static_cast<Item*>(a));
+		return true;
+	}
+	else if (a->getName() == "door" && b->getName() == "held_item")
+	{
+		static_cast<Door*>(a)->itemHit(static_cast<Item*>(b));
+		return true;
+	}
 	return true;
 }
 
@@ -498,8 +513,14 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "door") {
 				DoorData doorData;
 				doorData.type = 1;
-				if (pieces.size() > 2) {//set door's position on wall
-					doorData.pos = atof(pieces[2].c_str());
+				//set door as locked
+				if (pieces.size() > 2) {
+					if (pieces[2] == "locked") {
+						doorData.locked = true;
+					}
+				}
+				if (pieces.size() > 3) {//set door's position on wall
+					doorData.pos = atof(pieces[3].c_str());
 				}
 				//set what wall door is on
 				if (pieces[1] == "right") {
@@ -518,8 +539,14 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "vent") {
 				DoorData ventData;
 				ventData.type = 2;
-				if (pieces.size() > 2) {//set vent's position on wall
+				if (pieces.size() >= 2) {//set vent's position on wall
 					ventData.pos = atof(pieces[2].c_str());
+				}
+				//set vent as locked
+				if (pieces.size() >= 3) {
+					if (pieces[3] == "locked") {
+						ventData.locked = true;
+					}
 				}
 				//set what wall vent is on
 				if (pieces[1] == "right") {

@@ -71,6 +71,10 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					}
 					length = d->size.height;
 					if (type != 2) {//only add doors or vents if right wall or ceiling
+						if (doorData[j].locked == true) {
+							d->lock();
+							d->defaultLocked = true;
+						}
 						doors->push_back(d);
 					}
 					j++;
@@ -106,6 +110,10 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					}
 					length = d->size.width;
 					if (type != 2) {//only add doors or vents if right wall or ceiling
+						if (doorData[j].locked == true) {
+							d->lock();
+							d->defaultLocked = true;
+						}
 						doors->push_back(d);
 					}
 					j++;

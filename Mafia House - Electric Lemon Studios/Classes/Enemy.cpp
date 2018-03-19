@@ -56,20 +56,33 @@ void Enemy::openDoor() {
 	doorToUse->use();
 }
 void Enemy::closeDoor() {
+	doorToUse->use();
 	if (hasKey == true) {
 		if (doorToUse->defaultLocked == true) {//only lock doors that are set to be locked in the level
 			doorToUse->lock();
 		}
 	}
-	doorToUse->use();
 }
 
 void Enemy::breakDoor(float time) {
-	if (startBreakTime == -1) {
+	/*if (startBreakTime == -1) {
 		startBreakTime = time;
 	}
 	if (time - startBreakTime >= breakTime) {
-		doorToUse->unlock();//unlock the door after a certain amount of time
+		doorToUse->breakDoor();//break the door after a certain amount of time
+		doorToUse->use();
+		startBreakTime = -1;
+	}*/
+	//if (heldItem != NULL) {
+	//	doorToUse->itemHit(heldItem);
+	//}
+	//else {
+		doorToUse->hp = doorToUse->hp - (10.0f / (6.0f SECONDS));
+	//}
+
+	if (doorToUse->hp <= 0) {
+		doorToUse->breakDoor();
+		doorToUse->use();
 	}
 }
 
@@ -299,7 +312,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 			return false;
 		}
 		//enemy sees an item
-		else if (visionContactName == "item") {
+		else if (visionContactName == "item" && state->type != "alert") {//enemy won't pick up seen items when alert
 			if (static_cast<Item*>(visionContact)->enemyCanUse == true) {
 				itemToPickUp = static_cast<Item*>(visionContact);//enemy can pick item up
 				return false;
@@ -383,6 +396,7 @@ void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Default State:
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->exMark->setVisible(false);
 	enemy->paused = false;
 	enemy->moveSpeed = 1.0f;
 	enemy->setSpeed(enemy->moveSpeed);
@@ -481,6 +495,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 //Suspicious State:
 void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->prevPauseTime = time;
+	enemy->exMark->setVisible(false);
 	enemy->qMark->setVisible(true);
 	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
@@ -579,10 +594,13 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->exMark->setVisible(true);
 	enemy->setSpeed(2.09f);
 	enemy->setName("enemy_alert");
-	enemy->getPhysicsBody()->setCollisionBitmask(41);
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	//check if enemy is walking into a aoor
+	//check if enemy has seen an item
+	if (enemy->itemToPickUp != NULL && enemy->heldItem == NULL) {
+		enemy->pickUpItem(mainLayer);
+	}
+	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
 	}
@@ -605,9 +623,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	return nullptr;
 }
 void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->exMark->setVisible(false);
 	enemy->returning = true;
-	enemy->getPhysicsBody()->setCollisionBitmask(13);
 	enemy->slowStop();
 	enemy->previousTurnTime = -1;
 	enemy->stopTime = -1;
@@ -629,6 +645,9 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	}
 }
 Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->doorToUse == NULL) {
+		return enemy->prevState;
+	}
 	if (enemy->prevState->type != "alert") {//enemy is not coming from alert state
 		if (enemy->doorToUse->checkLock() == true) {//they couldn't actually open the door, if they have a key they will use it automatically to unlock the door
 			enemy->changeSuspicion(enemy->maxSuspicion / 2);//increases suspicion by a half
@@ -643,13 +662,14 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			}
 			enemy->flipX();
 			if (enemy->flippedX == true) {
-				enemy->setPosition(enemy->getPosition() + Vec2(-10, 0));//to ensure they do not try to open the door again right away
+				enemy->setPosition(enemy->getPosition() + Vec2(-5, 0));//to ensure they do not try to open the door again right away
 			}
 			else {
-				enemy->setPosition(enemy->getPosition() + Vec2(10, 0));//to ensure they do not try to open the door again right away
+				enemy->setPosition(enemy->getPosition() + Vec2(5, 0));//to ensure they do not try to open the door again right away
 			}
 			return new DefaultState;
 		}
+
 		if (enemy->paused == false) {
 			if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
 				return enemy->prevState;
@@ -691,7 +711,12 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			enemy->breakDoor(time);
 		}
 		else {//if door is unlocked
-			return enemy->prevState;
+			if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
+				return enemy->prevState;
+			}
+			else {
+				enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+			}
 		}
 	}
 	return nullptr;

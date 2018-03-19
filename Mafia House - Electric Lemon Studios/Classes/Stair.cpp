@@ -88,6 +88,27 @@ void Door::initObject(int orient, Vec2 startPos) {
 	Door::initObject(startPos);
 }
 
+void Door::itemHit(Item* item) {
+	if (item->isKey == true) {//item is a key
+		unlock();
+		item->hp--;
+	}
+	else if (item->canBreakDoor == true) {
+		hp -= item->dmg;//item deals dmg to the door
+		item->hp--;
+	}
+	if (hp <= 0) {
+		breakDoor();
+	}
+}
+
+void Door::breakDoor() {
+	//will probably change sprite
+	unlock();
+	broken = true;
+	setColor(ccc3(255, 0, 200));//purple
+}
+
 void Door::use() {
 	if (locked == false) {
 		if (isOpen == false) {
@@ -106,16 +127,20 @@ void Door::use() {
 }
 
 void Door::unlock() {
-	if (locked == true) {
-		locked = false;
-		setColor(ccc3(255,155,0));
+	if (broken == false) {//can't unlock if it's broken
+		if (locked == true) {
+			locked = false;
+			setColor(ccc3(255, 155, 0));//orange
+		}
 	}
 }
 
 void Door::lock() {
-	if (locked == false) {
-		locked = true;
-		setColor(ccc3(255,0,0));
+	if (broken == false) {//can't lock if it's broken
+		if (locked == false) {
+			locked = true;
+			setColor(ccc3(255, 0, 0));//red
+		}
 	}
 }
 

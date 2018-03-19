@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include "Item.h"
 
 class StairData {
 public:
@@ -39,6 +40,10 @@ public:
 
 	virtual void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 
+	void itemHit(Item* item);
+
+	void breakDoor();
+
 	bool checkLock() { return locked; }
 
 	void use();
@@ -57,7 +62,11 @@ public:
 
 	bool defaultLocked = false;//whether enemies should lock the door or not, also if it starts locked
 
+	float hp = 10;//for items to deal dmg to doors, to break them open if locked
+
 protected:
+	bool broken = false;
+
 	bool locked = false;
 
 	bool isOpen = false;

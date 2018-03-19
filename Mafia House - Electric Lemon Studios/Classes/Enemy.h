@@ -66,6 +66,9 @@ public:
 
 	vector<PathNode*> pathNodes;
 
+	//for locking/unlocking doors
+	bool hasKey = false;
+
 protected:
 	class State {
 	public:
@@ -176,11 +179,9 @@ protected:
 	//for returning to starting position:
 	bool returning = false;
 
-	//for locking/unlocking doors
-	bool hasKey = true;
 	//for breakin doors:
 	float startBreakTime = -1;
-	float breakTime = 8.0f;//time in seconds it takes for an enemy to break down a door
+	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door
 
 	//for using doors:
 	float doorUsePos;

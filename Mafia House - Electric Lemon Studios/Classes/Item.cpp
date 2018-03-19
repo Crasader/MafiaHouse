@@ -83,7 +83,7 @@ void Item::breakItem() {
 }
 
 void Item::used() {
-	isUsed = true;
+	hp = 0;
 }
 
 void Item::beginStab() {
@@ -126,6 +126,9 @@ void Item::swingSequence() {
 //Knife Class:
 Knife::Knife()
 {
+	hp = 2;
+	dmg = 5;
+	canBreakDoor = true;//temporary
 	Item::Item();
 	tag = 10100;//10100 - 10199 for knives
 	attackType = STAB;
