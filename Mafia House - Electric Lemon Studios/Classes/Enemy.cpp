@@ -401,7 +401,6 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	}
 	//resetting collision checks:
 	didHitWall = false;
-	itemToPickUp = NULL;
 	//updating color of question mark, turns more red as suspicion increases
 	float BluePercentage = suspicionLevel / maxSuspicion;
 	float GreenPercentage = abs(BluePercentage - 1);//inverts the percentage
@@ -466,7 +465,9 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		if (enemy->detectedTag != -1) {
+			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		}
 		return new AlertState;
 	}
 	else if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
@@ -574,7 +575,9 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		if (enemy->detectedTag != -1) {
+			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		}
 		return new AlertState;
 	}
 	//check if an enemy has become unalerted
@@ -636,6 +639,9 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
+	}
+	if (enemy->detectedPlayer == NULL) {
+		return new DefaultState;
 	}
 	//check if enemy has seen an item
 	if (enemy->itemToPickUp != NULL && enemy->heldItem == NULL) {
@@ -779,11 +785,6 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			enemy->isTouched = false;
 			enemy->detectedPlayer = NULL;
 		}
-		//check if an enemy has become alerted
-		if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-			return new AlertState;
-		}
 	}
 	else if (enemy->prevState->type == "alert"){//enemy was in alert state, just open door and run
 		if (enemy->doorToUse->checkLock() == true) {//they didn't actually open the door
@@ -797,6 +798,13 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 				enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
 			}
 		}
+	}
+	//check if an enemy has become alerted
+	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		if (enemy->detectedTag != -1) {
+			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		}
+		return new AlertState;
 	}
 	return nullptr;
 }
@@ -868,7 +876,9 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		if (enemy->detectedTag != -1) {
+			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		}
 		return new AlertState;
 	}
 	return nullptr;
@@ -932,7 +942,9 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		if (enemy->detectedTag != -1) {
+			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		}
 		return new AlertState;
 	}
 	//enemy has dropped to 0 supicion
@@ -992,7 +1004,9 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		if (enemy->detectedTag != -1) {
+			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
+		}
 		return new AlertState;
 	}
 	//enemy has dropped to 0 supicion somehow...

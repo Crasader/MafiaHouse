@@ -397,6 +397,28 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
 		return false;
 	}
+	//alert enemy and door
+	if (a->getName() == "enemy_alert" && b->getName() == "door")
+	{
+		static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b);
+		return false;
+	}
+	else if (a->getName() == "door" && b->getName() == "enemy_alert")
+	{
+		static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a);
+		return false;
+	}
+	//enemy and wall
+	if (a->getName() == "enemy_alert" && b->getName() == "wall")
+	{
+		static_cast<Enemy*>(a)->hitWall();
+		return true;
+	}
+	else if (a->getName() == "wall" && b->getName() == "enemy_alert")
+	{
+		static_cast<Enemy*>(b)->hitWall();
+		return true;
+	}
 	//enemy and wall
 	if (a->getName() == "enemy" && b->getName() == "wall")
 	{
