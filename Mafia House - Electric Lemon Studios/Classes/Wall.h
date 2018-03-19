@@ -12,6 +12,8 @@ public:
 	Wall();
 	~Wall();
 	CREATE_SPRITE_FUNC(Wall, "wall.png");
+	CREATE_WITH_FRAME(Wall);
+	CREATE_WITH_FRAME_NAME(Wall, "objects/wall.png");
 
 	void initObject(Vec2 startPos = Vec2(0, 0), Size size = Size(25, 25));//position, size
 };

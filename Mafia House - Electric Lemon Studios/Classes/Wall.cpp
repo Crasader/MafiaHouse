@@ -39,9 +39,9 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 		std::sort(doorData.begin(), doorData.end(), sortByPosition);//sorting doors in order from least to greatest
 
 		//used purely for getting door and vent's proper size based on their orientation
-		Door* door = Door::create();
+		Door* door = Door::createWithSpriteFrameName();
 		door->initObject(orientation);
-		Vent* vent = Vent::create();
+		Vent* vent = Vent::createWithSpriteFrameName();
 		vent->initObject(orientation);
 	
 		Door* d;
@@ -144,7 +144,7 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 	setAnchorPoint(Vec2(0, 0));
 
 	//setting background image for room
-	background = Sprite::create(roomData.bgName);
+	background = Sprite::create("backgrounds/" + roomData.bgName);
 	background->setContentSize(getContentSize() + Size(fullThick + 1, fullThick + 1));
 	background->setGlobalZOrder(0);
 	background->setAnchorPoint(Vec2(0, 0));
@@ -204,13 +204,15 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvOb
 			if ((*enemies)[i]->startRoom == roomData.room) {
 				//(*enemies)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*enemies)[i]->roomStartPos);
 				(*enemies)[i]->setRoomPosition(position, (*enemies)[i]->roomStartPos);
-				//adding starting position as a path node
-				PathNode* startNode = new PathNode();
-				startNode->initNode((*enemies)[i]->getPositionX(), 0, 3.0f, (*enemies)[i]->getPathTag());
-				startNode->startRoom = (*enemies)[i]->startRoom;
-				startNode->setPosition((*enemies)[i]->getPosition());
-				pathNodes->push_back(startNode);
-				(*enemies)[i]->pathNodes.push_back(startNode);
+				if ((*enemies)[i]->pathNodes.size() > 0) {
+					//adding starting position as a path node
+					PathNode* startNode = new PathNode();
+					startNode->initNode((*enemies)[i]->getPositionX(), 0, 3.0f, (*enemies)[i]->getPathTag());
+					startNode->startRoom = (*enemies)[i]->startRoom;
+					startNode->setPosition((*enemies)[i]->getPosition());
+					pathNodes->push_back(startNode);
+					(*enemies)[i]->pathNodes.push_back(startNode);
+				}
 				//sorting list of path nodes
 				std::sort((*enemies)[i]->pathNodes.begin(), (*enemies)[i]->pathNodes.end(), sortByNumber);
 			}

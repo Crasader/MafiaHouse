@@ -57,6 +57,7 @@ Door::~Door() {
 }
 
 void Door::initObject(Vec2 startPos) {
+	setColor(ccc3(255, 155, 0));//orange
 	setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
 
@@ -89,16 +90,18 @@ void Door::initObject(int orient, Vec2 startPos) {
 }
 
 void Door::itemHit(Item* item) {
-	if (item->isKey == true) {//item is a key
-		unlock();
-		item->hp--;
-	}
-	else if (item->canBreakDoor == true) {
-		hp -= item->dmg;//item deals dmg to the door
-		item->hp--;
-	}
-	if (hp <= 0) {
-		breakDoor();
+	if (broken == false) {
+		if (item->isKey == true) {//item is a key
+			unlock();
+			item->hp--;
+		}
+		else if (item->canBreakDoor == true) {
+			hp -= item->dmg;//item deals dmg to the door
+			item->hp--;
+		}
+		if (hp <= 0) {
+			breakDoor();
+		}
 	}
 }
 
@@ -106,7 +109,7 @@ void Door::breakDoor() {
 	//will probably change sprite
 	unlock();
 	broken = true;
-	setColor(ccc3(255, 0, 200));//purple
+	setColor(ccc3(155, 0, 255));//purple
 }
 
 void Door::use() {

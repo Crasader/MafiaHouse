@@ -16,13 +16,13 @@
 # player: player, x_coordinate, y_coordinate
 #
 300
-700|bg,Hallway.png|door,right,locked|player,0,0|enemy,guard,400,0,A|item,knife,300,0|item,knife,500,0|object,plant,100,0
-600|bg,Kitchen.png|door,left|item,knife,400,0|node,500,1,2.0,A|stair,1,A,550,0
+700|bg,Hallway.png|door,right,locked|player,0,0|item,knife,300,0|item,knife,500,0|object,plant,100,0
+600|bg,Kitchen.png|door,left|item,knife,400,0|node,500,1,2.0,A|stair,1,A,550,0|enemy,guard,10,0,STAND_LEFT
 FLOOR_END
 300
 500|bg,LivingRoom.png|door,right,locked|stair,2,A,25,0|enemy,guard,100,0,LEFT,knife|node,200,2,2.0,A
 400|bg,Bathroom.png|door,right,locked|door,left|item,knife,650,0
-400|bg,guestRoom.png|door,left|stair,1,B,350,0|object,plant,100,0
+400|bg,guestRoom.png|door,left|stair,1,B,350,0|object,plant,100,0|enemy,guard,100,0,A
 FLOOR_END
 300
 600|bg,MasterBedroom.png|door,right|node,300,3,2.0,A

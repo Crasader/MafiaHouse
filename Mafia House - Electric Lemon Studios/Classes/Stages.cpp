@@ -7,7 +7,7 @@ bool Stage1::init()
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
-	setBackground("back.png", 0.5f);
+	setBackground("backgrounds/back.png", 0.5f);
 	//create level
 	initLevel("test_level2.txt");
 

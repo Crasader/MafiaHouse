@@ -88,6 +88,9 @@ void Character::useStair(GameLayer* mainLayer) {
 	}
 }
 
-void Character::hit() {
-	isHit = true;
+void Character::hit(Item* item) {
+	if (item->didHitWall == false) {
+		item->used();
+		isHit = true;
+	}
 }

@@ -24,11 +24,17 @@ void Item::initObject(Vec2 startPos)
 	GameObject::initObject(startPos);
 	retain();
 	initRadius();
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	outline = Sprite::createWithSpriteFrameName("items/knife_outline.png");
+	outline->getTexture()->setTexParameters(texParams);
+	outline->setPositionNormalized(Vec2(0.5, 0.5));
+	outline->setGlobalZOrder(6);
+	addChild(outline);
 }
 //initializing pickup radius:
 void Item::initRadius() {
 	Size pickUpBox = getContentSize() * 1.7;
-	auto pickUpRadius = Node::create();
+	pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("item_radius");
 
@@ -46,9 +52,11 @@ void Item::initRadius() {
 
 //used when player picks up item
 void Item::initHeldItem() {
-	removeChildByName("item_radius", true);
+	outline->setVisible(false);
+	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setEnabled(false);
-	getPhysicsBody()->setDynamic(false);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
 	getPhysicsBody()->setCollisionBitmask(42);
 	setName("held_item");
@@ -61,9 +69,11 @@ void Item::initHeldItem() {
 }
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
+	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
 	getPhysicsBody()->setCollisionBitmask(8);
 	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);
 	setName("item");
 	getPhysicsBody()->setName("item");
@@ -74,7 +84,7 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 		setAnchorPoint(Vec2(0, 0));
 		setRotation(-getRotation());
 	}
-	initRadius();
+	pickUpRadius->getPhysicsBody()->setEnabled(true);
 }
 
 void Item::breakItem() {
@@ -84,6 +94,11 @@ void Item::breakItem() {
 
 void Item::used() {
 	hp = 0;
+}
+
+void Item::hitWall() {
+	didHitWall = true;
+	getPhysicsBody()->setEnabled(false);
 }
 
 void Item::beginStab() {
@@ -126,10 +141,12 @@ void Item::swingSequence() {
 //Knife Class:
 Knife::Knife()
 {
+	Item::Item();
+	category = 32;
+	collision = 8;
 	hp = 2;
 	dmg = 5;
 	canBreakDoor = true;//temporary
-	Item::Item();
 	tag = 10100;//10100 - 10199 for knives
 	attackType = STAB;
 	startTime = 6 FRAMES;

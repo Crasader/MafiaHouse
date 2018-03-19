@@ -12,8 +12,10 @@ Enemy::Enemy()
 	dynamic = true;
 	category = 2;
 	collision = 13;
-
+	//other proeprties
 	maxSpeed = 50;
+	//initializing animations:
+	//animations here
 }
 Enemy::~Enemy(){
 }
@@ -32,16 +34,18 @@ void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
-	exMark = Sprite::create("exMark.png");
+	exMark = Sprite::createWithSpriteFrameName("icons/exmark.png");
 	exMark->setAnchorPoint(Vec2(0.5, 0));
 	exMark->setPositionNormalized(Vec2(0.5, 1.05));
 	exMark->getTexture()->setTexParameters(texParams);
+	exMark->setGlobalZOrder(8);
 	exMark->setVisible(false);
 	addChild(exMark);
-	qMark = Sprite::create("qMark.png");
+	qMark = Sprite::createWithSpriteFrameName("icons/qmark.png");
 	qMark->setAnchorPoint(Vec2(0.5, 0));
 	qMark->setPositionNormalized(Vec2(0.5, 1.05));
 	qMark->getTexture()->setTexParameters(texParams);
+	qMark->setGlobalZOrder(8);
 	qMark->setVisible(false);
 	addChild(qMark);
 	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
@@ -330,13 +334,13 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	int direction;
 
 	if (flippedX == false) {
-		startPoint = getPosition() + Vec2(getContentSize().width - 12, 87);
-		*start = startPoint + Vec2(6, 0);//shift visuals forward a bit
+		startPoint = getPosition() + Vec2(getContentSize().width - 20, 87);
+		*start = startPoint;// + Vec2(6, 0);//shift visuals forward a bit
 		direction = 1;
 	}
 	else {
-		startPoint = getPosition() + Vec2(12, 87);
-		*start = startPoint + Vec2(-6, 0);//shift visuals forward a bit
+		startPoint = getPosition() + Vec2(20, 87);
+		*start = startPoint;// + Vec2(-6, 0);//shift visuals forward a bit
 		direction =  -1;
 	}
 
@@ -363,6 +367,10 @@ void Enemy::setSuspicion(float num) {
 }
 
 void Enemy::update(GameLayer* mainLayer, float time) {
+	if (itemHitBy != NULL) {
+		hit(itemHitBy);
+		itemHitBy == NULL;
+	}
 	//updateFloor(mainLayer->floors);//checking if floor has changed
 	newState = state->update(this, mainLayer, time);
 	if (newState != NULL)
@@ -385,6 +393,13 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	qMark->setColor(ccc3(255, 255 * GreenPercentage, 255 * BluePercentage));
 }
 
+bool Enemy::checkDead() {
+	if (isHit == true) {
+		return true;
+	}
+	return false;
+}
+
 //Enemy States:
 void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 }
@@ -405,6 +420,9 @@ void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->visionRadius = enemy->defaultRadius;
 }
 Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		//return new DeathState;
+	}
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
@@ -507,6 +525,9 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->visionRadius = enemy->defaultRadius * 1.3;
 }
 Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		//return new DeathState;
+	}
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
@@ -596,6 +617,9 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setName("enemy_alert");
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		//return new DeathState;
+	}
 	//check if enemy has seen an item
 	if (enemy->itemToPickUp != NULL && enemy->heldItem == NULL) {
 		enemy->pickUpItem(mainLayer);
@@ -645,29 +669,33 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	}
 }
 Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		//return new DeathState;
+	}
 	if (enemy->doorToUse == NULL) {
 		return enemy->prevState;
 	}
 	if (enemy->prevState->type != "alert") {//enemy is not coming from alert state
 		if (enemy->doorToUse->checkLock() == true) {//they couldn't actually open the door, if they have a key they will use it automatically to unlock the door
-			enemy->changeSuspicion(enemy->maxSuspicion / 2);//increases suspicion by a half
-			enemy->stop();
-			enemy->reachedNode = true;
-			enemy->reachedNodeTime = time;
-			if (enemy->pathIterator == 1) {//turn around if they can't open the door
-				enemy->pathIterator = -1;
+			if (enemy->startWaitTime == -1 && enemy->moveToObject(enemy->doorToUse) == true) {//enemy has walked up to door
+				enemy->qMark->setVisible(true);
+				enemy->changeSuspicion(enemy->maxSuspicion / 2);//increases suspicion by a half
+				enemy->stop();
+				enemy->reachedNode = true;
+				enemy->reachedNodeTime = time;
+				if (enemy->pathIterator == 1) {//turn around if they can't open the door
+					enemy->pathIterator = -1;
+				}
+				else if (enemy->pathIterator == -1) {
+					enemy->pathIterator = 1;
+				}
+				enemy->startWaitTime = time;
 			}
-			else if (enemy->pathIterator == -1) {
-				enemy->pathIterator = 1;
+			if (enemy->startWaitTime != -1 && time - enemy->startWaitTime >= enemy->doorWaitTime) {
+				enemy->flipX();
+				enemy->startWaitTime = -1;
+				return new DefaultState;
 			}
-			enemy->flipX();
-			if (enemy->flippedX == true) {
-				enemy->setPosition(enemy->getPosition() + Vec2(-5, 0));//to ensure they do not try to open the door again right away
-			}
-			else {
-				enemy->setPosition(enemy->getPosition() + Vec2(5, 0));//to ensure they do not try to open the door again right away
-			}
-			return new DefaultState;
 		}
 
 		if (enemy->paused == false) {
@@ -746,6 +774,9 @@ void Enemy::GetItemState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 
 }
 Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		//return new DeathState;
+	}
 	if (enemy->paused == false) {
 		if (enemy->itemToPickUp == NULL) {
 			return new DefaultState;
@@ -811,6 +842,9 @@ void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->qMark->setVisible(true);
 }
 Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		//return new DeathState;
+	}
 	if (enemy->paused == false) {
 		if (enemy->reachedLocation == false) {
 			if (enemy->pathTo(mainLayer, enemy->noiseLocation->getPositionX(), enemy->noiseLocation->startRoom.y) == true) {
@@ -868,6 +902,9 @@ void Enemy::SeenBodyState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 	enemy->qMark->setVisible(true);
 }
 Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		//return new DeathState;
+	}
 	if (enemy->paused == false) {
 		if (enemy->reachedLocation == false) {
 			if (enemy->moveToObject(enemy->bodySeen)== true) {

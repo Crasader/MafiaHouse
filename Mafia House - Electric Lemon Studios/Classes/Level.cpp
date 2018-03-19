@@ -50,7 +50,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -219,7 +219,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 			else {
 				//player is forced out of hiding
-				player->hit();
+				//player->hit();
 				solve.setRestitution(10.0f);
 				return false;
 			}
@@ -229,15 +229,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "enemy" && b->getName() == "held_item")
 		{
 			//CCLOG("ENEMY HIT");
-			static_cast<Enemy*>(a)->hit();
-			static_cast<Item*>(b)->used();
+			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
 			return true;
 		}
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
 			//CCLOG("ENEMY HIT");
-			static_cast<Enemy*>(b)->hit();
-			static_cast<Item*>(a)->used();
+			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
 			return true;
 		}
 
@@ -328,23 +326,19 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//enemy and door radius
 		if (a->getName() == "enemy" && b->getName() == "door_radius")
 		{
-			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
 			return false;
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "enemy")
 		{
-			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
 			return false;
 		}
 		//alert enemy and door radius
 		if (a->getName() == "enemy_alert" && b->getName() == "door_radius")
 		{
-			static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
 			return false;
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "enemy_alert")
 		{
-			static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
 			return false;
 		}
 
@@ -356,6 +350,28 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+	//enemy and door radius
+	if (a->getName() == "enemy" && b->getName() == "door_radius")
+	{
+		static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
+		return false;
+	}
+	else if (a->getName() == "door_radius" && b->getName() == "enemy")
+	{
+		static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
+		return false;
+	}
+	//alert enemy and door radius
+	if (a->getName() == "enemy_alert" && b->getName() == "door_radius")
+	{
+		static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
+		return false;
+	}
+	else if (a->getName() == "door_radius" && b->getName() == "enemy_alert")
+	{
+		static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
+		return false;
+	}
 	//enemy and wall
 	if (a->getName() == "enemy" && b->getName() == "wall")
 	{
@@ -371,12 +387,25 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	//items and door
 	if (a->getName() == "held_item" && b->getName() == "door")
 	{
+		static_cast<Item*>(a)->hitWall();
 		static_cast<Door*>(b)->itemHit(static_cast<Item*>(a));
 		return true;
 	}
 	else if (a->getName() == "door" && b->getName() == "held_item")
 	{
+		static_cast<Item*>(b)->hitWall();
 		static_cast<Door*>(a)->itemHit(static_cast<Item*>(b));
+		return true;
+	}
+	//items and walls
+	if (a->getName() == "held_item" && b->getName() == "wall")
+	{
+		static_cast<Item*>(a)->hitWall();
+		return true;
+	}
+	else if (a->getName() == "wall" && b->getName() == "held_item")
+	{
+		static_cast<Item*>(b)->hitWall();
 		return true;
 	}
 	return true;
@@ -564,7 +593,7 @@ bool Level::initLevel(string filename){
 			}
 			//Stairs
 			else if (pieces[0] == "stair") {
-				Stair* stair = Stair::create();
+				Stair* stair = Stair::createWithSpriteFrameName();
 				stair->pairNum = atof(pieces[1].c_str());
 				if (pieces[2] == "A") {
 					stair->type = 1;
@@ -581,7 +610,7 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "object") {
 				EnvObject* object;
 				if (pieces[1] == "plant") {
-					object = EnvObject::create();//should be Plant subclass
+					object = EnvObject::createWithSpriteFrameName();//should be Plant subclass
 				}
 				object->initObject();
 				object->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
@@ -592,7 +621,7 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "item") {
 				Item* item;
 				if (pieces[1] == "knife") {
-					item = Knife::create();
+					item = Knife::createWithSpriteFrameName();
 				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
@@ -603,7 +632,7 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "enemy") {
 				Enemy* enemy;
 				if (pieces[1] == "guard") {
-					enemy = Enemy::create();//should be Guard subclass
+					enemy = Enemy::createWithSpriteFrameName();//should be Guard subclass
 				}
 				enemy->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				enemy->startRoom = Vec2(roomNum, floorNum);

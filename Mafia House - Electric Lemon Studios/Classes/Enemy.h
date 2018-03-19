@@ -27,6 +27,8 @@ public:
 	Enemy();
 	~Enemy();
 	CREATE_SPRITE_FUNC(Enemy, "guard.png");
+	CREATE_WITH_FRAME(Enemy);
+	CREATE_WITH_FRAME_NAME(Enemy, "enemy/thug/walk/001.png");
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
 	void flipX();
 
@@ -52,6 +54,8 @@ public:
 	void playerTouch() { isTouched = true; }
 	void hitWall() { didHitWall = true; }
 
+	bool checkDead();
+
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
 	bool checkHit() { return isHit; }
@@ -65,6 +69,8 @@ public:
 	virtual void update(GameLayer* mainLayer, float time);
 
 	vector<PathNode*> pathNodes;
+
+	Item* itemHitBy = NULL;
 
 	//for locking/unlocking doors
 	bool hasKey = false;
@@ -179,6 +185,8 @@ protected:
 	//for returning to starting position:
 	bool returning = false;
 
+	float startWaitTime = -1;
+	float doorWaitTime = 2.0f;
 	//for breakin doors:
 	float startBreakTime = -1;
 	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door

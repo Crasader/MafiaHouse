@@ -37,7 +37,7 @@ public:
 	virtual void useDoor();
 	virtual void useStair(GameLayer* mainLayer);
 
-	virtual void hit();
+	virtual void hit(Item* item);
 
 	//for Interacting with objects:
 	Door* doorToUse = NULL;//the tag of the door the player can open/close

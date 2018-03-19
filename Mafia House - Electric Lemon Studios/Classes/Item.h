@@ -5,7 +5,9 @@ class Item : public GameObject
 public:
 	Item();
 	~Item();
-	CREATE_SPRITE_FUNC(Item, "knife.png");
+	CREATE_SPRITE_FUNC(Item, "knife2.png");
+	CREATE_WITH_FRAME(Item);
+	CREATE_WITH_FRAME_NAME(Item, "items/knife.png");
 
 	void initObject(Vec2 startPos = Vec2(0,0));
 	void initRadius();
@@ -26,6 +28,8 @@ public:
 	virtual void breakItem();
 	void used();
 
+	void hitWall();
+
 	virtual void beginStab();
 	virtual void beginSwing();
 
@@ -39,7 +43,11 @@ public:
 	bool canBreakDoor = false;
 	bool isKey = false;
 
+	bool didHitWall = false;
+
 protected:
+	Node * pickUpRadius;
+	Sprite* outline;
 	//attack/use action parameters:
 	AttackType attackType;
 	float startTime;//startup time of attack
@@ -53,4 +61,6 @@ public:
 	Knife();
 	~Knife();
 	CREATE_SPRITE_FUNC(Knife, "knife2.png");
+	CREATE_WITH_FRAME(Knife);
+	CREATE_WITH_FRAME_NAME(Knife, "items/knife.png");
 };

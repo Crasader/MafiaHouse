@@ -17,7 +17,7 @@ Player::Player()
 	maxSpeed = 70;
 	//initializing animations
 	standing = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES);
-	moonwalking = GameAnimation(MOONWALK, "player/walk2/%03d.png", 7, 8 FRAMES);
+	moonwalking = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES);
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
 	stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);
 }
@@ -278,6 +278,9 @@ void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time
 	player->beginUseItem();
 }
 Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
+	if (player->heldItem->didHitWall == true) {
+		player->move(Vec2(-25, 0));
+	}
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
 		player->attackStartTime = time;
 		player->useItem();
@@ -308,6 +311,7 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 	return nullptr;
 }
 void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
+	player->heldItem->didHitWall = false;
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);
 	if (player->heldItem->hp <= 0) {//if item is broken, no hp left
@@ -317,6 +321,8 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 		player->heldItem->initHeldItem();
 	}
 }
+
+
 
 //No Clip state:
 void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {

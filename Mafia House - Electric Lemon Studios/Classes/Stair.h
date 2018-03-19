@@ -18,6 +18,8 @@ public:
 	Stair();
 	~Stair();
 	CREATE_SPRITE_FUNC(Stair, "stair.png");
+	CREATE_WITH_FRAME(Stair);
+	CREATE_WITH_FRAME_NAME(Stair, "objects/stair.png");
 	void initObject();
 
 	void use(GameObject* user, Node* mainLayer);
@@ -35,6 +37,8 @@ public:
 	Door();
 	~Door();
 	CREATE_SPRITE_FUNC(Door, "door.png");
+	CREATE_WITH_FRAME(Door);
+	CREATE_WITH_FRAME_NAME(Door, "objects/door/001.png");
 
 	virtual void initObject(Vec2 startPos = Vec2(0, 0));
 
@@ -77,7 +81,9 @@ class Vent : public Door
 public:
 	Vent();
 	~Vent();
-	CREATE_SPRITE_FUNC(Vent, "door.png");
+	CREATE_SPRITE_FUNC(Vent, "vent.png");
+	CREATE_WITH_FRAME(Vent);
+	CREATE_WITH_FRAME_NAME(Vent, "objects/vent/001.png");
 
 	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 };
