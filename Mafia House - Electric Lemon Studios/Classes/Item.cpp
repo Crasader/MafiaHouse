@@ -24,12 +24,7 @@ void Item::initObject(Vec2 startPos)
 	GameObject::initObject(startPos);
 	retain();
 	initRadius();
-	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
-	outline = Sprite::createWithSpriteFrameName("items/knife_outline.png");
-	outline->getTexture()->setTexParameters(texParams);
-	outline->setPositionNormalized(Vec2(0.5, 0.5));
-	outline->setGlobalZOrder(6);
-	addChild(outline);
+	createOutline(outlineName);
 }
 //initializing pickup radius:
 void Item::initRadius() {
@@ -48,6 +43,15 @@ void Item::initRadius() {
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 
 	addChild(pickUpRadius);
+}
+
+void Item::createOutline(string name) {
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	outline = Sprite::createWithSpriteFrameName(name);
+	outline->getTexture()->setTexParameters(texParams);
+	outline->setPositionNormalized(Vec2(0.5, 0.5));
+	outline->setGlobalZOrder(6);
+	addChild(outline);
 }
 
 //used when player picks up item
@@ -172,17 +176,35 @@ void Item::swingSequence() {
 //Knife Class:
 Knife::Knife()
 {
+	outlineName = "items/knife_outline.png";
 	Item::Item();
-	category = 32;
-	collision = 8;
 	hp = 2;
 	dmg = 5;
 	canBreakDoor = true;//temporary
 	tag = 10100;//10100 - 10199 for knives
+	effect = KILL;
 	attackType = STAB;
 	startTime = 6 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 10 FRAMES;
 }
 Knife::~Knife(){
+}
+
+//Knife Class:
+Key::Key()
+{
+	outlineName = "items/key_outline.png";
+	Item::Item();
+	isKey = true;
+	hp = 1;
+	dmg = 0;
+	tag = 10200;//10200 - 10299 for keys
+	effect = NONE;
+	attackType = STAB;
+	startTime = 4 FRAMES;
+	attackTime = 6 FRAMES;
+	lagTime = 6 FRAMES;
+}
+Key::~Key() {
 }

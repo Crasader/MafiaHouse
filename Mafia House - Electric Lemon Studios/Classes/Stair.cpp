@@ -105,6 +105,7 @@ void Door::itemHit(Item* item) {
 		if (item->isKey == true) {//item is a key
 			unlock();
 			item->hp--;
+			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true) {
 			hp -= item->dmg;//item deals dmg to the door

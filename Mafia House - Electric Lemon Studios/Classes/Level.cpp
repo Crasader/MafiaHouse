@@ -648,6 +648,9 @@ bool Level::initLevel(string filename){
 				if (pieces[1] == "knife") {
 					item = Knife::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "key") {
+					item = Key::createWithSpriteFrameName();
+				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				item->startRoom = Vec2(roomNum, floorNum);

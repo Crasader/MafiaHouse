@@ -12,6 +12,8 @@ public:
 	void initObject(Vec2 startPos = Vec2(0,0));
 	void initRadius();
 
+	virtual void createOutline(string name);
+
 	enum AttackType {
 		STAB,
 		SWING
@@ -66,8 +68,10 @@ public:
 
 protected:
 	State state = GROUND;
+	Effect effect = KILL;
 	Node * pickUpRadius;
 	Sprite* outline;
+	string outlineName;
 	//attack/use action parameters:
 	AttackType attackType;
 	float startTime;//startup time of attack
@@ -83,4 +87,13 @@ public:
 	CREATE_SPRITE_FUNC(Knife, "knife2.png");
 	CREATE_WITH_FRAME(Knife);
 	CREATE_WITH_FRAME_NAME(Knife, "items/knife.png");
+};
+
+class Key : public Item
+{
+public:
+	Key();
+	~Key();
+	CREATE_WITH_FRAME(Key);
+	CREATE_WITH_FRAME_NAME(Key, "items/key.png");
 };
