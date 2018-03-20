@@ -50,7 +50,8 @@ enum AnimationTag {
 	STAND,
 	WALK,
 	MOONWALK,
-	STAB
+	STABBING,
+	SWINGING
 };
 
 class GameObject: public Sprite
@@ -70,6 +71,8 @@ public:
 	virtual void initObject(Vec2 startPos);
 
 	virtual void initAnimations();
+
+	virtual void createOutline(string name);
 
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
@@ -95,6 +98,9 @@ public:
 	int currentFloor;
 
 protected:
+	Sprite* outline;
+	string outlineName;
+
 	Vec2 initialPos;
 
 	bool flippedX = false;//false = facing right

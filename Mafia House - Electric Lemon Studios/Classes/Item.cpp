@@ -45,15 +45,6 @@ void Item::initRadius() {
 	addChild(pickUpRadius);
 }
 
-void Item::createOutline(string name) {
-	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
-	outline = Sprite::createWithSpriteFrameName(name);
-	outline->getTexture()->setTexParameters(texParams);
-	outline->setPositionNormalized(Vec2(0.5, 0.5));
-	outline->setGlobalZOrder(6);
-	addChild(outline);
-}
-
 //used when player picks up item
 void Item::initHeldItem() {
 	state = HELD;
@@ -145,7 +136,7 @@ void Item::beginStab() {
 
 void Item::beginSwing() {
 	setRotation(-135);
-	setPosition(Vec2(10, 45));
+	setPosition(Vec2(35, 85));
 	//auto prepare = MoveBy::create(10 FRAMES, Vec2(-16, 20));
 	//auto rotate = RotateBy::create(10 FRAMES, -90);
 	//runAction(Spawn::create(prepare,rotate));
@@ -160,8 +151,8 @@ void Item::stabSequence() {
 }
 
 void Item::swingSequence() {
-	auto move = MoveBy::create(4 FRAMES, Vec2(20, -25));
-	auto rotate = RotateBy::create(4 FRAMES, 135);
+	auto move = MoveBy::create(7 FRAMES, Vec2(20, -35));
+	auto rotate = RotateBy::create(7 FRAMES, 135);
 
 	auto hold = MoveBy::create(6 FRAMES, Vec2(0, 0));
 
@@ -180,7 +171,6 @@ Knife::Knife()
 	Item::Item();
 	hp = 2;
 	dmg = 5;
-	canBreakDoor = true;//temporary
 	tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
@@ -191,7 +181,7 @@ Knife::Knife()
 Knife::~Knife(){
 }
 
-//Knife Class:
+//Key Class:
 Key::Key()
 {
 	outlineName = "items/key_outline.png";
@@ -207,4 +197,22 @@ Key::Key()
 	lagTime = 6 FRAMES;
 }
 Key::~Key() {
+}
+
+//Hammer Class:
+Hammer::Hammer()
+{
+	outlineName = "items/hammer_outline.png";
+	Item::Item();
+	hp = 2;
+	dmg = 5;
+	canBreakDoor = true;
+	tag = 10100;//10100 - 10199 for knives
+	effect = KILL;
+	attackType = SWING;
+	startTime = 14 FRAMES;
+	attackTime = 20 FRAMES;
+	lagTime = 18 FRAMES;
+}
+Hammer::~Hammer() {
 }

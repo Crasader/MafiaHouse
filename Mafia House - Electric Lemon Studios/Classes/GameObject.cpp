@@ -119,6 +119,15 @@ void GameObject::initAnimations() {
 
 }
 
+void GameObject::createOutline(string name) {
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	outline = Sprite::createWithSpriteFrameName(name);
+	outline->getTexture()->setTexParameters(texParams);
+	outline->setPositionNormalized(Vec2(0.5, 0.5));
+	outline->setGlobalZOrder(zOrder);
+	addChild(outline);
+}
+
 void GameObject::setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position) {
 	Vec2 offset = Vec2(position.x * roomSize.width, position.y * roomSize.height);
 	setPosition(roomPos + offset);

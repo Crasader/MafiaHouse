@@ -65,7 +65,7 @@ void Character::beginUseItem() {
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
 			heldItem->beginSwing();
-			//setSpriteFrame(swingAnimation->getFrames[0]);//setting player sprite to first frame of stab animation
+			setSpriteFrame(swinging.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
 		}
 	}
 }
@@ -79,6 +79,7 @@ void Character::useItem() {
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
 			heldItem->swingSequence();
+			setSpriteFrame(swinging.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
 		}
 	}
 }

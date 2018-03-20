@@ -69,9 +69,9 @@ protected:
 	GameAnimation standing;
 	GameAnimation walking;
 	GameAnimation stabbing;
-	//GameAnimation swingAnimation;
-	//GameAnimation throwAnimation;
-	//GameAnimation stairAnimation;
-	//GameAnimation pickupAnimation;
-	//GameAnimation interactAnimation;
+	GameAnimation swinging;
+	//GameAnimation throwing;
+	//GameAnimation stair;
+	//GameAnimation pickup;
+	//GameAnimation interact;
 };

@@ -52,6 +52,8 @@ Door::Door() {
 	dynamic = false;
 	category = 0xFFFFFFFF;
 	collision = 0xFFFFFFFF;
+
+	outlineName = "objects/door/outline.png";
 }
 Door::~Door() {
 }
@@ -73,8 +75,9 @@ void Door::initObject(Vec2 startPos) {
 	radiusBody->setTag(10000);
 	radiusBody->setName("door_radius");
 	useRadius->setPhysicsBody(radiusBody);
-
 	addChild(useRadius);
+
+	createOutline(outlineName);
 }
 
 void Door::initObject(int orient, Vec2 startPos) {
@@ -89,14 +92,24 @@ void Door::initObject(int orient, Vec2 startPos) {
 	Door::initObject(startPos);
 }
 
+void Door::playerInRange() {
+	if (playerRange == true) {
+		outline->setColor(ccc3(255, 235, 50));//yellow
+	}
+	else {
+		outline->setColor(ccc3(155, 155, 155));//grey
+	}
+	playerRange = false;
+}
+
 void Door::updateColour() {
 	float percentage = hp / 10.0f;
 	float inversePercentage = abs(percentage - 1);//inverts the percentage
 	if (locked == false) {
-		setColor(ccc3(255 * percentage, 155 * percentage, 255 * inversePercentage));
+		setColor(ccc3(255 * percentage, 215 * percentage, 255 * inversePercentage));
 	}
 	else {
-		setColor(ccc3(255 * percentage, 0 * inversePercentage, 255 * inversePercentage));
+		setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
 	}
 }
 
@@ -131,12 +144,16 @@ void Door::use() {
 			getPhysicsBody()->setEnabled(false);
 			setGlobalZOrder(2);
 			setOpacity(100);
+			outline->setGlobalZOrder(2);
+			outline->setOpacity(100);
 		}
 		else {
 			isOpen = false;
 			getPhysicsBody()->setEnabled(true);
 			setGlobalZOrder(5);
 			setOpacity(255);
+			outline->setGlobalZOrder(5);
+			outline->setOpacity(255);
 		}
 	}
 }

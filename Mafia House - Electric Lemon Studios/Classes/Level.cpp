@@ -50,7 +50,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -71,6 +71,7 @@ void Level::update(float deltaTime){
 	for (int i = 0; i < doors.size(); i++) {
 		//updating color of question mark, turns more red as suspicion increases
 		doors[i]->updateColour();
+		doors[i]->playerInRange();
 	}
 
 	//items update
@@ -322,12 +323,14 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			//CCLOG("CAN OPEN DOOR");
 			player->doorToUse = static_cast<Door*>(b->getParent());
+			static_cast<Door*>(b->getParent())->playerRange = true;
 			return false;
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "player")
 		{
 			//CCLOG("CAN OPEN DOOR");
 			player->doorToUse = static_cast<Door*>(a->getParent());
+			static_cast<Door*>(a->getParent())->playerRange = true;
 			return false;
 		}
 
@@ -673,6 +676,9 @@ bool Level::initLevel(string filename){
 				else if (pieces[1] == "key") {
 					item = Key::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "hammer") {
+					item = Hammer::createWithSpriteFrameName();
+				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				item->startRoom = Vec2(roomNum, floorNum);
@@ -693,7 +699,13 @@ bool Level::initLevel(string filename){
 				if (pieces.size() > 5) {
 					Item* item;
 					if (pieces[5] == "knife") {
-						item = Knife::create();
+						item = Knife::createWithSpriteFrameName();
+					}
+					else if (pieces[1] == "key") {
+						item = Key::createWithSpriteFrameName();
+					}
+					else if (pieces[1] == "hammer") {
+						item = Hammer::createWithSpriteFrameName();
 					}
 					item->initObject();
 					item->initHeldItem();

@@ -44,6 +44,8 @@ public:
 
 	virtual void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 
+	void playerInRange();
+
 	void updateColour();
 
 	void itemHit(Item* item);
@@ -69,6 +71,8 @@ public:
 	bool defaultLocked = false;//whether enemies should lock the door or not, also if it starts locked
 
 	float hp = 10;//for items to deal dmg to doors, to break them open if locked
+
+	bool playerRange = false;
 
 protected:
 	bool broken = false;

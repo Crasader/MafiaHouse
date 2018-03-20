@@ -19,7 +19,8 @@ Player::Player()
 	standing = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES);
 	moonwalking = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES);
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
-	stabbing = GameAnimation(WALK, "player/stab/%03d.png", 2, 10 FRAMES);
+	stabbing = GameAnimation(STABBING, "player/stab/%03d.png", 2, 10 FRAMES);
+	swinging = GameAnimation(SWINGING, "player/stab/%03d.png", 2, 10 FRAMES);
 }
 Player::~Player(){
 }
