@@ -26,6 +26,10 @@ class Character : public GameObject
 public:
 	virtual void initObject(Vec2 startPos = Vec2(0, 0));
 
+	void startAnimation(AnimationTag tag, GameAnimation animation);
+	
+	void stopAnimation(AnimationTag tag);
+
 	//functions for character actions:
 	virtual void pickUpItem(GameLayer* mainLayer);
 	virtual void dropItem(GameLayer* mainLayer);
@@ -36,8 +40,6 @@ public:
 
 	virtual void useDoor();
 	virtual void useStair(GameLayer* mainLayer);
-
-	virtual void hit(Item* item);
 
 	//for Interacting with objects:
 	Door* doorToUse = NULL;//the tag of the door the player can open/close
@@ -66,12 +68,13 @@ protected:
 	Size bodySize;//main character hitbox
 
 	//animations:
-	GameAnimation standing;
+	GameAnimation stand;
 	GameAnimation walking;
-	GameAnimation stabbing;
-	GameAnimation swinging;
-	//GameAnimation throwing;
+	GameAnimation stab;
+	GameAnimation swing;
+	//GameAnimation throw;
 	//GameAnimation stair;
 	//GameAnimation pickup;
 	//GameAnimation interact;
+	//GameAnimation death;
 };

@@ -27,8 +27,7 @@ public:
 	void hide();
 	void hiding();
 
-	//void wasHit(Item* item);//being hit by an enemy attack
-	//void wasTouched();//for when player is touched by an alert enemy while hiding
+	void wasHit(Item* item);//being hit by an enemy attack
 	
 	//getters:
 	bool isHidden() { return hidden; }
@@ -42,6 +41,8 @@ public:
 
 	bool inVision = false;
 	bool wasSeen = false;
+
+	bool isHit;
 
 private:
 	class State {
@@ -102,7 +103,7 @@ private:
 	HideObject* hideObject = NULL;//object player is hiding behind
 
 	//animations:
-	GameAnimation moonwalking;
+	GameAnimation moonwalk;
 	//GameAnimation crouchAnimation;
 	//GameAnimation crawlAnimation;
 	//GameAnimation crouchStabAnimation;

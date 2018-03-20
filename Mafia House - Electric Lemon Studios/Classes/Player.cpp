@@ -16,11 +16,11 @@ Player::Player()
 	//max movement speed
 	maxSpeed = 70;
 	//initializing animations
-	standing = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES);
-	moonwalking = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES);
+	stand = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES);
+	moonwalk = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES);
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES);
-	stabbing = GameAnimation(STABBING, "player/stab/%03d.png", 2, 10 FRAMES);
-	swinging = GameAnimation(SWINGING, "player/stab/%03d.png", 2, 10 FRAMES);
+	stab = GameAnimation(STAB, "player/stab/%03d.png", 2, 10 FRAMES);
+	swing = GameAnimation(SWING, "player/swing/%03d.png", 2, 10 FRAMES);
 }
 Player::~Player(){
 }
@@ -35,23 +35,24 @@ void Player::resetCollisionChecks() {
 	//bodyToPickUp = NULL;
 }
 
-//void Player::wasHit() {
-
-//}
+void Player::wasHit(Item* item) {
+	if (item->didHitWall == false) {
+		item->used();
+		isHit = true;
+	}
+}
 
 void Player::walk(Input input) {
 	if (input == MOVE_LEFT) {
 		if (moveDirection == 0){
+			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 			moveDirection = 1;
 			if (turned == false) {
 				turned = true;
 				flipX();
 			}
-			stopActionByTag(MOONWALK);
-			if (getActionByTag(WALK) == NULL) {
-				walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
-				runAction(walking.action);
-			}
+			stopAnimation(MOONWALK);
+			startAnimation(WALK, walking);
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 1) {
@@ -61,29 +62,25 @@ void Player::walk(Input input) {
 		}
 		else if (moveDirection == 2) {
 			setSpeed(moveSpeed * 1.4f);
-			moonwalking.action->setSpeed(moveSpeed);
+			moonwalk.action->setSpeed(moveSpeed);
 			if (turned == false) {
 				turned = true;
 				flipX();
-				stopActionByTag(WALK);
-				if (getActionByTag(MOONWALK) == NULL) {
-					runAction(moonwalking.action);
-				}
+				stopAnimation(WALK);
+				startAnimation(MOONWALK, moonwalk);
 			}
 		}
 	}
 	if (input == MOVE_RIGHT) {
 		if (moveDirection == 0) {
+			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 			moveDirection = 2;
 			if (turned == true) {
 				turned = false;
 				flipX();
 			}
-			stopActionByTag(MOONWALK);
-			if (getActionByTag(WALK) == NULL) {
-				walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
-				runAction(walking.action);
-			}
+			stopAnimation(MOONWALK);
+			startAnimation(WALK, walking);
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 2) {
@@ -93,25 +90,22 @@ void Player::walk(Input input) {
 		}
 		else if (moveDirection == 1) {
 			setSpeed(moveSpeed * 1.4f);
-			moonwalking.action->setSpeed(moveSpeed);
+			moonwalk.action->setSpeed(moveSpeed);
 			if (turned == true) {
 				turned = false;
 				flipX();
-				stopActionByTag(WALK);
-				if (getActionByTag(MOONWALK) == NULL) {
-					runAction(moonwalking.action);
-				}
+				stopAnimation(WALK);
+				startAnimation(MOONWALK, moonwalk);
 			}
 		}
 	}
 	if (input == STOP) {
-		moveDirection = 0;
-		//run standing animation
 		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingSound);
-		setSpriteFrame(standing.animation->getFrames().at(0)->getSpriteFrame());
-		stopActionByTag(WALK);
-		stopActionByTag(MOONWALK);
+		moveDirection = 0;
 		stopX();
+		stopAnimation(WALK);
+		stopAnimation(MOONWALK);
+		setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
 	}
 }
 
@@ -225,7 +219,7 @@ void Player::State::exit(Player* player, GameLayer* mainLayer) {
 
 //Neutral State:
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
-	player->setSpriteFrame(player->standing.animation->getFrames().at(0)->getSpriteFrame());
+	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 }
 Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
@@ -297,7 +291,7 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 		player->attackPrepareTime = -1.0f;
 	}
 	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->heldItem->getAttackTime()) {
-		player->setSpriteFrame(player->stabbing.animation->getFrames().at(0)->getSpriteFrame());
+		player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
 		player->heldItem->getPhysicsBody()->setEnabled(false);
 		player->attackEndTime = time;
 		player->attackStartTime = -1.0f;
@@ -312,7 +306,7 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 		player->walk(input);
-		player->setSpriteFrame(player->stabbing.animation->getFrames().at(0)->getSpriteFrame());
+		player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
 	}
 	if (input == USE_RELEASE) {
 		player->attackRelease = true;

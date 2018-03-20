@@ -24,8 +24,9 @@ public:
 	~Enemy();
 	CREATE_SPRITE_FUNC(Enemy, "guard.png");
 	CREATE_WITH_FRAME(Enemy);
-	CREATE_WITH_FRAME_NAME(Enemy, "enemy/thug/walk/001.png");
+	CREATE_WITH_FRAME_NAME(Enemy, "enemy/thug/stand/001.png");
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
+	void initJoints();//initilaizing joints for physics bodies
 	void flipX();
 
 	void openDoor();
@@ -147,6 +148,10 @@ protected:
 	State* newState = NULL;
 	State* prevState = NULL;
 
+	//animations:
+	GameAnimation knockout;
+	//GameAnimation sleeping;
+
 	//for suspicion indicators
 	Sprite* qMark;
 	Sprite* exMark;
@@ -154,8 +159,13 @@ protected:
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
 
-	//for being hit
+	//for being knocked out
+	PhysicsBody* knockedOutBody;
 	bool knockedOut = false;
+	bool visionEnabled = true;
+	float startKockOutTime = -1.0f;
+	float baseKnockOutTime = 0.5f;
+	float knockOutTime = 20.0f;
 
 	//to check if enemy has been touched by player
 	bool isTouched = false;

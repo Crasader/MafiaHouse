@@ -5,6 +5,57 @@ void Character::initObject(Vec2 startPos) {
 	initBoxBody(bodySize);
 }
 
+/*AnimationTag Character::stringToTag(string name) {
+	AnimationTag animTag;
+	if (name == "stand") {
+		animTag = STAND;
+	}
+	else if (name == "walking") {
+		animTag = WALK;
+	}
+	else if (name == "moonwalk") {
+		animTag = MOONWALK;
+	}
+	else if (name == "stab") {
+		animTag = STAB;
+	}
+	else if (name == "swing") {
+		animTag = SWING;
+	}
+	else if (name == "throw") {
+		animTag = THROW;
+	}
+	else if (name == "climb") {
+		animTag = CLIMB;
+	}
+	else if (name == "hide") {
+		animTag = HIDDEN;
+	}
+	else if (name == "fall") {
+		animTag = FALL;
+	}
+	else if (name == "death") {
+		animTag = DEATH;
+	}
+	else if (name == "knockout") {
+		animTag = KNOCKOUT;
+	}
+	else if (name == "sleep") {
+		animTag = SLEEP;
+	}
+	return animTag;
+}*/
+
+void Character::startAnimation(AnimationTag tag, GameAnimation animation) {
+	if (getActionByTag(tag) == NULL) {
+		runAction(animation.action);
+	}
+}
+
+void Character::stopAnimation(AnimationTag tag) {
+	stopActionByTag(tag);
+}
+
 void Character::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp != NULL) {
 		heldItem = itemToPickUp;
@@ -61,11 +112,11 @@ void Character::beginUseItem() {
 	if (heldItem != NULL) {
 		if (heldItem->getAttackType() == Item::STAB) {
 			heldItem->beginStab();
-			setSpriteFrame(stabbing.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
+			setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
 			heldItem->beginSwing();
-			setSpriteFrame(swinging.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+			setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
 		}
 	}
 }
@@ -75,11 +126,11 @@ void Character::useItem() {
 		heldItem->getPhysicsBody()->setEnabled(true);
 		if (heldItem->getAttackType() == Item::STAB) {
 			heldItem->stabSequence();
-			setSpriteFrame(stabbing.animation->getFrames().at(1)->getSpriteFrame());
+			setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
 			heldItem->swingSequence();
-			setSpriteFrame(swinging.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+			setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
 		}
 	}
 }
@@ -93,12 +144,5 @@ void Character::useDoor() {
 void Character::useStair(GameLayer* mainLayer) {
 	if (stairToUse != NULL) {
 		stairToUse->use(this, mainLayer);
-	}
-}
-
-void Character::hit(Item* item) {
-	if (item->didHitWall == false) {
-		item->used();
-		isHit = true;
 	}
 }

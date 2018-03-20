@@ -9,13 +9,18 @@ Enemy::Enemy()
 	zOrder = 4;
 	scale = 1.0f;
 	//physics body properties
+	bodySize = Size(35, 94);
 	dynamic = true;
 	category = 2;
 	collision = 13;
 	//other proeprties
 	maxSpeed = 50;
 	//initializing animations:
-	//animations here
+	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES);
+	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES);
+	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockout/%03d.png", 1, 10 FRAMES);
+	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES);
+	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES);
 }
 Enemy::~Enemy(){
 }
@@ -32,7 +37,8 @@ void Enemy::flipX() {
 
 void Enemy::initObject(Vec2 startPos)
 {
-	GameObject::initObject(startPos);
+	Character::initObject(startPos);
+	//initializing suspicion icons:
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	exMark = Sprite::createWithSpriteFrameName("icons/exmark.png");
 	exMark->setAnchorPoint(Vec2(0.5, 0));
@@ -53,6 +59,28 @@ void Enemy::initObject(Vec2 startPos)
 	}
 	lastSeenLocation = Node::create();
 	addChild(lastSeenLocation);
+
+	//initializing knocked out physics body
+	//knockedOutBody = Node::create();
+	knockedOutBody = PhysicsBody::createBox(Size(bodySize.width * 2, bodySize.height / 3));
+	knockedOutBody->setTag(tag);
+	knockedOutBody->setName(name);
+	knockedOutBody->setCategoryBitmask(2);
+	knockedOutBody->setCollisionBitmask(9);
+	knockedOutBody->setDynamic(true);
+	knockedOutBody->setRotationEnable(false);
+	knockedOutBody->setPositionOffset(Vec2(0, -35));
+	knockedOutBody->setMass(800);
+	knockedOutBody->retain();
+	//knockedOutBody->setPhysicsBody(body);
+	//knockedOutBody->setPositionNormalized(Vec2(0.5, 0));
+	//addChild(knockedOutBody);
+}
+
+void Enemy::initJoints() {
+	//PhysicsJointFixed* joint = PhysicsJointFixed::construct(getPhysicsBody(), knockedOutBody->getPhysicsBody(), Vec2(0.5, 0.5));
+	//joint->setCollisionEnable(false);
+	//director->getRunningScene()->getPhysicsWorld()->addJoint(joint);
 }
 
 void Enemy::changeSuspicion(float num) {
@@ -294,97 +322,103 @@ bool Enemy::moveToObject(Node* target) {
 	return true;
 }
 
-void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
-{
+void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
 	detectedTag = -1;
 	playerInVision = false;
 	didRun = false;
+	Vec2 offsetAdjust;
 
-	PhysicsRayCastCallbackFunc func = [this, points](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
-	{
-		int visionContactTag = info.shape->getBody()->getNode()->getTag();
-		string visionContactName = info.shape->getBody()->getNode()->getName();
-		Node* visionContact = info.shape->getBody()->getNode();
+	if (visionEnabled == true) {
+		PhysicsRayCastCallbackFunc func = [this, points, offsetAdjust](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
+		{
+			int visionContactTag = info.shape->getBody()->getNode()->getTag();
+			string visionContactName = info.shape->getBody()->getNode()->getName();
+			Node* visionContact = info.shape->getBody()->getNode();
 
-		//enemy vision is blocked by walls, doors
-		if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "door") {
-			points->push_back(info.contact);
-			didRun = true;
-			return false;
-		}
-		else if (visionContactName == "door_radius") {
-			if (static_cast<Door*>(visionContact->getParent())->checkOpen() == false) {
-				if (flippedX == true) {
-					points->push_back(info.contact + Vec2(-12, 0));
-				}
-				else if (flippedX == false) {
-					points->push_back(info.contact + Vec2(12, 0));
-				}
+			//enemy vision is blocked by walls, doors
+			if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "door") {
+				points->push_back(info.contact + offsetAdjust);
 				didRun = true;
 				return false;
 			}
-		}
-		//vision blocked by other enemies
-		else if ((visionContactTag != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
-			if (static_cast<Enemy*>(visionContact)->knockedOut == true) {
-				bodySeen = static_cast<Enemy*>(visionContact);//they have seen a knocked out enemy
+			else if (visionContactName == "door_radius") {
+				if (static_cast<Door*>(visionContact->getParent())->checkOpen() == false) {
+					if (flippedX == true) {
+						points->push_back(info.contact + Vec2(-12, 0));
+					}
+					else if (flippedX == false) {
+						points->push_back(info.contact + Vec2(12, 0));
+					}
+					didRun = true;
+					return false;
+				}
 			}
-			if (visionContactName == "enemy_alert") {
-				setSuspicion(maxSuspicion);//enemies that see other alerted enemies will become alerted
-			}
-			points->push_back(info.contact);
-			didRun = true;
-			return false;
-		}
-		//enemy sees the player
-		else if (visionContactName == "player"){//not using tag anymore
-			if (static_cast<Player*>(visionContact)->isHidden() == false) {//if the player is not hidden
-				static_cast<Player*>(visionContact)->inVision = true;
-				detectedTag = visionContactTag;
-				playerInVision = true;
-				points->push_back(info.contact);
+			//vision blocked by other enemies
+			else if ((visionContactTag != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
+				if (static_cast<Enemy*>(visionContact)->knockedOut == true) {
+					bodySeen = static_cast<Enemy*>(visionContact);//they have seen a knocked out enemy
+				}
+				if (visionContactName == "enemy_alert") {
+					setSuspicion(maxSuspicion);//enemies that see other alerted enemies will become alerted
+				}
+				points->push_back(info.contact + offsetAdjust);
 				didRun = true;
 				return false;
 			}
-		}
-		//enemy sees an item
-		else if (visionContactName == "item" && state->type != "alert") {//enemy won't pick up seen items when alert
-			if (static_cast<Item*>(visionContact)->enemyCanUse == true) {
-				itemToPickUp = static_cast<Item*>(visionContact);//enemy can pick item up
-				return false;
+			//enemy sees the player
+			else if (visionContactName == "player") {//not using tag anymore
+				if (static_cast<Player*>(visionContact)->isHidden() == false) {//if the player is not hidden
+					static_cast<Player*>(visionContact)->inVision = true;
+					detectedTag = visionContactTag;
+					playerInVision = true;
+					points->push_back(info.contact + offsetAdjust);
+					didRun = true;
+					return false;
+				}
 			}
-			return true;//enemy cannot pick item up
+			//enemy sees an item
+			else if (visionContactName == "item" && state->type != "alert") {//enemy won't pick up seen items when alert
+				if (static_cast<Item*>(visionContact)->enemyCanUse == true) {
+					itemToPickUp = static_cast<Item*>(visionContact);//enemy can pick item up
+					points->push_back(info.contact + offsetAdjust);
+					didRun = true;
+					return false;
+				}
+				return true;//enemy cannot pick item up
+			}
+			//things to ingore collisions with
+			else {
+				return true;
+			}
+		};
+
+		Vec2 startPoint;
+		Vec2 endPoint;
+		int direction;
+
+		if (flippedX == false) {
+			startPoint = getPosition() + Vec2(getContentSize().width - 30, 87);
+			*start = startPoint + Vec2(7, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(-7, 0);//shift end points back by same amount so visual range is accurate
+			direction = 1;
 		}
-		//things to ingore collisions with
 		else {
-			return true;
+			startPoint = getPosition() + Vec2(30, 87);
+			*start = startPoint + Vec2(-7, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(7, 0);//shift end points back by same amount so visual range is accurate
+			direction = -1;
 		}
-	};
 
-	Vec2 startPoint;
-	Vec2 endPoint;
-	int direction;
-
-	if (flippedX == false) {
-		startPoint = getPosition() + Vec2(getContentSize().width - 20, 87);
-		*start = startPoint;// + Vec2(6, 0);//shift visuals forward a bit
-		direction = 1;
-	}
-	else {
-		startPoint = getPosition() + Vec2(20, 87);
-		*start = startPoint;// + Vec2(-6, 0);//shift visuals forward a bit
-		direction =  -1;
-	}
-
-	float angle = 0 - (visionDegrees / 2);
-	for (int i = 0; i < visionDegrees; i++) {
-		endPoint.x = startPoint.x + cosf((angle + i) * M_PI / 180) * visionRadius * direction;
-		endPoint.y = startPoint.y + sinf((angle + i) * M_PI / 180) * visionRadius;
-		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startPoint, endPoint, nullptr);
-		if (didRun == false) {
-			points->push_back(endPoint);
+		float angle = 0 - (visionDegrees / 2);
+		for (int i = 0; i < visionDegrees; i++) {
+			endPoint.x = startPoint.x + cosf((angle + i) * M_PI / 180) * visionRadius * direction;
+			endPoint.y = startPoint.y + sinf((angle + i) * M_PI / 180) * visionRadius;
+			director->getRunningScene()->getPhysicsWorld()->rayCast(func, startPoint, endPoint, nullptr);
+			if (didRun == false) {
+				points->push_back(endPoint);
+			}
+			didRun = false;
 		}
-		didRun = false;
 	}
 }
 
@@ -396,6 +430,8 @@ void Enemy::gotHit(Item* item) {
 		}
 		else if(item->getEffect() == Item::KNOCKOUT) {
 			knockedOut = true;
+			knockOutTime = baseKnockOutTime * static_cast<float>(item->dmg);//more powerful items knock out for longer
+			//knockOutTime = knockOutTime < 20.0f ? 20.0f : knockOutTime;//set minimum knockOutTime to 20 seconds
 			item->used();
 		}
 	}
@@ -404,7 +440,7 @@ void Enemy::gotHit(Item* item) {
 void Enemy::update(GameLayer* mainLayer, float time) {
 	if (itemHitBy != NULL) {
 		gotHit(itemHitBy);
-		itemHitBy == NULL;
+		itemHitBy = NULL;
 	}
 	//updateFloor(mainLayer->floors);//checking if floor has changed
 	newState = state->update(this, mainLayer, time);
@@ -449,6 +485,10 @@ void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
+	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
 	}
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
@@ -561,6 +601,10 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
 	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
+	}
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
@@ -659,6 +703,10 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
 	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
+	}
 	if (enemy->detectedPlayer == NULL) {
 		return new DefaultState;
 	}
@@ -747,6 +795,10 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
+	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
 	}
 	if (enemy->doorToUse == NULL) {
 		return enemy->prevState;
@@ -855,6 +907,10 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
 	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
+	}
 	if (enemy->paused == false) {
 		if (enemy->itemToPickUp == NULL) {
 			return new DefaultState;
@@ -924,6 +980,10 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
 	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
+	}
 	if (enemy->paused == false) {
 		if (enemy->reachedLocation == false) {
 			if (enemy->pathTo(mainLayer, enemy->noiseLocation->getPositionX(), enemy->noiseLocation->startRoom.y) == true) {
@@ -986,6 +1046,10 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 	if (enemy->checkDead() == true) {
 		//return new DeathState;
 	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
+	}
 	if (enemy->paused == false) {
 		if (enemy->reachedLocation == false) {
 			if (enemy->moveToObject(enemy->bodySeen)== true) {
@@ -1040,11 +1104,28 @@ void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 
 //Knock Out State:
 void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->removeComponent(enemy->mainBody);
+	enemy->setPhysicsBody(enemy->knockedOutBody);
+	enemy->setSpriteFrame(enemy->knockout.animation->getFrames().at(0)->getSpriteFrame());//first frame of the knockout animation
+	enemy->startKockOutTime = time;
+	enemy->visionEnabled = false;
+	enemy->paused = false;
+	enemy->exMark->setVisible(false);
+	enemy->qMark->setVisible(false);
 }
 Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if ((time - enemy->startKockOutTime) > (enemy->knockOutTime)) {
+		return enemy->prevState;
+	}
 	return nullptr;
 }
 void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->removeComponent(enemy->knockedOutBody);
+	enemy->setPhysicsBody(enemy->mainBody);
+	enemy->mainBody->setPositionOffset(Vec2(0, 35));
+	enemy->setSpriteFrame(enemy->stand.animation->getFrames().at(0)->getSpriteFrame());//first frame of the standing animation
+	enemy->knockedOut = false;
+	enemy->visionEnabled = true;
 }
 
 //Death State:

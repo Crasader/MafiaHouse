@@ -59,42 +59,44 @@ void GameObject::initObjectNoPhysics() {
 
 void GameObject::initAutoBody() {
 	//creating physics body
-	auto body = PhysicsBody::createBox(getContentSize());
-	body->setTag(tag);
-	body->setName(name);
+	mainBody = PhysicsBody::createBox(getContentSize());
+	mainBody->setTag(tag);
+	mainBody->setName(name);
 
 	//not necessary, will change from object to object:
-	body->setDynamic(dynamic);
-	body->setCategoryBitmask(category);
-	body->setCollisionBitmask(collision);
+	mainBody->setDynamic(dynamic);
+	mainBody->setCategoryBitmask(category);
+	mainBody->setCollisionBitmask(collision);
 
 	//necessary stuff, will not change between objects:
-	body->setRotationEnable(rotate);
-	body->setContactTestBitmask(0xFFFFFFFF);
+	mainBody->setRotationEnable(rotate);
+	mainBody->setContactTestBitmask(0xFFFFFFFF);
 
-	body->setVelocityLimit(maxSpeed);//max object speed
+	mainBody->setVelocityLimit(maxSpeed);//max object speed
+	mainBody->retain();
 
-	setPhysicsBody(body);
+	setPhysicsBody(mainBody);
 }
 
 void GameObject::initBoxBody(Size size) {
 	//creating physics body
-	auto body = PhysicsBody::createBox(size);
-	body->setTag(tag);
-	body->setName(name);
+	mainBody = PhysicsBody::createBox(size);
+	mainBody->setTag(tag);
+	mainBody->setName(name);
 
 	//not necessary, will change from object to object:
-	body->setDynamic(dynamic);
-	body->setCategoryBitmask(category);
-	body->setCollisionBitmask(collision);
+	mainBody->setDynamic(dynamic);
+	mainBody->setCategoryBitmask(category);
+	mainBody->setCollisionBitmask(collision);
 
 	//necessary stuff, will not change between objects:
-	body->setRotationEnable(rotate);
-	body->setContactTestBitmask(0xFFFFFFFF);
+	mainBody->setRotationEnable(rotate);
+	mainBody->setContactTestBitmask(0xFFFFFFFF);
 
-	body->setVelocityLimit(maxSpeed);//max object speed
+	mainBody->setVelocityLimit(maxSpeed);//max object speed
+	mainBody->retain();
 
-	setPhysicsBody(body);
+	setPhysicsBody(mainBody);
 }
 
 void GameObject::initObject(Vec2 startPos) {

@@ -50,8 +50,15 @@ enum AnimationTag {
 	STAND,
 	WALK,
 	MOONWALK,
-	STABBING,
-	SWINGING
+	STAB,
+	SWING,
+	THROW,
+	CLIMB,
+	HIDDEN,
+	FALL,
+	KNOCKOUT,
+	DEATH,
+	SLEEP,
 };
 
 class GameObject: public Sprite
@@ -98,6 +105,8 @@ public:
 	bool playerRange = false;//for interactable items, check if player is in range to use them
 
 protected:
+	PhysicsBody * mainBody;
+
 	Sprite* outline;
 	string outlineName;
 

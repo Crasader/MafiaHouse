@@ -47,10 +47,15 @@ void Level::setup(){
 void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
+	//initializing enemy joints
+	//for (int i = 0; i < enemies.size(); i++) {
+	//	enemies[i]->initJoints();
+	//}
+
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -260,15 +265,46 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//check if enemy has been hit by player's attack
 		if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
 		{
-			//CCLOG("ENEMY HIT");
-			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
-			return true;
+			if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem) {//so enemies don't get hit by their own weapon
+				static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
-			//CCLOG("ENEMY HIT");
-			static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
-			return true;
+			if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem) {
+				static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		//player and held item
+		if (a->getName() == "player" && b->getName() == "held_item")
+		{
+			if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {//so player doesn't get hit by their own weapon
+				//get hit
+				static_cast<Player*>(a)->wasHit(static_cast<Item*>(b));
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else if (a->getName() == "held_item" && b->getName() == "player") {
+			if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
+				//get hit
+				static_cast<Player*>(b)->wasHit(static_cast<Item*>(a));
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 
 		//check if player can pick up item
@@ -289,12 +325,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 
 		//player and item
 		if ((a->getName() == "player" && b->getName() == "item") || (a->getName() == "item" && b->getName() == "player"))
-		{
-			return false;
-		}
-
-		//player and held item
-		if ((a->getName() == "player" && b->getName() == "held_item") || (a->getName() == "held_item" && b->getName() == "player"))
 		{
 			return false;
 		}
