@@ -30,6 +30,7 @@ public:
 	State getState() { return state; }
 
 	AttackType getAttackType() { return attackType; }
+	Effect getEffect() { return effect; }
 	float getStartTime() { return startTime; }
 	float getAttackTime() { return attackTime; }
 	float getLagTime() { return lagTime; }

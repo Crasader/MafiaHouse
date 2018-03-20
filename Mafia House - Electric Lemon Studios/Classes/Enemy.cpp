@@ -55,6 +55,15 @@ void Enemy::initObject(Vec2 startPos)
 	addChild(lastSeenLocation);
 }
 
+void Enemy::changeSuspicion(float num) {
+	suspicionLevel += num;
+	suspicionLevel = suspicionLevel > maxSuspicion ? maxSuspicion : suspicionLevel;
+	suspicionLevel = suspicionLevel < 0 ? 0 : suspicionLevel;
+}
+void Enemy::setSuspicion(float num) {
+	suspicionLevel = num;
+}
+
 void Enemy::openDoor() {
 	if (hasKey == true) {
 		doorToUse->unlock();//try to unlock all doors, nothing happens if it isn't locked
@@ -317,6 +326,12 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 		}
 		//vision blocked by other enemies
 		else if ((visionContactTag != getTag()) && (visionContactName == "enemy" || visionContactName == "enemy_alert")) {
+			if (static_cast<Enemy*>(visionContact)->knockedOut == true) {
+				bodySeen = static_cast<Enemy*>(visionContact);//they have seen a knocked out enemy
+			}
+			if (visionContactName == "enemy_alert") {
+				setSuspicion(maxSuspicion);//enemies that see other alerted enemies will become alerted
+			}
 			points->push_back(info.contact);
 			didRun = true;
 			return false;
@@ -373,19 +388,22 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 	}
 }
 
-void Enemy::changeSuspicion(float num) {
-	suspicionLevel += num;
-	suspicionLevel = suspicionLevel > maxSuspicion ? maxSuspicion : suspicionLevel;
-	suspicionLevel = suspicionLevel < 0 ? 0 : suspicionLevel;
-}
-
-void Enemy::setSuspicion(float num) {
-	suspicionLevel = num;
+void Enemy::gotHit(Item* item) {
+	if (item->didHitWall == false) {
+		if (item->getEffect() == Item::KILL) {
+			isDead = true;
+			item->used();
+		}
+		else if(item->getEffect() == Item::KNOCKOUT) {
+			knockedOut = true;
+			item->used();
+		}
+	}
 }
 
 void Enemy::update(GameLayer* mainLayer, float time) {
 	if (itemHitBy != NULL) {
-		hit(itemHitBy);
+		gotHit(itemHitBy);
 		itemHitBy == NULL;
 	}
 	//updateFloor(mainLayer->floors);//checking if floor has changed
@@ -407,13 +425,6 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	float BluePercentage = suspicionLevel / maxSuspicion;
 	float GreenPercentage = abs(BluePercentage - 1);//inverts the percentage
 	qMark->setColor(ccc3(255, 255 * GreenPercentage, 255 * BluePercentage));
-}
-
-bool Enemy::checkDead() {
-	if (isHit == true) {
-		return true;
-	}
-	return false;
 }
 
 //Enemy States:
@@ -442,6 +453,10 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
+	}
+	//check if enemy has seen a dead body or knocked out ally
+	if (enemy->bodySeen != NULL) {
+		return new SeenBodyState;
 	}
 	//check if enemy has seen an item
 	if (enemy->itemToPickUp != NULL) {
@@ -961,7 +976,7 @@ void Enemy::SearchState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->returning = true;
 }
 
-//Seen Body State:
+//Seen Body State: (for seeing dead bodies and knocked out enemies)
 void Enemy::SeenBodyState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->paused = false;
 	enemy->startPauseTime = -1;
@@ -979,7 +994,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 		}
 		else {//they have reached location
 			enemy->turnOnSpot(time);//stay where body is and look around
-			enemy->changeSuspicion(enemy->maxSuspicion / (40 SECONDS));//suspicion will steadily increase until the become alerted
+			enemy->changeSuspicion(enemy->maxSuspicion / (40 SECONDS));//suspicion will steadily increase until they become alerted
 		}
 		//check if enemy is walking into a door
 		if (enemy->doorToUse != NULL) {
@@ -1021,4 +1036,22 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->bodySeen = NULL;
 	enemy->returning = true;
+}
+
+//Knock Out State:
+void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+}
+Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	return nullptr;
+}
+void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+}
+
+//Death State:
+void Enemy::DeathState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+}
+Enemy::State* Enemy::DeathState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	return nullptr;
+}
+void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 }

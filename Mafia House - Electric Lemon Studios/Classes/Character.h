@@ -52,7 +52,7 @@ public:
 
 protected:
 	//to check if character has been hit:
-	bool isHit = false;
+	bool isDead = false;
 
 	//for movement:
 	float moveSpeed = 1.0f;

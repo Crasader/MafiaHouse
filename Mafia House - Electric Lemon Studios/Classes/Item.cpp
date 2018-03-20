@@ -173,9 +173,9 @@ Knife::Knife()
 {
 	outlineName = "items/knife_outline.png";
 	Item::Item();
-	hp = 2;
+	hp = 1;
 	dmg = 3;
-	tag = 10100;//10100 - 10199 for knives
+	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
 	startTime = 6 FRAMES;
@@ -193,12 +193,11 @@ Key::Key()
 	isKey = true;
 	hp = 1;
 	dmg = 0;
-	tag = 10200;//10200 - 10299 for keys
 	effect = NONE;
 	attackType = STAB;
-	startTime = 4 FRAMES;
+	startTime = 3 FRAMES;
 	attackTime = 6 FRAMES;
-	lagTime = 6 FRAMES;
+	lagTime = 4 FRAMES;
 }
 Key::~Key() {
 }
@@ -211,8 +210,7 @@ Hammer::Hammer()
 	hp = 2;
 	dmg = 5;
 	canBreakDoor = true;
-	tag = 10100;//10100 - 10199 for knives
-	effect = KILL;
+	effect = KNOCKOUT;//temporary for testing
 	attackType = SWING;
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;

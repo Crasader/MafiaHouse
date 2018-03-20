@@ -104,7 +104,9 @@ void Level::update(float deltaTime){
 	vector<Vec2> points;
 	Vec2 start;
 	for (int i = 0; i < enemies.size(); i++) {
-		if (enemies.at(i)->checkHit() == true) {
+		//remove dead enemies from scene, will be replaced with a dead body
+		//this will be done in Death State exit function
+		if (enemies.at(i)->checkDead() == true) {
 			enemies.at(i)->removeFromParentAndCleanup(true);
 			enemies.erase(enemies.begin() + i);
 			i--;

@@ -50,11 +50,12 @@ public:
 	void playerTouch() { isTouched = true; }
 	void hitWall() { didHitWall = true; }
 
-	bool checkDead();
+	void gotHit(Item* item);//function for when enemy is hit by player's attack
+
+	bool checkDead() { return isDead; }
 
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
-	bool checkHit() { return isHit; }
 	string getPathTag() { return pathTag; }
 	void setPathTag(string pathtag) { pathTag = pathtag; }
 	
@@ -63,7 +64,10 @@ public:
 	int detectedTag = -1;
 	Node* lastSeenLocation;
 
-	virtual void update(GameLayer* mainLayer, float time);
+	//for going to noises
+	GameObject* noiseLocation = NULL;
+	//for seeing bodies/ knocked out dudes
+	GameObject* bodySeen = NULL;
 
 	vector<PathNode*> pathNodes;
 
@@ -71,6 +75,8 @@ public:
 
 	//for locking/unlocking doors
 	bool hasKey = false;
+
+	virtual void update(GameLayer* mainLayer, float time);
 
 protected:
 	class State {
@@ -125,6 +131,18 @@ protected:
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
+	class KnockOutState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
+	};
+	class DeathState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
+	};
 	State* state = new DefaultState;
 	State* newState = NULL;
 	State* prevState = NULL;
@@ -134,9 +152,10 @@ protected:
 	Sprite* exMark;
 
 	//for going to noises, going to bodies
-	GameObject* noiseLocation = NULL;
-	GameObject* bodySeen = NULL;
 	bool reachedLocation = false;
+
+	//for being hit
+	bool knockedOut = false;
 
 	//to check if enemy has been touched by player
 	bool isTouched = false;
