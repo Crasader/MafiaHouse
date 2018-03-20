@@ -142,24 +142,24 @@ void Player::hide() {
 			wasSeen = true;
 		}
 		hidden = true;
-		setTag(2);
+		setTag(getTag() + 10);
 		getPhysicsBody()->setTag(2);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() - 3);
 		if (heldItem != NULL) {
 			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() - 3);
 		}
-		hideObject->setOpacity(175);
+		hideObject->hide();
 	}
 	else {
 		hidden = false;
 		wasSeen = false;
-		setTag(1);
+		setTag(getTag() - 10);
 		getPhysicsBody()->setTag(1);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() + 3);
 		if (heldItem != NULL) {
 			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() + 3);
 		}
-		hideObject->setOpacity(255);
+		hideObject->unhide();
 	}
 }
 //have player stay behind object they are hiding behind
@@ -289,7 +289,7 @@ void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time
 }
 Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->heldItem->didHitWall == true) {
-		player->move(Vec2(-25, 0));
+		player->move(Vec2(-5 * player->heldItem->dmg, 0));
 	}
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
 		player->attackStartTime = time;
@@ -338,7 +338,7 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->noclip();
 	player->moveSpeed = 3;
-	player->setTag(2);
+	player->hidden = true;
 }
 Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
@@ -370,5 +370,5 @@ Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainL
 void Player::NoClipState::exit(Player* player, GameLayer* mainLayer) {
 	player->noclip();
 	player->moveSpeed = 1;
-	player->setTag(1);
+	player->hidden = false;
 }

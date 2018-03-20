@@ -11,15 +11,16 @@ Stair::Stair() {
 	dynamic = false;
 	category = 16;
 	collision = 1;
+
+	outlineName = "objects/stair_outline.png";
 }
 Stair::~Stair() {
 }
 
 void Stair::initObject() {
 	setContentSize(stairSize);//won't be needed once we have a proper sprite
-	
+
 	GameObject::initObject();
-	
 	//use type to set tag of the stairway
 	if (type == 2) {
 		setTag(tag + pairNum + 1000);//will have tag of it's partner stairway plus 1000
@@ -27,6 +28,22 @@ void Stair::initObject() {
 	else if (type == 1){
 		setTag(tag + pairNum);
 	}
+
+	createOutline(outlineName);
+	outline->setColor(ccc3(255, 235, 50));//yellow
+	outline->setVisible(false);
+}
+
+void Stair::playerInRange() {
+	if (playerRange == true) {
+		outline->setVisible(true);
+		//outline->setColor(ccc3(255, 235, 50));//yellow
+	}
+	else {
+		outline->setVisible(false);
+		//outline->setColor(ccc3(155, 155, 155));//grey
+	}
+	playerRange = false;
 }
 
 void Stair::use(GameObject* user, Node* mainLayer) {

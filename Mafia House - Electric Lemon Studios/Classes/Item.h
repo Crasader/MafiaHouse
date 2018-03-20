@@ -51,11 +51,9 @@ public:
 
 	void checkSpeed();
 
-	void playerInRange();
+	void playerInRange(Node* player);
 	void hasMoved();
 	bool enemyCanUse = false;
-
-	bool playerRange = false;//is the player in range to pick up item
 
 	int hp = 1;//keeps track fo how much item has been used
 	int dmg = 10;

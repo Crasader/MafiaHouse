@@ -70,8 +70,6 @@ public:
 	virtual void initObjectNoPhysics(Vec2 startPos);
 	virtual void initObject(Vec2 startPos);
 
-	virtual void initAnimations();
-
 	virtual void createOutline(string name);
 
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
@@ -96,6 +94,8 @@ public:
 	//startRoom.y == floor number
 	//startRoom.x == room nuumber
 	int currentFloor;
+
+	bool playerRange = false;//for interactable items, check if player is in range to use them
 
 protected:
 	Sprite* outline;

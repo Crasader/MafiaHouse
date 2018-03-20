@@ -67,18 +67,24 @@ void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
 
+	//hide object update
+	for (int i = 0; i < hideObjects.size(); i++) {
+		hideObjects[i]->playerInRange();
+	}
+	//stair update
+	for (int i = 0; i < mainLayer->stairs.size(); i++) {
+		mainLayer->stairs[i]->playerInRange();
+	}
 	//door update
 	for (int i = 0; i < doors.size(); i++) {
-		//updating color of question mark, turns more red as suspicion increases
 		doors[i]->updateColour();
 		doors[i]->playerInRange();
 	}
-
 	//items update
 	for (int i = 0; i < mainLayer->items.size(); i++) {
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
 			mainLayer->items[i]->hasMoved();
-			mainLayer->items[i]->playerInRange();
+			mainLayer->items[i]->playerInRange(player);
 		}
 		else if (mainLayer->items[i]->getState() == Item::HELD) {
 
@@ -250,7 +256,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//check if enemy has been hit by player's attack
-		if (a->getName() == "enemy" && b->getName() == "held_item")
+		if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
 		{
 			//CCLOG("ENEMY HIT");
 			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
@@ -259,7 +265,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
 			//CCLOG("ENEMY HIT");
-			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+			static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
 			return true;
 		}
 
@@ -291,30 +297,30 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return false;
 		}
 
-		//player and env. object
+		//player and hide object
 		if (a->getName() == "player" && b->getName() == "env_object")
 		{
-			//CCLOG("CAN HIDE BEHIND THING");
-			player->objectToHideBehind = static_cast<EnvObject*>(b);
+			player->objectToHideBehind = static_cast<HideObject*>(b);
+			static_cast<HideObject*>(b)->playerRange = true;
 			return false;
 		}
 		else if (a->getName() == "env_object" && b->getName() == "player")
 		{
-			//CCLOG("CAN HIDE BEHIND THING");
-			player->objectToHideBehind = static_cast<EnvObject*>(a);
+			player->objectToHideBehind = static_cast<HideObject*>(a);
+			static_cast<HideObject*>(a)->playerRange = true;
 		}
 
 		//player and stairway
 		if (a->getName() == "player" && b->getName() == "stair")
 		{
-			//CCLOG("CAN GO THROUGH STAIRWAY");
 			player->stairToUse = static_cast<Stair*>(b);
+			static_cast<Stair*>(b)->playerRange = true;
 			return false;
 		}
 		else if (a->getName() == "stair" && b->getName() == "player")
 		{
-			//CCLOG("CAN GO THROUGH STAIRWAY");
 			player->stairToUse = static_cast<Stair*>(a);
+			static_cast<Stair*>(a)->playerRange = true;
 			return false;
 		}
 
@@ -484,22 +490,22 @@ void Level::setBackground(string bgName, float scale) {
 	background->addComponent(border);*/
 }
 
-void Level::createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height)
+void Level::createFloor(Vec2 position, vector<RoomData> roomData, int height)
 {
 	Room* room;
 
 	for (int i = 0; i < roomData.size(); i++) {
 		room = Room::create();
 
-		room->createRoom(doors, stairs, objects, items, enemies, &pathNodes, player, position, roomData[i], height);
+		room->createRoom(&doors, &mainLayer->stairs, &hideObjects, &mainLayer->items, &enemies, &pathNodes, player, position, roomData[i], height);
 
 		position = position + Vec2(roomData[i].width + room->fullThick, 0);//adding length of created room to set position for next room
 
-		rooms->push_back(room);
+		rooms.push_back(room);
 	}
 }
 
-void Level::createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, float levelWidth, vector<FloorData> floorData)
+void Level::createLevel(Vec2 position, float levelWidth, vector<FloorData> floorData)
 {
 	Room r;
 
@@ -524,7 +530,7 @@ void Level::createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair
 		Floor floor(i, floorData[i].height, position.y + floorData[i].height, position.y);
 		mainLayer->floors.push_back(floor);//adding floor information to list of floors
 
-		createFloor(rooms, doors, stairs, objects, items, enemies, player, position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
+		createFloor(position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
 
 		position = position + Vec2(0, floorData[i].height + r.fullThick);//adding height of created floor to set position for next floor
 	}
@@ -656,28 +662,29 @@ bool Level::initLevel(string filename){
 				stair->startRoom = Vec2(roomNum, floorNum);
 				mainLayer->stairs.push_back(stair);
 			}
-			//Environmental Objects
-			else if (pieces[0] == "object") {
-				EnvObject* object;
-				if (pieces[1] == "plant") {
-					object = EnvObject::createWithSpriteFrameName();//should be Plant subclass
-				}
-				object->initObject();
-				object->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
-				object->startRoom = Vec2(roomNum, floorNum);
-				objects.push_back(object);
+			//Hide Objects
+			else if (pieces[0] == "hide_object") {
+				HideObject* hideObject;
+				hideObject = HideObject::createWithSpriteFrameName("objects/" + pieces[1] + ".png");//all hide objects are exactly the same except for appearance
+				hideObject->initHideObject(pieces[1]);
+				hideObject->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
+				hideObject->startRoom = Vec2(roomNum, floorNum);
+				hideObjects.push_back(hideObject);
 			}
 			//Items
 			else if (pieces[0] == "item") {
 				Item* item;
 				if (pieces[1] == "knife") {
 					item = Knife::createWithSpriteFrameName();
+					item->retain();
 				}
 				else if (pieces[1] == "key") {
 					item = Key::createWithSpriteFrameName();
+					item->retain();
 				}
 				else if (pieces[1] == "hammer") {
 					item = Hammer::createWithSpriteFrameName();
+					item->retain();
 				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
@@ -708,11 +715,10 @@ bool Level::initLevel(string filename){
 						item = Hammer::createWithSpriteFrameName();
 					}
 					item->initObject();
-					item->initHeldItem();
-					enemy->heldItem = item;
-					enemy->inventory.push_back(item);
-					enemy->addChild(item);
+					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
+					item->startRoom = Vec2(roomNum, floorNum);
 					mainLayer->items.push_back(item);
+					enemy->itemToPickUp = item;
 				}
 				enemy->initObject();
 				enemies.push_back(enemy);
@@ -743,7 +749,7 @@ bool Level::initLevel(string filename){
 	file.close();
 
 	//make the level
-	createLevel(&rooms, &doors, &mainLayer->stairs, &objects, &mainLayer->items, &enemies, player, background->getPosition(), background->getContentSize().width * backgroundScale, floors);
+	createLevel(background->getPosition(), background->getContentSize().width * backgroundScale, floors);
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 
@@ -761,17 +767,15 @@ bool Level::initLevel(string filename){
 	for (int i = 0; i < mainLayer->stairs.size(); i++) {
 		mainLayer->addChild(mainLayer->stairs[i]);//Do Not give unique tag to each stairway, already done elsewhere
 	}
-	//objects
-	for (int i = 0; i < objects.size(); i++) {
-		objects[i]->setTag(objects[i]->getTag() + i);//giving a unique tag to each object
-		mainLayer->addChild(objects[i]);
+	//hide objects
+	for (int i = 0; i < hideObjects.size(); i++) {
+		hideObjects[i]->setTag(hideObjects[i]->getTag() + i);//giving a unique tag to each object
+		mainLayer->addChild(hideObjects[i]);
 	}
 	//items
 	for (int i = 0; i < mainLayer->items.size(); i++) {
 		mainLayer->items[i]->setTag(mainLayer->items[i]->getTag() + i);//giving a unique tag to each item
-		if (mainLayer->items[i]->getParent() == NULL) {
-			mainLayer->addChild(mainLayer->items[i]);
-		}
+		mainLayer->addChild(mainLayer->items[i]);
 	}
 	//enemies
 	for (int i = 0; i < enemies.size(); i++) {

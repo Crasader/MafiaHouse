@@ -1,9 +1,5 @@
 #pragma once
 #include "Character.h"
-#include "Item.h"
-#include "Stair.h"
-#include "EnvObject.h"
-#include "GameLayer.h"
 #include "Player.h"
 
 class PathNode : public GameObject {

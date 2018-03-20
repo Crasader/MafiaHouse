@@ -22,6 +22,8 @@ public:
 	CREATE_WITH_FRAME_NAME(Stair, "objects/stair.png");
 	void initObject();
 
+	void playerInRange();
+
 	void use(GameObject* user, Node* mainLayer);
 
 	int pairNum = 0;//the number of the pair of stairways this stairway belongs to; ex. stairways 1A and 1B are both part of the number 1 pair
@@ -71,8 +73,6 @@ public:
 	bool defaultLocked = false;//whether enemies should lock the door or not, also if it starts locked
 
 	float hp = 10;//for items to deal dmg to doors, to break them open if locked
-
-	bool playerRange = false;
 
 protected:
 	bool broken = false;

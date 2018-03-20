@@ -322,13 +322,15 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start)
 			return false;
 		}
 		//enemy sees the player
-		else if (visionContactTag == 1){//1 = player, 2 = hidden player
-			static_cast<Player*>(visionContact)->inVision = true;
-			detectedTag = visionContactTag;
-			playerInVision = true;
-			points->push_back(info.contact);
-			didRun = true;
-			return false;
+		else if (visionContactName == "player"){//not using tag anymore
+			if (static_cast<Player*>(visionContact)->isHidden() == false) {//if the player is not hidden
+				static_cast<Player*>(visionContact)->inVision = true;
+				detectedTag = visionContactTag;
+				playerInVision = true;
+				points->push_back(info.contact);
+				didRun = true;
+				return false;
+			}
 		}
 		//enemy sees an item
 		else if (visionContactName == "item" && state->type != "alert") {//enemy won't pick up seen items when alert
@@ -537,7 +539,7 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->waitTime *= 0.65f;
 	enemy->setName("enemy");
 	enemy->turnTime *= 0.65f;
-	enemy->visionDegrees = enemy->defaultDegrees * 1.1;
+	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.3;
 }
 Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
@@ -635,6 +637,8 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setName("enemy_alert");
 	enemy->lostPlayer = false;
 	enemy->reachedLastSeen = false;
+	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
+	enemy->visionRadius = enemy->defaultRadius * 1.7;
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -895,8 +899,7 @@ void Enemy::GetItemState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	}
 }
 
-
-//Search State:
+//Search State (for hearing noises):
 void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->paused = false;
 	enemy->startPauseTime = -1;

@@ -1,9 +1,5 @@
 #pragma once
 #include "Character.h"
-#include "Item.h"
-#include "Stair.h"
-#include "EnvObject.h"
-#include "GameLayer.h"
 
 class Player : public Character
 {
@@ -38,7 +34,7 @@ public:
 	bool isHidden() { return hidden; }
 
 	//pointers for interacting with objects:
-	EnvObject* objectToHideBehind = NULL;//the tag of the object the player can hide behind
+	HideObject* objectToHideBehind = NULL;//the tag of the object the player can hide behind
 	//DeadBody* bodyToPickUp = NULL;
 
 	void update(GameLayer* mainLayer, float time);
@@ -103,7 +99,7 @@ private:
 	bool attackRelease = false;
 	bool throwRelease = false;
 
-	EnvObject* hideObject = NULL;//object player is hiding behind
+	HideObject* hideObject = NULL;//object player is hiding behind
 
 	//animations:
 	GameAnimation moonwalking;

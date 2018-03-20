@@ -6,9 +6,6 @@ GameObject::~GameObject(){
 }
 
 void GameObject::initObject() {
-	//load animations from frame cache
-	initAnimations();
-
 	setPositionZ(0.0f);
 	//set the anchor point to bottom left corner. nevermind this messes up animations an
 	setAnchorPoint(Vec2(0, 0));
@@ -36,9 +33,6 @@ void GameObject::initObject() {
 }
 
 void GameObject::initObjectNoPhysics() {
-	//load animations from frame cache
-	initAnimations();
-
 	setPositionZ(0.0f);
 	//set the anchor point to bottom left corner. nevermind this messes up animations an
 	setAnchorPoint(Vec2(0, 0));
@@ -113,10 +107,6 @@ void GameObject::initObjectNoPhysics(Vec2 startPos) {
 	//set position of sprite
 	setPosition(startPos);
 	initObjectNoPhysics();
-}
-
-void GameObject::initAnimations() {
-
 }
 
 void GameObject::createOutline(string name) {

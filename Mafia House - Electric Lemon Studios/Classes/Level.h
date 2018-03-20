@@ -69,7 +69,7 @@ protected:
 
 	DrawNode* visionRays;//used for drawing vision cones
 
-	vector<EnvObject*> objects;//the environmental objects in the level
+	vector<HideObject*> hideObjects;//the hide objects in the level
 
 	vector<Room*> rooms;//the rooms the level is made up of
 
@@ -86,6 +86,6 @@ protected:
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
-	void createFloor(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, vector<RoomData> roomData, int height);
-	void createLevel(vector<Room*> *rooms, vector<Door*> *doors, vector<Stair*> *stairs, vector<EnvObject*> *objects, vector<Item*> *items, vector<Enemy*> *enemies, Player* player, Vec2 position, float levelWidth, vector<FloorData> floorData);
+	void createFloor(Vec2 position, vector<RoomData> roomData, int height);
+	void createLevel(Vec2 position, float levelWidth, vector<FloorData> floorData);
 };

@@ -62,6 +62,7 @@ void Item::initHeldItem() {
 	if (flippedX == true) {
 		flipX();
 	}
+	setAnchorPoint(Vec2(0, 0));
 }
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
@@ -102,9 +103,11 @@ void Item::hitWall() {
 	getPhysicsBody()->setEnabled(false);
 }
 
-void Item::playerInRange() {
-	if (playerRange == true){
-		outline->setColor(ccc3(100, 255, 100));//green
+void Item::playerInRange(Node* player) {
+	if (player->getTag() >= 1 && player->getTag() <= 9) {
+		if (playerRange == true) {
+			outline->setColor(ccc3(100, 255, 100));//green
+		}
 	}
 	playerRange = false;
 }
@@ -136,7 +139,8 @@ void Item::beginStab() {
 
 void Item::beginSwing() {
 	setRotation(-135);
-	setPosition(Vec2(35, 85));
+	setPosition(Vec2(40, 80));
+	setAnchorPoint(Vec2(-0.9, 0.5));
 	//auto prepare = MoveBy::create(10 FRAMES, Vec2(-16, 20));
 	//auto rotate = RotateBy::create(10 FRAMES, -90);
 	//runAction(Spawn::create(prepare,rotate));
@@ -151,10 +155,10 @@ void Item::stabSequence() {
 }
 
 void Item::swingSequence() {
-	auto move = MoveBy::create(7 FRAMES, Vec2(20, -35));
-	auto rotate = RotateBy::create(7 FRAMES, 135);
+	auto move = MoveBy::create(6 FRAMES, Vec2(0, -28));
+	auto rotate = RotateBy::create(6 FRAMES, 120);
 
-	auto hold = MoveBy::create(6 FRAMES, Vec2(0, 0));
+	auto hold = MoveBy::create(8 FRAMES, Vec2(0, 0));
 
 	//auto moveback = MoveBy::create(6 FRAMES, Vec2(-10, 5));
 	//auto rotateback = RotateBy::create(6 FRAMES, -135);
@@ -170,7 +174,7 @@ Knife::Knife()
 	outlineName = "items/knife_outline.png";
 	Item::Item();
 	hp = 2;
-	dmg = 5;
+	dmg = 3;
 	tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
@@ -210,7 +214,7 @@ Hammer::Hammer()
 	tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = SWING;
-	startTime = 14 FRAMES;
+	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;
 	lagTime = 18 FRAMES;
 }
