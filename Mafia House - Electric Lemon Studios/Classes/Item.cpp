@@ -95,7 +95,7 @@ void Item::breakItem() {
 }
 
 void Item::used() {
-	hp = 0;
+	hp--;
 }
 
 void Item::hitWall() {

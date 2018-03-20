@@ -266,7 +266,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
 		{
 			if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem) {//so enemies don't get hit by their own weapon
-				static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
 				return true;
 			}
 			else {
@@ -276,7 +275,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
 			if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem) {
-				static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
 				return true;
 			}
 			else {
@@ -288,8 +286,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "held_item")
 		{
 			if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {//so player doesn't get hit by their own weapon
-				//get hit
-				static_cast<Player*>(a)->wasHit(static_cast<Item*>(b));
 				return true;
 			}
 			else {
@@ -298,8 +294,6 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "held_item" && b->getName() == "player") {
 			if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
-				//get hit
-				static_cast<Player*>(b)->wasHit(static_cast<Item*>(a));
 				return true;
 			}
 			else {
@@ -416,6 +410,50 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+	//check if enemy has been hit by player's attack
+	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
+	{
+		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem) {//so enemies don't get hit by their own weapon
+			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
+	{
+		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem) {
+			static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	//player and held item
+	if (a->getName() == "player" && b->getName() == "held_item")
+	{
+		if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {//so player doesn't get hit by their own weapon
+																		 //get hit
+			static_cast<Player*>(a)->wasHit(static_cast<Item*>(b));
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else if (a->getName() == "held_item" && b->getName() == "player") {
+		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
+																		 //get hit
+			static_cast<Player*>(b)->wasHit(static_cast<Item*>(a));
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 	//enemy and door radius
 	if (a->getName() == "enemy" && b->getName() == "door_radius")
 	{

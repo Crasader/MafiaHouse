@@ -159,13 +159,18 @@ protected:
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
 
+	//for being hit:
+	float invicibilityTime = 0.5f;
+	float hitTime = -1;
+
 	//for being knocked out
 	PhysicsBody* knockedOutBody;
 	bool knockedOut = false;
 	bool visionEnabled = true;
 	float startKockOutTime = -1.0f;
-	float baseKnockOutTime = 0.5f;
-	float knockOutTime = 20.0f;
+	float baseKnockOutTime = 0.1f;
+	float minKnockOuttime = 0.5f;
+	float knockOutTime;
 
 	//to check if enemy has been touched by player
 	bool isTouched = false;

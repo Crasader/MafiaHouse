@@ -37,7 +37,8 @@ void Enemy::flipX() {
 
 void Enemy::initObject(Vec2 startPos)
 {
-	Character::initObject(startPos);
+	GameObject::initObjectNoPhysics(startPos);
+	initBoxBody(bodySize);
 	//initializing suspicion icons:
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	exMark = Sprite::createWithSpriteFrameName("icons/exmark.png");
@@ -63,18 +64,15 @@ void Enemy::initObject(Vec2 startPos)
 	//initializing knocked out physics body
 	//knockedOutBody = Node::create();
 	knockedOutBody = PhysicsBody::createBox(Size(bodySize.width * 2, bodySize.height / 3));
+	knockedOutBody->setContactTestBitmask(0xFFFFFFFF);
 	knockedOutBody->setTag(tag);
-	knockedOutBody->setName(name);
+	knockedOutBody->setName("enemy");
 	knockedOutBody->setCategoryBitmask(2);
-	knockedOutBody->setCollisionBitmask(9);
+	knockedOutBody->setCollisionBitmask(8);
 	knockedOutBody->setDynamic(true);
 	knockedOutBody->setRotationEnable(false);
-	knockedOutBody->setPositionOffset(Vec2(0, -35));
-	knockedOutBody->setMass(800);
+	knockedOutBody->setMass(1000);
 	knockedOutBody->retain();
-	//knockedOutBody->setPhysicsBody(body);
-	//knockedOutBody->setPositionNormalized(Vec2(0.5, 0));
-	//addChild(knockedOutBody);
 }
 
 void Enemy::initJoints() {
@@ -429,17 +427,30 @@ void Enemy::gotHit(Item* item) {
 			item->used();
 		}
 		else if(item->getEffect() == Item::KNOCKOUT) {
-			knockedOut = true;
-			knockOutTime = baseKnockOutTime * static_cast<float>(item->dmg);//more powerful items knock out for longer
-			//knockOutTime = knockOutTime < 20.0f ? 20.0f : knockOutTime;//set minimum knockOutTime to 20 seconds
-			item->used();
+			if (knockedOut == false) {
+				knockedOut = true;
+				knockOutTime = baseKnockOutTime * static_cast<float>(item->dmg);//more powerful items knock out for longer
+				knockOutTime = knockOutTime < minKnockOuttime ? minKnockOuttime : knockOutTime;//set minimum knockOutTime to 20 seconds
+				item->used();
+			}
+			else {//if they're already knocked out, kill them
+				isDead = true;
+				item->used();
+			}
 		}
 	}
 }
 
 void Enemy::update(GameLayer* mainLayer, float time) {
 	if (itemHitBy != NULL) {
-		gotHit(itemHitBy);
+		if (hitTime == -1) {
+			hitTime = time;
+			gotHit(itemHitBy);
+		}
+		if (hitTime != -1 && time - hitTime >= invicibilityTime) {
+			hitTime = time;
+			gotHit(itemHitBy);
+		}
 		itemHitBy = NULL;
 	}
 	//updateFloor(mainLayer->floors);//checking if floor has changed
@@ -746,7 +757,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	//check if the player is hidden
 	if (enemy->detectedPlayer->isHidden() == true) {
 		//if the player wasn't seen going into hiding
-		if (enemy->detectedPlayer->wasSeen == false) {
+		if (enemy->detectedPlayer->wasSeen == false && enemy->lostPlayer == false) {
 			enemy->lostPlayer = true;
 			enemy->lastSeenLocation->setPositionX(enemy->detectedPlayer->getPositionX());
 			enemy->lastSeenLocation->setPositionY(enemy->detectedPlayer->currentFloor);//use y position for floor player was on
@@ -1104,8 +1115,9 @@ void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 
 //Knock Out State:
 void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->removeComponent(enemy->mainBody);
 	enemy->setPhysicsBody(enemy->knockedOutBody);
+	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, -35));
+	//knockedOutBody->setPositionOffset(Vec2(0, -35));
 	enemy->setSpriteFrame(enemy->knockout.animation->getFrames().at(0)->getSpriteFrame());//first frame of the knockout animation
 	enemy->startKockOutTime = time;
 	enemy->visionEnabled = false;
@@ -1120,9 +1132,9 @@ Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, f
 	return nullptr;
 }
 void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->removeComponent(enemy->knockedOutBody);
 	enemy->setPhysicsBody(enemy->mainBody);
-	enemy->mainBody->setPositionOffset(Vec2(0, 35));
+	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, 35));
+	//enemy->mainBody->setPositionOffset(Vec2(0, 35));
 	enemy->setSpriteFrame(enemy->stand.animation->getFrames().at(0)->getSpriteFrame());//first frame of the standing animation
 	enemy->knockedOut = false;
 	enemy->visionEnabled = true;

@@ -58,10 +58,11 @@ void Character::stopAnimation(AnimationTag tag) {
 
 void Character::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp != NULL) {
+		removeChild(heldItem, true);
+
 		heldItem = itemToPickUp;
 		mainLayer->removeChild(itemToPickUp, true);
-
-		removeChild(heldItem, true);
+		
 		addChild(heldItem);
 		heldItem->initHeldItem();
 		inventory.push_back(heldItem);
