@@ -56,7 +56,7 @@ public:
 
 	bool checkLock() { return locked; }
 
-	void use();
+	bool use();
 
 	void unlock();
 

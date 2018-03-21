@@ -119,7 +119,9 @@ void Enemy::openDoor() {
 	if (hasKey == true) {
 		doorToUse->unlock();//try to unlock all doors, nothing happens if it isn't locked
 	}
-	doorToUse->use();
+	if (doorToUse->use() == true) {
+		openedDoor = true;
+	}
 }
 void Enemy::closeDoor() {
 	doorToUse->use();
@@ -356,7 +358,7 @@ bool Enemy::moveToDoor(Node* target) {
 		}
 	}
 	else if (flippedX == true) {
-		if (getPositionX() <= (target->getPositionX() + 2)) {
+		if (getPositionX() <= (target->getPositionX() + target->getContentSize().width + 2)) {
 			return true;
 		}
 		else {
@@ -845,6 +847,7 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->startPauseTime = -1;
 	enemy->doorStartTime = time;
 	enemy->startWaitTime = -1;
+	enemy->openedDoor = false;
 	if (enemy->doorToUse->checkOpen() == false) {
 		enemy->openDoor();//only use the door if it's not open yet
 	}
@@ -866,8 +869,11 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->doorToUse == NULL) {
 		return enemy->prevState;
 	}
+	if (enemy->doorToUse->checkOpen() == false) {//if the door get's closed on their face after they've started going through it
+		enemy->openDoor();
+	}
 	if (enemy->prevState->type != "alert") {//enemy is not coming from alert state
-		if (enemy->doorToUse->checkLock() == true) {//they couldn't actually open the door, if they have a key they will use it automatically to unlock the door
+		if (enemy->doorToUse->checkLock() == true && enemy->openedDoor == false) {//they couldn't actually open the door, if they have a key they will use it automatically to unlock the door
 			if (enemy->startWaitTime == -1 && enemy->moveToDoor(enemy->doorToUse) == true) {//enemy has walked up to door
 				enemy->qMark->setVisible(true);
 				enemy->changeSuspicion(enemy->maxSuspicion / 2);//increases suspicion by a half
@@ -922,7 +928,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		}
 	}
 	else if (enemy->prevState->type == "alert"){//enemy was in alert state, just open door and run
-		if (enemy->doorToUse->checkLock() == true) {//they didn't actually open the door
+		if (enemy->doorToUse->checkLock() == true && enemy->openedDoor == false) {//they didn't actually open the door
 			enemy->breakDoor(time);
 		}
 		else {//if door is unlocked
@@ -934,6 +940,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			}
 		}
 	}
+
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
 		if (enemy->detectedTag != -1) {

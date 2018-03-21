@@ -228,9 +228,10 @@ protected:
 	float startBreakTime = -1;
 	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door
 	//for locking/unlocking doors
-	bool hasKey = true;
+	bool hasKey = false;
 
 	//for using doors:
+	bool openedDoor = false;
 	float doorUsePos;
 	float doorUseTime;
 	float doorStartTime = -1;

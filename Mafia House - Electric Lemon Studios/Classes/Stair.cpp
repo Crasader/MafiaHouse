@@ -154,7 +154,7 @@ void Door::breakDoor() {
 	setColor(ccc3(155, 0, 255));//purple
 }
 
-void Door::use() {
+bool Door::use() {
 	if (locked == false) {
 		if (isOpen == false) {
 			isOpen = true;
@@ -163,6 +163,7 @@ void Door::use() {
 			setOpacity(100);
 			outline->setGlobalZOrder(2);
 			outline->setOpacity(100);
+			return true;
 		}
 		else {
 			isOpen = false;
@@ -171,8 +172,10 @@ void Door::use() {
 			setOpacity(255);
 			outline->setGlobalZOrder(5);
 			outline->setOpacity(255);
+			return true;
 		}
 	}
+	return false;
 }
 
 void Door::unlock() {
