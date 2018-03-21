@@ -155,6 +155,8 @@ protected:
 	//for suspicion indicators
 	Sprite* qMark;
 	Sprite* exMark;
+	Sprite* ZZZ;
+	GameAnimation ZZZAnimation;
 
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
@@ -168,8 +170,8 @@ protected:
 	bool knockedOut = false;
 	bool visionEnabled = true;
 	float startKockOutTime = -1.0f;
-	float baseKnockOutTime = 0.1f;
-	float minKnockOuttime = 0.5f;
+	float baseKnockOutTime = 6.5f;
+	float minKnockOuttime = 8.0f;
 	float knockOutTime;
 
 	//to check if enemy has been touched by player

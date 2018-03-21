@@ -21,6 +21,7 @@ Enemy::Enemy()
 	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockout/%03d.png", 1, 10 FRAMES);
 	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES);
 	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES);
+	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES);
 }
 Enemy::~Enemy(){
 }
@@ -45,16 +46,24 @@ void Enemy::initObject(Vec2 startPos)
 	exMark->setAnchorPoint(Vec2(0.5, 0));
 	exMark->setPositionNormalized(Vec2(0.5, 1.05));
 	exMark->getTexture()->setTexParameters(texParams);
-	exMark->setGlobalZOrder(8);
+	exMark->setGlobalZOrder(9);
 	exMark->setVisible(false);
 	addChild(exMark);
 	qMark = Sprite::createWithSpriteFrameName("icons/qmark.png");
 	qMark->setAnchorPoint(Vec2(0.5, 0));
 	qMark->setPositionNormalized(Vec2(0.5, 1.05));
 	qMark->getTexture()->setTexParameters(texParams);
-	qMark->setGlobalZOrder(8);
+	qMark->setGlobalZOrder(9);
 	qMark->setVisible(false);
 	addChild(qMark);
+	ZZZ = Sprite::createWithSpriteFrameName("icons/ZZZ/zzz.png");
+	ZZZ->setAnchorPoint(Vec2(0, 0));
+	ZZZ->setPositionNormalized(Vec2(0.2, 1.05));
+	ZZZ->getTexture()->setTexParameters(texParams);
+	ZZZ->setGlobalZOrder(9);
+	ZZZ->setVisible(false);
+	addChild(ZZZ);
+
 	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
 		flipX();
 	}
@@ -1117,11 +1126,12 @@ void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setPhysicsBody(enemy->knockedOutBody);
 	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, -35));
-	//knockedOutBody->setPositionOffset(Vec2(0, -35));
 	enemy->setSpriteFrame(enemy->knockout.animation->getFrames().at(0)->getSpriteFrame());//first frame of the knockout animation
 	enemy->startKockOutTime = time;
 	enemy->visionEnabled = false;
 	enemy->paused = false;
+	enemy->ZZZ->setVisible(true);
+	enemy->ZZZ->runAction(enemy->ZZZAnimation.action);
 	enemy->exMark->setVisible(false);
 	enemy->qMark->setVisible(false);
 }
@@ -1129,15 +1139,20 @@ Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, f
 	if ((time - enemy->startKockOutTime) > (enemy->knockOutTime)) {
 		return enemy->prevState;
 	}
+	else {
+		float percentage = abs(((time - enemy->startKockOutTime) / enemy->knockOutTime) - 1);//inverse percentage of time left until enemy wakes up
+		enemy->ZZZ->setScale((percentage * 1.15) + 0.3);
+	}
 	return nullptr;
 }
 void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->setPhysicsBody(enemy->mainBody);
 	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, 35));
-	//enemy->mainBody->setPositionOffset(Vec2(0, 35));
 	enemy->setSpriteFrame(enemy->stand.animation->getFrames().at(0)->getSpriteFrame());//first frame of the standing animation
 	enemy->knockedOut = false;
 	enemy->visionEnabled = true;
+	enemy->ZZZ->setVisible(false);
+	enemy->ZZZ->stopAllActions();
 }
 
 //Death State:

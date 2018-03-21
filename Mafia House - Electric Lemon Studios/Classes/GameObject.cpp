@@ -199,13 +199,13 @@ void GameObject::flipX() {
 }
 
 Vector<SpriteFrame*> getAnimation(const char *format, int count) {
-	auto spritecache = SpriteFrameCache::getInstance();
-	Vector<SpriteFrame*> animFrames;
+	auto framecache = SpriteFrameCache::getInstance();
+	Vector<SpriteFrame*> frames;
 	char str[100];
-	for (int i = 1; i <= count; i++)
-	{
+
+	for (int i = 1; i <= count; i++){
 		sprintf(str, format, i);
-		animFrames.pushBack(spritecache->getSpriteFrameByName(str));
+		frames.pushBack(framecache->getSpriteFrameByName(str));
 	}
-	return animFrames;
+	return frames;
 }

@@ -59,6 +59,7 @@ enum AnimationTag {
 	KNOCKOUT,
 	DEATH,
 	SLEEP,
+	ZZZs
 };
 
 class GameObject: public Sprite
