@@ -101,7 +101,7 @@ public:
 	Vec2 startRoom = Vec2(0,0);//NOT POSITION COORDINATES, the room the object starts in
 	//startRoom.y == floor number
 	//startRoom.x == room nuumber
-	int currentFloor;
+	int currentFloor = 0;
 
 	bool playerRange = false;//for interactable items, check if player is in range to use them
 

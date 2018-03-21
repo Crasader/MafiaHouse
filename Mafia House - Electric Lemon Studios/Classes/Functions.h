@@ -20,17 +20,6 @@ void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset);
 //for genrating random numbers
 int randNum(int min, int max);
 
-class Floor {//just for keeping track of what floor characters are on
-public:
-	Floor(int n, int h, int t, int b);
-	~Floor();
-
-	int num;
-	int height;
-	int top;
-	int bot;
-};
-
 class DoorData {
 public:
 	DoorData() {}
@@ -54,6 +43,9 @@ public:
 	int right;//right of the room
 
 	string bgName = "guestRoom.png";
+
+	bool hasLeftDoor = false;
+	bool hasRightDoor = false;
 
 	vector<DoorData> rightDoors;//the locations of the vents and doors on the right wall
 	vector<DoorData> leftDoors;//the locations of the vents and doors on the left wall

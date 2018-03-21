@@ -28,11 +28,3 @@ int randNum(int min, int max) {//takes in the minimum value and maximum value fo
 	int num = min + (rand() % max - min);
 	return num;
 }
-
-Floor::Floor(int n, int h, int t, int b) {
-	num = n;
-	height = h;
-	top = t;
-	bot = b;
-}
-Floor::~Floor() {}

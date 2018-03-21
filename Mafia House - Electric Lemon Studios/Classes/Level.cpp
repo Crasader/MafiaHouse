@@ -684,9 +684,11 @@ bool Level::initLevel(string filename){
 				//set what wall door is on
 				if (pieces[1] == "right") {
 					roomData.rightDoors.push_back(doorData);
+					roomData.hasRightDoor = true;
 				}
 				else if (pieces[1] == "left") {
 					roomData.leftDoors.push_back(doorData);
+					roomData.hasLeftDoor = true;
 				}
 				else if (pieces[1] == "top") {
 					roomData.ceilingDoors.push_back(doorData);

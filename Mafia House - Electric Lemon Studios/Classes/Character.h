@@ -64,14 +64,14 @@ public:
 
 	std::vector<Item*> inventory;//items the character is carrying
 
+	//for path finding
+	int currentRoom = 0;
+
 protected:
 	//VERY IMPORTANT: the number of px the actual character is from the very left side of their frames
 	float FRAME_OFFSET = 18;
 	//for physics body:
 	Size bodySize;//main character hitbox
-
-	//for path finding
-	int currentRoom = 0;
 
 	//to check if character has been hit:
 	bool isDead = false;

@@ -9,7 +9,7 @@ bool Stage1::init()
 	//initialize background
 	setBackground("backgrounds/back.png", 0.5f);
 	//create level
-	initLevel("test_level.txt");
+	initLevel("test_level2_copy.txt");
 
 	return true;
 }
