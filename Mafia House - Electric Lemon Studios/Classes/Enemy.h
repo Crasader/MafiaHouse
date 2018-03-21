@@ -173,7 +173,7 @@ protected:
 	bool knockedOut = false;
 	bool visionEnabled = true;
 	float startKockOutTime = -1.0f;
-	float baseKnockOutTime = 6.5f;
+	float baseKnockOutTime = 6.0f;
 	float minKnockOuttime = 8.0f;
 	float knockOutTime;
 
@@ -205,7 +205,7 @@ protected:
 	float previousTurnTime = -1;
 	float stopTime = -1;
 	//for turning on spot
-	float turnTime = 6.0f;
+	float turnTime = 5.0f;
 
 	//for pausing temporaroly
 	bool paused = false;
@@ -228,7 +228,7 @@ protected:
 	float startBreakTime = -1;
 	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door
 	//for locking/unlocking doors
-	bool hasKey = false;
+	bool hasKey = true;
 
 	//for using doors:
 	bool openedDoor = false;
