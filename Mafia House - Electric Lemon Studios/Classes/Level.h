@@ -86,6 +86,6 @@ protected:
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
-	void createFloor(Vec2 position, vector<RoomData> roomData, int height);
-	void createLevel(Vec2 position, float levelWidth, vector<FloorData> floorData);
+	void createFloor(Vec2 position, vector<RoomData> *roomData, int height);
+	void createLevel(Vec2 position, float levelWidth);
 };

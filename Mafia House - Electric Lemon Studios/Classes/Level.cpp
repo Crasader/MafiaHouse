@@ -285,18 +285,18 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and held item
 		if (a->getName() == "player" && b->getName() == "held_item")
 		{
-			if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {//so player doesn't get hit by their own weapon
+			if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {
 				return true;
 			}
-			else {
+			else {//so player doesn't get hit by their own weapon
 				return false;
 			}
 		}
 		else if (a->getName() == "held_item" && b->getName() == "player") {
-			if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
+			if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {
 				return true;
 			}
-			else {
+			else {//so player doesn't get hit by their own weapon
 				return false;
 			}
 		}
@@ -438,7 +438,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {//so player doesn't get hit by their own weapon
 																		 //get hit
-			static_cast<Player*>(a)->wasHit(static_cast<Item*>(b));
+			static_cast<Player*>(a)->itemHitBy = (static_cast<Item*>(b));
 			return true;
 		}
 		else {
@@ -448,7 +448,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	else if (a->getName() == "held_item" && b->getName() == "player") {
 		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
 																		 //get hit
-			static_cast<Player*>(b)->wasHit(static_cast<Item*>(a));
+			static_cast<Player*>(b)->itemHitBy = (static_cast<Item*>(a));
 			return true;
 		}
 		else {
@@ -561,32 +561,35 @@ void Level::setBackground(string bgName, float scale) {
 	background->addComponent(border);*/
 }
 
-void Level::createFloor(Vec2 position, vector<RoomData> roomData, int height)
+void Level::createFloor(Vec2 position, vector<RoomData> *roomData, int height)
 {
 	Room* room;
 
-	for (int i = 0; i < roomData.size(); i++) {
+	for (int i = 0; i < (*roomData).size(); i++) {
+		(*roomData)[i].num = i;//getting room's number
+		(*roomData)[i].left = position.x;//getting room's left side position
+		(*roomData)[i].right = position.x + (*roomData)[i].width;//getting room's right side position
+
 		room = Room::create();
+		room->createRoom(&doors, &mainLayer->stairs, &hideObjects, &mainLayer->items, &enemies, &pathNodes, player, position, (*roomData)[i], height);
 
-		room->createRoom(&doors, &mainLayer->stairs, &hideObjects, &mainLayer->items, &enemies, &pathNodes, player, position, roomData[i], height);
-
-		position = position + Vec2(roomData[i].width + room->fullThick, 0);//adding length of created room to set position for next room
+		position = position + Vec2((*roomData)[i].width + room->fullThick, 0);//adding length of created room to set position for next room
 
 		rooms.push_back(room);
 	}
 }
 
-void Level::createLevel(Vec2 position, float levelWidth, vector<FloorData> floorData)
+void Level::createLevel(Vec2 position, float levelWidth)
 {
 	Room r;
 
 	//calculating width differences between floors and first floor
 	int firstFloorWidth = 0;
 	vector<int> floorOffsets;
-	for (int i = 0; i < floorData.size(); i++) {
+	for (int i = 0; i < mainLayer->floors.size(); i++) {
 		int totalWidth = 0;
-		for (int j = 0; j < floorData[i].rooms.size(); j++) {
-			totalWidth += floorData[i].rooms[j].width;
+		for (int j = 0; j < mainLayer->floors[i].rooms.size(); j++) {
+			totalWidth += mainLayer->floors[i].rooms[j].width;
 		}
 		if (i == 0) {
 			firstFloorWidth = totalWidth;
@@ -597,19 +600,19 @@ void Level::createLevel(Vec2 position, float levelWidth, vector<FloorData> floor
 	position = position + Vec2((levelWidth / 2) - (firstFloorWidth / 2) + r.thick, r.thick);//setting position to be in centre of background
 
 	//generating floors
-	for (int i = 0; i < floorData.size(); i++) {
-		Floor floor(i, floorData[i].height, position.y + floorData[i].height, position.y);
-		mainLayer->floors.push_back(floor);//adding floor information to list of floors
+	for (int i = 0; i < mainLayer->floors.size(); i++) {
+		mainLayer->floors[i].num = i;//getting floor's number
+		mainLayer->floors[i].bot = position.y;//getting floor's bottom
+		mainLayer->floors[i].top = position.y + mainLayer->floors[i].height;//getting floor's top
 
-		createFloor(position - Vec2(floorOffsets[i], 0), floorData[i].rooms, floorData[i].height);
+		createFloor(position - Vec2(floorOffsets[i], 0), &mainLayer->floors[i].rooms, mainLayer->floors[i].height);
 
-		position = position + Vec2(0, floorData[i].height + r.fullThick);//adding height of created floor to set position for next floor
+		position = position + Vec2(0, mainLayer->floors[i].height + r.fullThick);//adding height of created floor to set position for next floor
 	}
 }
 
 bool Level::initLevel(string filename){
 	//used to store data to pass into createLevel function
-	vector<FloorData> floors;
 	FloorData floorData;
 
 	std::ifstream file;
@@ -629,7 +632,7 @@ bool Level::initLevel(string filename){
 		RoomData roomData;
 
 		if (line == "FLOOR_END") {//indicates to move to next floor in floors vector
-			floors.push_back(floorData);
+			mainLayer->floors.push_back(floorData);
 			floorData.rooms.clear();
 			floorNum++;
 			roomNum = -1;
@@ -820,7 +823,7 @@ bool Level::initLevel(string filename){
 	file.close();
 
 	//make the level
-	createLevel(background->getPosition(), background->getContentSize().width * backgroundScale, floors);
+	createLevel(background->getPosition(), background->getContentSize().width * backgroundScale);
 	//setting camera to player position
 	camPos->setPosition(player->getPosition() + camOffset);
 

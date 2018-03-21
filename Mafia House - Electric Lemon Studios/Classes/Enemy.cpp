@@ -290,7 +290,7 @@ Stair* pathSearch(GameLayer* mainLayer, int currentFloor, vector<Stair*> stairs)
 	return nullptr;//fails to find a successful path
 }
 
-bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
+bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, float time) {
 	float displacement = positionX - getPosition().x;
 	Stair* takeStair = NULL;
 
@@ -323,6 +323,10 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
 			else {
 				takeStair->use(this, mainLayer);//use the stairs
 			}
+		}
+		else {//could not find a path to the player
+			walk(time);//just walk around
+			return false;
 		}
 	}
 	else {//already on the right floor
@@ -511,6 +515,8 @@ void Enemy::gotHit(Item* item) {
 }
 
 void Enemy::update(GameLayer* mainLayer, float time) {
+	updateFloor(mainLayer->floors);
+	updateRoom(mainLayer->floors[currentFloor].rooms);
 	if (itemHitBy != NULL) {
 		if (hitTime == -1) {
 			hitTime = time;
@@ -599,7 +605,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.4f SECONDS));//amount if time it takes for max suspicion to be reached
 	}
 	else {
 		enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
@@ -719,7 +725,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (1.1f SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
 		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (22 SECONDS));
@@ -853,19 +859,21 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		if (enemy->heldItem == NULL) {
 			//enemy->heldItem = enemy->fist//if not, give them a fist
 		}
-		//get distance from player
-		if (enemy->flippedX == true) {
-			enemy->distanceToPlayer = abs((enemy->detectedPlayer->getPositionX() + enemy->detectedPlayer->getSize().width) - enemy->getPositionX());
-		}
-		else if (enemy->flippedX == false) {
-			enemy->distanceToPlayer = abs(enemy->detectedPlayer->getPositionX() - (enemy->getPositionX() + enemy->getSize().width));
-		}
-		//check if enemy is in range to attack player
-		if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within range to attack player
-			return new AttackState;
-		}
-		else if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
-			enemy->heldItem = NULL;
+		if (enemy->heldItem != NULL) {
+			//get distance from player
+			if (enemy->flippedX == true) {
+				enemy->distanceToPlayer = abs((enemy->detectedPlayer->getPositionX() + enemy->detectedPlayer->getSize().width) - enemy->getPositionX());
+			}
+			else if (enemy->flippedX == false) {
+				enemy->distanceToPlayer = abs(enemy->detectedPlayer->getPositionX() - (enemy->getPositionX() + enemy->getSize().width));
+			}
+			//check if enemy is in range to attack player
+			if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within range to attack player
+				return new AttackState;
+			}
+			else if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
+				enemy->heldItem = NULL;
+			}
 		}
 	}
 	//enemy didn't see player hide

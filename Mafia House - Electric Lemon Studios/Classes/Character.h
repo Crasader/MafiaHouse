@@ -34,6 +34,8 @@ public:
 	void setPosition(Vec2 pos);
 	void setPositionX(float posX);
 
+	void updateRoom(vector<RoomData> rooms);
+
 	Size getSize() { return bodySize; }
 
 	//functions for character actions:
@@ -58,6 +60,8 @@ public:
 	//for storing held item:
 	Item* heldItem = NULL;
 
+	Item* itemHitBy = NULL;
+
 	std::vector<Item*> inventory;//items the character is carrying
 
 protected:
@@ -65,6 +69,9 @@ protected:
 	float FRAME_OFFSET = 18;
 	//for physics body:
 	Size bodySize;//main character hitbox
+
+	//for path finding
+	int currentRoom = 0;
 
 	//to check if character has been hit:
 	bool isDead = false;

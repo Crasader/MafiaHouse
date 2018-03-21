@@ -19,6 +19,15 @@ void Character::setPositionX(float posX) {
 	Node::setPositionX(posX + FRAME_OFFSET);
 }
 
+void Character::updateRoom(vector<RoomData> rooms) {
+	for (int i = 0; i < rooms.size(); i++) {
+		if ((getPosition().x > rooms[i].left) && (getPositionX() + getSize().width < rooms[i].right)) {//player in on the floor, inbetween top and bottom
+			currentRoom = i;
+			break;
+		}
+	}
+}
+
 void Character::startAnimation(AnimationTag tag, GameAnimation animation) {
 	if (getActionByTag(tag) == NULL) {
 		runAction(animation.action);

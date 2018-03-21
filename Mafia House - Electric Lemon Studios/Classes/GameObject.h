@@ -83,7 +83,7 @@ public:
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
-	void updateFloor(vector<Floor> floors);
+	void updateFloor(vector<FloorData> floors);
 
 	//movement functions
 	void stopX();

@@ -5,6 +5,7 @@
 #include "EnvObject.h"
 #include "Player.h"
 #include "Stair.h"
+#include "Functions.h"
 using std::vector;
 class Wall : public GameObject
 {
@@ -16,44 +17,6 @@ public:
 	CREATE_WITH_FRAME_NAME(Wall, "objects/wall.png");
 
 	void initObject(Vec2 startPos = Vec2(0, 0), Size size = Size(25, 25));//position, size
-};
-
-class DoorData {
-public:
-	DoorData() {}
-	~DoorData() {}
-
-	float pos = 0.0f;
-
-	int type = 1;//1 = door, 2 = vent
-
-	bool locked = false;//true, starts locked, enemies will lock it automatically
-};
-
-class RoomData {
-public:
-	RoomData() {}
-	~RoomData() {}
-
-	int width;//length of the room
-
-	string bgName = "guestRoom.png";
-
-	vector<DoorData> rightDoors;//the locations of the vents and doors on the right wall
-	vector<DoorData> leftDoors;//the locations of the vents and doors on the left wall
-	vector<DoorData> ceilingDoors;//the locations of the vents and doors on the ceiling
-	vector<DoorData> bottomDoors;//the locations of the vents and doors on the ground
-
-	Vec2 room = Vec2(0, 0);//the room's coordinates
-};
-
-class FloorData {
-public:
-	FloorData() {}
-	~FloorData() {}
-
-	int height;//height of the floor
-	vector<RoomData> rooms;//rooms the floor contains
 };
 
 class Room : public Node

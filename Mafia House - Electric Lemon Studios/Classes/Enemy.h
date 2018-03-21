@@ -43,7 +43,7 @@ public:
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
 
-	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, float time = 0.0f);//find path to location, return true = reached location
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
@@ -75,8 +75,6 @@ public:
 	GameObject* bodySeen = NULL;
 
 	vector<PathNode*> pathNodes;
-
-	Item* itemHitBy = NULL;
 
 	virtual void update(GameLayer* mainLayer, float time);
 

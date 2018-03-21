@@ -197,6 +197,11 @@ void Player::noclip() {
 //Update Checking:
 void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
+	updateRoom(mainLayer->floors[currentFloor].rooms);//checking if room has changed
+	if (itemHitBy != NULL) {
+		wasHit(itemHitBy);
+		itemHitBy = NULL;
+	}
 	newState = state->update(this, mainLayer, time);
 	if (newState != NULL)
 	{

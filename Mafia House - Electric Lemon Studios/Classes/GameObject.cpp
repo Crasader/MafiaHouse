@@ -131,13 +131,7 @@ void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
 	initialPos = getPosition();
 }
 
-void GameObject::updateFloor(vector<Floor> floors) {
-	/*if (getPosition().y < mainLayer->floors[currentFloor].bot) {//bottom of player is above top of floor
-		currentFloor++;//go up one floor
-	}
-	else if (getPosition().y + getContentSize().height > mainLayer->floors[currentFloor].top) {//top of player is below bottom of floor
-		currentFloor--;//go down one floor
-	}*/
+void GameObject::updateFloor(vector<FloorData> floors) {
 	for (int i = 0; i < floors.size(); i++) {
 		if ((getPosition().y > floors[i].bot ) && (getPosition().y + getContentSize().height < floors[i].top)) {//player in on the floor, inbetween top and bottom
 			currentFloor = i;
