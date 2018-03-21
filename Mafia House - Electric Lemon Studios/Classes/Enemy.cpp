@@ -268,96 +268,6 @@ void Enemy::followPath(GameLayer* mainLayer, float time) {
 	}
 }
 
-//a recursive function!!! searches for a path to get to a certain floor
-Stair* pathSearchDiffFloor(GameLayer* mainLayer, int currentFloor, vector<Stair*> stairs) {
-	Stair* tempStair;
-	vector<Stair*> newSearchStairs;
-	Stair* takeStair;
-	vector<Stair*> possibleStairsToTake;
-	bool foundStairs = false;
-	bool validStair = false;
-
-	for (int i = 0; i < stairs.size(); i++) {//searches for stair to take to get to a certain floor
-		foundStairs = false;
-		for (int j = 0; j < mainLayer->stairs.size(); j++) {//each loop checks for a partner stair that is on same floor as enemy
-			validStair = false;
-			if (mainLayer->stairs[j]->startRoom.y == mainLayer->getPartnerStair(stairs[i])->startRoom.y) {//stair is on same floor as the partner stair
-				//check if stair has a path to the partner stair
-				validStair = checkForPath(mainLayer, mainLayer->stairs[j]->startRoom.y, mainLayer->getPartnerStair(stairs[i])->startRoom.x, mainLayer->stairs[j]->startRoom.x);
-				//if stair found actually has a path to the partner stair
-				if (validStair == true) {
-					if (mainLayer->getPartnerStair(mainLayer->stairs[j])->startRoom.y == currentFloor) {//partner stair of this stair is on same floor as target
-						takeStair = mainLayer->getPartnerStair(mainLayer->stairs[j]);//set this as a possible stair to take
-						possibleStairsToTake.push_back(takeStair);
-						foundStairs = true;
-					}
-					else {
-						tempStair = mainLayer->stairs[i];
-						newSearchStairs.push_back(tempStair);
-					}
-				}
-			}
-		}
-		//didn't find any stairs, continue searching
-		if (foundStairs == false) {
-			takeStair = pathSearchDiffFloor(mainLayer, mainLayer->getPartnerStair(stairs[i])->startRoom.y, newSearchStairs);
-			if (takeStair != NULL) {
-				possibleStairsToTake.push_back(takeStair);
-			}
-		}
-		//found at least one stair, return the closest one
-		else {
-			if (possibleStairsToTake.size() > 1) {
-				int smallestDiff;
-				for (int x = 1; x < possibleStairsToTake.size(); x++) {//find closest stair to take
-					int diff = abs(stairs[i]->getPositionX() - possibleStairsToTake[x]->getPositionX());
-					if (i == 0) {//first loop only
-						smallestDiff = diff;
-						takeStair = possibleStairsToTake[x];
-					}
-					else {
-						if (diff < smallestDiff) {//if this stair's room is closer to the enemy
-							smallestDiff = diff;
-							takeStair = possibleStairsToTake[x];
-						}
-					}
-				}
-			}
-			return takeStair;//return the closest stair found
-		}
-	}
-	return nullptr;//fails to find a successful path
-}
-
-bool pathSearchTopDown(GameLayer* mainLayer, int targetFloorNum, int targetRoomNum, Stair* stair) {
-	Stair* tempStair;
-	vector<Stair*> newSearchStairs;
-	bool validStair = false;
-
-	//check if this stair's partner is on the same floor as the target
-	if (mainLayer->getPartnerStair(stair)->startRoom.y == targetFloorNum) {
-		//if there is a path between this stair's partner and the target
-		if (checkForPath(mainLayer, targetFloorNum, targetRoomNum, mainLayer->getPartnerStair(stair)->startRoom.x) == true) {
-			return true;
-		}
-	}
-
-	for (int j = 0; j < mainLayer->stairs.size(); j++) {//each loop checks for a stair that is on the same floor as this stair's partner stair
-		validStair = false;
-		if (mainLayer->stairs[j]->startRoom.y == mainLayer->getPartnerStair(stair)->startRoom.y) {//stair is on same floor as the partner stair
-			//check if stair has a path to the partner stair
-			validStair = checkForPath(mainLayer, mainLayer->stairs[j]->startRoom.y, mainLayer->stairs[j]->startRoom.x, mainLayer->getPartnerStair(stair)->startRoom.x);
-			//if stair found actually has a path to the partner stair
-			if (validStair == true) {
-				tempStair = mainLayer->stairs[j];
-				pathSearchTopDown(mainLayer, targetFloorNum, targetRoomNum, tempStair);
-			}
-		}
-	}
-
-	return false;//couldn't find path to the target
-}
-
 bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX) {
 	bool isPath = false;
 	int roomDiff = targetX - searcherX;//getting number of rooms between stair and partner stair
@@ -389,6 +299,121 @@ bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX
 		}
 	}
 	return isPath;
+}
+
+//a recursive function!!! searches for a path to get to a certain floor
+Stair* pathSearch(GameLayer* mainLayer, int currentFloor, float currentPositionX, vector<Stair*> stairs) {
+	Stair* takeStair = NULL;
+	vector<Stair*>possibleStairsToReturn;
+
+	for (int i = 0; i < stairs.size(); i++) {//searches for stair to take to get to a certain floor
+		bool foundStairs = false;
+		vector<Stair*> newSearchStairs;
+		Stair* tempStair = NULL;
+		vector<Stair*> possibleStairsToTake;
+		for (int j = 0; j < mainLayer->stairs.size(); j++) {//each loop checks for a partner stair that is on same floor as enemy
+			bool validStair = false;
+			if (mainLayer->stairs[j]->startRoom.y == mainLayer->getPartnerStair(stairs[i])->startRoom.y) {//stair is on same floor as the partner stair
+				//check if stair has a path to the partner stair
+				validStair = checkForPath(mainLayer, mainLayer->stairs[j]->startRoom.y, mainLayer->getPartnerStair(stairs[i])->startRoom.x, mainLayer->stairs[j]->startRoom.x);
+				//if stair found actually has a path to the partner stair
+				if (validStair == true) {
+					if (mainLayer->getPartnerStair(mainLayer->stairs[j])->startRoom.y == currentFloor) {//partner stair of this stair is on same floor as target
+						if (checkForPath(mainLayer, currentFloor, mainLayer->getPartnerStair(stairs[j])->startRoom.x, currentPositionX) == true) {//and you can reach it
+							tempStair = mainLayer->getPartnerStair(mainLayer->stairs[j]);//set this as a possible stair to take
+							possibleStairsToTake.push_back(tempStair);
+							foundStairs = true;
+						}
+					}
+					else {
+						tempStair = mainLayer->stairs[j];
+						newSearchStairs.push_back(tempStair);
+					}
+				}
+			}
+		}
+		//found at least one stair, return the closest one
+		if (foundStairs == true) {
+			tempStair = possibleStairsToTake[0];
+			if (possibleStairsToTake.size() > 1) {
+				int smallestDiff;
+				for (int x = 1; x < possibleStairsToTake.size(); x++) {//find closest stair to take
+					int diff = abs(currentPositionX - possibleStairsToTake[x]->getPositionX());
+					if (x == 0) {//first loop only
+						smallestDiff = diff;
+						tempStair = possibleStairsToTake[x];
+					}
+					else {
+						if (diff < smallestDiff) {//if this stair's room is closer to the enemy
+							smallestDiff = diff;
+							tempStair = possibleStairsToTake[x];
+						}
+					}
+				}
+			}
+			possibleStairsToReturn.push_back(tempStair);
+		}
+		//didn't find any stairs, continue searching
+		else if (foundStairs == false && newSearchStairs.size() > 0) {
+			tempStair = pathSearch(mainLayer, currentFloor, currentPositionX, newSearchStairs);
+			if (tempStair != NULL) {
+				possibleStairsToReturn.push_back(tempStair);
+			}
+		}
+	}
+	//finding closest stair of possible stairs found that will lead to target
+	if (possibleStairsToReturn.size() > 0) {
+		takeStair = possibleStairsToReturn[0];
+		if (possibleStairsToReturn.size() > 1) {
+			int smallestDiff;
+			for (int x = 1; x < possibleStairsToReturn.size(); x++) {//find closest stair to take
+				int diff = abs(currentPositionX - possibleStairsToReturn[x]->getPositionX());
+				if (x == 0) {//first loop only
+					smallestDiff = diff;
+					takeStair = possibleStairsToReturn[x];
+				}
+				else {
+					if (diff < smallestDiff) {//if this stair's room is closer to the enemy
+						smallestDiff = diff;
+						takeStair = possibleStairsToReturn[x];
+					}
+				}
+			}
+		}
+	}
+	return takeStair;//retuns value
+}
+
+bool pathSearchTopDown(GameLayer* mainLayer, int targetFloorNum, int targetRoomNum, Stair* stair) {
+	Stair* tempStair;
+	vector<Stair*> newSearchStairs;
+	bool validStair = false;
+	bool foundPath = false;
+
+	//check if this stair's partner is on the same floor as the target
+	if (mainLayer->getPartnerStair(stair)->startRoom.y == targetFloorNum) {
+		//if there is a path between this stair's partner and the target
+		if (checkForPath(mainLayer, targetFloorNum, targetRoomNum, mainLayer->getPartnerStair(stair)->startRoom.x) == true) {
+			return true;
+		}
+	}
+
+	for (int j = 0; j < mainLayer->stairs.size(); j++) {//each loop checks for a stair that is on the same floor as this stair's partner stair
+		validStair = false;
+		if (mainLayer->stairs[j]->startRoom.y == mainLayer->getPartnerStair(stair)->startRoom.y) {//stair is on same floor as the partner stair
+			//check if stair has a path to the partner stair
+			validStair = checkForPath(mainLayer, mainLayer->stairs[j]->startRoom.y, mainLayer->stairs[j]->startRoom.x, mainLayer->getPartnerStair(stair)->startRoom.x);
+			//if stair found actually has a path to the partner stair
+			if (validStair == true) {
+				tempStair = mainLayer->stairs[j];
+				if (pathSearchTopDown(mainLayer, targetFloorNum, targetRoomNum, tempStair) == true) {//if at least one path is found
+					foundPath = true;
+				}
+			}
+		}
+	}
+
+	return foundPath;//couldn't find path to the target
 }
 
 bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time) {//takes in the player's current floor and room
@@ -470,7 +495,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 
 	if (directPathToTarget == false) {
 		if (takeStair == NULL) {
-			takeStair = pathSearchDiffFloor(mainLayer, currentFloor, searchStairs);
+			takeStair = pathSearch(mainLayer, currentFloor, getPositionX(), searchStairs);
 		}
 
 		if (takeStair != NULL) {
