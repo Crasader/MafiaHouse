@@ -72,7 +72,7 @@ public:
 
 	bool defaultLocked = false;//whether enemies should lock the door or not, also if it starts locked
 
-	float hp = 10;//for items to deal dmg to doors, to break them open if locked
+	float hp = 100;//for items to deal dmg to doors, to break them open if locked
 
 protected:
 	bool broken = false;

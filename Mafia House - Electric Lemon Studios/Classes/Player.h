@@ -29,6 +29,8 @@ public:
 
 	void wasHit(Item* item);//being hit by an enemy attack
 	
+	//for player staying behind obejcts without causing earthquakes, doesn't use set position
+	void stayWithin(HideObject* object);
 	//getters:
 	bool isHidden() { return hidden; }
 
@@ -58,7 +60,6 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 	};
-
 	class HideState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
@@ -66,7 +67,6 @@ private:
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		void exit(Player* player, GameLayer* mainLayer);
 	};
-
 	class AttackState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
@@ -74,7 +74,6 @@ private:
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		void exit(Player* player, GameLayer* mainLayer);
 	};
-
 	class NoClipState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
@@ -86,8 +85,14 @@ private:
 	State* newState = NULL;
 	State* prevState = NULL;
 
+	//for the timing of attacks/using items:
+	bool attackRelease = false;
+	bool throwRelease = false;
+
 	//for hiding:
 	bool hidden = false;
+	bool hittingLeft = false;
+	bool hittingRight = false;
 
 	//for walking:
 	bool turned = false;
@@ -95,10 +100,6 @@ private:
 
 	//for playing audio:
 	unsigned walkingSound;
-
-	//for the timing of attacks/using items:
-	bool attackRelease = false;
-	bool throwRelease = false;
 
 	HideObject* hideObject = NULL;//object player is hiding behind
 

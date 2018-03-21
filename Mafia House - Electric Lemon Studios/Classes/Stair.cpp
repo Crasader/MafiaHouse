@@ -134,7 +134,7 @@ void Door::itemHit(Item* item) {
 	if (broken == false) {
 		if (item->isKey == true) {//item is a key
 			unlock();
-			item->hp--;
+			item->hp = 0;//keys can only be used to unlock 1 door
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true) {

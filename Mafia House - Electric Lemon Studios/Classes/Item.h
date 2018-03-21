@@ -34,6 +34,7 @@ public:
 	float getStartTime() { return startTime; }
 	float getAttackTime() { return attackTime; }
 	float getLagTime() { return lagTime; }
+	int getRange() { return range; }
 
 	virtual void initHeldItem();
 	virtual void initDroppedItem(Vec2 pos, bool flip);
@@ -63,6 +64,8 @@ public:
 
 	bool didHitWall = false;
 
+	bool enemyItem = false;//if it's being held by an enemy
+
 protected:
 	State state = GROUND;
 	Effect effect = KILL;
@@ -72,6 +75,14 @@ protected:
 	float startTime;//startup time of attack
 	float attackTime;//duration of active frames
 	float lagTime;//enlag time of attack
+	int range;//range of the weapons attack, for enemy ai
+};
+
+class Fist : public Item//enemy attacking barehand, actually an invisible item
+{
+public:
+	Fist() {}
+	~Fist() {}
 };
 
 class Knife : public Item

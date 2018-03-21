@@ -15,6 +15,7 @@ Item::Item()
 	startTime = 10 FRAMES;
 	attackTime = 10 FRAMES;
 	lagTime = 20 FRAMES;
+	range = 50;
 }
 Item::~Item(){
 }
@@ -155,7 +156,7 @@ void Item::stabSequence() {
 }
 
 void Item::swingSequence() {
-	auto move = MoveBy::create(6 FRAMES, Vec2(0, -28));
+	auto move = MoveBy::create(6 FRAMES, Vec2(10, -28));
 	auto rotate = RotateBy::create(6 FRAMES, 120);
 
 	auto hold = MoveBy::create(8 FRAMES, Vec2(0, 0));
@@ -174,13 +175,14 @@ Knife::Knife()
 	outlineName = "items/knife_outline.png";
 	Item::Item();
 	hp = 1;
-	dmg = 3;
+	dmg = 100;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
 	startTime = 6 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 10 FRAMES;
+	range = 33;
 }
 Knife::~Knife(){
 }
@@ -191,13 +193,14 @@ Key::Key()
 	outlineName = "items/key_outline.png";
 	Item::Item();
 	isKey = true;
-	hp = 1;
-	dmg = 0;
+	hp = 4;
+	dmg = 25;
 	effect = NONE;
 	attackType = STAB;
 	startTime = 3 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 4 FRAMES;
+	range = 23;
 }
 Key::~Key() {
 }
@@ -208,13 +211,14 @@ Hammer::Hammer()
 	outlineName = "items/hammer_outline.png";
 	Item::Item();
 	hp = 2;
-	dmg = 5;
+	dmg = 50;
 	canBreakDoor = true;
-	effect = KNOCKOUT;//temporary for testing
+	effect = KNOCKOUT;
 	attackType = SWING;
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;
 	lagTime = 18 FRAMES;
+	range = 52;
 }
 Hammer::~Hammer() {
 }

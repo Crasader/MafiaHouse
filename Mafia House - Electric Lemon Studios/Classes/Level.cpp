@@ -55,7 +55,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -111,7 +111,7 @@ void Level::update(float deltaTime){
 	for (int i = 0; i < enemies.size(); i++) {
 		//remove dead enemies from scene, will be replaced with a dead body
 		//this will be done in Death State exit function
-		if (enemies.at(i)->checkDead() == true) {
+		if (enemies.at(i)->isReallyDead() == true) {
 			enemies.at(i)->removeFromParentAndCleanup(true);
 			enemies.erase(enemies.begin() + i);
 			i--;
@@ -265,19 +265,19 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//check if enemy has been hit by player's attack
 		if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
 		{
-			if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem) {//so enemies don't get hit by their own weapon
+			if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
 				return true;
 			}
-			else {
+			else {//so enemies don't get hit by their own weapon
 				return false;
 			}
 		}
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
-			if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem) {
+			if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
 				return true;
 			}
-			else {
+			else {//so enemies don't get hit by their own weapon
 				return false;
 			}
 		}
@@ -410,10 +410,11 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+
 	//check if enemy has been hit by player's attack
 	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
 	{
-		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem) {//so enemies don't get hit by their own weapon
+		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
 			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
 			return true;
 		}
@@ -423,7 +424,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	}
 	else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
 	{
-		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem) {
+		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
 			static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
 			return true;
 		}
@@ -778,10 +779,10 @@ bool Level::initLevel(string filename){
 					if (pieces[5] == "knife") {
 						item = Knife::createWithSpriteFrameName();
 					}
-					else if (pieces[1] == "key") {
+					else if (pieces[5] == "key") {
 						item = Key::createWithSpriteFrameName();
 					}
-					else if (pieces[1] == "hammer") {
+					else if (pieces[5] == "hammer") {
 						item = Hammer::createWithSpriteFrameName();
 					}
 					item->initObject();

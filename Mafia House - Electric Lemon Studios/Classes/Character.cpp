@@ -5,6 +5,20 @@ void Character::initObject(Vec2 startPos) {
 	initBoxBody(bodySize);
 }
 
+float Character::getPositionX() {
+	return Node::getPositionX() + FRAME_OFFSET;
+}
+Vec2 Character::getPosition() {
+	return Node::getPosition() + Vec2(FRAME_OFFSET, 0);
+}
+
+void Character::setPosition(Vec2 pos) {
+	Node::setPosition(pos + Vec2(FRAME_OFFSET, 0));
+}
+void Character::setPositionX(float posX) {
+	Node::setPositionX(posX + FRAME_OFFSET);
+}
+
 void Character::startAnimation(AnimationTag tag, GameAnimation animation) {
 	if (getActionByTag(tag) == NULL) {
 		runAction(animation.action);
@@ -105,4 +119,11 @@ void Character::useStair(GameLayer* mainLayer) {
 	if (stairToUse != NULL) {
 		stairToUse->use(this, mainLayer);
 	}
+}
+
+bool Character::checkDead() {
+	if (hp <= 0) {
+		return true;
+	}
+	return false;
 }

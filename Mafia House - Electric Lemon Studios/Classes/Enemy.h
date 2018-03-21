@@ -28,11 +28,10 @@ public:
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
 	void initJoints();//initilaizing joints for physics bodies
 	void flipX();
-
-	float getPositionX();
 	Vec2 getPosition();
-	void setPosition(Vec2 pos);
-	void setPositionX(float posX);
+
+	void pickUpItem(GameLayer* mainLayer);
+	void dropInventory(GameLayer* mainLayer);
 
 	void openDoor();
 	void closeDoor();
@@ -58,8 +57,7 @@ public:
 	void hitWall() { didHitWall = true; }
 
 	void gotHit(Item* item);//function for when enemy is hit by player's attack
-
-	bool checkDead() { return isDead; }
+	bool isReallyDead() { return isDead; }
 
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
@@ -110,6 +108,12 @@ protected:
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
+	class AttackState : public State {
+	public:
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer);
+	};
 	class UseDoorState : public State {
 	public:
 		UseDoorState() { type = "use_door"; }
@@ -151,6 +155,9 @@ protected:
 	State* newState = NULL;
 	State* prevState = NULL;
 
+	//for attacking without a weapon
+	Fist* fist;
+
 	//animations:
 	GameAnimation knockout;
 	//GameAnimation sleeping;
@@ -161,6 +168,9 @@ protected:
 	Sprite* ZZZ;
 	GameAnimation ZZZAnimation;
 
+	//for attacking the player
+	float distanceToPlayer;
+
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
 
@@ -169,6 +179,7 @@ protected:
 	float hitTime = -1;
 
 	//for being knocked out
+	//int knockOutHP = 2;
 	PhysicsBody* knockedOutBody;
 	bool knockedOut = false;
 	bool visionEnabled = true;

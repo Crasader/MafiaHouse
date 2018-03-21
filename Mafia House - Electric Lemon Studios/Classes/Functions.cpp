@@ -11,10 +11,10 @@ void followRadius(Node* nodeA, Node* nodeB, float radius, Vec2 offset) {
 void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset) {
 	Vec2 displacement = nodeA->getPosition() - (nodeB->getPosition() + offset);
 	if (displacement.x > range.x) {
-		nodeA->setPositionX((nodeB->getPositionX() + offset.x) + range.x);
+		nodeA->setPositionX((nodeB->getPosition().x + offset.x) + range.x);
 	}
 	else if (displacement.x < -range.x) {
-		nodeA->setPositionX((nodeB->getPositionX() + offset.x) - range.x);
+		nodeA->setPositionX((nodeB->getPosition().x + offset.x) - range.x);
 	}
 	if (displacement.y > range.y) {
 		nodeA->setPositionY((nodeB->getPositionY() + offset.y) + range.y);

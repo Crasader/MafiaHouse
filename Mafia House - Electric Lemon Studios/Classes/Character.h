@@ -27,8 +27,14 @@ public:
 	virtual void initObject(Vec2 startPos = Vec2(0, 0));
 
 	void startAnimation(AnimationTag tag, GameAnimation animation);
-	
 	void stopAnimation(AnimationTag tag);
+
+	float getPositionX();
+	Vec2 getPosition();
+	void setPosition(Vec2 pos);
+	void setPositionX(float posX);
+
+	Size getSize() { return bodySize; }
 
 	//functions for character actions:
 	virtual void pickUpItem(GameLayer* mainLayer);
@@ -40,6 +46,8 @@ public:
 
 	virtual void useDoor();
 	virtual void useStair(GameLayer* mainLayer);
+
+	bool checkDead();
 
 	//for Interacting with objects:
 	Door* doorToUse = NULL;//the tag of the door the player can open/close
@@ -55,6 +63,8 @@ public:
 protected:
 	//VERY IMPORTANT: the number of px the actual character is from the very left side of their frames
 	float FRAME_OFFSET = 18;
+	//for physics body:
+	Size bodySize;//main character hitbox
 
 	//to check if character has been hit:
 	bool isDead = false;
@@ -62,13 +72,13 @@ protected:
 	//for movement:
 	float moveSpeed = 1.0f;
 
+	//for combat
+	int hp = 100;
+
 	//variables used for the timing of attacking/using items:
 	float attackPrepareTime = -1.0f;//time character begins to prepare and attack
 	float attackStartTime = -1.0f;//time character actually begins the attack after release
 	float attackEndTime = -1.0f;//time attack ends and englag begins
-
-	//for physics body:
-	Size bodySize;//main character hitbox
 
 	//animations:
 	GameAnimation stand;

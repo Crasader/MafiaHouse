@@ -28,6 +28,7 @@ Player::~Player(){
 
 //functions for player actions:
 void Player::resetCollisionChecks() {
+	isHit = false;
 	doorToUse = NULL;
 	stairToUse = NULL;
 	objectToHideBehind = NULL;
@@ -38,8 +39,9 @@ void Player::resetCollisionChecks() {
 
 void Player::wasHit(Item* item) {
 	if (item->didHitWall == false) {
-		item->used();
+		//item->used();//enemy items don't break
 		isHit = true;
+		hp -= item->dmg;//taking damage from attack
 	}
 }
 
@@ -157,9 +159,28 @@ void Player::hide() {
 		hideObject->unhide();
 	}
 }
+
+void Player::stayWithin(HideObject* object) {
+	Vec2 range = Vec2(object->getContentSize().width / 2, object->getContentSize().height / 2);
+	Vec2 displacement = (getPosition() + Vec2(getSize().width / 2, getSize().height / 2)) - (object->getPosition() + Vec2(object->getContentSize().width / 2, object->getContentSize().height / 2));
+	if (displacement.x > range.x - getSize().width / 2) {
+		hittingRight = true;
+		stop();
+	}
+	else {
+		hittingRight = false;
+	}
+	if (displacement.x < -(range.x - getSize().width / 2)) {
+		hittingLeft = true;
+		stop();
+	}
+	else {
+		hittingLeft = false;
+	}
+}
 //have player stay behind object they are hiding behind
 void Player::hiding() {
-	followBox(this, hideObject, Vec2((hideObject->getContentSize().width / 2.0f) - (bodySize.width / 2.0f), hideObject->getContentSize().height / 2.0f), Vec2((hideObject->getContentSize().width / 2.0f) - (getContentSize().width / 2.0f), hideObject->getContentSize().height / 2.0f));
+	stayWithin(hideObject);
 }
 
 void Player::noclip() {
@@ -252,6 +273,8 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 
 //Hide State:
 void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {
+	//player->moveSpeed = 0.9f;
+	player->setSpeed(0.7);
 	player->hideObject = player->objectToHideBehind;
 	player->hide();
 }
@@ -266,12 +289,26 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 	if (input == HIDE) {
 		return player->prevState;
 	}
-	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
+	if (input == MOVE_LEFT) {
+		if (player->hittingLeft == false) {
+			player->walk(input);
+		}
+	}
+	else if (input == MOVE_RIGHT) {
+		if (player->hittingRight == false) {
+			player->walk(input);
+		}
+	}
+	else if (input == STOP) {
 		player->walk(input);
 	}
+	player->hittingRight = false;
+	player->hittingLeft = false;
 	return nullptr;
 }
 void Player::HideState::exit(Player* player, GameLayer* mainLayer) {
+	player->moveSpeed = 1.0f;
+	player->setSpeed(player->moveSpeed);
 	player->hide();
 }
 
