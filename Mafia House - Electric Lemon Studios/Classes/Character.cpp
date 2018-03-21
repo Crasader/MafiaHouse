@@ -5,47 +5,6 @@ void Character::initObject(Vec2 startPos) {
 	initBoxBody(bodySize);
 }
 
-/*AnimationTag Character::stringToTag(string name) {
-	AnimationTag animTag;
-	if (name == "stand") {
-		animTag = STAND;
-	}
-	else if (name == "walking") {
-		animTag = WALK;
-	}
-	else if (name == "moonwalk") {
-		animTag = MOONWALK;
-	}
-	else if (name == "stab") {
-		animTag = STAB;
-	}
-	else if (name == "swing") {
-		animTag = SWING;
-	}
-	else if (name == "throw") {
-		animTag = THROW;
-	}
-	else if (name == "climb") {
-		animTag = CLIMB;
-	}
-	else if (name == "hide") {
-		animTag = HIDDEN;
-	}
-	else if (name == "fall") {
-		animTag = FALL;
-	}
-	else if (name == "death") {
-		animTag = DEATH;
-	}
-	else if (name == "knockout") {
-		animTag = KNOCKOUT;
-	}
-	else if (name == "sleep") {
-		animTag = SLEEP;
-	}
-	return animTag;
-}*/
-
 void Character::startAnimation(AnimationTag tag, GameAnimation animation) {
 	if (getActionByTag(tag) == NULL) {
 		runAction(animation.action);

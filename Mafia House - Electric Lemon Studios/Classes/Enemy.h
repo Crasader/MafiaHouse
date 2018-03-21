@@ -29,6 +29,11 @@ public:
 	void initJoints();//initilaizing joints for physics bodies
 	void flipX();
 
+	float getPositionX();
+	Vec2 getPosition();
+	void setPosition(Vec2 pos);
+	void setPositionX(float posX);
+
 	void openDoor();
 	void closeDoor();
 	void breakDoor(float time);//alert enemies will break down locked doors
@@ -42,6 +47,7 @@ public:
 	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum);//find path to location, return true = reached location
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
+	bool moveToDoor(Node* target);
 
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
 
@@ -73,9 +79,6 @@ public:
 	vector<PathNode*> pathNodes;
 
 	Item* itemHitBy = NULL;
-
-	//for locking/unlocking doors
-	bool hasKey = false;
 
 	virtual void update(GameLayer* mainLayer, float time);
 
@@ -218,11 +221,14 @@ protected:
 	//for returning to starting position:
 	bool returning = false;
 
+	//for running into locked doors
 	float startWaitTime = -1;
 	float doorWaitTime = 2.0f;
 	//for breakin doors:
 	float startBreakTime = -1;
 	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door
+	//for locking/unlocking doors
+	bool hasKey = true;
 
 	//for using doors:
 	float doorUsePos;

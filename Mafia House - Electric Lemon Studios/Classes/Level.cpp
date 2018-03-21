@@ -55,7 +55,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);

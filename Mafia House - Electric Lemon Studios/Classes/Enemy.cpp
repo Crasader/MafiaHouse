@@ -3,13 +3,14 @@
 
 Enemy::Enemy()
 {
+	FRAME_OFFSET = 18;//do not change
+	bodySize = Size(35, 94);
 	name = "enemy";
 	tag = 30000;//enemies will be 30000 - 39999
 	//sprite properties
 	zOrder = 4;
 	scale = 1.0f;
 	//physics body properties
-	bodySize = Size(35, 94);
 	dynamic = true;
 	category = 2;
 	collision = 13;
@@ -24,6 +25,21 @@ Enemy::Enemy()
 	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES);
 }
 Enemy::~Enemy(){
+}
+
+float Enemy::getPositionX() {
+	return Node::getPositionX() + FRAME_OFFSET;
+}
+
+Vec2 Enemy::getPosition() {
+	return Node::getPosition() + Vec2(FRAME_OFFSET, 0);
+}
+
+void Enemy::setPosition(Vec2 pos) {
+	Node::setPosition(pos + Vec2(FRAME_OFFSET, 0));
+}
+void Enemy::setPositionX(float posX) {
+	Node::setPositionX(posX + FRAME_OFFSET);
 }
 
 void Enemy::flipX() {
@@ -283,7 +299,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
 
 		if (takeStair != NULL) {
 			//if they are not at location of stairs yet:
-			if (!(getPositionX() + getContentSize().width >= takeStair->getPositionX() && getPositionX() <= takeStair->getPositionX() + takeStair->getContentSize().width)) {
+			if (!(getPositionX() + bodySize.width >= takeStair->getPositionX() && getPositionX() <= takeStair->getPositionX() + takeStair->getContentSize().width)) {
 				moveTo(takeStair->getPositionX());//move towards stairs
 			}
 			//if they are at location of stairs:
@@ -294,7 +310,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum) {
 	}
 	else {//already on the right floor
 		moveTo(positionX);
-		if (getPositionX() + (getContentSize().width / 2) >= positionX - 50 && getPositionX() + (getContentSize().width / 2) <= positionX + 50) {
+		if (getPositionX() + (bodySize.width / 2) >= positionX - 50 && getPositionX() + (bodySize.width / 2) <= positionX + 50) {
 			return true;
 		}
 	}
@@ -322,11 +338,32 @@ void Enemy::moveTo(float positionX) {
 }
 
 bool Enemy::moveToObject(Node* target) {
-	if (!(getPositionX() + getContentSize().width >= target->getPositionX() && getPositionX() <= target->getPositionX() + target->getContentSize().width)) {
+	if (!(getPositionX() + bodySize.width >= target->getPositionX() && getPositionX() <= target->getPositionX() + target->getContentSize().width)) {
 		moveTo(target->getPositionX());//move towards stairs
 		return false;
 	}
 	return true;
+}
+
+bool Enemy::moveToDoor(Node* target) {
+	if (flippedX == false) {
+		if (!(getPositionX() + bodySize.width >= target->getPositionX() - 2)) {
+			moveTo(target->getPositionX());//move towards stairs
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	else if (flippedX == true) {
+		if (getPositionX() <= (target->getPositionX() + 2)) {
+			return true;
+		}
+		else {
+			moveTo(target->getPositionX());//move towards stairs
+			return false;
+		}
+	}
 }
 
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
@@ -404,15 +441,15 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
 		int direction;
 
 		if (flippedX == false) {
-			startPoint = getPosition() + Vec2(getContentSize().width - 30, 87);
-			*start = startPoint + Vec2(7, 0);//shift visuals forward a bit
-			offsetAdjust = Vec2(-7, 0);//shift end points back by same amount so visual range is accurate
+			startPoint = getPosition() + Vec2(bodySize.width - 15, 87);
+			*start = startPoint + Vec2(8, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(-8, 0);//shift end points back by same amount so visual range is accurate
 			direction = 1;
 		}
 		else {
-			startPoint = getPosition() + Vec2(30, 87);
-			*start = startPoint + Vec2(-7, 0);//shift visuals forward a bit
-			offsetAdjust = Vec2(7, 0);//shift end points back by same amount so visual range is accurate
+			startPoint = getPosition() + Vec2(15, 87);
+			*start = startPoint + Vec2(-8, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(8, 0);//shift end points back by same amount so visual range is accurate
 			direction = -1;
 		}
 
@@ -430,7 +467,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
 }
 
 void Enemy::gotHit(Item* item) {
-	if (item->didHitWall == false) {
+	if (item->didHitWall == false && item->hp > 0) {
 		if (item->getEffect() == Item::KILL) {
 			isDead = true;
 			item->used();
@@ -520,7 +557,12 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//check if enemy has seen an item
 	if (enemy->itemToPickUp != NULL) {
-		return new GetItemState;
+		if (time > 0.033) {//so they don't get suspoicious at the very beginning of the game
+			return new GetItemState;
+		}
+		else {
+			enemy->pickUpItem(mainLayer);
+		}
 	}
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
@@ -802,14 +844,15 @@ void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->paused = false;
 	enemy->startPauseTime = -1;
 	enemy->doorStartTime = time;
+	enemy->startWaitTime = -1;
 	if (enemy->doorToUse->checkOpen() == false) {
 		enemy->openDoor();//only use the door if it's not open yet
 	}
 	if (enemy->flippedX == false) {
-		enemy->doorUsePos = enemy->getPositionX() + enemy->getContentSize().width;
+		enemy->doorUsePos = enemy->getPositionX() + enemy->bodySize.width;
 	}
 	else {
-		enemy->doorUsePos = enemy->getPositionX() - enemy->getContentSize().width;
+		enemy->doorUsePos = enemy->getPositionX() - enemy->bodySize.width;
 	}
 }
 Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
@@ -825,7 +868,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	if (enemy->prevState->type != "alert") {//enemy is not coming from alert state
 		if (enemy->doorToUse->checkLock() == true) {//they couldn't actually open the door, if they have a key they will use it automatically to unlock the door
-			if (enemy->startWaitTime == -1 && enemy->moveToObject(enemy->doorToUse) == true) {//enemy has walked up to door
+			if (enemy->startWaitTime == -1 && enemy->moveToDoor(enemy->doorToUse) == true) {//enemy has walked up to door
 				enemy->qMark->setVisible(true);
 				enemy->changeSuspicion(enemy->maxSuspicion / 2);//increases suspicion by a half
 				enemy->stop();
@@ -845,17 +888,18 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 				return new DefaultState;
 			}
 		}
-
-		if (enemy->paused == false) {
-			if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
-				return enemy->prevState;
+		else {
+			if (enemy->paused == false) {
+				if (abs(enemy->getPositionX() - enemy->doorUsePos) >= enemy->doorToUse->radius + 1) {//enemy has walked through door
+					return enemy->prevState;
+				}
+				else {
+					enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+				}
 			}
 			else {
-				enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
+				enemy->pause(time);
 			}
-		}
-		else {
-			enemy->pause(time);
 		}
 
 		//checking if enemy spotted player

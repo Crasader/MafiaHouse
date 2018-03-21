@@ -3,12 +3,13 @@
 
 Player::Player()
 {
+	FRAME_OFFSET = 22;
+	bodySize = Size(26, 90);
 	//sprite properties
 	zOrder = 5;
 	scale = 1.0f;
 	name = "player";
 	//physics body properties
-	bodySize = Size(26, 90);
 	tag = 1;
 	dynamic = true;
 	category = 1;
@@ -332,7 +333,7 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->noclip();
 	player->moveSpeed = 3;
-	player->hidden = true;
+	//player->hidden = true;
 }
 Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
@@ -364,5 +365,5 @@ Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainL
 void Player::NoClipState::exit(Player* player, GameLayer* mainLayer) {
 	player->noclip();
 	player->moveSpeed = 1;
-	player->hidden = false;
+	//player->hidden = false;
 }

@@ -53,6 +53,9 @@ public:
 	std::vector<Item*> inventory;//items the character is carrying
 
 protected:
+	//VERY IMPORTANT: the number of px the actual character is from the very left side of their frames
+	float FRAME_OFFSET = 18;
+
 	//to check if character has been hit:
 	bool isDead = false;
 
