@@ -332,7 +332,7 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 					if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair of this query stair is on same floor as you
 						//check if there's a path from query's partner stair to you
 						if (checkForPath(mainLayer, currentFloor, currentRoom, mainLayer->getPartnerStair(queryStair)->startRoom.x) == true) {
-							if (firstEndFound == false) {//only happens the first time the function finds an end point
+							/*if (firstEndFound == false) {//only happens the first time the function finds an end point
 								firstEndFound = true;
 								shortestDepth = depth;
 								//get distance between query's partner stair and you
@@ -344,9 +344,9 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 								tempStair->pathDistance = totalDistance;
 								possibleStairsToTake.push_back(tempStair);
 								foundStairs = true;
-							}
-							else if (firstEndFound == true && depth <= shortestDepth) {//it's already found one end point
-								if (depth < shortestDepth) { shortestDepth = depth; }//update the shortest depth at which an end point was found
+							}*/
+							//else if (firstEndFound == true && depth <= shortestDepth) {//it's already found one end point
+								//if (depth < shortestDepth) { shortestDepth = depth; }//update the shortest depth at which an end point was found
 								//get distance between query's partner stair and you
 								float distanceFromDoorToEnemy = abs(mainLayer->getPartnerStair(queryStair)->getPositionX() - getPositionX());
 								float totalDistance = distances[i] + distanceBetweenDoors + distanceFromDoorToEnemy;
@@ -356,7 +356,7 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 								tempStair->pathDistance = totalDistance;
 								possibleStairsToTake.push_back(tempStair);
 								foundStairs = true;
-							}
+							//}
 						}
 					}
 					else {
@@ -432,16 +432,33 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 	}
 	//target is on different floor, or you can't get to them from the same floor as them:
 	if (floorNum != currentFloor || directPathToTarget == false){
-		for (int i = 0; i < mainLayer->stairs.size(); i++) {
-			Stair* queryStair = mainLayer->stairs[i];
-			
-			if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
-				if (checkForPath(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
-					if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair is on your floor
-						takeStair = mainLayer->getPartnerStair(queryStair);//take this stair
-						possibleStairsToTake.push_back(takeStair);
+		if (floorNum != currentFloor) {
+			for (int i = 0; i < mainLayer->stairs.size(); i++) {
+				Stair* queryStair = mainLayer->stairs[i];
+
+				if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
+					if (checkForPath(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
+						Stair* partnerStair = mainLayer->getPartnerStair(queryStair);
+						
+						if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair is on your floor
+							if (checkForPath(mainLayer, currentFloor, partnerStair->startRoom.x, currentRoom) == true) {//check if you can get to the partner stair
+								takeStair = mainLayer->getPartnerStair(queryStair);//take this stair
+								possibleStairsToTake.push_back(takeStair);
+							}
+						}
+						else {
+							searchStairs.push_back(queryStair);
+						}
 					}
-					else {
+				}
+			}
+		}
+		else if (floorNum == currentFloor) {
+			for (int i = 0; i < mainLayer->stairs.size(); i++) {
+				Stair* queryStair = mainLayer->stairs[i];
+
+				if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
+					if (checkForPath(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
 						searchStairs.push_back(queryStair);
 					}
 				}

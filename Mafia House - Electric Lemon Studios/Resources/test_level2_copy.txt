@@ -2,10 +2,12 @@
 1000|bg,Hallway.png|enemy,guard,400,0,STAND_LEFT|stair,1,A,100,0|stair,2,A,300,0
 FLOOR_END
 100
-1000|bg,Hallway.png|stair,1,B,100,0|stair,3,A,300,0|stair,4,A,600,0|stair,2,B,800,0
+500|bg,Hallway.png|stair,1,B,100,0|stair,3,A,300,0
+500|bg,Hallway.png|stair,4,A,100,0|stair,2,B,300,0
 FLOOR_END
 100
-1000|bg,Hallway.png|stair,5,A,100,0|stair,3,B,300,0|stair,6,A,600,0|stair,4,B,800,0
+500|bg,Hallway.png|stair,5,A,100,0|stair,3,B,300,0
+500|bg,Hallway.png|stair,6,A,100,0|stair,4,B,300,0
 FLOOR_END
 100
 1000|bg,Hallway.png|stair,5,B,100,0|stair,6,B,600,0|player,400,0
