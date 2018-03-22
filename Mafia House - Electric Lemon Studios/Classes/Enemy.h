@@ -190,7 +190,7 @@ protected:
 	bool isTouched = false;
 
 	//for suspicion level:
-	float suspicionLevel = 0;
+	float suspicionLevel = 12000;
 	float maxSuspicion = 1200;
 
 	//Stuff for Vision Fields:

@@ -268,24 +268,43 @@ void Enemy::followPath(GameLayer* mainLayer, float time) {
 	}
 }
 
-//a recursive function!!! searches for a path to get to a certain floor
-Stair* pathSearch(GameLayer* mainLayer, int currentFloor, vector<Stair*> stairs) {
+//a recursive function, searches for a path to get to a certain floor
+Stair* pathSearch(GameLayer* mainLayer, int currentFloor, vector<Stair*> stairs, vector<Stair*> *prevSearched) {
 	Stair* tempStair;
 	vector<Stair*> newSearchStairs;
 
+	for (int i = 0; i < stairs.size(); i++) {
+		prevSearched->push_back(stairs[i]);//adding search stairs to list of previously searched stairs to prevent infinite recursion
+	}
+
 	for (int i = 0; i < stairs.size(); i++) {//searches for stair to take to get to a certain floor
+		Stair* partnerStair = mainLayer->getPartnerStair(stairs[i]);
+
 		for (int j = 0; j < mainLayer->stairs.size(); j++) {//each loop checks for a partner stair that is on same floor as enemy
-			if (mainLayer->stairs[j]->startRoom.y == mainLayer->getPartnerStair(stairs[i])->startRoom.y) {//stair is on same floor as the partner stair
-				if (mainLayer->getPartnerStair(mainLayer->stairs[j])->startRoom.y == currentFloor) {//partner stair of this stair is on same floor as target
+			Stair* queryStair = mainLayer->stairs[j];
+
+			if (queryStair->startRoom.y == partnerStair->startRoom.y && queryStair != partnerStair) {//stair is on same floor as the partner stair, and is not the partner stair itself
+				if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair of this query stair is on same floor as target
 					return mainLayer->getPartnerStair(mainLayer->stairs[j]);//take this stair
 				}
 				else {
-					tempStair = mainLayer->stairs[i];
-					newSearchStairs.push_back(tempStair);
+					bool add = true;
+					tempStair = mainLayer->stairs[j];
+					for (int k = 0; k < prevSearched->size(); k++) {
+						//check if this stair has already been searched before
+						if (tempStair == (*prevSearched)[k]) {
+							add = false;
+						}
+					}
+					if (add == true) {
+						newSearchStairs.push_back(tempStair);
+					}
 				}
 			}
 		}
-		pathSearch(mainLayer, mainLayer->getPartnerStair(stairs[i])->startRoom.y, newSearchStairs);
+		if (newSearchStairs.size() > 0) {
+			return pathSearch(mainLayer, currentFloor, newSearchStairs, prevSearched);
+		}
 	}
 	return nullptr;//fails to find a successful path
 }
@@ -299,9 +318,11 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, float ti
 
 	if (floorNum != currentFloor) {//destination is on different floor
 		for (int i = 0; i < mainLayer->stairs.size(); i++) {
-			if (mainLayer->stairs[i]->startRoom.y == floorNum) {//stair is on destination floor
-				if (mainLayer->getPartnerStair(mainLayer->stairs[i])->startRoom.y == currentFloor) {//partner stair is on your floor
-					takeStair = mainLayer->getPartnerStair(mainLayer->stairs[i]);//take this stair
+			Stair* queryStair = mainLayer->stairs[i];
+
+			if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
+				if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair is on your floor
+					takeStair = mainLayer->getPartnerStair(queryStair);//take this stair
 				}
 				else {
 					tempStair = mainLayer->stairs[i];
@@ -310,8 +331,10 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, float ti
 			}
 		}
 
-		if (takeStair == NULL) {
-			takeStair = pathSearch(mainLayer, currentFloor, searchStairs);
+		if (takeStair == NULL && searchStairs.size() > 0) {
+			vector<Stair*> *prevSearched = new vector<Stair*>;
+			takeStair = pathSearch(mainLayer, currentFloor, searchStairs, prevSearched);
+			delete prevSearched;
 		}
 
 		if (takeStair != NULL) {
