@@ -30,6 +30,10 @@ public:
 	int type = 0;//whether the Stairway is A or B: 0 = No Stairway, 1 = A, 2 = B
 
 	const Size stairSize = Size(45, 105);
+
+	//for pathfinding:
+	float pathDistance = 0;//the total distance so far to the stair from the enemy
+	float foundDepth;//the depth the pathfinding function was at when it found the stair
 };
 
 //Door Class

@@ -21,7 +21,7 @@ void Character::setPositionX(float posX) {
 
 void Character::updateRoom(vector<RoomData> rooms) {
 	for (int i = 0; i < rooms.size(); i++) {
-		if ((getPosition().x > rooms[i].left) && (getPositionX() + getSize().width < rooms[i].right)) {//player in on the floor, inbetween top and bottom
+		if ((getPositionX() > rooms[i].left) && (getPositionX() + getSize().width < rooms[i].right)) {//player in on the floor, inbetween top and bottom
 			currentRoom = i;
 			break;
 		}

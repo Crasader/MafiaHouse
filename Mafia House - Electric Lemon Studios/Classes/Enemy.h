@@ -43,7 +43,8 @@ public:
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
 
-	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, float time = 0.0f);//find path to location, return true = reached location
+	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos);
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time);//find path to location, return true = reached location
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
@@ -152,6 +153,13 @@ protected:
 	State* state = new DefaultState;
 	State* newState = NULL;
 	State* prevState = NULL;
+
+	//for pathfinding:
+	vector<Stair*> prevSearched;
+	vector<float> pathLengths;
+	int shortestDepth;
+	int depth = -1;
+	bool firstEndFound = false;
 
 	//for attacking without a weapon
 	Fist* fist;

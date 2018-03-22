@@ -55,7 +55,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -684,9 +684,11 @@ bool Level::initLevel(string filename){
 				//set what wall door is on
 				if (pieces[1] == "right") {
 					roomData.rightDoors.push_back(doorData);
+					roomData.hasRightDoor = true;
 				}
 				else if (pieces[1] == "left") {
 					roomData.leftDoors.push_back(doorData);
+					roomData.hasLeftDoor = true;
 				}
 				else if (pieces[1] == "top") {
 					roomData.ceilingDoors.push_back(doorData);
