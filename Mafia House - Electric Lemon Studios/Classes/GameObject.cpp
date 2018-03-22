@@ -165,27 +165,32 @@ void GameObject::slowStop() {
 }
 
 void GameObject::move(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
-	auto mass = getPhysicsBody()->getMass();
+	if (abs(getPhysicsBody()->getVelocity().x) < maxSpeed) {//only apply force if they're under thier max speed
+		auto mass = getPhysicsBody()->getMass();
 
-	Vec2 force = mass * velocity;
+		Vec2 force = mass * velocity;
 
-	//reversing direction of movement if character is flipped
-	force.x = flippedX == true ? force.x * -1 : force.x;
-	force.y = flippedY == true ? force.y * -1 : force.y;
+		//reversing direction of movement if character is flipped
+		force.x = flippedX == true ? force.x * -1 : force.x;
+		force.y = flippedY == true ? force.y * -1 : force.y;
 
-	getPhysicsBody()->applyImpulse(force);
+		getPhysicsBody()->applyImpulse(force);
+	}
 }
 
 void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
-	auto mass = getPhysicsBody()->getMass();
+	if (abs(getPhysicsBody()->getVelocity().x) < maxSpeed) {//only apply force if they're under thier max speed
+		auto mass = getPhysicsBody()->getMass();
 
-	Vec2 force = mass * velocity;
+		Vec2 force = mass * velocity;
 
-	getPhysicsBody()->applyImpulse(force);
+		getPhysicsBody()->applyImpulse(force);
+	}
 }
 
 void GameObject::setSpeed(float speed) {
-	getPhysicsBody()->setVelocityLimit(maxSpeed * speed);//max object speed
+	//getPhysicsBody()->setVelocityLimit(maxSpeed * speed);//max object speed
+	maxSpeed = baseSpeed * speed;
 }
 
 void GameObject::flipX() {

@@ -15,7 +15,7 @@ Enemy::Enemy()
 	category = 2;
 	collision = 13;
 	//other proeprties
-	maxSpeed = 50;
+	baseSpeed = 50;
 	//for attacking without a weapon
 	fist = Fist::createWithSpriteFrameName();
 	fist->initObject();

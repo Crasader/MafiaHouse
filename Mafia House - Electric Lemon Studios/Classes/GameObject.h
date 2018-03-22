@@ -120,6 +120,7 @@ protected:
 	bool flippedX = false;//false = facing right
 	bool flippedY = false;//false = facing upright
 
+	float baseSpeed = 100.0f;
 	float maxSpeed = 1000.0f;
 
 	std::string name = "name";//can set name to identify sprite type, used for collision detection

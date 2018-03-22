@@ -16,7 +16,7 @@ public:
 	//functions for player actions:
 	void resetCollisionChecks();//resets variables used to track what objects/items player will interact with/use
 
-	void walk(Input input);
+	void walk(Input input, float time);
 
 	void pickUpItem(GameLayer* mainLayer);
 	void dropItem(GameLayer* mainLayer);
@@ -91,6 +91,11 @@ private:
 	State* state = new NeutralState;
 	State* newState = NULL;
 	State* prevState = NULL;
+
+	//for moonwalking
+	bool moonwalking = false;
+	float prevStopTime = -1;
+	float stopDelay = 4 FRAMES;//preventing stop inputs from being registered 5 frames from eachother, give moonwalk sliding a 5 frame window to perform
 
 	//for the timing of attacks/using items:
 	bool attackRelease = false;

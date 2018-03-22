@@ -15,7 +15,7 @@ Player::Player()
 	category = 1;
 	collision = 30;
 	//max movement speed
-	maxSpeed = 70;
+	baseSpeed = 70;
 	//initializing animations
 	stand = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES);
 	moonwalk = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES);
@@ -52,7 +52,7 @@ void Player::wasHit(Item* item, float time) {
 	}
 }
 
-void Player::walk(Input input) {
+void Player::walk(Input input, float time) {
 	if (input == MOVE_LEFT) {
 		if (moveDirection == 0){
 			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
@@ -78,6 +78,7 @@ void Player::walk(Input input) {
 				flipX();
 				stopAnimation(WALK);
 				startAnimation(MOONWALK, moonwalk);
+				moonwalking = true;
 			}
 		}
 	}
@@ -106,13 +107,20 @@ void Player::walk(Input input) {
 				flipX();
 				stopAnimation(WALK);
 				startAnimation(MOONWALK, moonwalk);
+				moonwalking = true;
 			}
 		}
 	}
 	if (input == STOP) {
+		if (time - prevStopTime >= stopDelay || prevStopTime == -1) {
+			prevStopTime = time;
+			if (moonwalking == false) {
+				stopX();
+			}
+			moonwalking = false;
+		}
 		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingSound);
 		moveDirection = 0;
-		stopX();
 		stopAnimation(WALK);
 		stopAnimation(MOONWALK);
 		setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
@@ -290,7 +298,7 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 		return new HideState;
 	}
 	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
-		player->walk(input);
+		player->walk(input, time);
 	}
 	if (input == NO_CLIP) {
 		return new NoClipState;
@@ -317,16 +325,16 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 	}
 	if (input == MOVE_LEFT) {
 		if (player->hittingLeft == false) {
-			player->walk(input);
+			player->walk(input, time);
 		}
 	}
 	else if (input == MOVE_RIGHT) {
 		if (player->hittingRight == false) {
-			player->walk(input);
+			player->walk(input, time);
 		}
 	}
 	else if (input == STOP) {
-		player->walk(input);
+		player->walk(input, time);
 	}
 	player->hittingRight = false;
 	player->hittingLeft = false;
@@ -348,7 +356,8 @@ void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time
 Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
 	if (player->heldItem->didHitWall == true) {
-		player->move(Vec2(-5 * player->heldItem->dmg, 0));
+		player->move(Vec2(-50, 0));
+		//player->moveAbsolute(-player->heldItem->knockback / 5);
 	}
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
 		player->attackStartTime = time;
@@ -373,12 +382,12 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		player->attackRelease = true;//forced to release attack
 	}
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
-		player->walk(input);
+		player->walk(input, time);
 		player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
 	}
 	if (input == USE_RELEASE) {
 		player->attackRelease = true;
-		player->walk(STOP);
+		player->walk(STOP, time);
 	}
 	return nullptr;
 }
@@ -407,6 +416,7 @@ void Player::DeathState::exit(Player* player, GameLayer* mainLayer, float time) 
 
 //No Clip state:
 void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->getPhysicsBody()->setVelocityLimit(100);
 	player->noclip();
 	player->moveSpeed = 3;
 	//player->hidden = true;
@@ -425,7 +435,7 @@ Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainL
 		return new HideState;
 	}
 	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
-		player->walk(input);
+		player->walk(input, time);
 	}
 	if (input == MOVE_UP) {
 		player->move(Vec2(0, 25));
