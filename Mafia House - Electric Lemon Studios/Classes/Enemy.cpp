@@ -33,7 +33,7 @@ Vec2 Enemy::getPosition() {
 }
 
 void Enemy::flipX() {
-	GameObject::flipX();
+	Character::flipX();
 	if (flippedX == true) {
 		qMark->setFlippedX(true);
 		ZZZ->setFlippedX(true);
@@ -118,6 +118,7 @@ void Enemy::dropInventory(GameLayer* mainLayer) {
 		if (inventory.at(i)->isKey == true) {
 			hasKey = false;//if they drop a key, they don't have a key anymore
 		}
+		inventory.at(i)->stopAllActions();
 		removeChild(inventory.at(i), true);
 		mainLayer->addChild(inventory.at(i));
 		inventory.erase(inventory.begin() + i);
@@ -683,13 +684,28 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
 	}
 }
 
-void Enemy::gotHit(Item* item) {
+void Enemy::gotHit(Item* item, float time) {
 	if (item->didHitWall == false && item->hp > 0) {
+		wasInHitStun = true;
+		hitStunStart = time;
+		hitStunTime = item->hitstun;
+		if (item->getEffect() == Item::NONE) {
+			if ((flippedX == true && item->knockback.x < 0) || (flippedX == false && item->knockback.x > 0)) {//if the enemy is hit from behind
+				flipX();
+				setSuspicion(maxSuspicion - maxSuspicion * 0.1);
+			}
+		}
+		if (touchingWall == false) {
+			moveAbsolute(item->knockback);
+		}
 		item->used();
 		hp -= item->dmg;//dealing damage to enemy
 		if (item->getEffect() == Item::KILL) {
-			if (state->type != "alert") {//hitting unalerted enemies with killing weapons will always kill them instantly
+			if (state->type != "alert" && state->type != "attack") {//hitting unalerted enemies with killing weapons will always kill them instantly
 				hp = 0;
+			}
+			else {
+				changeSuspicion(maxSuspicion);
 			}
 		}
 		else if(item->getEffect() == Item::KNOCKOUT) {
@@ -711,32 +727,38 @@ void Enemy::gotHit(Item* item) {
 void Enemy::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);
 	updateRoom(mainLayer->floors[currentFloor].rooms);
+	if (invincible == true && time - hitTime >= invicibilityTime) {
+		invincible = false;
+	}
 	if (itemHitBy != NULL) {
-		if (hitTime == -1) {
+		if (invincible == false) {
 			hitTime = time;
-			gotHit(itemHitBy);
-		}
-		if (hitTime != -1 && time - hitTime >= invicibilityTime) {
-			hitTime = time;
-			gotHit(itemHitBy);
+			invincible = true;
+			gotHit(itemHitBy, time);
 		}
 		itemHitBy = NULL;
 	}
-	//updateFloor(mainLayer->floors);//checking if floor has changed
-	newState = state->update(this, mainLayer, time);
-	if (newState != NULL)
-	{
-		state->exit(this, mainLayer, time);
+	if (time - hitStunStart >= hitStunTime || hitStunStart == -1) {//only update if hitstun is over, of if histun never began
+		hitStunStart = -1;
+		//updateFloor(mainLayer->floors);//checking if floor has changed
+		newState = state->update(this, mainLayer, time);
+		if (newState != NULL)
+		{
+			state->exit(this, mainLayer, time);
 
-		if (prevState != NULL && newState != prevState) { delete prevState; }
-		prevState = state;
-		state = newState;
-		newState = NULL;
+			if (prevState != NULL && newState != prevState) { delete prevState; }
+			prevState = state;
+			state = newState;
+			newState = NULL;
 
-		state->enter(this, mainLayer, time);
+			state->enter(this, mainLayer, time);
+		}
+		wasInHitStun = false;
 	}
+
 	//resetting collision checks:
 	didHitWall = false;
+	touchingWall = false;
 	//updating color of question mark, turns more red as suspicion increases
 	float BluePercentage = suspicionLevel / maxSuspicion;
 	float GreenPercentage = abs(BluePercentage - 1);//inverts the percentage
@@ -750,6 +772,7 @@ void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer, float time) {}
 
 //Default State:
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->inAttackRange = false;
 	enemy->exMark->setVisible(false);
 	enemy->paused = false;
 	enemy->moveSpeed = 1.0f;
@@ -866,6 +889,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 
 //Suspicious State:
 void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->inAttackRange = false;
 	enemy->prevPauseTime = time;
 	enemy->exMark->setVisible(false);
 	enemy->qMark->setVisible(true);
@@ -1004,7 +1028,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
-		return new UseDoorState;
+		if (enemy->isTouched == false && enemy->itemHitBy == NULL && enemy->inAttackRange == false) {
+			return new UseDoorState;
+		}
 	}
 
 	//check if an enemy has become unalerted
@@ -1060,11 +1086,15 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 			}
 			//check if enemy is in range to attack player
 			if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within range to attack player
+				enemy->inAttackRange = true;
 				return new AttackState;
 			}
-			else if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
-				enemy->heldItem = NULL;
-				enemy->removeChild(enemy->fist, true);
+			else {
+				enemy->inAttackRange = false;
+				if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
+					enemy->heldItem = NULL;
+					enemy->removeChild(enemy->fist, true);
+				}
 			}
 		}
 	}
@@ -1141,6 +1171,7 @@ void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer) {
 
 //Use Door State:
 void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->inAttackRange = false;
 	if (enemy->prevState->type != "attack") {
 		enemy->paused = false;
 		enemy->startPauseTime = -1;
@@ -1296,6 +1327,7 @@ void Enemy::UseDoorState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Get Item State:
 void Enemy::GetItemState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->inAttackRange = false;
 	enemy->paused = false;
 	//adding item pick up time to other time trackers
 	enemy->pickupStartTime = time;
@@ -1373,6 +1405,7 @@ void Enemy::GetItemState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Search State (for hearing noises):
 void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->inAttackRange = false;
 	enemy->paused = false;
 	enemy->startPauseTime = -1;
 	enemy->qMark->setVisible(true);
@@ -1444,6 +1477,7 @@ void Enemy::SearchState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Seen Body State: (for seeing dead bodies and knocked out enemies)
 void Enemy::SeenBodyState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->inAttackRange = false;
 	enemy->paused = false;
 	enemy->startPauseTime = -1;
 	enemy->qMark->setVisible(true);
@@ -1514,6 +1548,7 @@ void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 
 //Knock Out State:
 void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->inAttackRange = false;
 	if (enemy->heldItem != NULL) {
 		enemy->heldItem->initHeldItem();
 	}
@@ -1557,12 +1592,12 @@ void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 void Enemy::DeathState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->dropInventory(mainLayer);
 	enemy->isDead = true;
+	enemy->setVisible(false);
 }
 Enemy::State* Enemy::DeathState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	return new DefaultState;//they'll never get to it...
 	//return nullptr;
 }
 void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->setVisible(false);
 	//create dead body here
 }

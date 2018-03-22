@@ -60,6 +60,10 @@ public:
 	int hp = 1;//keeps track fo how much item has been used
 	float dmg = 0;
 	float doorDmg = 0;
+	Vec2 knockback = Vec2(0, 0);
+	float hitstun = 0.0f;//amount of time attack prevents you from acting
+	int priority = 0;//determines which attacks beat which
+
 	bool canBreakDoor = false;
 	bool isKey = false;
 

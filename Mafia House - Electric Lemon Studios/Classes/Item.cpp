@@ -77,6 +77,7 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 //used when thrown item becomes ground item
 void Item::initGroundItem() {
 	state = GROUND;
+	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
 	enemyItem = false;
 	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
@@ -155,7 +156,7 @@ void Item::stabSequence() {
 }
 
 void Item::swingSequence() {
-	auto move = MoveBy::create(6 FRAMES, Vec2(10, -28));
+	auto move = MoveBy::create(6 FRAMES, Vec2(10, -26));
 	auto rotate = RotateBy::create(6 FRAMES, 120);
 
 	auto hold = MoveBy::create(8 FRAMES, Vec2(0, 0));
@@ -172,8 +173,11 @@ void Item::swingSequence() {
 Fist::Fist(){
 	outlineName = "items/knife_outline.png";
 	Item::Item();
+	priority = -1;
 	hp = 1;
 	dmg = 25;
+	knockback = Vec2(20, 0);
+	hitstun = 10 FRAMES;
 	doorDmg = 7;
 	canBreakDoor = true;
 	effect = KILL;
@@ -210,8 +214,10 @@ void Fist::initHeldItem() {
 Knife::Knife(){
 	outlineName = "items/knife_outline.png";
 	Item::Item();
+	priority = 1;
 	hp = 2;
 	dmg = 50;
+	hitstun = 20 FRAMES;
 	doorDmg = 7;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
@@ -227,8 +233,10 @@ Key::Key(){
 	outlineName = "items/key_outline.png";
 	Item::Item();
 	isKey = true;
+	priority = 0;
 	hp = 4;
 	dmg = 25;
+	hitstun = 4 FRAMES;
 	doorDmg = 6;
 	effect = NONE;
 	attackType = STAB;
@@ -242,14 +250,17 @@ Key::Key(){
 Hammer::Hammer(){
 	outlineName = "items/hammer_outline.png";
 	Item::Item();
+	priority = 3;
 	hp = 3;
 	dmg = 34;
+	knockback = Vec2(80, 0);
+	hitstun = 26 FRAMES;
 	doorDmg = 34;
 	canBreakDoor = true;
-	effect = KNOCKOUT;
+	effect = NONE;
 	attackType = SWING;
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;
 	lagTime = 18 FRAMES;
-	range = 52;
+	range = 50;
 }

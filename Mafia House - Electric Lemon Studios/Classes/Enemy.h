@@ -57,7 +57,7 @@ public:
 	void playerTouch() { isTouched = true; }
 	void hitWall() { didHitWall = true; }
 
-	void gotHit(Item* item);//function for when enemy is hit by player's attack
+	void gotHit(Item* item, float time);//function for when enemy is hit by player's attack
 	bool isReallyDead() { return isDead; }
 
 	//getters:
@@ -178,6 +178,7 @@ protected:
 
 	//for attacking the player
 	float distanceToPlayer;
+	bool inAttackRange;
 	//for attacking without a weapon
 	Fist* fist;
 
@@ -187,6 +188,7 @@ protected:
 	//for being hit:
 	float invicibilityTime = 0.5f;
 	float hitTime = -1;
+	bool invincible = false;
 
 	//for being knocked out
 	//int knockOutHP = 2;

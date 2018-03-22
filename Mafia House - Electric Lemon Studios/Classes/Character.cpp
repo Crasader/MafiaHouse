@@ -19,6 +19,13 @@ void Character::setPositionX(float posX) {
 	Node::setPositionX(posX + FRAME_OFFSET);
 }
 
+void Character::flipX() {
+	GameObject::flipX();
+	if (heldItem != NULL) {
+		heldItem->knockback *= -1;
+	}
+}
+
 void Character::updateRoom(vector<RoomData> rooms) {
 	for (int i = 0; i < rooms.size(); i++) {
 		if ((getPositionX() > rooms[i].left) && (getPositionX() + getSize().width < rooms[i].right)) {//player in on the floor, inbetween top and bottom
@@ -50,6 +57,10 @@ void Character::pickUpItem(GameLayer* mainLayer) {
 		inventory.push_back(heldItem);
 
 		itemToPickUp = NULL;
+
+		if (flippedX == true) {
+			heldItem->knockback *= -1;
+		}
 	}
 }
 

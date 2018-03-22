@@ -29,6 +29,8 @@ public:
 	void startAnimation(AnimationTag tag, GameAnimation animation);
 	void stopAnimation(AnimationTag tag);
 
+	void flipX();
+
 	float getPositionX();
 	Vec2 getPosition();
 	void setPosition(Vec2 pos);
@@ -50,6 +52,8 @@ public:
 	virtual void useStair(GameLayer* mainLayer);
 
 	bool checkDead();
+
+	bool touchingWall = false;
 
 	//for Interacting with objects:
 	Door* doorToUse = NULL;//the tag of the door the player can open/close
@@ -75,6 +79,11 @@ protected:
 
 	//for movement:
 	float moveSpeed = 1.0f;
+
+	//for getting hit:
+	float hitStunStart = -1.;
+	float hitStunTime = 0.0f;
+	bool wasInHitStun = false;
 
 	//for combat
 	const float maxHP = 100;

@@ -27,7 +27,7 @@ public:
 	void hide();
 	void hiding();
 
-	void wasHit(Item* item);//being hit by an enemy attack
+	void wasHit(Item* item, float time);//being hit by an enemy attack
 	
 	//for player staying behind obejcts without causing earthquakes, doesn't use set position
 	void stayWithin(HideObject* object);

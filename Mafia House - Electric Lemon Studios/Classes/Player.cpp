@@ -28,6 +28,7 @@ Player::~Player(){
 
 //functions for player actions:
 void Player::resetCollisionChecks() {
+	touchingWall = false;
 	isHit = false;
 	doorToUse = NULL;
 	stairToUse = NULL;
@@ -37,11 +38,17 @@ void Player::resetCollisionChecks() {
 	//bodyToPickUp = NULL;
 }
 
-void Player::wasHit(Item* item) {
+void Player::wasHit(Item* item, float time) {
 	if (item->didHitWall == false) {
+		wasInHitStun = true;
+		hitStunStart = time;
+		hitStunTime = item->hitstun;
 		//item->used();//enemy items don't break
 		isHit = true;
 		hp -= item->dmg;//taking damage from attack
+		if (touchingWall == false) {
+			moveAbsolute(item->knockback);
+		}
 	}
 }
 
@@ -206,7 +213,7 @@ void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
 	updateRoom(mainLayer->floors[currentFloor].rooms);//checking if room has changed
 	if (itemHitBy != NULL) {
-		wasHit(itemHitBy);
+		wasHit(itemHitBy, time);
 		itemHitBy = NULL;
 	}
 	newState = state->update(this, mainLayer, time);
@@ -225,17 +232,21 @@ void Player::update(GameLayer* mainLayer, float time) {
 
 //Input Handling:
 void Player::handleInput(GameLayer* mainLayer, float time, Input input) {
-	newState = state->handleInput(this, mainLayer, time, input);
-	if (newState != NULL)
-	{
-		state->exit(this, mainLayer);
+	if (time - hitStunStart >= hitStunTime || hitStunStart == -1) {//only allow player input if hitstun is over, of if histun never began
+		hitStunStart = -1;
+		newState = state->handleInput(this, mainLayer, time, input);
+		if (newState != NULL)
+		{
+			state->exit(this, mainLayer);
 
-		if (prevState != NULL && newState != prevState){delete prevState;}
-		prevState = state;
-		state = newState;
-		newState = NULL;
+			if (prevState != NULL && newState != prevState) { delete prevState; }
+			prevState = state;
+			state = newState;
+			newState = NULL;
 
-		state->enter(this, mainLayer, time);
+			state->enter(this, mainLayer, time);
+		}
+		wasInHitStun = false;
 	}
 }
 
@@ -358,6 +369,9 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 	return nullptr;
 }
 Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+	if (player->wasInHitStun == true) {//player is in hitstun
+		player->attackRelease = true;//forced to release attack
+	}
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 		player->walk(input);
 		player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());

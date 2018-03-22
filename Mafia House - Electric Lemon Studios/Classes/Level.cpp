@@ -213,8 +213,42 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	Node *b = contact.getShapeB()->getBody()->getNode();
 
 	if (a != NULL && b != NULL) {
+		// check if player has collided with a wall
+		if (a->getName() == "player" && (b->getName() == "wall" || b->getName() == "door"))
+		{
+			static_cast<Player*>(a)->touchingWall = true;
+			return true;
+		}
+		else if ((a->getName() == "wall" || a->getName() == "door") && b->getName() == "player") {
+			static_cast<Player*>(b)->touchingWall = true;
+			return true;
+		}
+
+		//alert enemy and wall
+		if (a->getName() == "enemy_alert" && (b->getName() == "wall" || b->getName() == "door"))
+		{
+			static_cast<Enemy*>(a)->touchingWall = true;
+			return true;
+		}
+		else if ((a->getName() == "wall" || a->getName() == "door") && b->getName() == "enemy_alert")
+		{
+			static_cast<Enemy*>(b)->touchingWall = true;
+			return true;
+		}
+		//enemy and wall
+		if (a->getName() == "enemy" && (b->getName() == "wall" || b->getName() == "door"))
+		{
+			static_cast<Enemy*>(a)->touchingWall = true;
+			return true;
+		}
+		else if ((a->getName() == "wall" || a->getName() == "door") && b->getName() == "enemy")
+		{
+			static_cast<Enemy*>(b)->touchingWall = true;
+			return true;
+		}
+
 		// check if player has collided with an enemy
-		if ((a->getName() == "player" && b->getName() == "enemy"))
+		if (a->getName() == "player" && b->getName() == "enemy")
 		{
 			if (player->isHidden() != true) {
 				//CCLOG("YOU TOUCHED AN ENEMY");
@@ -267,7 +301,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
 		{
 			if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
-				return true;
+				return false;
 			}
 			else {//so enemies don't get hit by their own weapon
 				return false;
@@ -276,7 +310,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() ==  "enemy_alert"))
 		{
 			if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
-				return true;
+				return false;
 			}
 			else {//so enemies don't get hit by their own weapon
 				return false;
@@ -287,7 +321,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "held_item")
 		{
 			if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {
-				return true;
+				return false;
 			}
 			else {//so player doesn't get hit by their own weapon
 				return false;
@@ -295,7 +329,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "held_item" && b->getName() == "player") {
 			if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {
-				return true;
+				return false;
 			}
 			else {//so player doesn't get hit by their own weapon
 				return false;
@@ -411,6 +445,16 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+	//two held items
+	if (a->getName() == "held_item" && b->getName() == "held_item") {
+		if (static_cast<Item*>(a)->priority > static_cast<Item*>(b)->priority) {//if a's damage is higher than b's
+			static_cast<Item*>(b)->hitWall();
+		}
+		else {
+			static_cast<Item*>(a)->hitWall();
+		}
+		return false;
+	}
 
 	//check if enemy has been hit by player's attack
 	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
@@ -489,7 +533,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a);
 		return false;
 	}
-	//enemy and wall
+	//alert enemy and wall
 	if (a->getName() == "enemy_alert" && b->getName() == "wall")
 	{
 		static_cast<Enemy*>(a)->hitWall();
