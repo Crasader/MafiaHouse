@@ -21,7 +21,7 @@ class Enemy : public Character
 {
 public:
 	Enemy();
-	~Enemy();
+	~Enemy() {}
 	CREATE_SPRITE_FUNC(Enemy, "guard.png");
 	CREATE_WITH_FRAME(Enemy);
 	CREATE_WITH_FRAME_NAME(Enemy, "enemy/thug/stand/001.png");
@@ -109,6 +109,7 @@ protected:
 	};
 	class AttackState : public State {
 	public:
+		AttackState() { type = "attack"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer);
@@ -153,16 +154,7 @@ protected:
 	State* state = new DefaultState;
 	State* newState = NULL;
 	State* prevState = NULL;
-
-	//for pathfinding:
-	vector<Stair*> prevSearched;
-	vector<float> pathLengths;
-	int shortestDepth;
-	int depth = -1;
-	bool firstEndFound = false;
-
-	//for attacking without a weapon
-	Fist* fist;
+	State* toEnter = NULL;
 
 	//animations:
 	GameAnimation knockout;
@@ -174,8 +166,20 @@ protected:
 	Sprite* ZZZ;
 	GameAnimation ZZZAnimation;
 
+	//for pathfinding:
+	vector<Stair*> prevSearched;
+	vector<float> pathLengths;
+	int shortestDepth;
+	int depth = -1;
+	bool firstEndFound = false;
+
+	//for locking/unlocking doors
+	bool hasKey = false;
+
 	//for attacking the player
 	float distanceToPlayer;
+	//for attacking without a weapon
+	Fist* fist;
 
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
@@ -244,8 +248,6 @@ protected:
 	//for breakin doors:
 	float startBreakTime = -1;
 	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door
-	//for locking/unlocking doors
-	bool hasKey = true;
 
 	//for using doors:
 	bool openedDoor = false;

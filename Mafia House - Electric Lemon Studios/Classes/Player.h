@@ -58,6 +58,7 @@ private:
 	class NeutralState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 	};
 	class HideState : public State {
@@ -73,6 +74,12 @@ private:
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		void exit(Player* player, GameLayer* mainLayer);
+	};
+	class DeathState : public State {
+	public:
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		State * update(Player* player, GameLayer* mainLayer, float time);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class NoClipState : public State {
 	public:

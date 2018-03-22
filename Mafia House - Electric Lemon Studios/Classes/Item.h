@@ -4,12 +4,12 @@ class Item : public GameObject
 {
 public:
 	Item();
-	~Item();
+	~Item() {}
 	CREATE_SPRITE_FUNC(Item, "knife2.png");
 	CREATE_WITH_FRAME(Item);
 	CREATE_WITH_FRAME_NAME(Item, "items/knife.png");
 
-	void initObject(Vec2 startPos = Vec2(0,0));
+	virtual void initObject(Vec2 startPos = Vec2(0,0));
 	void initRadius();
 
 	enum AttackType {
@@ -58,7 +58,8 @@ public:
 	bool enemyCanUse = false;
 
 	int hp = 1;//keeps track fo how much item has been used
-	int dmg = 10;
+	float dmg = 0;
+	float doorDmg = 0;
 	bool canBreakDoor = false;
 	bool isKey = false;
 
@@ -81,15 +82,19 @@ protected:
 class Fist : public Item//enemy attacking barehand, actually an invisible item
 {
 public:
-	Fist() {}
+	Fist();
 	~Fist() {}
+	CREATE_WITH_FRAME(Fist);
+	CREATE_WITH_FRAME_NAME(Fist, "items/fist.png");
+	void initObject(Vec2 startPos = Vec2(0, 0));
+	void initHeldItem();
 };
 
 class Knife : public Item
 {
 public:
 	Knife();
-	~Knife();
+	~Knife() {}
 	CREATE_SPRITE_FUNC(Knife, "knife2.png");
 	CREATE_WITH_FRAME(Knife);
 	CREATE_WITH_FRAME_NAME(Knife, "items/knife.png");
@@ -99,7 +104,7 @@ class Key : public Item
 {
 public:
 	Key();
-	~Key();
+	~Key() {}
 	CREATE_WITH_FRAME(Key);
 	CREATE_WITH_FRAME_NAME(Key, "items/key.png");
 };
@@ -108,7 +113,7 @@ class Hammer : public Item
 {
 public:
 	Hammer();
-	~Hammer();
+	~Hammer() {}
 	CREATE_WITH_FRAME(Hammer);
 	CREATE_WITH_FRAME_NAME(Hammer, "items/hammer.png");
 };

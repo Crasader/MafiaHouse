@@ -120,13 +120,16 @@ void Door::playerInRange() {
 }
 
 void Door::updateColour() {
-	float percentage = hp / 10.0f;
-	float inversePercentage = abs(percentage - 1);//inverts the percentage
-	if (locked == false) {
-		setColor(ccc3(255 * percentage, 215 * percentage, 255 * inversePercentage));
-	}
-	else {
-		setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
+	if (broken == false) {
+		float percentage = hp / maxHP;
+		float inversePercentage = abs(percentage - 1);//inverts the percentage
+
+		if (locked == false) {
+			setColor(ccc3(255 * percentage, 215 * percentage, 255 * inversePercentage));
+		}
+		else {
+			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
+		}
 	}
 }
 
@@ -137,8 +140,8 @@ void Door::itemHit(Item* item) {
 			item->hp = 0;//keys can only be used to unlock 1 door
 			item->didHitWall = false;
 		}
-		else if (item->canBreakDoor == true) {
-			hp -= item->dmg;//item deals dmg to the door
+		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
+			hp -= item->doorDmg;//item deals dmg to the door
 			item->hp--;
 		}
 		if (hp <= 0) {
@@ -147,11 +150,19 @@ void Door::itemHit(Item* item) {
 	}
 }
 
+void Door::updateBroken() {
+	if (hp <= 0) {
+		breakDoor();
+	}
+}
+
 void Door::breakDoor() {
-	//will probably change sprite
-	unlock();
-	broken = true;
-	setColor(ccc3(155, 0, 255));//purple
+	if (broken == false) {
+		//will probably change sprite
+		unlock();
+		broken = true;
+		setColor(ccc3(155, 0, 255));//purple
+	}
 }
 
 bool Door::use() {

@@ -164,34 +164,41 @@ void Player::stayWithin(HideObject* object) {
 	Vec2 range = Vec2(object->getContentSize().width / 2, object->getContentSize().height / 2);
 	Vec2 displacement = (getPosition() + Vec2(getSize().width / 2, getSize().height / 2)) - (object->getPosition() + Vec2(object->getContentSize().width / 2, object->getContentSize().height / 2));
 	if (displacement.x > range.x - getSize().width / 2) {
-		hittingRight = true;
-		stop();
+		if (hittingRight == true) {
+			setSpeed(0.3);
+			moveAbsolute(Vec2(-3, 0));
+		}
+		else {
+			hittingRight = true;
+			stop();
+		}
 	}
 	else {
+		if (hittingLeft == false) {
+			setSpeed(1.0);
+		}
 		hittingRight = false;
 	}
 	if (displacement.x < -(range.x - getSize().width / 2)) {
-		hittingLeft = true;
-		stop();
+		if (hittingLeft == true) {
+			setSpeed(0.3);
+			moveAbsolute(Vec2(3, 0));
+		}
+		else {
+			hittingLeft = true;
+			stop();
+		}
 	}
 	else {
+		if (hittingRight == false) {
+			setSpeed(1.0);
+		}
 		hittingLeft = false;
 	}
 }
 //have player stay behind object they are hiding behind
 void Player::hiding() {
 	stayWithin(hideObject);
-}
-
-void Player::noclip() {
-	if (clip == false) {
-		clip = true;
-		getPhysicsBody()->setCollisionBitmask(0);
-	}
-	else {
-		clip = false;
-		getPhysicsBody()->setCollisionBitmask(30);
-	}
 }
 
 //Update Checking:
@@ -248,6 +255,10 @@ void Player::State::exit(Player* player, GameLayer* mainLayer) {
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 }
+Player::State* Player::NeutralState::update(Player* player, GameLayer* mainLayer, float time) {
+	//if (player->checkDead() == true) { return new DeathState; }
+	return nullptr;
+}
 Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
 		player->useDoor();
@@ -278,12 +289,11 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 
 //Hide State:
 void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {
-	//player->moveSpeed = 0.9f;
-	player->setSpeed(0.7);
 	player->hideObject = player->objectToHideBehind;
 	player->hide();
 }
 Player::State* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
+	//if (player->checkDead() == true) { return new DeathState; }
 	if (player->isHit == true) {//force exit hiding if hit by enemy
 		return player->prevState;
 	}
@@ -325,6 +335,7 @@ void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time
 	player->beginUseItem();
 }
 Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
+	//if (player->checkDead() == true) { return new DeathState; }
 	if (player->heldItem->didHitWall == true) {
 		player->move(Vec2(-5 * player->heldItem->dmg, 0));
 	}
@@ -369,6 +380,15 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	}
 }
 
+//Death State:
+void Player::DeathState::enter(Player* player, GameLayer* mainLayer, float time) {
+}
+Player::State* Player::DeathState::update(Player* player, GameLayer* mainLayer, float time) {
+	return nullptr;
+}
+void Player::DeathState::exit(Player* player, GameLayer* mainLayer, float time) {
+}
+
 
 
 //No Clip state:
@@ -408,4 +428,14 @@ void Player::NoClipState::exit(Player* player, GameLayer* mainLayer) {
 	player->noclip();
 	player->moveSpeed = 1;
 	//player->hidden = false;
+}
+void Player::noclip() {
+	if (clip == false) {
+		clip = true;
+		getPhysicsBody()->setCollisionBitmask(0);
+	}
+	else {
+		clip = false;
+		getPhysicsBody()->setCollisionBitmask(30);
+	}
 }

@@ -16,6 +16,9 @@ Enemy::Enemy()
 	collision = 13;
 	//other proeprties
 	maxSpeed = 50;
+	//for attacking without a weapon
+	fist = Fist::createWithSpriteFrameName();
+	fist->initObject();
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES);
 	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES);
@@ -23,8 +26,6 @@ Enemy::Enemy()
 	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES);
 	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES);
 	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES);
-}
-Enemy::~Enemy(){
 }
 
 Vec2 Enemy::getPosition() {
@@ -109,24 +110,30 @@ void Enemy::setSuspicion(float num) {
 }
 
 void Enemy::dropInventory(GameLayer* mainLayer) {
-	Character::dropItem(mainLayer);//dropping held item first, just cuz
 	int a = 1;
 	for (int i = 0; i < inventory.size(); i++) {
 		inventory.at(i)->setRotation(randNum(0,360));
 		inventory.at(i)->getPhysicsBody()->applyImpulse(Vec2(randNum(50, 100), randNum(50, 100)));
 		inventory.at(i)->initDroppedItem(getPosition() + Vec2(a * 20, 60), flippedX);//drop all items at enemy position
+		if (inventory.at(i)->isKey == true) {
+			hasKey = false;//if they drop a key, they don't have a key anymore
+		}
 		removeChild(inventory.at(i), true);
 		mainLayer->addChild(inventory.at(i));
 		inventory.erase(inventory.begin() + i);
 		i--;
 		a++;
 	}
+	heldItem = NULL;
 }
 
 void Enemy::pickUpItem(GameLayer* mainLayer) {
 	Character::pickUpItem(mainLayer);
 	if (heldItem != NULL) {
 		heldItem->enemyItem = true;
+		if (heldItem->isKey == true) {
+			hasKey = true;//if they pickup a key, they have a key to open locked doors
+		}
 	}
 }
 
@@ -737,13 +744,9 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 }
 
 //Enemy States:
-void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-}
-Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	return nullptr;
-}
-void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-}
+void Enemy::State::enter(Enemy* enemy, GameLayer* mainLayer, float time) {}
+Enemy::State* Enemy::State::update(Enemy* enemy, GameLayer* mainLayer, float time) { return nullptr; }
+void Enemy::State::exit(Enemy* enemy, GameLayer* mainLayer, float time) {}
 
 //Default State:
 void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
@@ -1044,7 +1047,8 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
 		//check if enemy has a held item or not
 		if (enemy->heldItem == NULL) {
-			//enemy->heldItem = enemy->fist//if not, give them a fist
+			enemy->heldItem = enemy->fist;//if not, give them a fist
+			enemy->addChild(enemy->fist);
 		}
 		if (enemy->heldItem != NULL) {
 			//get distance from player
@@ -1060,6 +1064,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 			}
 			else if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
 				enemy->heldItem = NULL;
+				enemy->removeChild(enemy->fist, true);
 			}
 		}
 	}
@@ -1085,6 +1090,10 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Attack State(using items):
 void Enemy::AttackState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->heldItem == NULL) {
+		enemy->heldItem = enemy->fist;//if not, give them a fist
+		enemy->addChild(enemy->fist);
+	}
 	enemy->stop();
 	enemy->attackPrepareTime = time;
 	enemy->beginUseItem();
@@ -1098,11 +1107,11 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		return new KnockOutState;
 	}
 	if (enemy->heldItem == NULL) {//incase you knock them out in the middle of an attack and steal their weapon
-		return new DefaultState;
+		return new DefaultState;//shouldn't be possible now tha tthey can attack without an item
 	}
-	if (enemy->heldItem->didHitWall == true) {
-		enemy->move(Vec2(-5 * enemy->heldItem->dmg, 0));
-	}
+	//if (enemy->heldItem->didHitWall == true) {
+	//	enemy->move(Vec2(-5 * enemy->heldItem->dmg, 0));
+	//}
 	if (enemy->attackPrepareTime != -1.0f && time - enemy->attackPrepareTime >= enemy->heldItem->getStartTime()) {
 		enemy->attackStartTime = time;
 		enemy->useItem();
@@ -1122,45 +1131,58 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 }
 void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer) {
 	enemy->heldItem->didHitWall = false;
-	//if (enemy->heldItem->hp <= 0) {
-	//	enemy->breakItem(mainLayer);//enemy items don't break
-	//}
+	//if (enemy->heldItem->hp <= 0) {enemy->breakItem(mainLayer);}//enemy items don't break
 	enemy->heldItem->initHeldItem();
+	if (enemy->heldItem == enemy->fist) {
+		enemy->heldItem = NULL;
+		enemy->removeChild(enemy->fist, true);
+	}
 }
 
 //Use Door State:
 void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->paused = false;
-	enemy->startPauseTime = -1;
-	enemy->doorStartTime = time;
-	enemy->startWaitTime = -1;
-	enemy->openedDoor = false;
-	if (enemy->doorToUse->checkOpen() == false) {
-		enemy->openDoor();//only use the door if it's not open yet
-	}
-	enemy->moveTo(enemy->doorToUse->getPositionX());//this is to ensure they are facing towards the door
-	if (enemy->flippedX == false) {
-		enemy->doorUsePos = enemy->getPositionX() + enemy->bodySize.width;
-	}
-	else {
-		enemy->doorUsePos = enemy->getPositionX() - enemy->bodySize.width;
+	if (enemy->prevState->type != "attack") {
+		enemy->paused = false;
+		enemy->startPauseTime = -1;
+		enemy->doorStartTime = time;
+		enemy->startWaitTime = -1;
+		enemy->openedDoor = false;
+		if (enemy->doorToUse->checkOpen() == false) {
+			enemy->openDoor();//only use the door if it's not open yet
+		}
+		enemy->moveTo(enemy->doorToUse->getPositionX());//this is to ensure they are facing towards the door
+		if (enemy->flippedX == false) {
+			enemy->doorUsePos = enemy->getPositionX() + enemy->bodySize.width;
+		}
+		else {
+			enemy->doorUsePos = enemy->getPositionX() - enemy->bodySize.width;
+		}
 	}
 }
 Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
-		return new DeathState;
+		enemy->toEnter = new DeathState;
+		return enemy->toEnter;
 	}
 	//check if enemy has been knocked out
 	if (enemy->knockedOut == true) {
-		return new KnockOutState;
+		enemy->toEnter = new KnockOutState;
+		return enemy->toEnter;
 	}
 	if (enemy->doorToUse == NULL) {
-		return enemy->prevState;
+		if (enemy->prevState->type != "attack") {
+			enemy->toEnter = enemy->prevState;
+			return enemy->toEnter;
+		}
+		else {
+			enemy->toEnter = new DefaultState;
+			return enemy->toEnter;
+		}
 	}
 	if (enemy->doorToUse->checkOpen() == false) {//if the door get's closed on their face after they've started going through it
 		enemy->openDoor();
 	}
-	if (enemy->prevState->type != "alert") {//enemy is not coming from alert state
+	if (enemy->prevState->type != "alert" && enemy->prevState->type != "attack") {//enemy is not coming from alert state
 		if (enemy->doorToUse->checkLock() == true && enemy->openedDoor == false) {//they couldn't actually open the door, if they have a key they will use it automatically to unlock the door
 			if (enemy->startWaitTime == -1 && enemy->moveToDoor(enemy->doorToUse) == true) {//enemy has walked up to door
 				enemy->qMark->setVisible(true);
@@ -1179,13 +1201,15 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			if (enemy->startWaitTime != -1 && time - enemy->startWaitTime >= enemy->doorWaitTime) {
 				enemy->flipX();
 				enemy->startWaitTime = -1;
-				return new DefaultState;
+				enemy->toEnter = new DefaultState;
+				return enemy->toEnter;
 			}
 		}
 		else {
 			if (enemy->paused == false) {
 				if (abs(enemy->getPositionX() - enemy->doorUsePos) >= enemy->doorToUse->radius + 1) {//enemy has walked through door
-					return enemy->prevState;
+					enemy->toEnter = enemy->prevState;
+					return enemy->toEnter;
 				}
 				else {
 					enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
@@ -1215,13 +1239,22 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			enemy->detectedPlayer = NULL;
 		}
 	}
-	else if (enemy->prevState->type == "alert"){//enemy was in alert state, just open door and run
+	else if (enemy->prevState->type == "alert" || enemy->prevState->type == "attack"){//enemy was in alert state, just open door and run, or they were attacking
 		if (enemy->doorToUse->checkLock() == true && enemy->openedDoor == false) {//they didn't actually open the door
-			enemy->breakDoor(time);
+			//enemy->breakDoor(time);
+			enemy->toEnter = new AttackState;
+			return enemy->toEnter;
 		}
 		else {//if door is unlocked
 			if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
-				return enemy->prevState;
+				if (enemy->prevState->type != "attack") {
+					enemy->toEnter = enemy->prevState;
+					return enemy->toEnter;
+				}
+				else {
+					enemy->toEnter = new AlertState;
+					return enemy->toEnter;
+				}
 			}
 			else {
 				enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
@@ -1234,15 +1267,23 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		if (enemy->detectedTag != -1) {
 			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
 		}
-		return new AlertState;
+		enemy->toEnter = new AlertState;
+		return enemy->toEnter;
 	}
 	return nullptr;
 }
 void Enemy::UseDoorState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (enemy->prevState->type != "alert") {//alert enemies don't close doors behind them, even if they were locked before
+	if (enemy->prevState->type != "alert" && enemy->prevState->type != "attack") {//alert enemies don't close doors behind them, even if they were locked before
 		enemy->closeDoor();
 	}
-	enemy->doorToUse = NULL;
+	if (enemy->toEnter->type != "attack") {
+		enemy->doorToUse = NULL;
+	}
+	if (enemy->doorToUse != NULL) {
+		if (enemy->doorToUse->checkBroken() == true) {
+			enemy->doorToUse = NULL;
+		}
+	}
 	//adding door use time to other time trackers
 	enemy->doorUseTime = time - enemy->doorStartTime;
 	if (enemy->previousTurnTime != -1) {

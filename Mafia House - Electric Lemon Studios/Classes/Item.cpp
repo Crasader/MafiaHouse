@@ -17,8 +17,6 @@ Item::Item()
 	lagTime = 20 FRAMES;
 	range = 50;
 }
-Item::~Item(){
-}
 
 void Item::initObject(Vec2 startPos)
 {
@@ -58,7 +56,7 @@ void Item::initHeldItem() {
 	getPhysicsBody()->setCollisionBitmask(42);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
-	setPosition(Vec2(50, 32));
+	setPosition(Vec2(54, 33));
 	setRotation(-45.0f);
 	if (flippedX == true) {
 		flipX();
@@ -79,6 +77,7 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 //used when thrown item becomes ground item
 void Item::initGroundItem() {
 	state = GROUND;
+	enemyItem = false;
 	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
 	getPhysicsBody()->setCollisionBitmask(8);
@@ -132,7 +131,7 @@ void Item::checkSpeed() {
 }
 
 void Item::beginStab() {
-	setPosition(Vec2(25, 45));
+	setPosition(Vec2(28, 46));
 	setRotation(0);
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
 	//runAction(prepare);
@@ -169,49 +168,83 @@ void Item::swingSequence() {
 	runAction(sequence);
 }
 
-//Knife Class:
-Knife::Knife()
-{
+//Fist Class:
+Fist::Fist(){
 	outlineName = "items/knife_outline.png";
 	Item::Item();
 	hp = 1;
-	dmg = 100;
+	dmg = 25;
+	doorDmg = 7;
+	canBreakDoor = true;
+	effect = KILL;
+	attackType = STAB;
+	startTime = 5 FRAMES;
+	attackTime = 12 FRAMES;
+	lagTime = 14 FRAMES;
+	range = 26;
+}
+void Fist::initObject(Vec2 startPos){
+	GameObject::initObject(startPos);
+	retain();
+	initHeldItem();
+	setVisible(false);
+}
+void Fist::initHeldItem() {
+	state = HELD;
+	getPhysicsBody()->setEnabled(false);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setGravityEnable(false);
+	getPhysicsBody()->setCategoryBitmask(8);
+	getPhysicsBody()->setCollisionBitmask(42);
+	setName("held_item");
+	getPhysicsBody()->setName("held_item");
+	setPosition(Vec2(50, 32));
+	setRotation(-45.0f);
+	if (flippedX == true) {
+		flipX();
+	}
+	setAnchorPoint(Vec2(0, 0));
+}
+
+//Knife Class:
+Knife::Knife(){
+	outlineName = "items/knife_outline.png";
+	Item::Item();
+	hp = 2;
+	dmg = 50;
+	doorDmg = 7;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
-	startTime = 6 FRAMES;
+	startTime = 10 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 10 FRAMES;
-	range = 33;
-}
-Knife::~Knife(){
+	range = 36;
 }
 
 //Key Class:
-Key::Key()
-{
+Key::Key(){
 	outlineName = "items/key_outline.png";
 	Item::Item();
 	isKey = true;
 	hp = 4;
 	dmg = 25;
+	doorDmg = 6;
 	effect = NONE;
 	attackType = STAB;
 	startTime = 3 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 4 FRAMES;
-	range = 23;
-}
-Key::~Key() {
+	range = 28;
 }
 
 //Hammer Class:
-Hammer::Hammer()
-{
+Hammer::Hammer(){
 	outlineName = "items/hammer_outline.png";
 	Item::Item();
-	hp = 2;
-	dmg = 50;
+	hp = 3;
+	dmg = 34;
+	doorDmg = 34;
 	canBreakDoor = true;
 	effect = KNOCKOUT;
 	attackType = SWING;
@@ -219,6 +252,4 @@ Hammer::Hammer()
 	attackTime = 20 FRAMES;
 	lagTime = 18 FRAMES;
 	range = 52;
-}
-Hammer::~Hammer() {
 }

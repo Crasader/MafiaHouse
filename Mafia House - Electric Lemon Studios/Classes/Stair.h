@@ -57,8 +57,10 @@ public:
 	void itemHit(Item* item);
 
 	void breakDoor();
+	void updateBroken();
 
 	bool checkLock() { return locked; }
+	bool checkBroken() { return broken; }
 
 	bool use();
 
@@ -76,7 +78,8 @@ public:
 
 	bool defaultLocked = false;//whether enemies should lock the door or not, also if it starts locked
 
-	float hp = 100;//for items to deal dmg to doors, to break them open if locked
+	const float maxHP = 100;
+	float hp = maxHP;//for items to deal dmg to doors, to break them open if locked
 
 protected:
 	bool broken = false;

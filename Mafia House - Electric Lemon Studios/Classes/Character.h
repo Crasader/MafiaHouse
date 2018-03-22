@@ -77,7 +77,8 @@ protected:
 	float moveSpeed = 1.0f;
 
 	//for combat
-	int hp = 100;
+	const float maxHP = 100;
+	float hp = maxHP;
 
 	//variables used for the timing of attacking/using items:
 	float attackPrepareTime = -1.0f;//time character begins to prepare and attack

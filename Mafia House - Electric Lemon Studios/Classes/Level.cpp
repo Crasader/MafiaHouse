@@ -55,7 +55,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -82,6 +82,7 @@ void Level::update(float deltaTime){
 	}
 	//door update
 	for (int i = 0; i < doors.size(); i++) {
+		doors[i]->updateBroken();
 		doors[i]->updateColour();
 		doors[i]->playerInRange();
 	}
@@ -528,12 +529,12 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	if (a->getName() == "held_item" && b->getName() == "wall")
 	{
 		static_cast<Item*>(a)->hitWall();
-		return true;
+		return false;
 	}
 	else if (a->getName() == "wall" && b->getName() == "held_item")
 	{
 		static_cast<Item*>(b)->hitWall();
-		return true;
+		return false;
 	}
 	return true;
 }
