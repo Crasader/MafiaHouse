@@ -70,9 +70,6 @@ protected:
 	//for physics body:
 	Size bodySize;//main character hitbox
 
-	//for path finding
-	int currentRoom = 0;
-
 	//to check if character has been hit:
 	bool isDead = false;
 

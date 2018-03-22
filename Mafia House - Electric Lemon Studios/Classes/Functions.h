@@ -20,17 +20,6 @@ void followBox(Node* nodeA, Node* nodeB, Vec2 range, Vec2 offset);
 //for genrating random numbers
 int randNum(int min, int max);
 
-class Floor {//just for keeping track of what floor characters are on
-public:
-	Floor(int n, int h, int t, int b);
-	~Floor();
-
-	int num;
-	int height;
-	int top;
-	int bot;
-};
-
 class DoorData {
 public:
 	DoorData() {}
@@ -52,6 +41,9 @@ public:
 	int width;//length of the room
 	int left;//left of the room
 	int right;//right of the room
+
+	bool hasLeftDoor = false;
+	bool hasRightDoor = false;
 
 	string bgName = "guestRoom.png";
 

@@ -44,7 +44,7 @@ public:
 	void followPath(GameLayer* mainLayer, float time);
 
 	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos);
-	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, float time = 0.0f);//find path to location, return true = reached location
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time);//find path to location, return true = reached location
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);

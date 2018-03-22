@@ -83,7 +83,8 @@ public:
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
-	void updateFloor(vector<FloorData> floors);
+	virtual void updateFloor(vector<FloorData> floors);
+	virtual void updateRoom(vector<RoomData> rooms);
 
 	//movement functions
 	void stopX();
@@ -98,10 +99,13 @@ public:
 	virtual void flipX();//flips object on X-axis
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position
-	Vec2 startRoom = Vec2(0,0);//NOT POSITION COORDINATES, the room the object starts in
 	//startRoom.y == floor number
 	//startRoom.x == room nuumber
+	Vec2 startRoom = Vec2(0,0);//NOT POSITION COORDINATES, the room the object starts in, see above comments
+	
+	//for pathfinding:
 	int currentFloor;
+	int currentRoom;
 
 	bool playerRange = false;//for interactable items, check if player is in range to use them
 

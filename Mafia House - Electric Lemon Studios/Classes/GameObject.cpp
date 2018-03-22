@@ -139,6 +139,14 @@ void GameObject::updateFloor(vector<FloorData> floors) {
 		}
 	}
 }
+void GameObject::updateRoom(vector<RoomData> rooms) {
+	for (int i = 0; i < rooms.size(); i++) {
+		if ((getPosition().x > rooms[i].left) && (getPositionX() + getContentSize().width < rooms[i].right)) {//player in on the floor, inbetween top and bottom
+			currentRoom = i;
+			break;
+		}
+	}
+}
 
 void GameObject::stopX() {
 	getPhysicsBody()->setVelocity(Vec2(0, getPhysicsBody()->getVelocity().y));
