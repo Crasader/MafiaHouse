@@ -332,7 +332,7 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 					if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair of this query stair is on same floor as you
 						//check if there's a path from query's partner stair to you
 						if (checkForPath(mainLayer, currentFloor, currentRoom, mainLayer->getPartnerStair(queryStair)->startRoom.x) == true) {
-							/*if (firstEndFound == false) {//only happens the first time the function finds an end point
+							if (firstEndFound == false) {//only happens the first time the function finds an end point
 								firstEndFound = true;
 								shortestDepth = depth;
 								//get distance between query's partner stair and you
@@ -344,9 +344,9 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 								tempStair->pathDistance = totalDistance;
 								possibleStairsToTake.push_back(tempStair);
 								foundStairs = true;
-							}*/
-							//else if (firstEndFound == true && depth <= shortestDepth) {//it's already found one end point
-								//if (depth < shortestDepth) { shortestDepth = depth; }//update the shortest depth at which an end point was found
+							}
+							else if (firstEndFound == true && depth <= shortestDepth) {//it's already found one end point
+								if (depth < shortestDepth) { shortestDepth = depth; }//update the shortest depth at which an end point was found
 								//get distance between query's partner stair and you
 								float distanceFromDoorToEnemy = abs(mainLayer->getPartnerStair(queryStair)->getPositionX() - getPositionX());
 								float totalDistance = distances[i] + distanceBetweenDoors + distanceFromDoorToEnemy;
@@ -356,7 +356,16 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 								tempStair->pathDistance = totalDistance;
 								possibleStairsToTake.push_back(tempStair);
 								foundStairs = true;
-							//}
+							}
+						}
+						else {
+							bool add = true;
+							tempStair = mainLayer->stairs[j];
+							for (int k = 0; k < prevSearched.size(); k++) {
+								//check if this stair has already been searched before
+								if (tempStair == prevSearched[k]) { add = false; }
+							}
+							if (add == true) { newSearchStairs.push_back(tempStair); }
 						}
 					}
 					else {
@@ -444,6 +453,9 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 							if (checkForPath(mainLayer, currentFloor, partnerStair->startRoom.x, currentRoom) == true) {//check if you can get to the partner stair
 								takeStair = mainLayer->getPartnerStair(queryStair);//take this stair
 								possibleStairsToTake.push_back(takeStair);
+							}
+							else {
+								searchStairs.push_back(queryStair);
 							}
 						}
 						else {
