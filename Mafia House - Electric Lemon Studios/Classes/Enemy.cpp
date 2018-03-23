@@ -225,7 +225,7 @@ void Enemy::walk(float time) {
 	}
 }
 
-bool checkForPathWithLocks(GameLayer* mainlayer, int floorNum, int targetX, int searcherX) {//always go Tip to Tail, put the thing you wanna get to first
+bool checkForPathWithLocks(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy) {//always go Tip to Tail, put the thing you wanna get to first
 	bool isPath = false;
 	int roomDiff = targetX - searcherX;//getting number of rooms between stair and partner stair
 	if (roomDiff == 0) {//stair is in same room as partner stair
@@ -256,7 +256,7 @@ bool checkForPathWithLocks(GameLayer* mainlayer, int floorNum, int targetX, int 
 	return isPath;
 }
 
-bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX) {//always go Tip to Tail, put the thing you wanna get to first
+bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy) {//always go Tip to Tail, put the thing you wanna get to first
 	bool isPath = false;
 	int roomDiff = targetX - searcherX;//getting number of rooms between stair and partner stair
 	if (roomDiff == 0) {//stair is in same room as partner stair
@@ -270,7 +270,9 @@ bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX
 				}
 				else {//room has a right door
 					if (mainlayer->floors[floorNum].rooms[x]->rightLocked == true) {//but it's locked
-						return false;
+						if (enemy->checkKey() == false) {//and they don't have a key...
+							return false;
+						}
 					}
 					isPath = true;
 				}
@@ -283,7 +285,9 @@ bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX
 				}
 				else {//room has a left door
 					if (mainlayer->floors[floorNum].rooms[x]->leftLocked == true) {//but it's locked
-						return false;
+						if (enemy->checkKey() == false) {//and they don't have a key...
+							return false;
+						}
 					}
 					isPath = true;
 				}
@@ -323,7 +327,7 @@ void Enemy::followPath(GameLayer* mainLayer, float time) {
 }
 
 //a recursive function, searches for a path to get to a certain floor
-Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX)){
+Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy)){
 	depth++;//going down a level whenever it gets called
 	vector<Stair*> possibleReturnStairs;
 	Stair* returnStair = NULL;
@@ -348,13 +352,13 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 
 			if (queryStair->startRoom.y == partnerStair->startRoom.y && queryStair != partnerStair) {//stair is on same floor as the partner stair, and is not the partner stair itself
 				//check if there's a path from the partner stair to the query stair
-				if (checkPathFunc(mainLayer, queryStair->startRoom.y, queryStair->startRoom.x, partnerStair->startRoom.x) == true) {
+				if (checkPathFunc(mainLayer, queryStair->startRoom.y, queryStair->startRoom.x, partnerStair->startRoom.x, this) == true) {
 					//get the distance between the query stair and the partner stair
 					float distanceBetweenDoors = abs(partnerStair->getPositionX() - queryStair->getPositionX());
 
 					if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair of this query stair is on same floor as you
 						//check if there's a path from query's partner stair to you
-						if (checkPathFunc(mainLayer, currentFloor, currentRoom, mainLayer->getPartnerStair(queryStair)->startRoom.x) == true) {
+						if (checkPathFunc(mainLayer, currentFloor, currentRoom, mainLayer->getPartnerStair(queryStair)->startRoom.x, this) == true) {
 							if (firstEndFound == false) {//only happens the first time the function finds an end point
 								firstEndFound = true;
 								shortestDepth = depth;
@@ -450,7 +454,7 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 	return returnStair;//fails to find a successful path
 }
 
-bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool (*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX)) {
+bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool (*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy)) {
 	//float displacement = positionX - getPositionX();
 	Stair* takeStair = NULL;
 	vector<Stair*> searchStairs;
@@ -460,7 +464,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 	//target is on same floor as you:
 	if (floorNum == currentFloor) {
 		//check if enemy has a path to the player
-		directPathToTarget = checkPathFunc(mainLayer, currentFloor, roomNum, currentRoom);
+		directPathToTarget = checkPathFunc(mainLayer, currentFloor, roomNum, currentRoom, this);
 	}
 	//target is on different floor, or you can't get to them from the same floor as them:
 	if (floorNum != currentFloor || directPathToTarget == false){
@@ -469,11 +473,11 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 				Stair* queryStair = mainLayer->stairs[i];
 
 				if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
-					if (checkPathFunc(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
+					if (checkPathFunc(mainLayer, floorNum, roomNum, queryStair->startRoom.x, this) == true) {//check if you can get to the target from this stair
 						Stair* partnerStair = mainLayer->getPartnerStair(queryStair);
 						
 						if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair is on your floor
-							if (checkPathFunc(mainLayer, currentFloor, partnerStair->startRoom.x, currentRoom) == true) {//check if you can get to the partner stair
+							if (checkPathFunc(mainLayer, currentFloor, partnerStair->startRoom.x, currentRoom, this) == true) {//check if you can get to the partner stair
 								takeStair = mainLayer->getPartnerStair(queryStair);//take this stair
 								possibleStairsToTake.push_back(takeStair);
 							}
@@ -493,7 +497,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 				Stair* queryStair = mainLayer->stairs[i];
 
 				if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
-					if (checkPathFunc(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
+					if (checkPathFunc(mainLayer, floorNum, roomNum, queryStair->startRoom.x, this) == true) {//check if you can get to the target from this stair
 						searchStairs.push_back(queryStair);
 					}
 				}

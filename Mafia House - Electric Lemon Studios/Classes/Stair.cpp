@@ -136,8 +136,13 @@ void Door::updateColour() {
 void Door::itemHit(Item* item) {
 	if (broken == false) {
 		if (item->isKey == true) {//item is a key
-			unlock();
-			item->hp = 0;//keys can only be used to unlock 1 door
+			if (locked == true) {
+				unlock();
+			}
+			else {
+				lock();//keys can lock doors
+			}
+			item->hp -= 2;//keys can only be used twice
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
@@ -193,8 +198,12 @@ void Door::unlock() {
 	if (broken == false) {//can't unlock if it's broken
 		if (locked == true) {
 			locked = false;
-			rightRoom->leftLocked = false;
-			leftRoom->rightLocked = false;
+			if (rightRoom != NULL) {
+				rightRoom->leftLocked = false;
+			}
+			if (leftRoom != NULL) {
+				leftRoom->rightLocked = false;
+			}
 			//setColor(ccc3(255, 155, 0));//orange
 		}
 	}
@@ -204,8 +213,12 @@ void Door::lock() {
 	if (broken == false) {//can't lock if it's broken
 		if (locked == false) {
 			locked = true;
-			rightRoom->leftLocked = true;
-			leftRoom->rightLocked = true;
+			if (rightRoom != NULL) {
+				rightRoom->leftLocked = true;
+			}
+			if (leftRoom != NULL) {
+				leftRoom->rightLocked = true;
+			}
 			//setColor(ccc3(255, 0, 0));//red
 		}
 	}

@@ -234,7 +234,7 @@ Key::Key(){
 	Item::Item();
 	isKey = true;
 	priority = 0;
-	hp = 4;
+	hp = 40;
 	dmg = 25;
 	hitstun = 4 FRAMES;
 	doorDmg = 6;

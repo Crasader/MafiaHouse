@@ -14,7 +14,7 @@ FLOOR_END
 400|bg,Hallway.png|door,right
 FLOOR_END
 110
-1000|bg,Hallway.png|stair,6,B,100,0|stair,3,B,400,0|stair,5,B,700,0|player,400,0
+1000|bg,Hallway.png|stair,6,B,100,0|stair,3,B,400,0|stair,5,B,700,0|player,400,0|item,key,600,0
 FLOOR_END
 101
 350|bg,Hallway.png|stair,4,B,100,0|stair,9,B,200,0

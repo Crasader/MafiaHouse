@@ -42,8 +42,8 @@ public:
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
 
-	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX));
-	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX));//find path to location, return true = reached location
+	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy));
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy));//find path to location, return true = reached location
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
@@ -58,6 +58,7 @@ public:
 
 	void gotHit(Item* item, float time);//function for when enemy is hit by player's attack
 	bool isReallyDead() { return isDead; }
+	bool checkKey() { return hasKey; }
 
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
