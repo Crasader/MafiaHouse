@@ -16,8 +16,8 @@
 # player: player, x_coordinate, y_coordinate
 #
 300
-700|bg,Hallway.png|door,right|player,0,0|item,hammer,100,0|item,knife,200,0|hide_object,plant,100,0
-600|bg,Kitchen.png|door,left|item,knife,400,0|stair,1,A,550,0|enemy,guard,200,1,STAND_LEFT
+700|bg,Hallway.png|door,right|player,0,0|item,hammer,100,150|item,knife,200,0|hide_object,plant,100,0
+600|bg,Kitchen.png|door,left|item,knife,400,150|stair,1,A,550,0|enemy,guard,200,1,STAND_LEFT
 FLOOR_END
 300
 500|bg,LivingRoom.png|door,right|stair,2,A,25,0|item,hammer,650,0

@@ -121,7 +121,7 @@ void Level::update(float deltaTime){
 			continue;
 		}
 		//enemy vision:
-		enemies[i]->visionRays(&points, &start);
+		enemies[i]->visionRays(&points, &start, gameTime);
 		//drawing vision rays
 		for (int j = 0; j < points.size(); j++) {
 			//visionRays->drawDot(points[j], 1, Color4F::WHITE);

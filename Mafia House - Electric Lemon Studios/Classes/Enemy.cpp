@@ -738,14 +738,14 @@ Item* Enemy::findMoreRange(GameLayer* mainLayer) {
 	return foundItem;
 }
 
-void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
+void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 	detectedTag = -1;
 	playerInVision = false;
 	didRun = false;
 	Vec2 offsetAdjust;
 
 	if (visionEnabled == true) {
-		PhysicsRayCastCallbackFunc func = [this, points, offsetAdjust](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
+		PhysicsRayCastCallbackFunc func = [this, points, offsetAdjust, time](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
 		{
 			int visionContactTag = info.shape->getBody()->getNode()->getTag();
 			string visionContactName = info.shape->getBody()->getNode()->getName();
@@ -814,6 +814,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
 						qMark->setVisible(true);
 						changeSuspicion(maxSuspicion / 3);//seeing an item increases their suspicion by a third
 						seenItems.push_back(static_cast<Item*>(visionContact));
+						seenTimes.push_back(time);
 					}
 					points->push_back(info.contact + offsetAdjust);
 					didRun = true;
@@ -903,9 +904,14 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);
 	updateRoom(mainLayer->floors[currentFloor].rooms);
 	//forgetting what items they have seen
-	if (time - previousForgetTime >= memoryTime || previousForgetTime == -1) {
-		previousForgetTime = time;
-		seenItems.clear();//forget what items they have seen before every certain amount of time
+	if (seenItems.size() > 0) {
+		for (int i = 0; i < seenItems.size(); i++) {
+			if (time - seenTimes[i] >= memoryTime) {
+				seenTimes.erase(seenTimes.begin() + i);
+				seenItems.erase(seenItems.begin() + i);
+				i--;
+			}
+		}
 	}
 	//checking invincibility frames
 	if (invincible == true && time - hitTime >= invicibilityTime) {
@@ -1124,7 +1130,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (22 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (24 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -1264,11 +1270,11 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->reachedLastSeen = false;
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (32 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (40 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / (20 SECONDS));
 		enemy->isTouched = false;
 		enemy->lostPlayer = false;
 		enemy->reachedLastSeen = false;

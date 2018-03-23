@@ -474,10 +474,10 @@ Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainL
 		player->walk(input, time);
 	}
 	if (input == MOVE_UP) {
-		player->move(Vec2(0, 35));
+		player->move(Vec2(0, 30));
 	}
 	else if (input == MOVE_DOWN) {
-		player->move(Vec2(0, -35));
+		player->move(Vec2(0, -30));
 	}
 	if (input == NO_CLIP) {
 		return new NeutralState;

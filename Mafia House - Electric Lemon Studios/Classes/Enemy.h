@@ -51,7 +51,7 @@ public:
 	Item* findBetterItem(GameLayer* mainLayer);
 	Item* findMoreRange(GameLayer* mainLayer);
 
-	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
+	void visionRays(vector<Vec2> *points, Vec2* start, float time);//casts a bunch of rays; the enemies vision cone
 
 	void changeSuspicion(float num);//increase/decrease suspicion
 	void setSuspicion(float num);//set it to a specific value instantly
@@ -183,8 +183,9 @@ protected:
 
 	//for seeing items:
 	vector<Item*> seenItems;
+	vector<float> seenTimes;
 	float previousForgetTime = -1;
-	float memoryTime = 60.0f;//number of seconds they remember seeing items for
+	float memoryTime = 45.0f;//number of seconds they remember seeing an item for
 
 	//for locking/unlocking doors
 	bool hasKey = false;

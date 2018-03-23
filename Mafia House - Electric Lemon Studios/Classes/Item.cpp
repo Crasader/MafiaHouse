@@ -24,6 +24,7 @@ void Item::initObject(Vec2 startPos)
 	retain();
 	initRadius();
 	createOutline(outlineName);
+	initGroundItem();
 }
 //initializing pickup radius:
 void Item::initRadius() {
