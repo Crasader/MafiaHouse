@@ -48,9 +48,8 @@ void Character::stopAnimation(AnimationTag tag) {
 void Character::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp != NULL) {
 		removeChild(heldItem, true);
-
+		itemToPickUp->removeFromParent();
 		heldItem = itemToPickUp;
-		mainLayer->removeChild(itemToPickUp, true);
 		
 		addChild(heldItem);
 		heldItem->initHeldItem();

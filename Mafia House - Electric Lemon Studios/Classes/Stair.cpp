@@ -251,3 +251,22 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	}
 	Door::initObject(startPos);
 }
+
+void Vent::itemHit(Item* item) {
+	if (broken == false) {
+		if (item->isKey == true) {//item is a key
+			if (locked == true) {
+				unlock();
+				item->hp -= 2;//keys can only be used twice
+			}//you can't lock a vent again, ther's no point
+			item->didHitWall = false;
+		}
+		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
+			hp -= item->doorDmg;//item deals dmg to the door
+			item->hp--;
+		}
+		if (hp <= 0) {
+			breakDoor();
+		}
+	}
+}

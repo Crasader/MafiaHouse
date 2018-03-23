@@ -76,6 +76,7 @@ void Enemy::initObject(Vec2 startPos)
 
 	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
 		flipX();
+		fist->knockback *= -1;
 	}
 	lastSeenLocation = Node::create();
 	addChild(lastSeenLocation);
@@ -129,7 +130,9 @@ void Enemy::dropInventory(GameLayer* mainLayer) {
 }
 
 void Enemy::pickUpItem(GameLayer* mainLayer) {
-	Character::pickUpItem(mainLayer);
+	if (itemToPickUp->enemyItem != true) {
+		Character::pickUpItem(mainLayer);
+	}
 	if (heldItem != NULL) {
 		heldItem->enemyItem = true;
 		if (heldItem->isKey == true) {
@@ -721,6 +724,7 @@ void Enemy::gotHit(Item* item, float time) {
 			}
 		}
 		if (touchingWall == false) {
+			stop();
 			moveAbsoluteNoLimit(item->knockback);
 		}
 		item->used();

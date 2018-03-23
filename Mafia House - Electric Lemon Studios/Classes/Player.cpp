@@ -54,6 +54,36 @@ void Player::wasHit(Item* item, float time) {
 	}
 }
 
+void Player::walkPrepareAttack(Input input, float time) {
+	if (input == MOVE_LEFT) {
+		if (moveDirection == 0) {
+			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
+			moveDirection = 1;
+			startAnimation(WALK, walking);
+			setSpeed(moveSpeed);
+		}
+		walking.action->setSpeed(moveSpeed);
+		moveAbsolute(Vec2(-7.0f * moveSpeed, 0));
+	}
+	if (input == MOVE_RIGHT) {
+		if (moveDirection == 0) {
+			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
+			moveDirection = 2;
+			startAnimation(WALK, walking);
+			setSpeed(moveSpeed);
+		}
+		walking.action->setSpeed(moveSpeed);
+		moveAbsolute(Vec2(7.0f * moveSpeed, 0));
+	}
+	if (input == STOP) {
+		stopX();
+		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingSound);
+		moveDirection = 0;
+		stopAnimation(WALK);
+		setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+	}
+}
+
 void Player::walk(Input input, float time) {
 	if (input == MOVE_LEFT) {
 		if (moveDirection == 0){
@@ -188,6 +218,7 @@ void Player::stayWithin(HideObject* object) {
 		else {
 			hittingRight = true;
 			stop();
+			moveAbsolute(Vec2(-3, 0));
 		}
 	}
 	else {
@@ -204,6 +235,7 @@ void Player::stayWithin(HideObject* object) {
 		else {
 			hittingLeft = true;
 			stop();
+			moveAbsolute(Vec2(3, 0));
 		}
 	}
 	else {
@@ -340,8 +372,6 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 	else if (input == STOP) {
 		player->walk(input, time);
 	}
-	player->hittingRight = false;
-	player->hittingLeft = false;
 	return nullptr;
 }
 void Player::HideState::exit(Player* player, GameLayer* mainLayer) {
@@ -352,7 +382,7 @@ void Player::HideState::exit(Player* player, GameLayer* mainLayer) {
 
 //Attack State(using items):
 void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time) {
-	player->moveSpeed = (0.3f);
+	player->moveSpeed = (0.4f);
 	player->setSpeed(player->moveSpeed);
 	player->attackPrepareTime = time;
 	player->beginUseItem();
@@ -386,7 +416,7 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		player->attackRelease = true;//forced to release attack
 	}
 	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
-		player->walk(input, time);
+		player->walkPrepareAttack(input, time);
 		player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
 	}
 	if (input == USE_RELEASE) {

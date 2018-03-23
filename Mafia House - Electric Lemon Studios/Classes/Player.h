@@ -16,6 +16,7 @@ public:
 	//functions for player actions:
 	void resetCollisionChecks();//resets variables used to track what objects/items player will interact with/use
 
+	void walkPrepareAttack(Input input, float time);
 	void walk(Input input, float time);
 
 	void pickUpItem(GameLayer* mainLayer);

@@ -54,7 +54,7 @@ public:
 
 	void updateColour();
 
-	void itemHit(Item* item);
+	virtual void itemHit(Item* item);
 
 	void breakDoor();
 	void updateBroken();
@@ -104,4 +104,6 @@ public:
 	CREATE_WITH_FRAME_NAME(Vent, "objects/vent/001.png");
 
 	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
+
+	void itemHit(Item* item);
 };
