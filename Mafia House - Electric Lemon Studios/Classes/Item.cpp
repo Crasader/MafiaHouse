@@ -171,7 +171,6 @@ void Item::swingSequence() {
 
 //Fist Class:
 Fist::Fist(){
-	outlineName = "items/knife_outline.png";
 	Item::Item();
 	priority = -1;
 	hp = 1;
@@ -186,6 +185,7 @@ Fist::Fist(){
 	attackTime = 12 FRAMES;
 	lagTime = 14 FRAMES;
 	range = 26;
+	powerLevel = 0;
 }
 void Fist::initObject(Vec2 startPos){
 	GameObject::initObject(startPos);
@@ -226,6 +226,7 @@ Knife::Knife(){
 	attackTime = 8 FRAMES;
 	lagTime = 10 FRAMES;
 	range = 36;
+	powerLevel = 5;
 }
 
 //Key Class:
@@ -244,6 +245,7 @@ Key::Key(){
 	attackTime = 6 FRAMES;
 	lagTime = 4 FRAMES;
 	range = 28;
+	powerLevel = 0;
 }
 
 //Hammer Class:
@@ -263,6 +265,7 @@ Hammer::Hammer(){
 	attackTime = 20 FRAMES;
 	lagTime = 18 FRAMES;
 	range = 50;
-	rangeY = 130;
+	rangeY = 80;
 	rangeRadius = 80;
+	powerLevel = 10;
 }

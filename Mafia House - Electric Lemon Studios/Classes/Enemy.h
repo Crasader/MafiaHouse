@@ -48,6 +48,8 @@ public:
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
 	Item* findClosestItem(GameLayer* mainLayer);
+	Item* findBetterItem(GameLayer* mainLayer);
+	Item* findMoreRange(GameLayer* mainLayer);
 
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
 
@@ -173,6 +175,16 @@ protected:
 	int shortestDepth;
 	int depth = -1;
 	bool firstEndFound = false;
+
+	//for going to items wwhile alerted:
+	bool goingToFirstItem = false;
+	bool goingToBetterItem = false;
+	bool goingToMoreRange = false;
+
+	//for seeing items:
+	vector<Item*> seenItems;
+	float previousForgetTime = -1;
+	float memoryTime = 60.0f;//number of seconds they remember seeing items for
 
 	//for locking/unlocking doors
 	bool hasKey = false;

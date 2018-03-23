@@ -65,6 +65,7 @@ public:
 	Vec2 knockback = Vec2(0, 0);
 	float hitstun = 0.0f;//amount of time attack prevents you from acting
 	int priority = 0;//determines which attacks beat which
+	int powerLevel = 0;
 
 	bool canBreakDoor = false;
 	bool isKey = false;
@@ -83,7 +84,7 @@ protected:
 	float attackTime;//duration of active frames
 	float lagTime;//enlag time of attack
 	int range;//range of the weapons attack, for enemy ai
-	int rangeY = 80;//the vertical height from the ground that the item can hit, default is for most stab weapons
+	int rangeY = 30;//the vertical height from the ground that the item can hit, default is for most stab weapons
 	float rangeRadius = 50;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
 };
 
