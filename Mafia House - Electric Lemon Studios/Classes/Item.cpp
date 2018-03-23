@@ -132,15 +132,15 @@ void Item::checkSpeed() {
 	}
 }
 
-void Item::beginStab() {
+void Item::prepareStab(float angle) {
 	setPosition(Vec2(28, 46));
-	setRotation(0);
+	setRotation(0 + angle);
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
 	//runAction(prepare);
 }
 
-void Item::beginSwing() {
-	setRotation(-135);
+void Item::beginSwing(float angle) {
+	setRotation(-135 + angle);
 	setPosition(Vec2(40, 80));
 	setAnchorPoint(Vec2(-0.9, 0.5));
 	//auto prepare = MoveBy::create(10 FRAMES, Vec2(-16, 20));
@@ -148,15 +148,15 @@ void Item::beginSwing() {
 	//runAction(Spawn::create(prepare,rotate));
 }
 
-void Item::stabSequence() {
-	auto move = MoveBy::create(attackTime * 0.125, Vec2(25, 6));
-	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));
-	auto moveback = MoveBy::create(attackTime * 0.125, Vec2(-25, -6));
+void Item::stabSequence(Vec2 direction) {
+	auto move = MoveBy::create(attackTime * 0.125, direction * 25);//stab forward
+	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));//wait
+	auto moveback = MoveBy::create(attackTime * 0.125, -direction * 25);//pull back
 	auto sequence = Sequence::create(move, hold, moveback, NULL);
 	runAction(sequence);
 }
 
-void Item::swingSequence() {
+void Item::swingSequence(Vec2 direction) {
 	auto move = MoveBy::create(6 FRAMES, Vec2(10, -26));
 	auto rotate = RotateBy::create(6 FRAMES, 120);
 

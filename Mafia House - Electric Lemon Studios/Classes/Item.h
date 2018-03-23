@@ -47,11 +47,11 @@ public:
 
 	void hitWall();
 
-	virtual void beginStab();
-	virtual void beginSwing();
+	virtual void prepareStab(float angle);
+	virtual void beginSwing(float angle);
 
-	virtual void stabSequence();
-	virtual void swingSequence();
+	virtual void stabSequence(Vec2 direction);
+	virtual void swingSequence(Vec2 direction);
 
 	void checkSpeed();
 
