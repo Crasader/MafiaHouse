@@ -84,7 +84,7 @@ public:
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
 	virtual void updateFloor(vector<FloorData> floors);
-	virtual void updateRoom(vector<RoomData> rooms);
+	virtual void updateRoom(vector<RoomData*> rooms);
 
 	//movement functions
 	void stopX();

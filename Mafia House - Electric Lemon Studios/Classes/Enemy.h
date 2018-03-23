@@ -47,6 +47,7 @@ public:
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
+	Item* findClosestItem(GameLayer* mainLayer);
 
 	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
 

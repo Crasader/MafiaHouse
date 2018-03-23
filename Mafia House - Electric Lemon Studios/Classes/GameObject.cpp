@@ -139,9 +139,9 @@ void GameObject::updateFloor(vector<FloorData> floors) {
 		}
 	}
 }
-void GameObject::updateRoom(vector<RoomData> rooms) {
+void GameObject::updateRoom(vector<RoomData*> rooms) {
 	for (int i = 0; i < rooms.size(); i++) {
-		if ((getPositionX() > rooms[i].left - 10) && (getPositionX() + getContentSize().width < rooms[i].right + 10)) {//player in on the floor, inbetween top and bottom
+		if ((getPositionX() > rooms[i]->left - 10) && (getPositionX() + getContentSize().width < rooms[i]->right + 10)) {//player in on the floor, inbetween top and bottom
 			currentRoom = i;
 			break;
 		}

@@ -263,4 +263,6 @@ Hammer::Hammer(){
 	attackTime = 20 FRAMES;
 	lagTime = 18 FRAMES;
 	range = 50;
+	rangeY = 130;
+	rangeRadius = 80;
 }

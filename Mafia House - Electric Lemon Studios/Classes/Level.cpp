@@ -88,6 +88,8 @@ void Level::update(float deltaTime){
 	}
 	//items update
 	for (int i = 0; i < mainLayer->items.size(); i++) {
+		mainLayer->items[i]->updateFloor(mainLayer->floors);
+		mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
 			mainLayer->items[i]->hasMoved();
 			mainLayer->items[i]->playerInRange(player);
@@ -409,12 +411,16 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//alert enemy and item radius
 		if (a->getName() == "enemy_alert" && b->getName() == "item_radius")
 		{
-			static_cast<Enemy*>(a)->itemToPickUp = static_cast<Item*>(b->getParent());
+			if (static_cast<Enemy*>(a)->itemToPickUp == NULL) {//if they don't already have an item to pick up
+				static_cast<Enemy*>(a)->itemToPickUp = static_cast<Item*>(b->getParent());
+			}
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "enemy_alert")
 		{
-			static_cast<Enemy*>(b)->itemToPickUp = static_cast<Item*>(a->getParent());
+			if (static_cast<Enemy*>(b)->itemToPickUp == NULL) {//if they don't already have an item to pick up
+				static_cast<Enemy*>(b)->itemToPickUp = static_cast<Item*>(a->getParent());
+			}
 			return false;
 		}
 
