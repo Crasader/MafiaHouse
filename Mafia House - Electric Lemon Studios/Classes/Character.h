@@ -36,7 +36,7 @@ public:
 	void setPosition(Vec2 pos);
 	void setPositionX(float posX);
 
-	void updateRoom(vector<RoomData> rooms);
+	void updateRoom(vector<RoomData*> rooms);
 
 	Size getSize() { return bodySize; }
 

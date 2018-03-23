@@ -81,6 +81,11 @@ public:
 	const float maxHP = 100;
 	float hp = maxHP;//for items to deal dmg to doors, to break them open if locked
 
+	Vec2 leftRoomCoords = Vec2(-1, -1);
+	Vec2 rightRoomCoords = Vec2(-1, -1);
+	RoomData* leftRoom = NULL;
+	RoomData* rightRoom = NULL;
+
 protected:
 	bool broken = false;
 

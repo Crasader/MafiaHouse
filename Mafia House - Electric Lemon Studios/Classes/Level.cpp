@@ -606,19 +606,19 @@ void Level::setBackground(string bgName, float scale) {
 	background->addComponent(border);*/
 }
 
-void Level::createFloor(Vec2 position, vector<RoomData> *roomData, int height)
+void Level::createFloor(Vec2 position, vector<RoomData*> *roomData, int height)
 {
 	Room* room;
 
 	for (int i = 0; i < (*roomData).size(); i++) {
-		(*roomData)[i].num = i;//getting room's number
-		(*roomData)[i].left = position.x;//getting room's left side position
-		(*roomData)[i].right = position.x + (*roomData)[i].width;//getting room's right side position
+		(*roomData)[i]->num = i;//getting room's number
+		(*roomData)[i]->left = position.x;//getting room's left side position
+		(*roomData)[i]->right = position.x + (*roomData)[i]->width;//getting room's right side position
 
 		room = Room::create();
 		room->createRoom(&doors, &mainLayer->stairs, &hideObjects, &mainLayer->items, &enemies, &pathNodes, player, position, (*roomData)[i], height);
 
-		position = position + Vec2((*roomData)[i].width + room->fullThick, 0);//adding length of created room to set position for next room
+		position = position + Vec2((*roomData)[i]->width + room->fullThick, 0);//adding length of created room to set position for next room
 
 		rooms.push_back(room);
 	}
@@ -634,7 +634,7 @@ void Level::createLevel(Vec2 position, float levelWidth)
 	for (int i = 0; i < mainLayer->floors.size(); i++) {
 		int totalWidth = 0;
 		for (int j = 0; j < mainLayer->floors[i].rooms.size(); j++) {
-			totalWidth += mainLayer->floors[i].rooms[j].width;
+			totalWidth += mainLayer->floors[i].rooms[j]->width;
 		}
 		if (i == 0) {
 			firstFloorWidth = totalWidth;
@@ -674,7 +674,7 @@ bool Level::initLevel(string filename){
 	while (getline(file, line)) {//each interation gets a single line from the file; gets data for a single room
 		if (line[0] == '#') { continue; }//ignoring comment lines, which begin with the '#' character
 
-		RoomData roomData;
+		RoomData* roomData = new RoomData;
 
 		if (line == "FLOOR_END") {//indicates to move to next floor in floors vector
 			mainLayer->floors.push_back(floorData);
@@ -697,7 +697,7 @@ bool Level::initLevel(string filename){
 		while (getline(l, chunk, '|')) {//each iteration gets a chunk of the line, delmimited by the '|' character; gets data for a sinlge component of a room
 
 			if (j == 0) {//first chunck is width of the room
-				roomData.width = std::atoi(chunk.c_str());
+				roomData->width = std::atoi(chunk.c_str());
 				j++;
 				continue;
 			}
@@ -712,7 +712,7 @@ bool Level::initLevel(string filename){
 
 			//setting data based on component type:
 			if (pieces[0] == "bg") {
-				roomData.bgName = pieces[1];
+				roomData->bgName = pieces[1];
 			}
 			else if (pieces[0] == "door") {
 				DoorData doorData;
@@ -728,18 +728,22 @@ bool Level::initLevel(string filename){
 				}
 				//set what wall door is on
 				if (pieces[1] == "right") {
-					roomData.rightDoors.push_back(doorData);
-					roomData.hasRightDoor = true;
+					doorData.leftRoom = Vec2(roomNum, floorNum);
+					doorData.rightRoom = Vec2(roomNum + 1, floorNum);
+					roomData->rightDoors.push_back(doorData);
+					roomData->hasRightDoor = true;
 				}
 				else if (pieces[1] == "left") {
-					roomData.leftDoors.push_back(doorData);
-					roomData.hasLeftDoor = true;
+					doorData.leftRoom = Vec2(roomNum - 1, floorNum);
+					doorData.rightRoom = Vec2(roomNum, floorNum);
+					roomData->leftDoors.push_back(doorData);
+					roomData->hasLeftDoor = true;
 				}
 				else if (pieces[1] == "top") {
-					roomData.ceilingDoors.push_back(doorData);
+					roomData->ceilingDoors.push_back(doorData);
 				}
 				else if (pieces[1] == "bot") {
-					roomData.bottomDoors.push_back(doorData);
+					roomData->bottomDoors.push_back(doorData);
 				}
 			}
 			else if (pieces[0] == "vent") {
@@ -756,16 +760,16 @@ bool Level::initLevel(string filename){
 				}
 				//set what wall vent is on
 				if (pieces[1] == "right") {
-					roomData.rightDoors.push_back(ventData);
+					roomData->rightDoors.push_back(ventData);
 				}
 				else if (pieces[1] == "left") {
-					roomData.leftDoors.push_back(ventData);
+					roomData->leftDoors.push_back(ventData);
 				}
 				else if (pieces[1] == "top") {
-					roomData.ceilingDoors.push_back(ventData);
+					roomData->ceilingDoors.push_back(ventData);
 				}
 				else if (pieces[1] == "bot") {
-					roomData.bottomDoors.push_back(ventData);
+					roomData->bottomDoors.push_back(ventData);
 				}
 			}
 			//Stairs
@@ -863,7 +867,7 @@ bool Level::initLevel(string filename){
 			j++;
 		}
 
-		roomData.room = Vec2(roomNum, floorNum);
+		roomData->room = Vec2(roomNum, floorNum);
 		floorData.rooms.push_back(roomData);
 		roomNum++;
 	}
@@ -881,6 +885,19 @@ bool Level::initLevel(string filename){
 	}
 	//doors
 	for (int i = 0; i < doors.size(); i++) {
+		for (int j = 0; j < mainLayer->floors.size(); j++) {
+			for (int k = 0; k < mainLayer->floors[j].rooms.size(); k++) {
+				if (doors[i]->leftRoomCoords == mainLayer->floors[j].rooms[k]->room) {
+					doors[i]->leftRoom = mainLayer->floors[j].rooms[k];
+				}
+				if (doors[i]->rightRoomCoords == mainLayer->floors[j].rooms[k]->room) {
+					doors[i]->rightRoom = mainLayer->floors[j].rooms[k];
+				}
+			}
+		}
+		if (doors[i]->defaultLocked == true) {
+			doors[i]->lock();
+		}
 		doors[i]->setTag(doors[i]->getTag() + i);//giving a unique tag to each door
 		mainLayer->addChild(doors[i]);
 	}

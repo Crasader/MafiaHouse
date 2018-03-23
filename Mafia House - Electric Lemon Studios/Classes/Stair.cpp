@@ -193,6 +193,8 @@ void Door::unlock() {
 	if (broken == false) {//can't unlock if it's broken
 		if (locked == true) {
 			locked = false;
+			rightRoom->leftLocked = false;
+			leftRoom->rightLocked = false;
 			//setColor(ccc3(255, 155, 0));//orange
 		}
 	}
@@ -202,6 +204,8 @@ void Door::lock() {
 	if (broken == false) {//can't lock if it's broken
 		if (locked == false) {
 			locked = true;
+			rightRoom->leftLocked = true;
+			leftRoom->rightLocked = true;
 			//setColor(ccc3(255, 0, 0));//red
 		}
 	}

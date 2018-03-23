@@ -34,5 +34,5 @@ public:
 
 	void createWall(vector<Door*> *doors, int orientation, int type, Vec2 position, Size sizefloat, vector<DoorData> doorData = vector<DoorData>(), string name = "floor");
 
-	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideObject*> *hideObjects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData roomData, int height);
+	void createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideObject*> *hideObjects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData* roomData, int height);
 };

@@ -79,13 +79,13 @@ protected:
 	Camera* camera = NULL;
 	Vec2 camBoundingBox = Vec2(200, 0);
 	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
-	float camZoom = 1.0f;
+	float camZoom = 0.4f;
 
 	bool onContactBegin(PhysicsContact &contact);
 
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
-	void createFloor(Vec2 position, vector<RoomData> *roomData, int height);
+	void createFloor(Vec2 position, vector<RoomData*> *roomData, int height);
 	void createLevel(Vec2 position, float levelWidth);
 };

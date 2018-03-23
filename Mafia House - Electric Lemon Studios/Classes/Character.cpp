@@ -26,9 +26,9 @@ void Character::flipX() {
 	}
 }
 
-void Character::updateRoom(vector<RoomData> rooms) {
+void Character::updateRoom(vector<RoomData*> rooms) {
 	for (int i = 0; i < rooms.size(); i++) {
-		if ((getPositionX() > rooms[i].left) && (getPositionX() + getSize().width < rooms[i].right)) {//player in on the floor, inbetween top and bottom
+		if ((getPositionX() > rooms[i]->left) && (getPositionX() + getSize().width < rooms[i]->right)) {//player in on the floor, inbetween top and bottom
 			currentRoom = i;
 			break;
 		}
