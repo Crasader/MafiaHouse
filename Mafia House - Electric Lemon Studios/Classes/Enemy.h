@@ -42,8 +42,8 @@ public:
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
 
-	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos);
-	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time);//find path to location, return true = reached location
+	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX));
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX));//find path to location, return true = reached location
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
@@ -203,7 +203,7 @@ protected:
 	bool isTouched = false;
 
 	//for suspicion level:
-	float suspicionLevel = 0;
+	float suspicionLevel = 200000;
 	float maxSuspicion = 1200;
 
 	//Stuff for Vision Fields:
@@ -249,6 +249,7 @@ protected:
 	//for breakin doors:
 	float startBreakTime = -1;
 	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door
+	float distanceToDoor;
 
 	//for using doors:
 	bool openedDoor = false;

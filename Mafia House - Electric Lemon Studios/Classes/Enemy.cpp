@@ -225,9 +225,77 @@ void Enemy::walk(float time) {
 	}
 }
 
+bool checkForPathWithLocks(GameLayer* mainlayer, int floorNum, int targetX, int searcherX) {//always go Tip to Tail, put the thing you wanna get to first
+	bool isPath = false;
+	int roomDiff = targetX - searcherX;//getting number of rooms between stair and partner stair
+	if (roomDiff == 0) {//stair is in same room as partner stair
+		return true;
+	}
+	else {//stair is in different room from parnter stair
+		if (roomDiff > 0) {//target is to the right of searcher
+			for (int x = searcherX; x < targetX; x++) {
+				if (mainlayer->floors[floorNum].rooms[x]->hasRightDoor == false) {//room doesn't have a right door
+					return false;
+				}
+				else {//room has a right door
+					isPath = true;
+				}
+			}
+		}
+		else if (roomDiff < 0) {//target is to the left of searcher
+			for (int x = searcherX; x > targetX; x--) {
+				if (mainlayer->floors[floorNum].rooms[x]->hasLeftDoor == false) {//room doesn't have a left door
+					return false;
+				}
+				else {//room has a left door
+					isPath = true;
+				}
+			}
+		}
+	}
+	return isPath;
+}
+
+bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX) {//always go Tip to Tail, put the thing you wanna get to first
+	bool isPath = false;
+	int roomDiff = targetX - searcherX;//getting number of rooms between stair and partner stair
+	if (roomDiff == 0) {//stair is in same room as partner stair
+		return true;
+	}
+	else {//stair is in different room from parnter stair
+		if (roomDiff > 0) {//target is to the right of searcher
+			for (int x = searcherX; x < targetX; x++) {
+				if (mainlayer->floors[floorNum].rooms[x]->hasRightDoor == false) {//room doesn't have a right door
+					return false;
+				}
+				else {//room has a right door
+					if (mainlayer->floors[floorNum].rooms[x]->rightLocked == true) {//but it's locked
+						return false;
+					}
+					isPath = true;
+				}
+			}
+		}
+		else if (roomDiff < 0) {//target is to the left of searcher
+			for (int x = searcherX; x > targetX; x--) {
+				if (mainlayer->floors[floorNum].rooms[x]->hasLeftDoor == false) {//room doesn't have a left door
+					return false;
+				}
+				else {//room has a left door
+					if (mainlayer->floors[floorNum].rooms[x]->leftLocked == true) {//but it's locked
+						return false;
+					}
+					isPath = true;
+				}
+			}
+		}
+	}
+	return isPath;
+}
+
 void Enemy::followPath(GameLayer* mainLayer, float time) {
 	if (reachedNode == false) {
-		if (pathTo(mainLayer, pathNodes.at(pathNum)->getPositionX(), pathNodes.at(pathNum)->startRoom.y, pathNodes.at(pathNum)->startRoom.x, time) == true) {//if player has reached current path node
+		if (pathTo(mainLayer, pathNodes.at(pathNum)->getPositionX(), pathNodes.at(pathNum)->startRoom.y, pathNodes.at(pathNum)->startRoom.x, time, checkForPath) == true) {//if player has reached current path node
 			slowStop();
 			reachedNode = true;
 			reachedNodeTime = time;
@@ -254,39 +322,8 @@ void Enemy::followPath(GameLayer* mainLayer, float time) {
 	}
 }
 
-bool checkForPath(GameLayer* mainlayer, int floorNum, int targetX, int searcherX) {//always go Tip to Tail, put the thing you wanna get to first
-	bool isPath = false;
-	int roomDiff = targetX - searcherX;//getting number of rooms between stair and partner stair
-	if (roomDiff == 0) {//stair is in same room as partner stair
-		return true;
-	}
-	else {//stair is in different room from parnter stair
-		if (roomDiff > 0) {//target is to the right of searcher
-			for (int x = searcherX; x < targetX; x++) {
-				if (mainlayer->floors[floorNum].rooms[x].hasRightDoor == false) {//room doesn't have a right door
-					return false;
-				}
-				else {
-					isPath = true;
-				}
-			}
-		}
-		else if (roomDiff < 0) {//target is to the left of searcher
-			for (int x = searcherX; x > targetX; x--) {
-				if (mainlayer->floors[floorNum].rooms[x].hasLeftDoor == false) {//room doesn't have a left door
-					return false;
-				}
-				else {
-					isPath = true;
-				}
-			}
-		}
-	}
-	return isPath;
-}
-
 //a recursive function, searches for a path to get to a certain floor
-Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos){
+Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX)){
 	depth++;//going down a level whenever it gets called
 	vector<Stair*> possibleReturnStairs;
 	Stair* returnStair = NULL;
@@ -311,13 +348,13 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 
 			if (queryStair->startRoom.y == partnerStair->startRoom.y && queryStair != partnerStair) {//stair is on same floor as the partner stair, and is not the partner stair itself
 				//check if there's a path from the partner stair to the query stair
-				if (checkForPath(mainLayer, queryStair->startRoom.y, queryStair->startRoom.x, partnerStair->startRoom.x) == true) {
+				if (checkPathFunc(mainLayer, queryStair->startRoom.y, queryStair->startRoom.x, partnerStair->startRoom.x) == true) {
 					//get the distance between the query stair and the partner stair
 					float distanceBetweenDoors = abs(partnerStair->getPositionX() - queryStair->getPositionX());
 
 					if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair of this query stair is on same floor as you
 						//check if there's a path from query's partner stair to you
-						if (checkForPath(mainLayer, currentFloor, currentRoom, mainLayer->getPartnerStair(queryStair)->startRoom.x) == true) {
+						if (checkPathFunc(mainLayer, currentFloor, currentRoom, mainLayer->getPartnerStair(queryStair)->startRoom.x) == true) {
 							if (firstEndFound == false) {//only happens the first time the function finds an end point
 								firstEndFound = true;
 								shortestDepth = depth;
@@ -381,7 +418,7 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 			possibleReturnStairs.push_back(takeStair);
 		}
 		else if (newSearchStairs.size() > 0) {
-			takeStair =  pathSearch(mainLayer, newSearchStairs, partnerStair->getPositionX());
+			takeStair =  pathSearch(mainLayer, newSearchStairs, partnerStair->getPositionX(), checkPathFunc);
 			if (takeStair != NULL) {
 				possibleReturnStairs.push_back(takeStair);
 			}
@@ -413,7 +450,7 @@ Stair* Enemy::pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos
 	return returnStair;//fails to find a successful path
 }
 
-bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time) {
+bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool (*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX)) {
 	//float displacement = positionX - getPositionX();
 	Stair* takeStair = NULL;
 	vector<Stair*> searchStairs;
@@ -423,7 +460,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 	//target is on same floor as you:
 	if (floorNum == currentFloor) {
 		//check if enemy has a path to the player
-		directPathToTarget = checkForPath(mainLayer, currentFloor, roomNum, currentRoom);
+		directPathToTarget = checkPathFunc(mainLayer, currentFloor, roomNum, currentRoom);
 	}
 	//target is on different floor, or you can't get to them from the same floor as them:
 	if (floorNum != currentFloor || directPathToTarget == false){
@@ -432,11 +469,11 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 				Stair* queryStair = mainLayer->stairs[i];
 
 				if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
-					if (checkForPath(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
+					if (checkPathFunc(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
 						Stair* partnerStair = mainLayer->getPartnerStair(queryStair);
 						
 						if (mainLayer->getPartnerStair(queryStair)->startRoom.y == currentFloor) {//partner stair is on your floor
-							if (checkForPath(mainLayer, currentFloor, partnerStair->startRoom.x, currentRoom) == true) {//check if you can get to the partner stair
+							if (checkPathFunc(mainLayer, currentFloor, partnerStair->startRoom.x, currentRoom) == true) {//check if you can get to the partner stair
 								takeStair = mainLayer->getPartnerStair(queryStair);//take this stair
 								possibleStairsToTake.push_back(takeStair);
 							}
@@ -456,7 +493,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 				Stair* queryStair = mainLayer->stairs[i];
 
 				if (queryStair->startRoom.y == floorNum) {//stair is on destination floor
-					if (checkForPath(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
+					if (checkPathFunc(mainLayer, floorNum, roomNum, queryStair->startRoom.x) == true) {//check if you can get to the target from this stair
 						searchStairs.push_back(queryStair);
 					}
 				}
@@ -484,7 +521,7 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 			pathLengths.clear();
 			firstEndFound = false;
 			depth = -1;
-			takeStair = pathSearch(mainLayer, searchStairs, positionX);
+			takeStair = pathSearch(mainLayer, searchStairs, positionX, checkPathFunc);
 		}
 		//move towards the stair found
 		if (takeStair != NULL) {
@@ -499,7 +536,12 @@ bool Enemy::pathTo(GameLayer* mainLayer, float positionX, int floorNum, int room
 		}
 		//takeStair is still NULL:
 		else {//could not find a path to the player
-			walk(time);//just walk around
+			if (checkPathFunc != checkForPathWithLocks) {
+				return pathTo(mainLayer, positionX, floorNum, roomNum, time, checkForPathWithLocks);
+			}
+			else {
+				walk(time);
+			}
 		}
 	}
 	else if (directPathToTarget == true) {
@@ -809,7 +851,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
 		enemy->setSuspicion(enemy->maxSuspicion / 1.75f);
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
 	}
@@ -829,7 +871,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 				enemy->walk(time);
 			}
 			else {
-				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y, enemy->startRoom.x, time) == true) {
+				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y, enemy->startRoom.x, time, checkForPath) == true) {
 					enemy->returning = false;
 				}
 			}
@@ -837,7 +879,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		//enemy does not move
 		else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
 			if (enemy->returning == true) {
-				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y, enemy->startRoom.x, time) == true) {
+				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y, enemy->startRoom.x, time, checkForPath) == true) {
 					enemy->returning = false;
 					enemy->slowStop();
 					if (enemy->pathTag == "STAND_LEFT") {
@@ -928,7 +970,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->timeToPauseFor = 5.0f;
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
@@ -976,6 +1018,17 @@ void Enemy::SuspectState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Alerted State:
 void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->heldItem != NULL) {
+		if (enemy->heldItem->isKey == true && enemy->inventory.size() > 1) {
+			for (int i = 0; i < enemy->inventory.size(); i++) {
+				if (enemy->inventory[i]->isKey == false) {
+					enemy->heldItem = enemy->inventory[i];
+					enemy->heldItem->initHeldItem();
+					break;
+				}
+			}
+		}
+	}
 	if (enemy->detectedPlayer == NULL) {
 		enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByName("player"));
 	}
@@ -1049,7 +1102,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 
 	//enemy still knows where they player is
 	if (enemy->lostPlayer == false) {
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 		//check if enemy has a held item or not
 		if (enemy->heldItem == NULL) {
 			enemy->heldItem = enemy->fist;//if not, give them a fist
@@ -1080,7 +1133,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	//enemy didn't see player hide
 	else {
 		if (enemy->reachedLastSeen == false) {
-			enemy->reachedLastSeen = enemy->pathTo(mainLayer, enemy->lastSeenLocation->getPositionX(), enemy->lastSeenLocation->getPositionY(), enemy->lastSeenLocation->getPositionX(), time);
+			enemy->reachedLastSeen = enemy->pathTo(mainLayer, enemy->lastSeenLocation->getPositionX(), enemy->lastSeenLocation->getPositionY(), enemy->lastSeenLocation->getPositionX(), time, checkForPath);
 		}
 		else {//they have reached player's last seen location
 			enemy->walk(time);
@@ -1119,7 +1172,7 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		return new DefaultState;//shouldn't be possible now tha tthey can attack without an item
 	}
 	//if (enemy->heldItem->didHitWall == true) {
-	//	enemy->move(Vec2(-5 * enemy->heldItem->dmg, 0));
+	//	enemy->move(Vec2(-1, 0));
 	//}
 	if (enemy->attackPrepareTime != -1.0f && time - enemy->attackPrepareTime >= enemy->heldItem->getStartTime()) {
 		enemy->attackStartTime = time;
@@ -1243,7 +1296,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			enemy->timeToPauseFor = 3.0f;
 			enemy->paused = true;
 			enemy->wasFlipped = enemy->flippedX;
-			enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
+			enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 			enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
 			enemy->isTouched = false;
 			enemy->detectedPlayer = NULL;
@@ -1252,8 +1305,32 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	else if (enemy->prevState->type == "alert" || enemy->prevState->type == "attack"){//enemy was in alert state, just open door and run, or they were attacking
 		if (enemy->doorToUse->checkLock() == true && enemy->openedDoor == false) {//they didn't actually open the door
 			//break it down
-			enemy->toEnter = new AttackState;
-			return enemy->toEnter;
+			//check if enemy has a held item or not
+			if (enemy->heldItem == NULL) {
+				enemy->heldItem = enemy->fist;//if not, give them a fist
+				enemy->addChild(enemy->fist);
+			}
+			if (enemy->heldItem != NULL) {
+				//get distance from door
+				if (enemy->flippedX == true) {
+					enemy->distanceToDoor = abs((enemy->doorToUse->getPositionX() + enemy->doorToUse->getContentSize().width) - enemy->getPositionX());
+				}
+				else if (enemy->flippedX == false) {
+					enemy->distanceToDoor = abs(enemy->doorToUse->getPositionX() - (enemy->getPositionX() + enemy->getSize().width));
+				}
+				//check if enemy is in range to attack door
+				if (enemy->distanceToDoor <= enemy->heldItem->getRange()) {//enemy is within range to attack door
+					enemy->toEnter = new AttackState;
+					return enemy->toEnter;
+				}
+				else {
+					enemy->moveToDoor(enemy->doorToUse);
+					if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
+						enemy->heldItem = NULL;
+						enemy->removeChild(enemy->fist, true);
+					}
+				}
+			}
 		}
 		else {//if door is unlocked
 			if (abs(enemy->getPositionX() - enemy->doorUsePos) > enemy->doorToUse->radius + 1) {//enemy has walked through door
@@ -1355,7 +1432,7 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->timeToPauseFor = 3.0f;
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
@@ -1403,7 +1480,7 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	}
 	if (enemy->paused == false) {
 		if (enemy->reachedLocation == false) {
-			if (enemy->pathTo(mainLayer, enemy->noiseLocation->getPositionX(), enemy->noiseLocation->startRoom.y, enemy->noiseLocation->startRoom.x, time) == true) {
+			if (enemy->pathTo(mainLayer, enemy->noiseLocation->getPositionX(), enemy->noiseLocation->startRoom.y, enemy->noiseLocation->startRoom.x, time, checkForPath) == true) {
 				enemy->reachedLocation = true;
 			}
 		}
@@ -1430,7 +1507,7 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		enemy->timeToPauseFor = 3.0f;
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
@@ -1500,7 +1577,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 		enemy->timeToPauseFor = 3.0f;
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
-		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time);
+		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 		enemy->setSuspicion(enemy->maxSuspicion);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
