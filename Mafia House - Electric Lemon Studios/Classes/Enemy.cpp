@@ -1026,8 +1026,10 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 		if (enemy->heldItem->isKey == true && enemy->inventory.size() > 1) {
 			for (int i = 0; i < enemy->inventory.size(); i++) {
 				if (enemy->inventory[i]->isKey == false) {
+					enemy->removeChild(enemy->heldItem, true);
 					enemy->heldItem = enemy->inventory[i];
 					enemy->heldItem->initHeldItem();
+					enemy->addChild(enemy->heldItem);
 					break;
 				}
 			}
@@ -1059,7 +1061,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		return new DefaultState;
 	}
 	//check if enemy has seen an item
-	if (enemy->itemToPickUp != NULL && enemy->heldItem == NULL) {
+	if (enemy->itemToPickUp != NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {//enemy doesn't have a held item or it is a key
 		enemy->pickUpItem(mainLayer);
 	}
 	//check if enemy is walking into a door
