@@ -35,7 +35,6 @@ public:
 
 	void openDoor();
 	void closeDoor();
-	void breakDoor(float time);//alert enemies will break down locked doors
 
 	//actions for enemies:
 	void pause(float time);

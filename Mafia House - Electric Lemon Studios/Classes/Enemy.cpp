@@ -155,28 +155,6 @@ void Enemy::closeDoor() {
 	}
 }
 
-void Enemy::breakDoor(float time) {
-	/*if (startBreakTime == -1) {
-		startBreakTime = time;
-	}
-	if (time - startBreakTime >= breakTime) {
-		doorToUse->breakDoor();//break the door after a certain amount of time
-		doorToUse->use();
-		startBreakTime = -1;
-	}*/
-	//if (heldItem != NULL) {
-	//	doorToUse->itemHit(heldItem);
-	//}
-	//else {
-		doorToUse->hp = doorToUse->hp - (10.0f / (6.0f SECONDS));
-	//}
-
-	if (doorToUse->hp <= 0) {
-		doorToUse->breakDoor();
-		doorToUse->use();
-	}
-}
-
 void Enemy::pause(float time) {
 	if (startPauseTime == -1) {
 		stop();
@@ -686,6 +664,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start){
 
 void Enemy::gotHit(Item* item, float time) {
 	if (item->didHitWall == false && item->hp > 0) {
+		stopAllActions();
 		wasInHitStun = true;
 		hitStunStart = time;
 		hitStunTime = item->hitstun;
@@ -696,7 +675,7 @@ void Enemy::gotHit(Item* item, float time) {
 			}
 		}
 		if (touchingWall == false) {
-			moveAbsolute(item->knockback);
+			moveAbsoluteNoLimit(item->knockback);
 		}
 		item->used();
 		hp -= item->dmg;//dealing damage to enemy
@@ -1272,7 +1251,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	else if (enemy->prevState->type == "alert" || enemy->prevState->type == "attack"){//enemy was in alert state, just open door and run, or they were attacking
 		if (enemy->doorToUse->checkLock() == true && enemy->openedDoor == false) {//they didn't actually open the door
-			//enemy->breakDoor(time);
+			//break it down
 			enemy->toEnter = new AttackState;
 			return enemy->toEnter;
 		}

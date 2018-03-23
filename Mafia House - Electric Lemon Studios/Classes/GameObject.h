@@ -91,6 +91,8 @@ public:
 	void stop();
 	void slowStop();
 
+	void moveNoLimit(Vec2 velocity);//doesn't check for object's speed limit
+	void moveAbsoluteNoLimit(Vec2 velocity);//doesn't check for object's speed limit
 	void move(Vec2 velocity);//moves relative to direction object is facing
 	void moveAbsolute(Vec2 velocity);//moves in absolute direction, positive is right, up
 
@@ -121,7 +123,7 @@ protected:
 	bool flippedY = false;//false = facing upright
 
 	float baseSpeed = 100.0f;
-	float maxSpeed = 1000.0f;
+	float maxSpeed = 100.0f;
 
 	std::string name = "name";//can set name to identify sprite type, used for collision detection
 	float zOrder = 0;//determines what is drawn over top of what

@@ -40,6 +40,7 @@ void Player::resetCollisionChecks() {
 
 void Player::wasHit(Item* item, float time) {
 	if (item->didHitWall == false) {
+		stopAllActions();
 		wasInHitStun = true;
 		hitStunStart = time;
 		hitStunTime = item->hitstun;
@@ -47,7 +48,8 @@ void Player::wasHit(Item* item, float time) {
 		isHit = true;
 		hp -= item->dmg;//taking damage from attack
 		if (touchingWall == false) {
-			moveAbsolute(item->knockback);
+			stop();
+			moveAbsoluteNoLimit(item->knockback);
 		}
 	}
 }
@@ -272,6 +274,8 @@ void Player::State::exit(Player* player, GameLayer* mainLayer) {
 
 //Neutral State:
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->moveSpeed = 1.0f;
+	player->setSpeed(player->moveSpeed);
 	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 }
 Player::State* Player::NeutralState::update(Player* player, GameLayer* mainLayer, float time) {
@@ -416,9 +420,11 @@ void Player::DeathState::exit(Player* player, GameLayer* mainLayer, float time) 
 
 //No Clip state:
 void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time) {
-	player->getPhysicsBody()->setVelocityLimit(100);
+	player->getPhysicsBody()->setVelocityLimit(250);
+	player->getPhysicsBody()->setGravityEnable(false);
 	player->noclip();
-	player->moveSpeed = 3;
+	player->moveSpeed = 4;
+	player->setSpeed(player->moveSpeed);
 	//player->hidden = true;
 }
 Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
@@ -438,10 +444,10 @@ Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainL
 		player->walk(input, time);
 	}
 	if (input == MOVE_UP) {
-		player->move(Vec2(0, 25));
+		player->move(Vec2(0, 35));
 	}
 	else if (input == MOVE_DOWN) {
-		player->move(Vec2(0, -25));
+		player->move(Vec2(0, -35));
 	}
 	if (input == NO_CLIP) {
 		return new NeutralState;
@@ -449,8 +455,11 @@ Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainL
 	return nullptr;
 }
 void Player::NoClipState::exit(Player* player, GameLayer* mainLayer) {
+	player->getPhysicsBody()->setVelocityLimit(10000);
+	player->getPhysicsBody()->setGravityEnable(true);
 	player->noclip();
 	player->moveSpeed = 1;
+	player->setSpeed(player->moveSpeed);
 	//player->hidden = false;
 }
 void Player::noclip() {

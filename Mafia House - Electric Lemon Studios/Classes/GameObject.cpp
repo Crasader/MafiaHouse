@@ -164,26 +164,70 @@ void GameObject::slowStop() {
 	getPhysicsBody()->applyForce(-force);
 }
 
+void GameObject::moveNoLimit(Vec2 velocity) {//doesn't check for object's speed limit
+	auto mass = getPhysicsBody()->getMass();
+
+	Vec2 force = mass * velocity;
+
+	//reversing direction of movement if character is flipped
+	force.x = flippedX == true ? force.x * -1 : force.x;
+	force.y = flippedY == true ? force.y * -1 : force.y;
+
+	getPhysicsBody()->applyImpulse(force);
+}
+
+void GameObject::moveAbsoluteNoLimit(Vec2 velocity) {//doesn't check for object's speed limit
+	auto mass = getPhysicsBody()->getMass();
+
+	Vec2 force = mass * velocity;
+
+	getPhysicsBody()->applyImpulse(force);
+}
+
 void GameObject::move(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
-	if (abs(getPhysicsBody()->getVelocity().x) < maxSpeed) {//only apply force if they're under thier max speed
-		auto mass = getPhysicsBody()->getMass();
+	auto mass = getPhysicsBody()->getMass();
 
-		Vec2 force = mass * velocity;
+	Vec2 force = mass * velocity;
 
-		//reversing direction of movement if character is flipped
-		force.x = flippedX == true ? force.x * -1 : force.x;
-		force.y = flippedY == true ? force.y * -1 : force.y;
+	//reversing direction of movement if character is flipped
+	force.x = flippedX == true ? force.x * -1 : force.x;
+	force.y = flippedY == true ? force.y * -1 : force.y;
 
+	bool apply = true;
+	if (force.x > 0 && getPhysicsBody()->getVelocity().x > 0) {//if force applying is positive
+		if (getPhysicsBody()->getVelocity().x > maxSpeed) {//if they have a positive velocity greater than their max speed
+			apply = false;
+		}
+	}
+	else if (force.x < 0 && getPhysicsBody()->getVelocity().x < 0) {//if force applying is negative
+		if (getPhysicsBody()->getVelocity().x < -maxSpeed) {//if they have a negative velocity less than their negative max speed
+			apply = false;
+		}
+	}
+
+	if (apply == true) {
 		getPhysicsBody()->applyImpulse(force);
 	}
 }
 
 void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
-	if (abs(getPhysicsBody()->getVelocity().x) < maxSpeed) {//only apply force if they're under thier max speed
-		auto mass = getPhysicsBody()->getMass();
+	auto mass = getPhysicsBody()->getMass();
 
-		Vec2 force = mass * velocity;
+	Vec2 force = mass * velocity;
 
+	bool apply = true;
+	if (force.x > 0 && getPhysicsBody()->getVelocity().x > 0) {//if force applying is positive
+		if (getPhysicsBody()->getVelocity().x > maxSpeed) {//if they have a positive velocity greater than their max speed
+			apply = false;
+		}
+	}
+	else if (force.x < 0 && getPhysicsBody()->getVelocity().x < 0) {//if force applying is negative
+		if (getPhysicsBody()->getVelocity().x < -maxSpeed) {//if they have a negative velocity less than their negative max speed
+			apply = false;
+		}
+	}
+
+	if (apply == true) {
 		getPhysicsBody()->applyImpulse(force);
 	}
 }
