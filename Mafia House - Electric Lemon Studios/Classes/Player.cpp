@@ -423,14 +423,14 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 	if (player->attackRelease == false) {
 		//input for aiming
 		if (input == AIM_UP) {
-			player->aimAngle = -90;
+			player->aimAngle = 270;
 		}
 		if (input == AIM_DOWN) {
 			player->aimAngle = 90;
 		}
 		if (player->flippedX == true) {//only register left inputs for aiming while facing left
 			if (input == AIM_UP_LEFT) {
-				player->aimAngle = -45;
+				player->aimAngle = 315;
 			}
 			if (input == AIM_LEFT) {
 				player->aimAngle = 0;
@@ -441,7 +441,7 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		}
 		if (player->flippedX == false) {//only register right inputs for aiming while facing right
 			if (input == AIM_UP_RIGHT) {
-				player->aimAngle = -45;
+				player->aimAngle = 315;
 			}
 			if (input == AIM_RIGHT) {
 				player->aimAngle = 0;

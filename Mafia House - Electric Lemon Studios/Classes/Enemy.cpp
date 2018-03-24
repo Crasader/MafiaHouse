@@ -1314,23 +1314,29 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 			}
 			//check if enemy is in range to attack player
 			if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within horizontal range to attack player
-				//for stabbing weapons
-				if (enemy->heldItem->getAttackType() == Item::STAB) {
-					if (enemy->detectedPlayer->getPositionY() <= ((enemy->getPositionY() + enemy->getSize().height / 2) + enemy->heldItem->getRangeY())) {//check vertical range
-						enemy->inAttackRange = true;
+				Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);
+				//check vertical range
+				if (displacement.getLength() <= enemy->heldItem->getRangeRadius()) {//check for radial range
+					enemy->inAttackRange = true;
+					float angle = displacement.getAngle() * 180 / M_PI;
+					if ((angle > -22.5 && angle <= 22.5) || (angle > 157.5 || angle <= -157.5)) {
+						enemy->aimAngle = 0;
 					}
-					else {
-						inVerticalRange = false;
+					else if((angle > -67.5 && angle <= -22.5) || (angle > -157.5 && angle <= -112.5)) {
+						enemy->aimAngle = 45;
+					}
+					else if ((angle > 22.5 && angle <= 67.5) || (angle > 112.5 && angle <= 157.5)) {
+						enemy->aimAngle = 315;
+					}
+					else if ((angle > 67.5 && angle <= 112.5)) {
+						enemy->aimAngle = 270;
+					}
+					else if ((angle > -112.5 && angle <= -67.5)) {
+						enemy->aimAngle = 90;
 					}
 				}
-				//for swinging weapons
-				else if (enemy->heldItem->getAttackType() == Item::SWING) {
-					if (((enemy->detectedPlayer->getPosition() + Vec2(enemy->detectedPlayer->getSize().width / 2, 0)) - (enemy->getPosition() + enemy->getSize() / 2)).getLength() <= enemy->heldItem->getRangeRadius()) {//check for radial range
-						enemy->inAttackRange = true;
-					}
-					else {
-						inVerticalRange = false;
-					}
+				else {
+					inVerticalRange = false;
 				}
 			}
 			if (enemy->inAttackRange == true) {

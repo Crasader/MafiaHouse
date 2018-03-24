@@ -152,8 +152,8 @@ void Item::prepareSwing(float angle) {
 
 void Item::stabSequence(float angle, bool flip) {
 	Vec2 direction;
-	if (angle == -90) { direction = Vec2(0, 1); }
-	else if (angle == -45) {
+	if (angle == 270) { direction = Vec2(0, 1); }
+	else if (angle == 315) {
 		direction = Vec2(1, 1);
 		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
 	}
@@ -173,8 +173,8 @@ void Item::stabSequence(float angle, bool flip) {
 
 void Item::swingSequence(float angle, bool flip) {
 	Vec2 direction;
-	if (angle == -90) { direction = Vec2(0, 1); }
-	else if (angle == -45) {
+	if (angle == 270) { direction = Vec2(0, 1); }
+	else if (angle == 315) {
 		direction = Vec2(1, 1);
 		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
 	}
@@ -249,15 +249,16 @@ Knife::Knife(){
 	priority = 1;
 	hp = 2;
 	dmg = 50;
-	hitstun = 20 FRAMES;
+	hitstun = 10 FRAMES;
 	doorDmg = 7;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
 	startTime = 10 FRAMES;
 	attackTime = 8 FRAMES;
-	lagTime = 10 FRAMES;
+	lagTime = 12 FRAMES;
 	range = 36;
+	rangeRadius = 100;
 	powerLevel = 5;
 }
 
@@ -298,6 +299,6 @@ Hammer::Hammer(){
 	lagTime = 18 FRAMES;
 	range = 50;
 	rangeY = 80;
-	rangeRadius = 80;
+	rangeRadius = 100;
 	powerLevel = 10;
 }

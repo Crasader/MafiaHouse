@@ -85,7 +85,7 @@ protected:
 	float lagTime;//enlag time of attack
 	int range;//range of the weapons attack, for enemy ai
 	int rangeY = 30;//the vertical height from the ground that the item can hit, default is for most stab weapons
-	float rangeRadius = 50;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
+	float rangeRadius = 100;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
 };
 
 class Fist : public Item//enemy attacking barehand, actually an invisible item
