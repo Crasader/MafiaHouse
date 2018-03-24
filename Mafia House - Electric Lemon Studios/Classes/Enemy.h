@@ -184,8 +184,7 @@ protected:
 	//for running away
 	bool canRunAway = true;
 	Stair* prevUsedStair = NULL;
-	float prevUsedStairTime = -1;
-	float prevUsedStairWaitTime = 5.0f;
+	Stair* stairToTake = NULL;
 
 	//for going to items while alerted:
 	bool goingToFirstItem = false;

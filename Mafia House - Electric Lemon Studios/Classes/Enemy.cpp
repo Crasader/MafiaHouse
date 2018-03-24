@@ -631,15 +631,19 @@ bool Enemy::moveToDoor(Node* target) {
 
 void Enemy::runaway(GameLayer* mainlayer, float time) {
 	if (currentFloor == detectedPlayer->currentFloor) {//on same floor as player
+		stairToTake = NULL;
 		moveFrom(detectedPlayer->getPositionX());//run from them
 		if (stairToUse != NULL && stairToUse != prevUsedStair) {
 			useStair(mainlayer);
-			prevUsedStairTime = time;
 			prevUsedStair = mainlayer->getPartnerStair(stairToUse);
 			stairToUse = NULL;
 		}
+		else {
+			prevUsedStair = NULL;
+		}
 	}
 	else if (currentFloor != detectedPlayer->currentFloor) {//on different floor from player
+		stairToUse = NULL;
 		vector<Stair*> possibleStairsToTake;
 		for (int i = 0; i < mainlayer->stairs.size(); i++) {
 			if (mainlayer->stairs[i]->startRoom.y == currentFloor && mainlayer->stairs[i] != prevUsedStair) {//stair is on same floor as you
@@ -649,25 +653,24 @@ void Enemy::runaway(GameLayer* mainlayer, float time) {
 			}
 		}
 		if (possibleStairsToTake.size() > 0) {
-			stairToUse = possibleStairsToTake[0];
+			stairToTake = possibleStairsToTake[0];
 			if (possibleStairsToTake.size() > 1) {
 				float smallestDiff = abs(getPositionX() - possibleStairsToTake[0]->getPositionX());
 				for (int i = 1; i < possibleStairsToTake.size(); i++) {
 					float diff = abs(getPositionX() - possibleStairsToTake[i]->getPositionX());
 					if (diff < smallestDiff) {
 						smallestDiff = diff;
-						stairToUse = possibleStairsToTake[i];
+						stairToTake = possibleStairsToTake[i];
 					}
 				}
 			}
-			if (!(getPositionX() + bodySize.width >= stairToUse->getPositionX() && getPositionX() <= stairToUse->getPositionX() + stairToUse->getContentSize().width)) {
-				moveTo(stairToUse->getPositionX());//move towards stairs
+			if (!(getPositionX() + bodySize.width >= stairToTake->getPositionX() && getPositionX() <= stairToTake->getPositionX() + stairToTake->getContentSize().width)) {
+				moveTo(stairToTake->getPositionX());//move towards stairs
 			}
 			//if they are at location of stairs:
 			else {
-				stairToUse->use(this, mainlayer);//use the stairs
-				prevUsedStairTime = time;
-				prevUsedStair = mainlayer->getPartnerStair(stairToUse);
+				stairToTake->use(this, mainlayer);//use the stairs
+				prevUsedStair = mainlayer->getPartnerStair(stairToTake);
 			}
 		}
 		else {//no stairs found
@@ -707,13 +710,6 @@ void Enemy::runaway(GameLayer* mainlayer, float time) {
 
 	if (didHitWall == true) {
 		canRunAway = false;
-	}
-
-	if (time - prevUsedStairTime >= prevUsedStairWaitTime || prevUsedStairTime == -1) {
-		prevUsedStair = NULL;
-		if (stairToUse != NULL) {
-			stairToUse = NULL;
-		}
 	}
 }
 
@@ -903,7 +899,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 				}
 			}
 			//enemy sees an item
-			else if (visionContactName == "item" && state->type != "alert") {//enemy won't pick up seen items when alert
+			else if (visionContactName == "item" && getName() != "enemy_alert") {//enemy won't pick up seen items when alert
 				if (static_cast<Item*>(visionContact)->enemyCanUse == true) {
 					//check if the item is above you
 					if (static_cast<Item*>(visionContact)->getPositionY() <= (getPositionY() + getSize().height)) {
@@ -985,7 +981,7 @@ void Enemy::gotHit(Item* item, float time) {
 		item->used();
 		hp -= item->dmg;//dealing damage to enemy
 		if (item->getEffect() == Item::KILL) {
-			if (state->type != "alert" && state->type != "attack") {//hitting unalerted enemies with killing weapons will always kill them instantly
+			if (getName() != "enemy_alert") {//hitting unalerted enemies with killing weapons will always kill them instantly
 				hp = 0;
 			}
 			else {
