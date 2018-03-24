@@ -108,6 +108,7 @@ void Level::update(float deltaTime){
 	}
 	visionRays = DrawNode::create();
 	visionRays->setGlobalZOrder(10);
+
 	//enemy update
 	vector<Vec2> points;
 	Vec2 start;
@@ -128,6 +129,8 @@ void Level::update(float deltaTime){
 			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.2));
 		}
 		points.clear();
+
+		enemies[i]->enemies = enemies;//giving each enemy the current list of enemies in level
 
 		enemies[i]->update(mainLayer, gameTime);
 	}
@@ -423,6 +426,24 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return false;
 		}
 
+		//alert enemy and stairway
+		if (a->getName() == "enemy_alert" && b->getName() == "stair")
+		{
+			static_cast<Enemy*>(a)->stairToUse = static_cast<Stair*>(b);
+			return false;
+		}
+		else if (a->getName() == "stair" && b->getName() == "enemy_alert")
+		{
+			static_cast<Enemy*>(b)->stairToUse = static_cast<Stair*>(a);
+			return false;
+		}
+
+		//alert enemy and hide object
+		if ((a->getName() == "enemy_alert" && b->getName() == "env_object") || (a->getName() == "env_object" && b->getName() == "enemy_alert"))
+		{
+			return false;
+		}
+
 		//player and door
 		if (a->getName() == "player" && b->getName() == "door_radius")
 		{
@@ -492,7 +513,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		if (static_cast<Item*>(a)->priority > static_cast<Item*>(b)->priority) {//if a's damage is higher than b's
 			static_cast<Item*>(b)->hitWall();
 		}
-		else {
+		else if (static_cast<Item*>(b)->priority > static_cast<Item*>(a)->priority) {//if b's is higher than a's
 			static_cast<Item*>(a)->hitWall();
 		}
 		return false;

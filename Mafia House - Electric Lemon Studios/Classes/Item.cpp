@@ -52,7 +52,7 @@ void Item::initHeldItem() {
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
-	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setDynamic(false);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
 	getPhysicsBody()->setCollisionBitmask(42);
@@ -103,7 +103,7 @@ void Item::used() {
 
 void Item::hitWall() {
 	didHitWall = true;
-	getPhysicsBody()->setEnabled(false);
+	//getPhysicsBody()->setEnabled(false);
 }
 
 void Item::playerInRange(Node* player) {
@@ -143,8 +143,8 @@ void Item::prepareStab(float angle) {
 
 void Item::prepareSwing(float angle) {
 	setRotation(-135 + angle);
-	setPosition(Vec2(40, 80));
-	setAnchorPoint(Vec2(-0.9, 0.5));
+	setPosition(Vec2(35, 70));
+	setAnchorPoint(Vec2(-0.95, 0.5));
 	//auto prepare = MoveBy::create(10 FRAMES, Vec2(-16, 20));
 	//auto rotate = RotateBy::create(10 FRAMES, -90);
 	//runAction(Spawn::create(prepare,rotate));
@@ -185,7 +185,7 @@ void Item::swingSequence(float angle, bool flip) {
 	}
 	else if (angle == 90) { direction = Vec2(0, -1); }
 
-	Vec2 movement = Vec2(10, -26);
+	Vec2 movement = Vec2(6, -26);
 	movement = movement.rotate(direction);
 
 	auto move = MoveBy::create(attackTime * 0.3, movement);
@@ -299,6 +299,6 @@ Hammer::Hammer(){
 	lagTime = 18 FRAMES;
 	range = 50;
 	rangeY = 80;
-	rangeRadius = 100;
+	rangeRadius = 130;
 	powerLevel = 10;
 }

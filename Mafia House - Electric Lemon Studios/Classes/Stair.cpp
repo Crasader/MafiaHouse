@@ -10,7 +10,7 @@ Stair::Stair() {
 	//physics body properties
 	dynamic = false;
 	category = 16;
-	collision = 1;
+	collision = 3;
 
 	outlineName = "objects/stair_outline.png";
 }

@@ -70,7 +70,7 @@ public:
 	Stair* stairToUse = NULL;//the tag of the stairway the player can use
 
 	//for Picking Up items:
-	Item* itemToPickUp = NULL;//the tag of the item the player can picking up
+	Item* itemToPickUp = NULL;//the the item the player can pick up
 	//for storing held item:
 	Item* heldItem = NULL;
 

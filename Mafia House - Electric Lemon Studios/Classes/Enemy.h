@@ -42,11 +42,13 @@ public:
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
 
-	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy));
-	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, Enemy* enemy));//find path to location, return true = reached location
+	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, bool hasKey));
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, bool hasKey));//find path to location, return true = reached location
+	void moveFrom(float positionX);
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
+	void runaway(GameLayer* mainlayer, float time);
 	Item* findClosestItem(GameLayer* mainLayer);
 	Item* findBetterItem(GameLayer* mainLayer);
 	Item* findMoreRange(GameLayer* mainLayer);
@@ -77,6 +79,9 @@ public:
 	GameObject* noiseLocation = NULL;
 	//for seeing bodies/ knocked out dudes
 	GameObject* bodySeen = NULL;
+
+	//list of enemies
+	vector<Enemy*> enemies;
 
 	vector<PathNode*> pathNodes;
 
@@ -176,7 +181,13 @@ protected:
 	int depth = -1;
 	bool firstEndFound = false;
 
-	//for going to items wwhile alerted:
+	//for running away
+	bool canRunAway = true;
+	Stair* prevUsedStair = NULL;
+	float prevUsedStairTime = -1;
+	float prevUsedStairWaitTime = 5.0f;
+
+	//for going to items while alerted:
 	bool goingToFirstItem = false;
 	bool goingToBetterItem = false;
 	bool goingToMoreRange = false;
