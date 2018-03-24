@@ -50,6 +50,7 @@ void Item::initHeldItem() {
 	state = HELD;
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
+	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setDynamic(true);
 	getPhysicsBody()->setGravityEnable(false);
@@ -133,13 +134,14 @@ void Item::checkSpeed() {
 }
 
 void Item::prepareStab(float angle) {
-	setPosition(Vec2(28, 46));
+	setPosition(Vec2(30, 56));
 	setRotation(0 + angle);
+	setAnchorPoint(Vec2(0, 0.5));
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
 	//runAction(prepare);
 }
 
-void Item::beginSwing(float angle) {
+void Item::prepareSwing(float angle) {
 	setRotation(-135 + angle);
 	setPosition(Vec2(40, 80));
 	setAnchorPoint(Vec2(-0.9, 0.5));
@@ -148,7 +150,20 @@ void Item::beginSwing(float angle) {
 	//runAction(Spawn::create(prepare,rotate));
 }
 
-void Item::stabSequence(Vec2 direction) {
+void Item::stabSequence(float angle, bool flip) {
+	Vec2 direction;
+	if (angle == -90) { direction = Vec2(0, 1); }
+	else if (angle == -45) {
+		direction = Vec2(1, 1);
+		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+	}
+	else if (angle == 0) { direction = Vec2(1, 0); }
+	else if (angle == 45) {
+		direction = Vec2(1, -1);
+		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+	}
+	else if (angle == 90) { direction = Vec2(0, -1); }
+
 	auto move = MoveBy::create(attackTime * 0.125, direction * 25);//stab forward
 	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));//wait
 	auto moveback = MoveBy::create(attackTime * 0.125, -direction * 25);//pull back
@@ -156,11 +171,27 @@ void Item::stabSequence(Vec2 direction) {
 	runAction(sequence);
 }
 
-void Item::swingSequence(Vec2 direction) {
-	auto move = MoveBy::create(6 FRAMES, Vec2(10, -26));
-	auto rotate = RotateBy::create(6 FRAMES, 120);
+void Item::swingSequence(float angle, bool flip) {
+	Vec2 direction;
+	if (angle == -90) { direction = Vec2(0, 1); }
+	else if (angle == -45) {
+		direction = Vec2(1, 1);
+		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+	}
+	else if (angle == 0) { direction = Vec2(1, 0); }
+	else if (angle == 45) {
+		direction = Vec2(1, -1);
+		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+	}
+	else if (angle == 90) { direction = Vec2(0, -1); }
 
-	auto hold = MoveBy::create(8 FRAMES, Vec2(0, 0));
+	Vec2 movement = Vec2(10, -26);
+	movement = movement.rotate(direction);
+
+	auto move = MoveBy::create(attackTime * 0.3, movement);
+	auto rotate = RotateBy::create(attackTime * 0.3, 120);
+
+	auto hold = MoveBy::create(attackTime * 0.4, Vec2(0, 0));
 
 	//auto moveback = MoveBy::create(6 FRAMES, Vec2(-10, 5));
 	//auto rotateback = RotateBy::create(6 FRAMES, -135);

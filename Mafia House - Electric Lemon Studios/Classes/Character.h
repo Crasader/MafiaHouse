@@ -10,6 +10,8 @@ enum Input {
 	DROP,
 	USE_ITEM,
 	USE_RELEASE,
+	THROW_ITEM,
+	THROW_RELEASE,
 	USE_STAIR,
 	USE_DOOR,
 	HIDE,
@@ -17,6 +19,14 @@ enum Input {
 	MOVE_RIGHT,
 	MOVE_UP,
 	MOVE_DOWN,
+	AIM_UP,
+	AIM_UP_LEFT,
+	AIM_UP_RIGHT,
+	AIM_DOWN,
+	AIM_DOWN_LEFT,
+	AIM_DOWN_RIGHT,
+	AIM_LEFT,
+	AIM_RIGHT,
 	STOP,
 	NO_CLIP
 };
@@ -45,8 +55,8 @@ public:
 	virtual void dropItem(GameLayer* mainLayer);
 	virtual void breakItem(GameLayer* mainLayer);
 
-	virtual void beginUseItem();
-	virtual void useItem();
+	virtual void beginUseItem(float angle);
+	virtual void useItem(float angle);
 
 	virtual void useDoor();
 	virtual void useStair(GameLayer* mainLayer);
@@ -76,6 +86,9 @@ protected:
 
 	//to check if character has been hit:
 	bool isDead = false;
+
+	//for aiming
+	float aimAngle = 0;//-90 is up, +90 is down
 
 	//for movement:
 	float moveSpeed = 1.0f;

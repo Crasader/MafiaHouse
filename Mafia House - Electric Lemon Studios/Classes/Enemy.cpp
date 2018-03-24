@@ -1382,7 +1382,7 @@ void Enemy::AttackState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	}
 	enemy->stop();
 	enemy->attackPrepareTime = time;
-	enemy->beginUseItem();
+	enemy->beginUseItem(enemy->aimAngle);
 }
 Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -1400,7 +1400,7 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	//}
 	if (enemy->attackPrepareTime != -1.0f && time - enemy->attackPrepareTime >= enemy->heldItem->getStartTime()) {
 		enemy->attackStartTime = time;
-		enemy->useItem();
+		enemy->useItem(enemy->aimAngle);
 		enemy->attackPrepareTime = -1.0f;
 	}
 	if (enemy->attackStartTime != -1.0f && time - enemy->attackStartTime >= enemy->heldItem->getAttackTime()) {

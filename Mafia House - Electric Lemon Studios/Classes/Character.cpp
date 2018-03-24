@@ -101,28 +101,28 @@ void Character::breakItem(GameLayer* mainLayer) {
 	}
 }
 
-void Character::beginUseItem() {
+void Character::beginUseItem(float angle) {
 	if (heldItem != NULL) {
 		if (heldItem->getAttackType() == Item::STAB) {
-			heldItem->beginStab();
+			heldItem->prepareStab(angle);
 			setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
-			heldItem->beginSwing();
+			heldItem->prepareSwing(angle);
 			setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
 		}
 	}
 }
 
-void Character::useItem() {
+void Character::useItem(float angle) {
 	if (heldItem != NULL) {
 		heldItem->getPhysicsBody()->setEnabled(true);
 		if (heldItem->getAttackType() == Item::STAB) {
-			heldItem->stabSequence();
+			heldItem->stabSequence(angle, flippedX);
 			setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
-			heldItem->swingSequence();
+			heldItem->swingSequence(angle, flippedX);
 			setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
 		}
 	}

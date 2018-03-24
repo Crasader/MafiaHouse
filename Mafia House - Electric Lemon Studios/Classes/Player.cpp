@@ -385,7 +385,7 @@ void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time
 	player->moveSpeed = (0.4f);
 	player->setSpeed(player->moveSpeed);
 	player->attackPrepareTime = time;
-	player->beginUseItem();
+	player->beginUseItem(0);
 }
 Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
@@ -393,9 +393,12 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 		player->move(Vec2(-50, 0));
 		//player->moveAbsolute(-player->heldItem->knockback / 5);
 	}
+	if (player->attackRelease == false) {
+		player->beginUseItem(player->aimAngle);
+	}
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
 		player->attackStartTime = time;
-		player->useItem();
+		player->useItem(player->aimAngle);
 		player->attackPrepareTime = -1.0f;
 	}
 	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->heldItem->getAttackTime()) {
@@ -414,18 +417,54 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (player->wasInHitStun == true) {//player is in hitstun
 		player->attackRelease = true;//forced to release attack
-	}
-	if ((player->attackRelease == false) && (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
-		player->walkPrepareAttack(input, time);
-		player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
-	}
-	if (input == USE_RELEASE) {
-		player->attackRelease = true;
 		player->walk(STOP, time);
+	}
+	//only register inputs if player is still preparing attack
+	if (player->attackRelease == false) {
+		//input for aiming
+		if (input == AIM_UP) {
+			player->aimAngle = -90;
+		}
+		if (input == AIM_DOWN) {
+			player->aimAngle = 90;
+		}
+		if (player->flippedX == true) {//only register left inputs for aiming while facing left
+			if (input == AIM_UP_LEFT) {
+				player->aimAngle = -45;
+			}
+			if (input == AIM_LEFT) {
+				player->aimAngle = 0;
+			}
+			if (input == AIM_DOWN_LEFT) {
+				player->aimAngle = 45;
+			}
+		}
+		if (player->flippedX == false) {//only register right inputs for aiming while facing right
+			if (input == AIM_UP_RIGHT) {
+				player->aimAngle = -45;
+			}
+			if (input == AIM_RIGHT) {
+				player->aimAngle = 0;
+			}
+			if (input == AIM_DOWN_RIGHT) {
+				player->aimAngle = 45;
+			}
+		}
+		//input for moving
+		if ((input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
+			player->walkPrepareAttack(input, time);
+			player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
+		}
+		//input for releasing attack
+		if (input == USE_RELEASE) {
+			player->attackRelease = true;
+			player->walk(STOP, time);
+		}
 	}
 	return nullptr;
 }
 void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
+	player->aimAngle = 0;
 	player->heldItem->didHitWall = false;
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);

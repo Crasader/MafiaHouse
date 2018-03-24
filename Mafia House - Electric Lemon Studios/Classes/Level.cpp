@@ -162,6 +162,17 @@ void Level::update(float deltaTime){
 			player->handleInput(mainLayer, gameTime, USE_RELEASE);
 		}
 	}
+	//check if player is throwing item
+	if (INPUTS->getKeyPress(KeyCode::KEY_SHIFT)) {
+		if (player->heldItem != NULL) {
+			player->handleInput(mainLayer, gameTime, THROW_ITEM);
+		}
+	}
+	if (INPUTS->getKeyRelease(KeyCode::KEY_SHIFT)) {
+		if (player->heldItem != NULL) {
+			player->handleInput(mainLayer, gameTime, THROW_RELEASE);
+		}
+	}
 	//checking to see if player is picking up an item
 	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
 		if (player->itemToPickUp != NULL && player->heldItem == NULL) {
@@ -182,8 +193,7 @@ void Level::update(float deltaTime){
 	if (INPUTS->getKey(KeyCode::KEY_S)) {
 		player->handleInput(mainLayer, gameTime, MOVE_DOWN);
 	}
-
-	//player movement input checking
+	//player movement input checking:
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
 		player->handleInput(mainLayer, gameTime, MOVE_RIGHT);
 	}
@@ -195,6 +205,32 @@ void Level::update(float deltaTime){
 	}
 	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {//for testing purposes only, do not abuse
 		player->handleInput(mainLayer, gameTime, NO_CLIP);
+	}
+
+	//player aiming input checking:
+	if (INPUTS->getKey(KeyCode::KEY_W) && INPUTS->getKey(KeyCode::KEY_D)) {
+		player->handleInput(mainLayer, gameTime, AIM_UP_RIGHT);
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_W) && INPUTS->getKey(KeyCode::KEY_A)) {
+		player->handleInput(mainLayer, gameTime, AIM_UP_LEFT);
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_S) && INPUTS->getKey(KeyCode::KEY_D)) {
+		player->handleInput(mainLayer, gameTime, AIM_DOWN_RIGHT);
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_S) && INPUTS->getKey(KeyCode::KEY_A)) {
+		player->handleInput(mainLayer, gameTime, AIM_DOWN_LEFT);
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_D)) {
+		player->handleInput(mainLayer, gameTime, AIM_RIGHT);
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_A)) {
+		player->handleInput(mainLayer, gameTime, AIM_LEFT);
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_W)) {
+		player->handleInput(mainLayer, gameTime, AIM_UP);
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_S)) {
+		player->handleInput(mainLayer, gameTime, AIM_DOWN);
 	}
 
 	//must be called after checking all player actions
