@@ -429,12 +429,20 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//alert enemy and stairway
 		if (a->getName() == "enemy_alert" && b->getName() == "stair")
 		{
-			static_cast<Enemy*>(a)->stairToUse = static_cast<Stair*>(b);
+			if (static_cast<Enemy*>(a)->currentFloor == static_cast<Enemy*>(a)->detectedPlayer->currentFloor) {
+				if (static_cast<Enemy*>(a)->runningAway == true) {
+					static_cast<Enemy*>(a)->stairToUse = static_cast<Stair*>(b);
+				}
+			}
 			return false;
 		}
 		else if (a->getName() == "stair" && b->getName() == "enemy_alert")
 		{
-			static_cast<Enemy*>(b)->stairToUse = static_cast<Stair*>(a);
+			if (static_cast<Enemy*>(b)->currentFloor == static_cast<Enemy*>(b)->detectedPlayer->currentFloor) {
+				if (static_cast<Enemy*>(b)->runningAway == true) {
+					static_cast<Enemy*>(b)->stairToUse = static_cast<Stair*>(a);
+				}
+			}
 			return false;
 		}
 

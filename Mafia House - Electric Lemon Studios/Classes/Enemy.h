@@ -48,6 +48,7 @@ public:
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
+	Vec2 furthestDirection();//finds the direciton in which the enemy can move furthest on current floor
 	void runaway(GameLayer* mainlayer, float time);
 	Item* findClosestItem(GameLayer* mainLayer);
 	Item* findBetterItem(GameLayer* mainLayer);
@@ -74,6 +75,8 @@ public:
 	Player* detectedPlayer = NULL;
 	int detectedTag = -1;
 	Node* lastSeenLocation;
+
+	bool runningAway = false;
 
 	//for going to noises
 	GameObject* noiseLocation = NULL;
@@ -184,7 +187,10 @@ protected:
 	//for running away
 	bool canRunAway = true;
 	Stair* prevUsedStair = NULL;
+	Stair* prevUsedStair2 = NULL;
 	Stair* stairToTake = NULL;
+	Vec2 furthestMoveDirection = Vec2(0,0);
+	float furthestDistance = 0;
 
 	//for going to items while alerted:
 	bool goingToFirstItem = false;
@@ -202,7 +208,7 @@ protected:
 
 	//for attacking the player
 	float distanceToPlayer;
-	bool inAttackRange;
+	bool inAttackRange = false;
 	//for attacking without a weapon
 	Fist* fist;
 
@@ -252,7 +258,8 @@ protected:
 	float previousTurnTime = -1;
 	float stopTime = -1;
 	//for turning on spot
-	float turnTime = 5.0f;
+	float defaultTurnTime = 5.0f;
+	float turnTime = defaultTurnTime;
 
 	//for pausing temporaroly
 	bool paused = false;

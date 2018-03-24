@@ -629,17 +629,54 @@ bool Enemy::moveToDoor(Node* target) {
 	}
 }
 
+Vec2 Enemy::furthestDirection() {
+	furthestDistance = 0;
+	PhysicsRayCastCallbackFunc func = [this](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
+	{
+		string contactName = info.shape->getBody()->getNode()->getName();
+		Node* contact = info.shape->getBody()->getNode();
+
+		if (contactName == "wall") {//raycast stopped by walls and locked doors only
+			float distance = contact->getPositionX() - getPositionX();
+			if (abs(distance) > abs(furthestDistance)) {
+				furthestDistance = distance;
+			}
+			return false;
+		}
+		else if (contactName == "door") {
+			if (static_cast<Door*>(contact)->checkLock() == true) {//door is locked
+				if (hasKey == false) {//and they don't have a key
+					float distance = contact->getPositionX() - getPositionX();
+					if (abs(distance) > abs(furthestDistance)) {
+						furthestDistance = distance;
+					}
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+	Vec2 currentPosition = getPosition() + getSize() / 2;
+	director->getRunningScene()->getPhysicsWorld()->rayCast(func, currentPosition, currentPosition + Vec2(5000, 0), nullptr);//ray cast straight right
+	director->getRunningScene()->getPhysicsWorld()->rayCast(func, currentPosition, currentPosition + Vec2(-5000, 0), nullptr);//ray cast straight left
+
+	if (furthestDistance > 0) {//distance was to right
+		return Vec2(1, 0);//move right
+	}
+	else if (furthestDistance < 0) {//distance was to left
+		return Vec2(-1, 0);//move left
+	}
+}
+
 void Enemy::runaway(GameLayer* mainlayer, float time) {
 	if (currentFloor == detectedPlayer->currentFloor) {//on same floor as player
-		stairToTake = NULL;
+		//prevUsedStair = NULL;
+		furthestMoveDirection = Vec2(0, 0);
 		moveFrom(detectedPlayer->getPositionX());//run from them
-		if (stairToUse != NULL && stairToUse != prevUsedStair) {
+		if (stairToUse != NULL) {
 			useStair(mainlayer);
 			prevUsedStair = mainlayer->getPartnerStair(stairToUse);
 			stairToUse = NULL;
-		}
-		else {
-			prevUsedStair = NULL;
 		}
 	}
 	else if (currentFloor != detectedPlayer->currentFloor) {//on different floor from player
@@ -703,7 +740,16 @@ void Enemy::runaway(GameLayer* mainlayer, float time) {
 				}
 			}
 			else {//no enemies found either
-				walk(time);
+				if (furthestMoveDirection == Vec2(0, 0)) {
+					furthestMoveDirection = furthestDirection();
+					if (furthestMoveDirection.x > 0) {
+						if (flippedX == true) { flipX(); }
+					}
+					else if (furthestMoveDirection.x < 0) {
+						if (flippedX == false) { flipX(); }
+					}
+				}
+				moveAbsolute(furthestMoveDirection * 4.5 * moveSpeed);//move in direction in which you can move the furthest
 			}
 		}
 	}
@@ -803,7 +849,7 @@ Item* Enemy::findMoreRange(GameLayer* mainLayer) {
 	Item* foundItem = NULL;
 	vector<Item*> reachableItems;
 	for (int i = 0; i < mainLayer->items.size(); i++) {
-		if (mainLayer->items[i]->getState() == Item::GROUND && mainLayer->items[i]->isKey == false && mainLayer->items[i]->getRangeY() > heldItem->getRangeY()) {//item is on ground and is not a key, and has more vertical range than held item
+		if (mainLayer->items[i]->getState() == Item::GROUND && mainLayer->items[i]->isKey == false && mainLayer->items[i]->getRangeRadius() > heldItem->getRangeRadius()) {//item is on ground and is not a key, and has more vertical range than held item
 			if (mainLayer->items[i]->currentFloor == currentFloor && mainLayer->items[i]->getPositionY() <= (getPositionY() + getSize().height)) {//item is on same floor as you, and not above you
 				if (checkForPath(mainLayer, currentFloor, mainLayer->items[i]->currentRoom, currentRoom, this) == true) {//you can get to the item
 					if (detectedPlayer->currentFloor == currentFloor && detectedPlayer->getPositionY() <= (getPositionY() + getSize().height)) {//player is on same floor as you, and not above you
@@ -817,6 +863,11 @@ Item* Enemy::findMoreRange(GameLayer* mainLayer) {
 							if (mainLayer->items[i]->getPositionX() > detectedPlayer->getPositionX()) {//item is right of the player
 								continue;//move on to next item
 							}
+						}
+					}
+					for (int j = 0; j < enemies.size(); j++) {
+						if (enemies[i]->itemToPickUp == mainLayer->items[i]) {//don't pick up items another enemy is already going to pick up
+							continue;
 						}
 					}
 					reachableItems.push_back(mainLayer->items[i]);
@@ -878,7 +929,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 				if (static_cast<Enemy*>(visionContact)->knockedOut == true) {
 					bodySeen = static_cast<Enemy*>(visionContact);//they have seen a knocked out enemy
 				}
-				if (visionContactName == "enemy_alert" && state->type != "alert") {
+				if (visionContactName == "enemy_alert" && getName() != "enemy_alert") {
 					if (suspicionLevel < maxSuspicion) {
 						setSuspicion(maxSuspicion + 100);//enemies that see other alerted enemies will become alerted
 					}
@@ -1070,6 +1121,7 @@ void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->paused = false;
 	enemy->moveSpeed = 1.0f;
 	enemy->setSpeed(enemy->moveSpeed);
+	enemy->turnTime = enemy->defaultTurnTime;
 	enemy->setName("enemy");
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
 	enemy->visionDegrees = enemy->defaultDegrees;
@@ -1194,7 +1246,7 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->waitTime *= 0.65f;
 	enemy->setName("enemy");
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
-	enemy->turnTime *= 0.65f;
+	enemy->turnTime = enemy->defaultTurnTime * 0.65f;
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.3;
 }
@@ -1325,6 +1377,9 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->visionRadius = enemy->defaultRadius * 1.7;
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->hp < enemy->maxHP / 2) {
+		enemy->runningAway = true;
+	}
 	if (enemy->checkDead() == true) {
 		return new DeathState;
 	}
@@ -1335,24 +1390,26 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	if (enemy->detectedPlayer == NULL) {
 		return new DefaultState;
 	}
-	//check if enemy has no weapon
-	if (enemy->itemToPickUp == NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {
-		if (enemy->detectedPlayer->heldItem != NULL && enemy->detectedPlayer->heldItem->isKey == false) {//player has a held item and it is not a key
-			enemy->itemToPickUp = (enemy->findClosestItem(mainLayer));//find a weapon that is closest to them
-			if (enemy->itemToPickUp != NULL) {//if one was found
-				enemy->goingToFirstItem = true;
-				return new GetItemState;//go and get it
+	if (enemy->runningAway == false) {//if enemy has more than half hp
+		//check if enemy has no weapon
+		if (enemy->itemToPickUp == NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {
+			if (enemy->detectedPlayer->heldItem != NULL && enemy->detectedPlayer->heldItem->isKey == false) {//player has a held item and it is not a key
+				enemy->itemToPickUp = (enemy->findClosestItem(mainLayer));//find a weapon that is closest to them
+				if (enemy->itemToPickUp != NULL) {//if one was found
+					enemy->goingToFirstItem = true;
+					return new GetItemState;//go and get it
+				}
 			}
 		}
-	}
-	//check if there's a better weapon to pick up
-	else if (enemy->heldItem != NULL && enemy->heldItem->isKey == false) {//enemy already has an item that isn't a key
-		if (enemy->detectedPlayer->heldItem != NULL && enemy->detectedPlayer->heldItem->isKey == false) {//player has a weapon that isn't a key
-			if (enemy->detectedPlayer->heldItem->powerLevel > enemy->heldItem->powerLevel) {//if player's weapon is better than theirs
-				enemy->itemToPickUp = (enemy->findBetterItem(mainLayer));//find a weapon that is closest to them
-				if (enemy->itemToPickUp != NULL) {//if one was found
-					enemy->goingToBetterItem = true;
-					return new GetItemState;//go and get it
+		//check if there's a better weapon to pick up
+		else if (enemy->heldItem != NULL && enemy->heldItem->isKey == false) {//enemy already has an item that isn't a key
+			if (enemy->detectedPlayer->heldItem != NULL && enemy->detectedPlayer->heldItem->isKey == false) {//player has a weapon that isn't a key
+				if (enemy->detectedPlayer->heldItem->powerLevel > enemy->heldItem->powerLevel) {//if player's weapon is better than theirs
+					enemy->itemToPickUp = (enemy->findBetterItem(mainLayer));//find a weapon that is closest to them
+					if (enemy->itemToPickUp != NULL) {//if one was found
+						enemy->goingToBetterItem = true;
+						return new GetItemState;//go and get it
+					}
 				}
 			}
 		}
@@ -1403,10 +1460,16 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		}
 	}
 
-	if (enemy->hp >= enemy->maxHP / 2 || enemy->canRunAway == false) {//enemy has more than half hp still, or they cannot run away anymore
+	if (enemy->runningAway == false || enemy->canRunAway == false) {//enemy has more than half hp still, or they cannot run away anymore
 	//enemy still knows where they player is
 		if (enemy->lostPlayer == false) {
-			enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
+			if (enemy->canRunAway == false) {
+				enemy->turnTime = 1.0f;
+				enemy->turnOnSpot(time);
+			}
+			else {
+				enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
+			}
 			//check if enemy has a held item or not
 			if (enemy->heldItem == NULL) {
 				enemy->heldItem = enemy->fist;//if not, give them a fist
@@ -1457,13 +1520,15 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 						enemy->heldItem = NULL;
 						enemy->removeChild(enemy->fist, true);
 					}
-					if (enemy->heldItem != NULL) {//if they have an item
-						if (inVerticalRange == false) {//you could get to them horizontally but not vertically
-							//find an item with more vertical range
-							enemy->itemToPickUp = (enemy->findMoreRange(mainLayer));//find a weapon that is closest to them
-							if (enemy->itemToPickUp != NULL) {//if one was found
-								enemy->goingToMoreRange = true;
-								return new GetItemState;//go and get it
+					if (enemy->runningAway == false) {
+						if (enemy->heldItem != NULL) {//if they have an item
+							if (inVerticalRange == false) {//you could get to them horizontally but not vertically
+								//find an item with more vertical range
+								enemy->itemToPickUp = (enemy->findMoreRange(mainLayer));//find a weapon that is closest to them
+								if (enemy->itemToPickUp != NULL) {//if one was found
+									enemy->goingToMoreRange = true;
+									return new GetItemState;//go and get it
+								}
 							}
 						}
 					}
@@ -1481,6 +1546,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		}
 	}
 	else {//enemy has less than half hp, and can run away
+		enemy->inAttackRange = false;
 		enemy->runaway(mainLayer, time);
 	}
 	return nullptr;
@@ -1638,7 +1704,9 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
 		}
 		else {
-			enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
+			if (enemy->runningAway == false || enemy->canRunAway == false) {
+				enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
+			}
 		}
 		//check if player bumped enemy
 		if (enemy->isTouched == true) {
@@ -1768,18 +1836,9 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			//check if player is still not within range
 			if (enemy->heldItem != NULL) {
 				bool inVerticalRange = false;
-				//for stabbing weapons
-				if (enemy->heldItem->getAttackType() == Item::STAB) {
-					if (enemy->detectedPlayer->getPositionY() <= ((enemy->getPositionY() + enemy->getSize().height / 2) + enemy->heldItem->getRangeY())) {//check vertical range
-						inVerticalRange = true;
-					}
-				}
-				//for swinging weapons
-				else if (enemy->heldItem->getAttackType() == Item::SWING) {
 					if (((enemy->detectedPlayer->getPosition() + Vec2(enemy->detectedPlayer->getSize().width / 2, 0)) - (enemy->getPosition() + enemy->getSize() / 2)).getLength() <= enemy->heldItem->getRangeRadius()) {//check for radial range
 						inVerticalRange = true;
 					}
-				}
 				//if they have become in range
 				if (inVerticalRange == true) {//you could get to them horizontally but not vertically
 					enemy->itemToPickUp = NULL;

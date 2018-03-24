@@ -35,7 +35,6 @@ public:
 	float getAttackTime() { return attackTime; }
 	float getLagTime() { return lagTime; }
 	int getRange() { return range; }
-	int getRangeY() { return rangeY; }
 	int getRangeRadius() { return rangeRadius; }
 
 	virtual void initHeldItem();
@@ -84,7 +83,6 @@ protected:
 	float attackTime;//duration of active frames
 	float lagTime;//enlag time of attack
 	int range;//range of the weapons attack, for enemy ai
-	int rangeY = 30;//the vertical height from the ground that the item can hit, default is for most stab weapons
 	float rangeRadius = 100;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
 };
 

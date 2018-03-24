@@ -289,16 +289,15 @@ Hammer::Hammer(){
 	hp = 3;
 	dmg = 34;
 	knockback = Vec2(80, 0);
-	hitstun = 26 FRAMES;
+	hitstun = 24 FRAMES;
 	doorDmg = 34;
 	canBreakDoor = true;
 	effect = NONE;
 	attackType = SWING;
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;
-	lagTime = 18 FRAMES;
-	range = 50;
-	rangeY = 80;
+	lagTime = 20 FRAMES;
+	range = 47;
 	rangeRadius = 130;
 	powerLevel = 10;
 }
