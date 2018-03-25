@@ -25,6 +25,9 @@ public:
 	~PhysObject() {}
 
 	virtual void initObject();
+
+protected:
+	Size surfaceSize;
 };
 
 class Table : public PhysObject

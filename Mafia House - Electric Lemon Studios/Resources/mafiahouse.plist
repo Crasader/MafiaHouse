@@ -836,11 +836,11 @@
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{136,44}</string>
+                <string>{140,55}</string>
                 <key>spriteSourceSize</key>
-                <string>{136,44}</string>
+                <string>{140,55}</string>
                 <key>textureRect</key>
-                <string>{{70,28},{136,44}}</string>
+                <string>{{70,28},{140,55}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -975,7 +975,7 @@
                 <key>spriteSourceSize</key>
                 <string>{70,59}</string>
                 <key>textureRect</key>
-                <string>{{416,28},{70,59}}</string>
+                <string>{{420,28},{70,59}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -990,7 +990,7 @@
                 <key>spriteSourceSize</key>
                 <string>{70,59}</string>
                 <key>textureRect</key>
-                <string>{{346,28},{70,59}}</string>
+                <string>{{350,28},{70,59}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -1005,7 +1005,7 @@
                 <key>spriteSourceSize</key>
                 <string>{70,59}</string>
                 <key>textureRect</key>
-                <string>{{206,28},{70,59}}</string>
+                <string>{{210,28},{70,59}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -1020,7 +1020,7 @@
                 <key>spriteSourceSize</key>
                 <string>{70,59}</string>
                 <key>textureRect</key>
-                <string>{{276,28},{70,59}}</string>
+                <string>{{280,28},{70,59}}</string>
                 <key>textureRotated</key>
                 <false/>
             </dict>
@@ -1563,7 +1563,7 @@
             <key>size</key>
             <string>{490,1127}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:5ec175a877cf4a88fdc21539661913ed:dd5730266a3bb698a566868e7f9c54a9:914130cc296354cba5a7465addf66b33$</string>
+            <string>$TexturePacker:SmartUpdate:7b06fe1b4b8f17f8ebb9a3c5527b4d41:c414f569b381969172bea01f3607b76d:914130cc296354cba5a7465addf66b33$</string>
             <key>textureFileName</key>
             <string>mafiahouse.png</string>
         </dict>

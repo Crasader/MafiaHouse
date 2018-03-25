@@ -61,14 +61,17 @@ PhysObject::PhysObject(){
 }
 
 void PhysObject::initObject(){
-	GameObject::initObject();
+	initObjectNoPhysics();
+	initBoxBody(surfaceSize);
+	getPhysicsBody()->setPositionOffset(Vec2(0, 24));
 }
 
 //Table:
 Table::Table(){
 	PhysObject::PhysObject();
+	surfaceSize = Size(140, 10);
 }
 
 void Table::initObject() {
-	GameObject::initObject();
+	PhysObject::initObject();
 }
