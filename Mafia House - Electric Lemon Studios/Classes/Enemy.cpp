@@ -20,12 +20,12 @@ Enemy::Enemy()
 	fist = Fist::createWithSpriteFrameName();
 	fist->initObject();
 	//initializing animations:
-	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES);
-	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES);
-	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockout/%03d.png", 1, 10 FRAMES);
-	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES);
-	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES);
-	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES);
+	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockout/%03d.png", 1, 10 FRAMES, true);
+	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES, false);
+	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES, true);
 }
 
 Vec2 Enemy::getPosition() {
@@ -907,7 +907,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 			Node* visionContact = info.shape->getBody()->getNode();
 
 			//enemy vision is blocked by walls, doors
-			if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "door") {
+			if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "ceiling" || visionContactName == "door") {
 				points->push_back(info.contact + offsetAdjust);
 				didRun = true;
 				return false;

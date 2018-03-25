@@ -5,7 +5,7 @@ HideObject::HideObject()
 	//sprite properties
 	zOrder = 3;
 	scale = 1.0f;
-	name = "env_object";//used for collision detection
+	name = "hide_object";//used for collision detection
 	//physics body properties
 	tag = 20000;//each object will have a unique tag number
 	dynamic = false;
@@ -45,4 +45,30 @@ void HideObject::unhide() {
 	hiding = false;
 	setOpacity(255);
 	outline->setVisible(true);
+}
+
+//Physical Objects:
+PhysObject::PhysObject(){
+	//sprite properties
+	zOrder = 6;
+	scale = 1.0f;
+	name = "phys_object";//used for collision detection
+	//physics body properties
+	tag = 50000;//each object will have a unique tag number
+	dynamic = false;
+	category = 0xFFFFFFFF;
+	collision = 41;
+}
+
+void PhysObject::initObject(){
+	GameObject::initObject();
+}
+
+//Table:
+Table::Table(){
+	PhysObject::PhysObject();
+}
+
+void Table::initObject() {
+	GameObject::initObject();
 }

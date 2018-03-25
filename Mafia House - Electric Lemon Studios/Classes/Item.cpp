@@ -7,7 +7,7 @@ Item::Item()
 	zOrder = 6;
 	//physics body properties
 	category = 32;
-	collision = 8;
+	collision = 40;
 	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
 	rotate = true;
@@ -46,25 +46,30 @@ void Item::initRadius() {
 }
 
 //used when player picks up item
-void Item::initHeldItem() {
+void Item::initPickedUpItem() {
 	state = HELD;
+	initHeldItem();
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
-	getPhysicsBody()->setRotationOffset(0);
-	getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setDynamic(false);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
 	getPhysicsBody()->setCollisionBitmask(42);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
-	setPosition(Vec2(54, 33));
-	setRotation(-45.0f);
 	if (flippedX == true) {
 		flipX();
 	}
-	setAnchorPoint(Vec2(0, 0));
 }
+
+void Item::initHeldItem() {
+	setAnchorPoint(Vec2(0, 0));
+	setPosition(Vec2(54, 33));
+	setRotation(-45.0f);
+	getPhysicsBody()->setRotationOffset(0);
+	getPhysicsBody()->setEnabled(false);
+}
+
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
 	initGroundItem();
@@ -83,7 +88,7 @@ void Item::initGroundItem() {
 	enemyItem = false;
 	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
-	getPhysicsBody()->setCollisionBitmask(8);
+	getPhysicsBody()->setCollisionBitmask(40);
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);

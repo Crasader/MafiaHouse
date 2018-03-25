@@ -43,7 +43,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 		door->initObject(orientation);
 		Vent* vent = Vent::createWithSpriteFrameName();
 		vent->initObject(orientation);
-	
+		
 		Door* d;
 		float length;
 		Vec2 newPos = position;
@@ -140,7 +140,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 bool sortByNumber(PathNode* a, PathNode* b) { return (a->num) < (b->num); }//function for sorting vector of PathNodes
 
 //creates a room, made of 4 walls, can have doors/vents and stairways
-void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideObject*> *hideObjects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData* roomData, int height)
+void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideObject*> *hideObjects, vector<PhysObject*> *physObjects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData* roomData, int height)
 {	//setting size of room
 	setContentSize(Size(roomData->width, height));
 	setAnchorPoint(Vec2(0, 0));
@@ -171,8 +171,17 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideO
 	if (hideObjects->size() > 0) {
 		for (int i = 0; i < hideObjects->size(); i++) {
 			if ((*hideObjects)[i]->startRoom == roomData->room) {
-				//(*objects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*objects)[i]->roomStartPos);
+				//(*hideObjects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*hideObjects)[i]->roomStartPos);
 				(*hideObjects)[i]->setRoomPosition(position, (*hideObjects)[i]->roomStartPos);
+			}
+		}
+	}
+	//setting physical object positions
+	if (physObjects->size() > 0) {
+		for (int i = 0; i < physObjects->size(); i++) {
+			if ((*physObjects)[i]->startRoom == roomData->room) {
+				//(*physObjects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*physObjects)[i]->roomStartPos);
+				(*physObjects)[i]->setRoomPosition(position, (*physObjects)[i]->roomStartPos);
 			}
 		}
 	}
@@ -228,7 +237,7 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideO
 	createWall(doors, 2, 2, wallPos, Size(roomData->width + fullThick, thick), roomData->bottomDoors, "floor");
 
 	//ceiling
-	createWall(doors, 2, 1, wallPos + Vec2(0, height + thick), Size(roomData->width + fullThick, thick), roomData->ceilingDoors, "floor");
+	createWall(doors, 2, 1, wallPos + Vec2(0, height + thick), Size(roomData->width + fullThick, thick), roomData->ceilingDoors, "ceiling");
 
 	//left wall
 	createWall(doors, 1, 2, wallPos + Vec2(0, thick), Size(thick, height), roomData->leftDoors, "wall");

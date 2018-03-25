@@ -52,6 +52,9 @@ void Level::onStart(float deltaTime){
 	//	enemies[i]->initJoints();
 	//}
 
+	//initializing player joints
+	//player->initJoints();
+
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
@@ -189,11 +192,21 @@ void Level::update(float deltaTime){
 		}
 	}
 
+	//for flying only
+	if (player->noclip == true) {
+		if (INPUTS->getKey(KeyCode::KEY_W)) {
+			player->handleInput(mainLayer, gameTime, MOVE_UP);
+		}
+		if (INPUTS->getKey(KeyCode::KEY_S)) {
+			player->handleInput(mainLayer, gameTime, MOVE_DOWN);
+		}
+	}
+
 	//change between standing/crouching
-	if (INPUTS->getKey(KeyCode::KEY_W)) {
+	if (INPUTS->getKeyPress(KeyCode::KEY_W)) {
 		player->handleInput(mainLayer, gameTime, MOVE_UP);
 	}
-	if (INPUTS->getKey(KeyCode::KEY_S)) {
+	if (INPUTS->getKeyPress(KeyCode::KEY_S)) {
 		player->handleInput(mainLayer, gameTime, MOVE_DOWN);
 	}
 	//player movement input checking:
@@ -254,6 +267,37 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	Node *b = contact.getShapeB()->getBody()->getNode();
 
 	if (a != NULL && b != NULL) {
+		//player and physical object
+		if (a->getName() == "player" && b->getName() == "phys_object")
+		{
+			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 2)) {//only collide if player is above object
+				player->touchingFloor = true;
+				return true;
+			}
+			else {
+				player->objectToClimb = static_cast<PhysObject*>(b);
+				return false;
+			}
+		}
+		else if (a->getName() == "phys_object" && b->getName() == "player")
+		{
+			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 2)) {//only collide if player is above object
+				player->touchingFloor = true;
+				return true;
+			}
+			else {
+				player->objectToClimb = static_cast<PhysObject*>(a);
+				return false;
+			}
+		}
+
+		// check if player is touching floor
+		if ((a->getName() == "player" && b->getName() == "floor") || (a->getName() == "floor" && b->getName() == "player"))
+		{
+			player->touchingFloor = true;
+			return true;
+		}
+
 		// check if player has collided with a wall
 		if (a->getName() == "player" && (b->getName() == "wall" || b->getName() == "door"))
 		{
@@ -400,16 +444,17 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//player and hide object
-		if (a->getName() == "player" && b->getName() == "env_object")
+		if (a->getName() == "player" && b->getName() == "hide_object")
 		{
 			player->objectToHideBehind = static_cast<HideObject*>(b);
 			static_cast<HideObject*>(b)->playerRange = true;
 			return false;
 		}
-		else if (a->getName() == "env_object" && b->getName() == "player")
+		else if (a->getName() == "hide_object" && b->getName() == "player")
 		{
 			player->objectToHideBehind = static_cast<HideObject*>(a);
 			static_cast<HideObject*>(a)->playerRange = true;
+			return false;
 		}
 
 		//player and stairway
@@ -447,7 +492,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//alert enemy and hide object
-		if ((a->getName() == "enemy_alert" && b->getName() == "env_object") || (a->getName() == "env_object" && b->getName() == "enemy_alert"))
+		if ((a->getName() == "enemy_alert" && b->getName() == "hide_object") || (a->getName() == "hide_object" && b->getName() == "enemy_alert"))
 		{
 			return false;
 		}
@@ -687,7 +732,7 @@ void Level::createFloor(Vec2 position, vector<RoomData*> *roomData, int height)
 		(*roomData)[i]->right = position.x + (*roomData)[i]->width;//getting room's right side position
 
 		room = Room::create();
-		room->createRoom(&doors, &mainLayer->stairs, &hideObjects, &mainLayer->items, &enemies, &pathNodes, player, position, (*roomData)[i], height);
+		room->createRoom(&doors, &mainLayer->stairs, &hideObjects, &physObjects, &mainLayer->items, &enemies, &pathNodes, player, position, (*roomData)[i], height);
 
 		position = position + Vec2((*roomData)[i]->width + room->fullThick, 0);//adding length of created room to set position for next room
 
@@ -867,20 +912,28 @@ bool Level::initLevel(string filename){
 				hideObject->startRoom = Vec2(roomNum, floorNum);
 				hideObjects.push_back(hideObject);
 			}
+			//Physical Objects
+			else if (pieces[0] == "phys_object") {
+				PhysObject* physObject;
+				if (pieces[1] == "table") {
+					physObject = Table::createWithSpriteFrameName();
+				}
+				physObject->initObject();
+				physObject->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
+				physObject->startRoom = Vec2(roomNum, floorNum);
+				physObjects.push_back(physObject);
+			}
 			//Items
 			else if (pieces[0] == "item") {
 				Item* item;
 				if (pieces[1] == "knife") {
 					item = Knife::createWithSpriteFrameName();
-					item->retain();
 				}
 				else if (pieces[1] == "key") {
 					item = Key::createWithSpriteFrameName();
-					item->retain();
 				}
 				else if (pieces[1] == "hammer") {
 					item = Hammer::createWithSpriteFrameName();
-					item->retain();
 				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
@@ -980,6 +1033,11 @@ bool Level::initLevel(string filename){
 	for (int i = 0; i < hideObjects.size(); i++) {
 		hideObjects[i]->setTag(hideObjects[i]->getTag() + i);//giving a unique tag to each object
 		mainLayer->addChild(hideObjects[i]);
+	}
+	//physical objects
+	for (int i = 0; i < physObjects.size(); i++) {
+		physObjects[i]->setTag(physObjects[i]->getTag() + i);//giving a unique tag to each object
+		mainLayer->addChild(physObjects[i]);
 	}
 	//items
 	for (int i = 0; i < mainLayer->items.size(); i++) {

@@ -71,15 +71,17 @@ protected:
 
 	vector<HideObject*> hideObjects;//the hide objects in the level
 
+	vector<PhysObject*> physObjects;//the physical objects in the level
+
 	vector<Room*> rooms;//the rooms the level is made up of
 
 	vector<Door*> doors;
 
 	Node* camPos;//an invisible node used to position the camera
 	Camera* camera = NULL;
-	Vec2 camBoundingBox = Vec2(200, 0);
+	Vec2 camBoundingBox = Vec2(200, 50);
 	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
-	float camZoom = 0.4f;
+	float camZoom = 1.0f;
 
 	bool onContactBegin(PhysicsContact &contact);
 

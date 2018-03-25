@@ -37,6 +37,7 @@ public:
 	int getRange() { return range; }
 	int getRangeRadius() { return rangeRadius; }
 
+	virtual void initPickedUpItem();
 	virtual void initHeldItem();
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 	virtual void initGroundItem();

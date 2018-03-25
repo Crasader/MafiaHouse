@@ -10,14 +10,18 @@ public:
 	CREATE_WITH_FRAME(Player);
 	CREATE_WITH_FRAME_NAME(Player, "player/stand/001.png");
 
-	void noclip();
-	bool clip = false;
+	void initObject(Vec2 startPos = Vec2(0, 0));
+
+	void initJoints();
 
 	//functions for player actions:
 	void resetCollisionChecks();//resets variables used to track what objects/items player will interact with/use
 
 	void walkPrepareAttack(Input input, float time);
 	void walk(Input input, float time);
+	void crouchWalk(Input input, float time);
+
+	void jump();
 
 	void pickUpItem(GameLayer* mainLayer);
 	void dropItem(GameLayer* mainLayer);
@@ -37,6 +41,7 @@ public:
 
 	//pointers for interacting with objects:
 	HideObject* objectToHideBehind = NULL;//the tag of the object the player can hide behind
+	PhysObject* objectToClimb = NULL;
 	//DeadBody* bodyToPickUp = NULL;
 
 	void update(GameLayer* mainLayer, float time);
@@ -45,11 +50,18 @@ public:
 	bool inVision = false;
 	bool wasSeen = false;
 
-	bool isHit;
+	bool isHit = false;
+	bool touchingFloor = true;
+
+	//for standing on physical objects
+	//Node* feet;
+	//PhysicsBody* feetBody;
+	bool noclip = false;
 
 private:
 	class State {
 	public:
+		string type = "default";
 		virtual ~State() {}
 		virtual void enter(Player* player, GameLayer* mainLayer, float time);
 		virtual State* update(Player* player, GameLayer* mainLayer, float time);
@@ -58,6 +70,14 @@ private:
 	};
 	class NeutralState : public State {
 	public:
+		NeutralState() { type = "neutral"; }
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* update(Player* player, GameLayer* mainLayer, float time);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+	};
+	class CrouchState : public State {
+	public:
+		CrouchState() { type = "crouch"; }
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
@@ -67,6 +87,12 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		void exit(Player* player, GameLayer* mainLayer);
+	};
+	class ClimbState : public State {
+	public:
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* update(Player* player, GameLayer* mainLayer, float time);
 		void exit(Player* player, GameLayer* mainLayer);
 	};
 	class AttackState : public State {
@@ -93,6 +119,11 @@ private:
 	State* newState = NULL;
 	State* prevState = NULL;
 
+	//for crouching (and climbing)
+	PhysicsBody* crouchBody;
+	Size standSize;
+	Size crouchSize;
+
 	//for moonwalking
 	bool moonwalking = false;
 	float prevStopTime = -1;
@@ -118,8 +149,9 @@ private:
 
 	//animations:
 	GameAnimation moonwalk;
-	//GameAnimation crouchAnimation;
-	//GameAnimation crawlAnimation;
+	GameAnimation crouch;
+	GameAnimation standup;
+	GameAnimation crouchwalk;
 	//GameAnimation crouchStabAnimation;
 	//GameAnimation crouchSwingAnimation;
 	//GameAnimation crouchThrowAnimation;

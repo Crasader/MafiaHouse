@@ -52,7 +52,7 @@ void Character::pickUpItem(GameLayer* mainLayer) {
 		heldItem = itemToPickUp;
 		
 		addChild(heldItem);
-		heldItem->initHeldItem();
+		heldItem->initPickedUpItem();
 		inventory.push_back(heldItem);
 
 		itemToPickUp = NULL;

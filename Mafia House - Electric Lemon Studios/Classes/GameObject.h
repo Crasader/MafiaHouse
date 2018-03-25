@@ -50,6 +50,9 @@ enum AnimationTag {
 	STAND,
 	WALK,
 	MOONWALK,
+	CROUCH,
+	STANDUP,
+	CROUCHWALK,
 	STAB,
 	SWING,
 	THROW,
@@ -146,11 +149,16 @@ Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets
 class GameAnimation {
 public:
 	GameAnimation() {}
-	GameAnimation(int tag, char* path, int numFrames, float frameTime) {
+	GameAnimation(int tag, char* path, int numFrames, float frameTime, bool loop) {
 		auto frames = getAnimation(path, numFrames);//change number of frames to correct number
 		animation = Animation::createWithSpriteFrames(frames, frameTime);//change number to correct speed for animation
 		animation->retain();
-		action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
+		if (loop == true) {
+			action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
+		}
+		else {
+			action = Speed::create(Animate::create(animation), 1.0f);
+		}
 		action->retain();
 		action->setTag(tag);
 	}
