@@ -270,7 +270,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and physical object
 		if (a->getName() == "player" && b->getName() == "phys_object")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 2)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 4)) {//only collide if player is above object
 				player->touchingFloor = true;
 				return true;
 			}
@@ -281,7 +281,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "phys_object" && b->getName() == "player")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 2)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 4)) {//only collide if player is above object
 				player->touchingFloor = true;
 				return true;
 			}
@@ -339,8 +339,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				//CCLOG("YOU TOUCHED AN ENEMY");
 				static_cast<Enemy*>(b)->playerTouch();
 				static_cast<Enemy*>(b)->detectedPlayer = player;
-				solve.setRestitution(20.0f);
-				return true;
+				if (player->getPositionY() < (static_cast<Enemy*>(b)->getPositionY() + static_cast<Enemy*>(b)->getSize().height / 2)) {//only collide if player is below top of enemy
+					solve.setRestitution(20.0f);
+					return true;
+				}
+				else {
+					return false;
+				}
 			}
 			else {
 				//CCLOG("YOU AVOIDED DETECTION");
@@ -352,8 +357,10 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				//CCLOG("YOU TOUCHED AN ENEMY");
 				static_cast<Enemy*>(a)->playerTouch();
 				static_cast<Enemy*>(a)->detectedPlayer = player;
-				solve.setRestitution(20.0f);
-				return true;
+				if (player->getPositionY() < (static_cast<Enemy*>(a)->getPositionY() + static_cast<Enemy*>(a)->getSize().height / 2)) {//only collide if player is below top of enemy
+					solve.setRestitution(20.0f);
+					return true;
+				}
 			}
 			else {
 				//CCLOG("YOU AVOIDED DETECTION");
@@ -514,8 +521,22 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//enemy and item radius
-		if ((a->getName() == "enemy" && b->getName() == "item_radius") || (a->getName() == "item_radius" && b->getName() == "enemy"))
+		if (a->getName() == "enemy" && b->getName() == "item_radius")
 		{
+			if (static_cast<Item*>(b->getParent())->enemyCanUse == true && static_cast<Item*>(b->getParent())->getPhysicsBody()->getVelocity().y < 0) {//item is moving downwards and has moved from original poaisiton
+				if (static_cast<Enemy*>(a)->fallenItem == NULL) {//if they don't already have an item to pick up
+					static_cast<Enemy*>(a)->fallenItem = static_cast<Item*>(b->getParent());
+				}
+			}
+			return false;
+		}
+		else if (a->getName() == "item_radius" && b->getName() == "enemy")
+		{
+			if (static_cast<Item*>(a->getParent())->enemyCanUse == true && static_cast<Item*>(a->getParent())->getPhysicsBody()->getVelocity().y < 0) {//item is moving downwards and has moved from original poaisiton
+				if (static_cast<Enemy*>(b)->fallenItem == NULL) {//if they don't already have an item to pick up
+					static_cast<Enemy*>(b)->fallenItem = static_cast<Item*>(a->getParent());
+				}
+			}
 			return false;
 		}
 		//alert enemy and item radius

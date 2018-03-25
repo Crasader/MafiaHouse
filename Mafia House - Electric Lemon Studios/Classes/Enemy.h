@@ -54,6 +54,7 @@ public:
 	Item* findBetterItem(GameLayer* mainLayer);
 	Item* findMoreRange(GameLayer* mainLayer);
 
+	void noticeItem(Item* item, float time);
 	void visionRays(vector<Vec2> *points, Vec2* start, float time);//casts a bunch of rays; the enemies vision cone
 
 	void changeSuspicion(float num);//increase/decrease suspicion
@@ -75,6 +76,8 @@ public:
 	Player* detectedPlayer = NULL;
 	int detectedTag = -1;
 	Node* lastSeenLocation;
+
+	Item* fallenItem = NULL;//an item that has fallen on top of the enemy
 
 	bool runningAway = false;
 

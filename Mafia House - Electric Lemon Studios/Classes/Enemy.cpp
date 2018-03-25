@@ -893,6 +893,24 @@ Item* Enemy::findMoreRange(GameLayer* mainLayer) {
 	return foundItem;
 }
 
+void Enemy::noticeItem(Item* item, float time) {
+	bool noticeItem = true;
+	if (seenItems.size() > 0) {
+		for (int i = 0; i < seenItems.size(); i++) {
+			if (item == seenItems[i]) {//check if enemy has already seen this item before
+				noticeItem = false;
+				break;
+			}
+		}
+	}
+	if (noticeItem == true) {
+		qMark->setVisible(true);
+		changeSuspicion(maxSuspicion / 3);//seeing an item increases their suspicion by a third
+		seenItems.push_back(item);
+		seenTimes.push_back(time);
+	}
+}
+
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 	detectedTag = -1;
 	playerInVision = false;
@@ -956,21 +974,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 					if (static_cast<Item*>(visionContact)->getPositionY() <= (getPositionY() + getSize().height)) {
 						itemToPickUp = static_cast<Item*>(visionContact);//enemy can pick item up
 					}
-					bool noticeItem = true;
-					if (seenItems.size() > 0) {
-						for (int i = 0; i < seenItems.size(); i++) {
-							if (static_cast<Item*>(visionContact) == seenItems[i]) {//check if enemy has already seen this item before
-								noticeItem = false;
-								break;
-							}
-						}
-					}
-					if (noticeItem == true) {
-						qMark->setVisible(true);
-						changeSuspicion(maxSuspicion / 3);//seeing an item increases their suspicion by a third
-						seenItems.push_back(static_cast<Item*>(visionContact));
-						seenTimes.push_back(time);
-					}
+					noticeItem(static_cast<Item*>(visionContact), time);
 					points->push_back(info.contact + offsetAdjust);
 					didRun = true;
 					return false;
@@ -1067,6 +1071,10 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 				i--;
 			}
 		}
+	}
+	//checking if an item has fallen on them
+	if (fallenItem != NULL && getName() != "enemy_alert") {
+		noticeItem(fallenItem, time);
 	}
 	//checking invincibility frames
 	if (invincible == true && time - hitTime >= invicibilityTime) {

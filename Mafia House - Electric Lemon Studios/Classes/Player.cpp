@@ -126,19 +126,21 @@ void Player::walk(Input input, float time) {
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 1) {
-			startAnimation(WALK, walking);
+			if (getActionByTag(MOONWALK) == NULL) {
+				startAnimation(WALK, walking);
+			}
 			walking.action->setSpeed(moveSpeed);
 			moveAbsolute(Vec2(-9.0f * moveSpeed, 0));
 			//run walking animation
 		}
 		else if (moveDirection == 2) {
+			stopAnimation(WALK);
+			startAnimation(MOONWALK, moonwalk);
 			setSpeed(moveSpeed * 1.4f);
 			moonwalk.action->setSpeed(moveSpeed);
 			if (turned == false) {
 				turned = true;
 				flipX();
-				stopAnimation(WALK);
-				startAnimation(MOONWALK, moonwalk);
 				moonwalking = true;
 			}
 		}
@@ -156,19 +158,21 @@ void Player::walk(Input input, float time) {
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 2) {
-			startAnimation(WALK, walking);
+			if (getActionByTag(MOONWALK) == NULL) {
+				startAnimation(WALK, walking);
+			}
 			walking.action->setSpeed(moveSpeed);
 			moveAbsolute(Vec2(9.0f * moveSpeed, 0));
 			//run walking animation
 		}
 		else if (moveDirection == 1) {
+			stopAnimation(WALK);
+			startAnimation(MOONWALK, moonwalk);
 			setSpeed(moveSpeed * 1.4f);
 			moonwalk.action->setSpeed(moveSpeed);
 			if (turned == true) {
 				turned = false;
 				flipX();
-				stopAnimation(WALK);
-				startAnimation(MOONWALK, moonwalk);
 				moonwalking = true;
 			}
 		}
@@ -448,6 +452,7 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 	if (input == MOVE_UP) {
 		if (player->objectToClimb == NULL) {//only jump if not colliding with a physical object
 			player->jump();
+			//return new JumpState;
 		}
 		else {//player has an object to climb
 			//return new ClimbState;
