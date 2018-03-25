@@ -54,9 +54,13 @@ enum AnimationTag {
 	STANDUP,
 	CROUCHWALK,
 	STAB,
+	CROUCHSTAB,
+	CROUCHSWING,
 	SWING,
 	THROW,
 	CLIMB,
+	JUMP,
+	ROLLING,
 	HIDDEN,
 	FALL,
 	KNOCKOUT,
@@ -127,6 +131,7 @@ protected:
 
 	float baseSpeed = 100.0f;
 	float maxSpeed = 100.0f;
+	float maxSpeedY = 100.0f;
 
 	std::string name = "name";//can set name to identify sprite type, used for collision detection
 	float zOrder = 0;//determines what is drawn over top of what

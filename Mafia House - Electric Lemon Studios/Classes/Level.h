@@ -83,6 +83,11 @@ protected:
 	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
 	float camZoom = 1.0f;
 
+	//for doulbe tap inputs:
+	float prevLeftPressTime = -1;
+	float prevRightPressTime = -1;
+	float doublePressTime = 10 FRAMES;//amount of time for a doulbe press to register
+
 	bool onContactBegin(PhysicsContact &contact);
 
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection

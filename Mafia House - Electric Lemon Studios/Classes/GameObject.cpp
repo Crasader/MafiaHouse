@@ -205,6 +205,12 @@ void GameObject::move(Vec2 velocity) {//positive values will always move them fo
 		}
 	}
 
+	if (force.y > 0) {
+		if (getPhysicsBody()->getVelocity().y >= maxSpeedY) {
+			apply = false;
+		}
+	}
+
 	if (apply == true) {
 		getPhysicsBody()->applyImpulse(force);
 	}

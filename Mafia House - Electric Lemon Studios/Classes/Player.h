@@ -30,6 +30,8 @@ public:
 	void hide();
 	void hiding();
 
+	void climb();
+
 	void wasHit(Item* item, float time);//being hit by an enemy attack
 	
 	//for player staying behind obejcts without causing earthquakes, doesn't use set position
@@ -82,9 +84,15 @@ private:
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 	};
-	class HideState : public State {
+	class JumpState : public State {
 	public:
-		HideState() { type = "hide"; }
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* update(Player* player, GameLayer* mainLayer, float time);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		void exit(Player* player, GameLayer* mainLayer);
+	};
+	class FallState : public State {
+	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
@@ -101,6 +109,21 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		State* update(Player* player, GameLayer* mainLayer, float time);
+		void exit(Player* player, GameLayer* mainLayer);
+	};
+	class RollState : public State {
+	public:
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* update(Player* player, GameLayer* mainLayer, float time);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		void exit(Player* player, GameLayer* mainLayer);
+	};
+	class HideState : public State {
+	public:
+		HideState() { type = "hide"; }
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* update(Player* player, GameLayer* mainLayer, float time);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		void exit(Player* player, GameLayer* mainLayer);
 	};
 	class DeathState : public State {
@@ -124,6 +147,11 @@ private:
 	PhysicsBody* crouchBody;
 	Size standSize;
 	Size crouchSize;
+	bool climbComplete = false;
+
+	//for jumping
+	float startJumpTime = -1;
+	float jumpTime = 1.0f;//time you are stuck in a jump for before falling
 
 	//for moonwalking
 	bool moonwalking = false;
@@ -147,15 +175,19 @@ private:
 	unsigned walkingSound;
 
 	HideObject* hideObject = NULL;//object player is hiding behind
+	PhysObject* climbObject = NULL;
 
 	//animations:
 	GameAnimation moonwalk;
 	GameAnimation crouch;
 	GameAnimation standup;
 	GameAnimation crouchwalk;
+	GameAnimation climbing;
+	GameAnimation jumping;
+	GameAnimation falling;
+	GameAnimation rolling;
 	//GameAnimation crouchStabAnimation;
 	//GameAnimation crouchSwingAnimation;
 	//GameAnimation crouchThrowAnimation;
 	//GameAnimation hideAnimation;//reverse for uniding
-	//GameAnimation climbAnimation;//reverse for climbing down
 };

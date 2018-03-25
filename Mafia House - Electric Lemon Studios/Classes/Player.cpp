@@ -27,6 +27,10 @@ Player::Player()
 	crouch = GameAnimation(CROUCH, "player/crouch/%03d.png", 5, 10 FRAMES, false);
 	standup = GameAnimation(STANDUP, "player/stand_up/%03d.png", 5, 10 FRAMES, false);
 	crouchwalk = GameAnimation(CROUCHWALK, "player/crouch_walk/%03d.png", 5, 10 FRAMES, true);
+	climbing = GameAnimation(CLIMB, "player/climb/%03d.png", 5, 10 FRAMES, false);
+	jumping = GameAnimation(JUMP, "player/jump/%03d.png", 2, 10 FRAMES, false);
+	falling = GameAnimation(FALL, "player/fall/%03d.png", 1, 10 FRAMES, true);
+	rolling = GameAnimation(FALL, "player/roll/%03d.png", 6, 6 FRAMES, false);
 }
 Player::~Player(){}
 
@@ -347,6 +351,19 @@ void Player::hiding() {
 	stayWithin(hideObject);
 }
 
+void Player::climb()
+{
+
+	/*auto moveAction = MoveBy::create(0.5, Vec2(0, climbObject->getPositionY() + climbObject->getContentSize().height - getPositionY() + 4));
+	moveAction->setTag(222);
+	/*auto callback = CallFunc::create([this]() {
+		climbComplete = true;
+	});
+	auto sequence = Sequence::create(moveAction, callback, nullptr);
+	runAction(moveAction);*/
+	startAnimation(CLIMB,climbing);
+}
+
 //Update Checking:
 void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
@@ -419,13 +436,16 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 		player->bodySize = player->standSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
 		//player->startAnimation(STANDUP, player->standup);
-		player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	}
+	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 1.0f;
 	player->setSpeed(player->moveSpeed);
 }
 Player::State* Player::NeutralState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
+	if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -50) {
+		return new FallState;
+	}
 	return nullptr;
 }
 Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
@@ -452,17 +472,20 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 	}
 	if (input == MOVE_UP) {
 		if (player->objectToClimb == NULL) {//only jump if not colliding with a physical object
-			player->jump();
-			//return new JumpState;
+			return new JumpState;
 		}
 		else {//player has an object to climb
-			//return new ClimbState;
+			player->climbObject = player->objectToClimb;
+			return new ClimbState;
 		}
 	}
 	if (input == MOVE_DOWN) {
 		if (player->touchingFloor == true) {
 			return new CrouchState;
 		}
+	}
+	if (input == ROLL) {
+		return new RollState;
 	}
 	if (input == NO_CLIP) {
 		return new NoClipState;
@@ -480,13 +503,16 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
 		//player->startAnimation(CROUCH, player->crouch);
-		player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
 	}
+	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 0.5f;
 	player->setSpeed(player->moveSpeed);
 }
 Player::State* Player::CrouchState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
+	if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -50) {
+		return new FallState;
+	}
 	return nullptr;
 }
 Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
@@ -514,110 +540,105 @@ Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainL
 	if (input == MOVE_UP) {
 		return new NeutralState;
 	}
+	if (input == ROLL) {
+		return new RollState;
+	}
 	return nullptr;
 }
 
-//Hide State:
-void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {
-	player->hideObject = player->objectToHideBehind;
-	player->hide();
+//Jump State:
+void Player::JumpState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->stopAllActions();
+	player->jump();
+	player->startAnimation(JUMP, player->jumping);
 }
-Player::State* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
-	//if (player->checkDead() == true) { return new DeathState; }
-	if (player->isHit == true) {//force exit hiding if hit by enemy
-		if (player->isCrouched == true) {
-			return new CrouchState;
-		}
-		else {
-			return new NeutralState;
-		}
+Player::State* Player::JumpState::update(Player* player, GameLayer* mainLayer, float time) {
+	if (player->getPhysicsBody()->getVelocity().y <= 0) {//when player's vertical speed has stopped
+		return new FallState;
 	}
-	player->hiding();
 	return nullptr;
 }
-Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
-	if (input == HIDE) {
-		if (player->isCrouched == true) {
-			return new CrouchState;
-		}
-		else {
-			return new NeutralState;
-		}
+Player::State* Player::JumpState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+	if (input == DROP) {
+		player->dropItem(mainLayer);
 	}
-	if (input == MOVE_LEFT) {
-		if (player->hittingLeft == false) {
-			if (player->isCrouched == false) {
-				player->walk(input, time);
-			}
-			else {
-				player->crouchWalk(input, time);
-			}
-		}
+	if (input == PICKUP) {
+		player->pickUpItem(mainLayer);
 	}
-	else if (input == MOVE_RIGHT) {
-		if (player->hittingRight == false) {
-			if (player->isCrouched == false) {
-				player->walk(input, time);
-			}
-			else {
-				player->crouchWalk(input, time);
-			}
-		}
-	}
-	else if (input == STOP) {
-		if (player->isCrouched == false) {
-			player->walk(input, time);
-		}
-		else {
-			player->crouchWalk(input, time);
-		}
-	}
-	if (player->hittingLeft == false && player->hittingRight == false) {
-		if (input == MOVE_UP) {
-			if (player->isCrouched == true) {
-				player->stopAllActions();
-				player->isCrouched = false;
-				player->setPhysicsBody(player->mainBody);
-				player->bodySize = player->standSize;
-				player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
-				//player->startAnimation(STANDUP, player->standup);
-				player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
-				player->moveSpeed = 1.0f;
-				player->setSpeed(player->moveSpeed);
-			}
-		}
-		else if (input == MOVE_DOWN) {
-			if (player->isCrouched == false) {
-				player->stopAllActions();
-				player->isCrouched = true;
-				player->setPhysicsBody(player->crouchBody);
-				player->bodySize = player->crouchSize;
-				player->getPhysicsBody()->setPositionOffset(Vec2(0, -25));
-				//player->startAnimation(CROUCH, player->crouch);
-				player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
-				player->moveSpeed = 0.5f;
-				player->setSpeed(player->moveSpeed);
-			}
+	if (input == MOVE_UP) {
+		if (player->objectToClimb != NULL) {//player has an object to climb
+			player->climbObject = player->objectToClimb;
+			return new ClimbState;
 		}
 	}
 	return nullptr;
 }
-void Player::HideState::exit(Player* player, GameLayer* mainLayer) {
-	player->moveSpeed = 1.0f;
-	player->setSpeed(player->moveSpeed);
-	player->hide();
+void Player::JumpState::exit(Player* player, GameLayer* mainLayer) {
+}
+
+//Fall State:
+void Player::FallState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->stopAllActions();
+	player->startAnimation(FALL, player->falling);
+}
+Player::State* Player::FallState::update(Player* player, GameLayer* mainLayer, float time) {
+	if (player->touchingFloor == true){//if player has hit the ground
+		//player->startAnimation(LAND, landing);
+		player->setPhysicsBody(player->crouchBody);
+		player->bodySize = player->crouchSize;
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
+		return new CrouchState;
+	}
+	//if (player->touchingFloor == true && player->getActionByTag(LAND) == NULL) {//player's landing animation has finished
+	//	return new CrouchState;
+	//}
+	return nullptr;
+}
+Player::State* Player::FallState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+	if (input == DROP) {
+		player->dropItem(mainLayer);
+	}
+	if (input == USE_ITEM) {
+		return new AttackState;
+	}
+	if (input == PICKUP) {
+		player->pickUpItem(mainLayer);
+	}
+	if (input == MOVE_UP) {
+		if (player->objectToClimb != NULL) {//player has an object to climb
+			player->climbObject = player->objectToClimb;
+			return new ClimbState;
+		}
+	}
+	return nullptr;
+}
+void Player::FallState::exit(Player* player, GameLayer* mainLayer) {
 }
 
 //Climb State:
 void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time) {
-	
+	player->maxSpeedY = 60;
+	//player->stop();
+	player->stopAllActions();
+	//setting physics body to crouching body
+	player->setPhysicsBody(player->crouchBody);
+	player->bodySize = player->crouchSize;
+	player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
+
+	player->startAnimation(CLIMB, player->climbing);
 }
 Player::State* Player::ClimbState::update(Player* player, GameLayer* mainLayer, float time) {
+	if (player->getPositionY() < player->climbObject->getPositionY() + player->climbObject->getContentSize().height + 4) {
+		player->move(Vec2(0, 30));
+	}
+	else {
+		return new CrouchState;
+	}
+
 	return nullptr;
 }
-
 void Player::ClimbState::exit(Player* player, GameLayer* mainLayer) {
-
+	player->objectToClimb = NULL;
 }
 
 //Attack State(using items):
@@ -714,6 +735,130 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	else{
 		player->heldItem->initHeldItem();
 	}
+}
+
+//Rolling State:
+void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) {
+	if (player->prevState->type == "neutral") {
+		player->setPhysicsBody(player->crouchBody);
+		player->bodySize = player->crouchSize;
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
+	}
+	player->stopAllActions();
+	player->stop();
+	player->startAnimation(ROLLING, player->rolling);
+	player->moveNoLimit(Vec2(400, 0));//applying force for the roll
+	player->getPhysicsBody()->setLinearDamping(1.0f);
+}
+Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
+	if (player->getPhysicsBody()->getVelocity().x == 0) {//when player's horizontal speed has stopped
+		return new CrouchState;
+	}
+	return nullptr;
+}
+Player::State* Player::RollState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+	if (input == DROP) {
+		player->dropItem(mainLayer);
+	}
+	if (input == PICKUP) {
+		player->pickUpItem(mainLayer);
+	}
+	return nullptr;
+}
+void Player::RollState::exit(Player* player, GameLayer* mainLayer) {
+	player->getPhysicsBody()->setLinearDamping(0.0f);
+}
+
+
+//Hide State:
+void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->hideObject = player->objectToHideBehind;
+	player->hide();
+}
+Player::State* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
+	//if (player->checkDead() == true) { return new DeathState; }
+	if (player->isHit == true) {//force exit hiding if hit by enemy
+		if (player->isCrouched == true) {
+			return new CrouchState;
+		}
+		else {
+			return new NeutralState;
+		}
+	}
+	player->hiding();
+	return nullptr;
+}
+Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+	if (input == HIDE) {
+		if (player->isCrouched == true) {
+			return new CrouchState;
+		}
+		else {
+			return new NeutralState;
+		}
+	}
+	if (input == MOVE_LEFT) {
+		if (player->hittingLeft == false) {
+			if (player->isCrouched == false) {
+				player->walk(input, time);
+			}
+			else {
+				player->crouchWalk(input, time);
+			}
+		}
+	}
+	else if (input == MOVE_RIGHT) {
+		if (player->hittingRight == false) {
+			if (player->isCrouched == false) {
+				player->walk(input, time);
+			}
+			else {
+				player->crouchWalk(input, time);
+			}
+		}
+	}
+	else if (input == STOP) {
+		if (player->isCrouched == false) {
+			player->walk(input, time);
+		}
+		else {
+			player->crouchWalk(input, time);
+		}
+	}
+	if (player->hittingLeft == false && player->hittingRight == false) {
+		if (input == MOVE_UP) {
+			if (player->isCrouched == true) {
+				player->stopAllActions();
+				player->isCrouched = false;
+				player->setPhysicsBody(player->mainBody);
+				player->bodySize = player->standSize;
+				player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
+				//player->startAnimation(STANDUP, player->standup);
+				player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
+				player->moveSpeed = 1.0f;
+				player->setSpeed(player->moveSpeed);
+			}
+		}
+		else if (input == MOVE_DOWN) {
+			if (player->isCrouched == false) {
+				player->stopAllActions();
+				player->isCrouched = true;
+				player->setPhysicsBody(player->crouchBody);
+				player->bodySize = player->crouchSize;
+				player->getPhysicsBody()->setPositionOffset(Vec2(0, -25));
+				//player->startAnimation(CROUCH, player->crouch);
+				player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
+				player->moveSpeed = 0.5f;
+				player->setSpeed(player->moveSpeed);
+			}
+		}
+	}
+	return nullptr;
+}
+void Player::HideState::exit(Player* player, GameLayer* mainLayer) {
+	player->moveSpeed = 1.0f;
+	player->setSpeed(player->moveSpeed);
+	player->hide();
 }
 
 //Death State:

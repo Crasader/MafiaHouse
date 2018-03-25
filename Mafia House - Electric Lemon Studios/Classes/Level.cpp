@@ -214,8 +214,18 @@ void Level::update(float deltaTime){
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
 		player->handleInput(mainLayer, gameTime, STOP);
 	}
-	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {//for testing purposes only, do not abuse
-		player->handleInput(mainLayer, gameTime, NO_CLIP);
+	//player roll input checking:
+	if (INPUTS->getKeyPress(KeyCode::KEY_D)) {
+		if (gameTime - prevLeftPressTime <= doublePressTime) {//pressed key again with time limit
+			player->handleInput(mainLayer, gameTime, ROLL);
+		}
+		prevLeftPressTime = gameTime;
+	}
+	if (INPUTS->getKeyPress(KeyCode::KEY_A)) {
+		if (gameTime - prevRightPressTime <= doublePressTime) {//pressed key again with time limit
+			player->handleInput(mainLayer, gameTime, ROLL);
+		}
+		prevRightPressTime = gameTime;
 	}
 
 	//player aiming input checking:
@@ -242,6 +252,11 @@ void Level::update(float deltaTime){
 	}
 	else if (INPUTS->getKey(KeyCode::KEY_S)) {
 		player->handleInput(mainLayer, gameTime, AIM_DOWN);
+	}
+
+	//for testing purposes only, do not abuse:
+	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {
+		player->handleInput(mainLayer, gameTime, NO_CLIP);
 	}
 
 	//must be called after checking all player actions

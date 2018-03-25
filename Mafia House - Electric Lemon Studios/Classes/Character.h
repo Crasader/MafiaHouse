@@ -15,6 +15,7 @@ enum Input {
 	USE_STAIR,
 	USE_DOOR,
 	HIDE,
+	ROLL,
 	MOVE_LEFT,
 	MOVE_RIGHT,
 	MOVE_UP,
