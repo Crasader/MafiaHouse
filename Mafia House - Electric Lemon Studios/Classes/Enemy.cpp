@@ -16,6 +16,7 @@ Enemy::Enemy()
 	collision = 13;
 	//other proeprties
 	baseSpeed = 50;
+	maxSpeed = baseSpeed;
 	//for attacking without a weapon
 	fist = Fist::createWithSpriteFrameName();
 	fist->initObject();
@@ -44,6 +45,7 @@ void Enemy::flipX() {
 		ZZZ->setFlippedX(false);
 		ZZZ->setPositionNormalized(Vec2(0.2, 1.05));
 	}
+	fist->knockback *= -1;
 }
 
 void Enemy::initObject(Vec2 startPos)
@@ -76,7 +78,6 @@ void Enemy::initObject(Vec2 startPos)
 
 	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
 		flipX();
-		fist->knockback *= -1;
 	}
 	lastSeenLocation = Node::create();
 	addChild(lastSeenLocation);
@@ -224,7 +225,7 @@ void Enemy::walk(float time) {
 		stopTime = -1;
 	}
 	else if (stopTime == -1){
-		move(Vec2(4.5f, 0));
+		move(Vec2(4.5f, 0) * moveSpeed);
 	}
 }
 
@@ -912,7 +913,6 @@ void Enemy::noticeItem(Item* item, float time) {
 }
 
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
-	detectedTag = -1;
 	playerInVision = false;
 	didRun = false;
 	Vec2 offsetAdjust;
@@ -924,8 +924,8 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 			string visionContactName = info.shape->getBody()->getNode()->getName();
 			Node* visionContact = info.shape->getBody()->getNode();
 
-			//enemy vision is blocked by walls, doors
-			if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "ceiling" || visionContactName == "door") {
+			//enemy vision is blocked by walls, doors, physical objects
+			if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "ceiling" || visionContactName == "door" || visionContactName == "phys_object" || visionContactName == "hide_radius") {
 				points->push_back(info.contact + offsetAdjust);
 				didRun = true;
 				return false;
@@ -958,9 +958,9 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 			}
 			//enemy sees the player
 			else if (visionContactName == "player") {//not using tag anymore
-				if (static_cast<Player*>(visionContact)->isHidden() == false) {//if the player is not hidden
+				if (visionContactTag < 10) {//if the player is not hidden
 					static_cast<Player*>(visionContact)->inVision = true;
-					detectedTag = visionContactTag;
+					detectedPlayer = static_cast<Player*>(visionContact);
 					playerInVision = true;
 					points->push_back(info.contact + offsetAdjust);
 					didRun = true;
@@ -1162,9 +1162,6 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		if (enemy->detectedTag != -1) {
-			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-		}
 		return new AlertState;
 	}
 	else if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
@@ -1284,9 +1281,6 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		if (enemy->detectedTag != -1) {
-			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-		}
 		return new AlertState;
 	}
 	//check if an enemy has become unalerted
@@ -1784,9 +1778,6 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		if (enemy->detectedTag != -1) {
-			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-		}
 		enemy->toEnter = new AlertState;
 		return enemy->toEnter;
 	}
@@ -1911,9 +1902,6 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	//check if an enemy has become alerted
 	if (enemy->getName() != "enemy_alert") {//only if they're not coming from an alert state
 		if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-			if (enemy->detectedTag != -1) {
-				enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-			}
 			return new AlertState;
 		}
 	}
@@ -1987,9 +1975,6 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		if (enemy->detectedTag != -1) {
-			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-		}
 		return new AlertState;
 	}
 	//enemy has dropped to 0 supicion
@@ -2057,9 +2042,6 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		if (enemy->detectedTag != -1) {
-			enemy->detectedPlayer = static_cast<Player*>(mainLayer->getChildByTag(enemy->detectedTag));
-		}
 		return new AlertState;
 	}
 	//enemy has dropped to 0 supicion somehow...

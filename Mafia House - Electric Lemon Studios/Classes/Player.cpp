@@ -6,7 +6,7 @@ Player::Player()
 	FRAME_OFFSET = 22;
 	bodySize = Size(26, 90);
 	standSize = bodySize;
-	crouchSize = Size(standSize.width, 40);
+	crouchSize = Size(standSize.width, 35);
 	//sprite properties
 	zOrder = 5;
 	scale = 1.0f;
@@ -44,16 +44,9 @@ void Player::initObject(Vec2 startPos) {
 	crouchBody->retain();
 }
 
-void Player::initJoints() {
-	//PhysicsJointFixed* joint = PhysicsJointFixed::construct(feetBody, mainBody, Vec2(0,0));
-	//joint->createConstraints();
-	//joint->setCollisionEnable(false);
-	//joint->setMaxForce(10);
-	//director->getRunningScene()->getPhysicsWorld()->addJoint(joint);
-}
-
 //functions for player actions:
 void Player::resetCollisionChecks() {
+	isHidingUnder = false;
 	touchingFloor = false;
 	touchingWall = false;
 	objectToClimb = NULL;
@@ -287,12 +280,12 @@ void Player::useStair(GameLayer* mainLayer) {
 void Player::hide() {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/hide.wav");
 	if (hidden == false) {
+		wasSeen = false;
 		if (inVision == true) {//if player was in enemy vision upon entering hiding
 			wasSeen = true;
 		}
 		hidden = true;
-		setTag(getTag() + 10);
-		getPhysicsBody()->setTag(2);//for enemy vision rays
+		setTag(getTag() + 10);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() - 3);
 		if (heldItem != NULL) {
 			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() - 3);
@@ -302,8 +295,7 @@ void Player::hide() {
 	else {
 		hidden = false;
 		wasSeen = false;
-		setTag(getTag() - 10);
-		getPhysicsBody()->setTag(1);//for enemy vision rays
+		setTag(getTag() - 10);//for enemy vision rays
 		setGlobalZOrder(getGlobalZOrder() + 3);
 		if (heldItem != NULL) {
 			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() + 3);
@@ -363,6 +355,20 @@ void Player::update(GameLayer* mainLayer, float time) {
 		wasHit(itemHitBy, time);
 		itemHitBy = NULL;
 	}
+	if (isHidingUnder == true) {
+		if (inVision == true) {//if player was in enemy vision upon entering hiding
+			wasSeen = true;
+		}
+		setOpacity(155);
+		hidden = true;
+	}
+	else{//if they are no longer under object
+		setOpacity(255);
+		if (state->type != "hide") {//and not in a hide state
+			hidden = false;
+			wasSeen = false;
+		}
+	}
 	newState = state->update(this, mainLayer, time);
 	if (newState != NULL)
 	{
@@ -398,19 +404,14 @@ void Player::handleInput(GameLayer* mainLayer, float time, Input input) {
 }
 
 //Player States:
-void Player::State::enter(Player* player, GameLayer* mainLayer, float time) {
-}
-Player::State* Player::State::update(Player* player, GameLayer* mainLayer, float time) {
-	return nullptr;
-}
-Player::State* Player::State::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
-	return nullptr;
-}
-void Player::State::exit(Player* player, GameLayer* mainLayer) {
-}
+void Player::State::enter(Player* player, GameLayer* mainLayer, float time) {}
+Player::State* Player::State::update(Player* player, GameLayer* mainLayer, float time) {return nullptr;}
+Player::State* Player::State::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {return nullptr;}
+void Player::State::exit(Player* player, GameLayer* mainLayer) {}
 
 //Neutral State:
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->isCrouched = false;
 	player->stop();
 	player->stopAllActions();
 	if (player->prevState->type == "crouch") {
@@ -471,12 +472,13 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 
 //Crouching State:
 void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->isCrouched = true;
 	player->stop();
 	player->stopAllActions();
 	if (player->prevState->type == "neutral") {
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
-		player->getPhysicsBody()->setPositionOffset(Vec2(0, -25));
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
 		//player->startAnimation(CROUCH, player->crouch);
 		player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
 	}
@@ -523,27 +525,80 @@ void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) 
 Player::State* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
 	if (player->isHit == true) {//force exit hiding if hit by enemy
-		return player->prevState;
+		if (player->isCrouched == true) {
+			return new CrouchState;
+		}
+		else {
+			return new NeutralState;
+		}
 	}
 	player->hiding();
 	return nullptr;
 }
 Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == HIDE) {
-		return player->prevState;
+		if (player->isCrouched == true) {
+			return new CrouchState;
+		}
+		else {
+			return new NeutralState;
+		}
 	}
 	if (input == MOVE_LEFT) {
 		if (player->hittingLeft == false) {
-			player->walk(input, time);
+			if (player->isCrouched == false) {
+				player->walk(input, time);
+			}
+			else {
+				player->crouchWalk(input, time);
+			}
 		}
 	}
 	else if (input == MOVE_RIGHT) {
 		if (player->hittingRight == false) {
-			player->walk(input, time);
+			if (player->isCrouched == false) {
+				player->walk(input, time);
+			}
+			else {
+				player->crouchWalk(input, time);
+			}
 		}
 	}
 	else if (input == STOP) {
-		player->walk(input, time);
+		if (player->isCrouched == false) {
+			player->walk(input, time);
+		}
+		else {
+			player->crouchWalk(input, time);
+		}
+	}
+	if (player->hittingLeft == false && player->hittingRight == false) {
+		if (input == MOVE_UP) {
+			if (player->isCrouched == true) {
+				player->stopAllActions();
+				player->isCrouched = false;
+				player->setPhysicsBody(player->mainBody);
+				player->bodySize = player->standSize;
+				player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
+				//player->startAnimation(STANDUP, player->standup);
+				player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
+				player->moveSpeed = 1.0f;
+				player->setSpeed(player->moveSpeed);
+			}
+		}
+		else if (input == MOVE_DOWN) {
+			if (player->isCrouched == false) {
+				player->stopAllActions();
+				player->isCrouched = true;
+				player->setPhysicsBody(player->crouchBody);
+				player->bodySize = player->crouchSize;
+				player->getPhysicsBody()->setPositionOffset(Vec2(0, -25));
+				//player->startAnimation(CROUCH, player->crouch);
+				player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
+				player->moveSpeed = 0.5f;
+				player->setSpeed(player->moveSpeed);
+			}
+		}
 	}
 	return nullptr;
 }

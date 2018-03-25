@@ -74,7 +74,6 @@ public:
 	
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
-	int detectedTag = -1;
 	Node* lastSeenLocation;
 
 	Item* fallenItem = NULL;//an item that has fallen on top of the enemy

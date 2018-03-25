@@ -12,8 +12,6 @@ public:
 
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
-	void initJoints();
-
 	//functions for player actions:
 	void resetCollisionChecks();//resets variables used to track what objects/items player will interact with/use
 
@@ -42,6 +40,7 @@ public:
 	//pointers for interacting with objects:
 	HideObject* objectToHideBehind = NULL;//the tag of the object the player can hide behind
 	PhysObject* objectToClimb = NULL;
+	bool isHidingUnder = false;
 	//DeadBody* bodyToPickUp = NULL;
 
 	void update(GameLayer* mainLayer, float time);
@@ -52,6 +51,7 @@ public:
 
 	bool isHit = false;
 	bool touchingFloor = true;
+	bool isCrouched = false;
 
 	//for standing on physical objects
 	//Node* feet;
@@ -84,6 +84,7 @@ private:
 	};
 	class HideState : public State {
 	public:
+		HideState() { type = "hide"; }
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);

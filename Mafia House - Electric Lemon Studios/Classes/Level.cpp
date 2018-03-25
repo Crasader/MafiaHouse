@@ -16,12 +16,6 @@ void Level::setup(){
 	mainLayer = GameLayer::create();
 	addChild(mainLayer);
 
-	//initializing player
-	player = Player::createWithSpriteFrameName();
-	player->initObject();
-	mainLayer->addChild(player);
-	//player->noclip();
-
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
 	mainLayer->addChild(camPos);
@@ -35,10 +29,10 @@ void Level::setup(){
 	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
-	auto label1 = Label::createWithTTF("Space for Pick Up", "fonts/Pixel-Noir Skinny Short.ttf", 24);
+	/*auto label1 = Label::createWithTTF("Space for Pick Up", "fonts/Pixel-Noir Skinny Short.ttf", 24);
 	label1->setPosition(player->getPosition());
 	label1->setGlobalZOrder(10);
-	mainLayer->addChild(label1, 3000);
+	mainLayer->addChild(label1, 3000);*/
 
 	//for running the update function
 	schedule(schedule_selector(Level::onStart));
@@ -124,18 +118,19 @@ void Level::update(float deltaTime){
 			i--;
 			continue;
 		}
+
+		enemies[i]->enemies = enemies;//giving each enemy the current list of enemies in level
+
+		enemies[i]->update(mainLayer, gameTime);
+
 		//enemy vision:
 		enemies[i]->visionRays(&points, &start, gameTime);
 		//drawing vision rays
 		for (int j = 0; j < points.size(); j++) {
 			//visionRays->drawDot(points[j], 1, Color4F::WHITE);
-			visionRays->drawSegment(start, points[j], 2, Color4F(1,0.9,0.1,0.2));
+			visionRays->drawSegment(start, points[j], 2, Color4F(1, 0.9, 0.1, 0.2));
 		}
 		points.clear();
-
-		enemies[i]->enemies = enemies;//giving each enemy the current list of enemies in level
-
-		enemies[i]->update(mainLayer, gameTime);
 	}
 	addChild(visionRays);
 
@@ -298,6 +293,23 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return true;
 		}
 
+		//check if player is hiding under a physical object
+		if (a->getName() == "player" && b->getName() == "hide_radius")
+		{
+			if (player->isCrouched == true) {
+				player->isHidingUnder = true;
+				//static_cast<Item*>(b->getParent())->playerRange = true;
+			}
+			return false;
+		}
+		else if (a->getName() == "hide_radius" && b->getName() == "player")
+		{
+			if (player->isCrouched == true) {
+				player->isHidingUnder = true;
+				//static_cast<Item*>(b->getParent())->playerRange = true;
+			}
+		}
+
 		// check if player has collided with a wall
 		if (a->getName() == "player" && (b->getName() == "wall" || b->getName() == "door"))
 		{
@@ -340,7 +352,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				static_cast<Enemy*>(b)->playerTouch();
 				static_cast<Enemy*>(b)->detectedPlayer = player;
 				if (player->getPositionY() < (static_cast<Enemy*>(b)->getPositionY() + static_cast<Enemy*>(b)->getSize().height / 2)) {//only collide if player is below top of enemy
-					solve.setRestitution(20.0f);
+					solve.setRestitution(10.0f);
 					return true;
 				}
 				else {
@@ -358,7 +370,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				static_cast<Enemy*>(a)->playerTouch();
 				static_cast<Enemy*>(a)->detectedPlayer = player;
 				if (player->getPositionY() < (static_cast<Enemy*>(a)->getPositionY() + static_cast<Enemy*>(a)->getSize().height / 2)) {//only collide if player is below top of enemy
-					solve.setRestitution(20.0f);
+					solve.setRestitution(10.0f);
 					return true;
 				}
 			}
@@ -571,6 +583,11 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "door_radius" && b->getName() == "enemy_alert")
 		{
+			return false;
+		}
+
+		//two players
+		if (a->getName() == "player" && b->getName() == "player") {
 			return false;
 		}
 
@@ -794,6 +811,10 @@ void Level::createLevel(Vec2 position, float levelWidth)
 }
 
 bool Level::initLevel(string filename){
+	//initializing player
+	player = Player::createWithSpriteFrameName();
+	player->initObject();
+
 	//used to store data to pass into createLevel function
 	FloorData floorData;
 
@@ -1074,6 +1095,7 @@ bool Level::initLevel(string filename){
 	for (int i = 0; i < pathNodes.size(); i++) {
 		mainLayer->addChild(pathNodes[i]);
 	}
-
+	//player
+	mainLayer->addChild(player);
 	return true;
 }

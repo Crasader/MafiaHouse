@@ -63,13 +63,58 @@ PhysObject::PhysObject(){
 void PhysObject::initObject(){
 	initObjectNoPhysics();
 	initBoxBody(surfaceSize);
-	getPhysicsBody()->setPositionOffset(Vec2(0, 24));
+	getPhysicsBody()->setPositionOffset(surfaceOffset);
+	//initSecondBody();
+	//initThirddBody();
+	initHideBox();
+}
+
+void PhysObject::initThirddBody() {
+	thirdBody = Node::create();
+	thirdBody->setName("phys_object");
+	auto body = PhysicsBody::createBox(surfaceSize + Size(20, 20));
+	body->setDynamic(false);
+	body->setCategoryBitmask(0xFFFFFFFF);
+	body->setCollisionBitmask(0xFFFFFFFF);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	thirdBody->setPhysicsBody(body);
+	thirdBody->setPosition(Vec2(70, 50));
+	addChild(thirdBody);
+}
+
+void PhysObject::initSecondBody() {
+	secondBody = Node::create();
+	secondBody->setName("phys_object");
+	auto body = PhysicsBody::createBox(surfaceSize + Size(10,10));
+	body->setDynamic(false);
+	body->setCategoryBitmask(0xFFFFFFFF);
+	body->setCollisionBitmask(0xFFFFFFFF);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	secondBody->setPhysicsBody(body);
+	secondBody->setPosition(Vec2(70,50));
+	addChild(secondBody);
+}
+
+void PhysObject::initHideBox() {
+	hideBox = Node::create();
+	hideBox->setName("hide_radius");
+	auto body = PhysicsBody::createBox(hideBoxSize);
+	body->setDynamic(false);
+	body->setCategoryBitmask(4);
+	body->setCollisionBitmask(1);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	hideBox->setPhysicsBody(body);
+	hideBox->setPosition(hideBoxPosition);
+	addChild(hideBox);
 }
 
 //Table:
 Table::Table(){
 	PhysObject::PhysObject();
 	surfaceSize = Size(140, 10);
+	surfaceOffset = Vec2(0, 24);
+	hideBoxSize = Size(92, 50);
+	hideBoxPosition = Vec2(70, 25);
 }
 
 void Table::initObject() {

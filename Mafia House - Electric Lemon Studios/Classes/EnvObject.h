@@ -26,8 +26,18 @@ public:
 
 	virtual void initObject();
 
+	void initHideBox();
+	void initSecondBody();
+	void initThirddBody();
+
 protected:
 	Size surfaceSize;
+	Vec2 surfaceOffset;
+	Node* secondBody;
+	Node* thirdBody;
+	Size hideBoxSize;
+	Vec2 hideBoxPosition;
+	Node* hideBox;
 };
 
 class Table : public PhysObject

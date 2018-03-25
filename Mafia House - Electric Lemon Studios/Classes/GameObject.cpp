@@ -194,13 +194,13 @@ void GameObject::move(Vec2 velocity) {//positive values will always move them fo
 	force.y = flippedY == true ? force.y * -1 : force.y;
 
 	bool apply = true;
-	if (force.x > 0 && getPhysicsBody()->getVelocity().x > 0) {//if force applying is positive
-		if (getPhysicsBody()->getVelocity().x > maxSpeed) {//if they have a positive velocity greater than their max speed
+	if (force.x > 0) {//if force applying is positive
+		if (getPhysicsBody()->getVelocity().x >= maxSpeed) {//if they have a positive velocity greater than their max speed
 			apply = false;
 		}
 	}
-	else if (force.x < 0 && getPhysicsBody()->getVelocity().x < 0) {//if force applying is negative
-		if (getPhysicsBody()->getVelocity().x < -maxSpeed) {//if they have a negative velocity less than their negative max speed
+	if (force.x < 0) {//if force applying is negative
+		if (getPhysicsBody()->getVelocity().x <= -maxSpeed) {//if they have a negative velocity less than their negative max speed
 			apply = false;
 		}
 	}
@@ -216,13 +216,13 @@ void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move
 	Vec2 force = mass * velocity;
 
 	bool apply = true;
-	if (force.x > 0 && getPhysicsBody()->getVelocity().x > 0) {//if force applying is positive
-		if (getPhysicsBody()->getVelocity().x > maxSpeed) {//if they have a positive velocity greater than their max speed
+	if (force.x > 0) {//if force applying is positive
+		if (getPhysicsBody()->getVelocity().x >= maxSpeed) {//if they have a positive velocity greater than their max speed
 			apply = false;
 		}
 	}
-	else if (force.x < 0 && getPhysicsBody()->getVelocity().x < 0) {//if force applying is negative
-		if (getPhysicsBody()->getVelocity().x < -maxSpeed) {//if they have a negative velocity less than their negative max speed
+	if (force.x < 0) {//if force applying is negative
+		if (getPhysicsBody()->getVelocity().x <= -maxSpeed) {//if they have a negative velocity less than their negative max speed
 			apply = false;
 		}
 	}
