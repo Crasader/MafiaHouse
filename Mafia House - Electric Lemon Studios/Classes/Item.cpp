@@ -72,8 +72,8 @@ void Item::initHeldItem() {
 
 void Item::initCrouchHeldItem() {
 	setAnchorPoint(Vec2(0, 0));
-	setPosition(Vec2(24, 33));
-	setRotation(0.0f);
+	setPosition(Vec2(45, 14));
+	setRotation(20.0f);
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
 }

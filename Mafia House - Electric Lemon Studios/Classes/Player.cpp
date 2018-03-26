@@ -828,7 +828,7 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		//input for releasing attack
 		if (input == USE_RELEASE) {
 			player->attackRelease = true;
-			player->walk(STOP, time);
+			player->walkPrepareAttack(STOP, time);
 		}
 	}
 	return nullptr;
