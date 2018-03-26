@@ -154,8 +154,8 @@ void GameObject::stopX() {
 }
 
 void GameObject::stop() {
-	getPhysicsBody()->setVelocity(Vec2(0, 0));
 	getPhysicsBody()->resetForces();
+	getPhysicsBody()->setVelocity(Vec2(0, 0));
 }
 
 void GameObject::slowStop() {

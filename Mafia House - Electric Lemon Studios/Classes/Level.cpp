@@ -197,13 +197,6 @@ void Level::update(float deltaTime){
 		}
 	}
 
-	//change between standing/crouching
-	if (INPUTS->getKeyPress(KeyCode::KEY_W)) {
-		player->handleInput(mainLayer, gameTime, MOVE_UP);
-	}
-	if (INPUTS->getKeyPress(KeyCode::KEY_S)) {
-		player->handleInput(mainLayer, gameTime, MOVE_DOWN);
-	}
 	//player movement input checking:
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
 		player->handleInput(mainLayer, gameTime, MOVE_RIGHT);
@@ -254,6 +247,14 @@ void Level::update(float deltaTime){
 		player->handleInput(mainLayer, gameTime, AIM_DOWN);
 	}
 
+	//change between standing/crouching
+	if (INPUTS->getKeyPress(KeyCode::KEY_W)) {
+		player->handleInput(mainLayer, gameTime, MOVE_UP);
+	}
+	if (INPUTS->getKeyPress(KeyCode::KEY_S)) {
+		player->handleInput(mainLayer, gameTime, MOVE_DOWN);
+	}
+
 	//for testing purposes only, do not abuse:
 	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {
 		player->handleInput(mainLayer, gameTime, NO_CLIP);
@@ -282,6 +283,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 4)) {//only collide if player is above object
 				player->touchingFloor = true;
+				solve.setRestitution(0.0f);
 				return true;
 			}
 			else {
@@ -293,6 +295,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 4)) {//only collide if player is above object
 				player->touchingFloor = true;
+				solve.setRestitution(0.0f);
 				return true;
 			}
 			else {
@@ -305,6 +308,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if ((a->getName() == "player" && b->getName() == "floor") || (a->getName() == "floor" && b->getName() == "player"))
 		{
 			player->touchingFloor = true;
+			solve.setRestitution(0.0f);
 			return true;
 		}
 
@@ -323,6 +327,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				player->isHidingUnder = true;
 				//static_cast<Item*>(b->getParent())->playerRange = true;
 			}
+			return false;
 		}
 
 		// check if player has collided with a wall

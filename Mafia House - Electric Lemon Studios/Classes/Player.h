@@ -59,6 +59,7 @@ public:
 	bool isHit = false;
 	bool touchingFloor = true;
 	bool isCrouched = false;
+	bool wasFalling = false;
 
 	//for standing on physical objects
 	//Node* feet;
@@ -81,6 +82,7 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
+		void exit(Player* player, GameLayer* mainLayer);
 	};
 	class CrouchState : public State {
 	public:

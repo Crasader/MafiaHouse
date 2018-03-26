@@ -558,7 +558,6 @@ void Player::State::exit(Player* player, GameLayer* mainLayer) {}
 //Neutral State:
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->isCrouched = false;
-	player->stop();
 	player->stopAllActions();
 	if (player->prevState->type != "attack" && player->prevState->type != "throw") {
 		player->setPhysicsBody(player->mainBody);
@@ -570,6 +569,7 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 		}
 		//player->startAnimation(STANDUP, player->standup);
 	}
+	player->stop();
 	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 1.0f;
 	player->setSpeed(player->moveSpeed);
@@ -604,6 +604,10 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 		return new HideState;
 	}
 	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
+		if (player->wasFalling == true) {
+			player->wasFalling = false;
+			player->walk(STOP, time);
+		}
 		player->walk(input, time);
 	}
 	if (input == MOVE_UP) {
@@ -628,16 +632,18 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 	}
 	return nullptr;
 }
+void Player::NeutralState::exit(Player* player, GameLayer* mainLayer) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(player->walkingSound);
+}
 
 //Crouching State:
 void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->isCrouched = true;
-	player->stop();
 	player->stopAllActions();
 	if (player->prevState->type != "attack" && player->prevState->type != "throw") {
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
-		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27));
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27.5));
 		player->pickUpRadius->setPosition(Vec2(35, 20));
 		if (player->heldItem != NULL) {
 			player->heldItem->initCrouchHeldItem();
@@ -647,10 +653,11 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 0.5f;
 	player->setSpeed(player->moveSpeed);
+	player->stop();
 }
 Player::State* Player::CrouchState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
-	if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -50) {
+	if (player->getPhysicsBody()->getVelocity().y < -50 && player->touchingFloor == false) {
 		return new FallState;
 	}
 	return nullptr;
@@ -721,11 +728,12 @@ void Player::JumpState::exit(Player* player, GameLayer* mainLayer) {
 
 //Fall State:
 void Player::FallState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->wasFalling = true;
 	player->stopAllActions();
 	player->startAnimation(FALL, player->falling);
 }
 Player::State* Player::FallState::update(Player* player, GameLayer* mainLayer, float time) {
-	if (player->touchingFloor == true){//if player has hit the ground
+	if (player->touchingFloor == true && (player->getPhysicsBody()->getVelocity().y > -20 && player->getPhysicsBody()->getVelocity().y < 20)){//if player has hit the ground
 		//player->startAnimation(LAND, landing);
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
@@ -760,6 +768,7 @@ void Player::FallState::exit(Player* player, GameLayer* mainLayer) {
 
 //Climb State:
 void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->wasFalling = false;
 	player->maxSpeedY = 60;
 	//player->stop();
 	player->stopAllActions();
@@ -884,6 +893,7 @@ void Player::ThrowState::exit(Player* player, GameLayer* mainLayer) {
 }
 //Attack State(using items):
 void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->wasFalling = false;
 	player->stopAllActions();
 	if (player->isCrouched == true) {
 		player->moveSpeed = (0.2f);
