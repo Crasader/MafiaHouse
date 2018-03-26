@@ -65,7 +65,7 @@ void Player::initObject(Vec2 startPos) {
 	//intializing aim indicator
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	aimMarker = Sprite::createWithSpriteFrameName("icons/aim.png");
-	aimMarker->setAnchorPoint(Vec2(0.5, -2.4));
+	aimMarker->setAnchorPoint(Vec2(-2.4, 0.5));
 	aimMarker->setPositionNormalized(Vec2(0.5, 0.5));
 	aimMarker->getTexture()->setTexParameters(texParams);
 	aimMarker->setGlobalZOrder(9);
@@ -317,6 +317,20 @@ void Player::dropItem(GameLayer* mainLayer) {
 	Character::dropItem(mainLayer);
 }
 
+void Player::beginThrowItem() {
+	if (heldItem != NULL) {
+		heldItem->prepareThrow(aimAngle);
+
+		aimMarker->setVisible(true);
+		aimMarker->setRotation(aimAngle);
+	}
+}
+
+void Player::throwItem(GameLayer* mainLayer) {
+	Character::throwItem(mainLayer);
+	aimMarker->setVisible(false);
+}
+
 void Player::beginUseItem(float angle) {
 	if (heldItem != NULL) {
 		if (isCrouched == false) {
@@ -546,7 +560,7 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 	player->isCrouched = false;
 	player->stop();
 	player->stopAllActions();
-	if (player->prevState->type != "attack") {
+	if (player->prevState->type != "attack" && player->prevState->type != "throw") {
 		player->setPhysicsBody(player->mainBody);
 		player->bodySize = player->standSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
@@ -579,6 +593,9 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 	}
 	if (input == USE_ITEM) {
 		return new AttackState;
+	}
+	if (input == THROW_ITEM) {
+		return new ThrowState;
 	}
 	if (input == PICKUP) {
 		player->pickUpItem(mainLayer);
@@ -617,7 +634,7 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 	player->isCrouched = true;
 	player->stop();
 	player->stopAllActions();
-	if (player->prevState->type != "attack") {
+	if (player->prevState->type != "attack" && player->prevState->type != "throw") {
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27));
@@ -650,6 +667,9 @@ Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainL
 	}
 	if (input == USE_ITEM) {
 		return new AttackState;
+	}
+	if (input == THROW_ITEM) {
+		return new ThrowState;
 	}
 	if (input == PICKUP) {
 		player->pickUpItem(mainLayer);
@@ -764,6 +784,104 @@ void Player::ClimbState::exit(Player* player, GameLayer* mainLayer) {
 	player->objectToClimb = NULL;
 }
 
+//Throw State(throwing items):
+void Player::ThrowState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->aimAngle = 0;
+	player->stopAllActions();
+	player->beginThrowItem();
+	player->attackPrepareTime = time;
+}
+Player::State* Player::ThrowState::update(Player* player, GameLayer* mainLayer, float time) {
+	//if (player->checkDead() == true) { return new DeathState; }
+
+	if (player->attackRelease == false) {
+		player->beginThrowItem();
+	}
+	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
+		player->attackStartTime = time;
+		player->throwItem(mainLayer);
+		player->attackPrepareTime = -1.0f;
+	}
+	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->thrownItem->getAttackTime()) {
+		player->attackEndTime = time;
+		player->attackStartTime = -1.0f;
+	}
+	if (player->attackEndTime != -1.0f && time - player->attackEndTime >= player->thrownItem->getLagTime()) {
+		player->attackEndTime = -1.0f;
+		return player->prevState;
+	}
+
+	return nullptr;
+}
+Player::State* Player::ThrowState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
+	if (player->wasInHitStun == true) {//player is in hitstun
+		player->attackRelease = true;//forced to release attack
+		//return player->prevState;
+	}
+	//only register inputs if player is still preparing throw
+	if (player->attackRelease == false) {
+		//input for aiming
+		if (input == AIM_UP) {
+			player->aimAngle = 270;
+		}
+		if (player->isCrouched == false) {
+			if (input == AIM_DOWN) {
+				player->aimAngle = 90;
+			}
+		}
+		if (input == AIM_UP_LEFT) {
+			if (player->flippedX == false) {
+				player->flipX();
+			}
+			player->aimAngle = 315;
+		}
+		if (input == AIM_LEFT) {
+			if (player->flippedX == false) {
+				player->flipX();
+			}
+			player->aimAngle = 0;
+		}
+		if (player->isCrouched == false) {
+			if (input == AIM_DOWN_LEFT) {
+				if (player->flippedX == false) {
+					player->flipX();
+				}
+				player->aimAngle = 45;
+			}
+		}
+		if (input == AIM_UP_RIGHT) {
+			if (player->flippedX == true) {
+				player->flipX();
+			}
+			player->aimAngle = 315;
+		}
+		if (input == AIM_RIGHT) {
+			if (player->flippedX == true) {
+				player->flipX();
+			}
+			player->aimAngle = 0;
+		}
+		if (player->isCrouched == false) {
+			if (input == AIM_DOWN_RIGHT) {
+				if (player->flippedX == true) {
+					player->flipX();
+				}
+				player->aimAngle = 45;
+			}
+		}
+		//input for releasing attack
+		if (input == THROW_RELEASE) {
+			player->attackRelease = true;
+		}
+	}
+	return nullptr;
+}
+void Player::ThrowState::exit(Player* player, GameLayer* mainLayer) {
+	player->attackRelease = false;
+	player->aimAngle = 0;
+	player->attackStartTime = -1.0f;
+	player->attackEndTime = -1.0f;
+}
 //Attack State(using items):
 void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->stopAllActions();
@@ -806,7 +924,6 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 		}
 		if (player->attackEndTime != -1.0f && time - player->attackEndTime >= player->heldItem->getLagTime()) {
 			player->attackEndTime = -1.0f;
-			player->attackRelease = false;
 			return player->prevState;
 		}
 	}
@@ -821,6 +938,7 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 	if (player->wasInHitStun == true) {//player is in hitstun
 		player->attackRelease = true;//forced to release attack
 		player->walk(STOP, time);
+		//return player->prevState;
 	}
 	//only register inputs if player is still preparing attack
 	if (player->attackRelease == false) {
@@ -890,6 +1008,7 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	player->attackStartTime = -1.0f;
 	player->attackEndTime = -1.0f;
 	player->inFallingAttack = false;
+	player->attackRelease = false;
 }
 
 //Rolling State:

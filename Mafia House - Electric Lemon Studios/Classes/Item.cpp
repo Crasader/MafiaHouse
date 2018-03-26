@@ -21,6 +21,7 @@ Item::Item()
 void Item::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
+	getPhysicsBody()->setLinearDamping(0.5);
 	retain();
 	initRadius();
 	createOutline(outlineName);
@@ -81,7 +82,7 @@ void Item::initCrouchHeldItem() {
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
 	initGroundItem();
-	setPosition(pos);
+	setPosition(pos + Vec2(0,10));
 	//setRotation(-20);
 	if (flip == true) {
 		flipX();
@@ -103,6 +104,51 @@ void Item::initGroundItem() {
 	setName("item");
 	getPhysicsBody()->setName("item");
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
+}
+
+Vec2 angleToDirection(float angle) {
+	Vec2 direction;
+	if (angle == 270) { direction = Vec2(0, 1); }
+	else if (angle == 315) { direction = Vec2(1, 1); }
+	else if (angle == 0) { direction = Vec2(1, 0); }
+	else if (angle == 45) { direction = Vec2(1, -1); }
+	else if (angle == 90) { direction = Vec2(0, -1); }
+	return direction;
+}
+
+void Item::prepareThrow(float angle) {
+	setAnchorPoint(Vec2(0, 0.5));
+	setPosition(Vec2(26, 70));
+	setRotation(angle);
+}
+
+void Item::throwItem(float angle, Vec2 pos, bool flip) {
+	state = THROWN;
+	setAnchorPoint(Vec2(0, 0));
+	setPosition(pos);
+	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setGravityEnable(true);
+	Vec2 direction = angleToDirection(angle);
+	setRotation(angle);
+	if (flip == true) {
+		flipX();
+		setRotation(-getRotation());
+	}
+	if (flip == true) {
+		if (direction == Vec2(1, -1)) {
+			moveNoLimit(Vec2(0, -500));
+		}
+		else if (direction == Vec2(1, 1)) {
+			moveNoLimit(Vec2(0, 500));
+		}
+		else {
+			moveNoLimit(Vec2(500, 0));
+		}
+	}
+	else {
+		moveNoLimit(Vec2(500, 0));
+	}
 }
 
 void Item::breakItem() {
@@ -176,18 +222,10 @@ void Item::prepareCrouchSwing(float angle) {
 }
 
 void Item::stabSequence(float angle, bool flip) {
-	Vec2 direction;
-	if (angle == 270) { direction = Vec2(0, 1); }
-	else if (angle == 315) {
-		direction = Vec2(1, 1);
+	Vec2 direction = angleToDirection(angle);
+	if (direction == Vec2(1, -1) || direction == Vec2(1, 1)) {
 		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
 	}
-	else if (angle == 0) { direction = Vec2(1, 0); }
-	else if (angle == 45) {
-		direction = Vec2(1, -1);
-		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
-	}
-	else if (angle == 90) { direction = Vec2(0, -1); }
 
 	auto move = MoveBy::create(attackTime * 0.125, direction * 25);//stab forward
 	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));//wait
@@ -197,18 +235,10 @@ void Item::stabSequence(float angle, bool flip) {
 }
 
 void Item::swingSequence(float angle, bool flip) {
-	Vec2 direction;
-	if (angle == 270) { direction = Vec2(0, 1); }
-	else if (angle == 315) {
-		direction = Vec2(1, 1);
+	Vec2 direction = angleToDirection(angle);
+	if (direction == Vec2(1, -1) || direction == Vec2(1, 1)) {
 		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
 	}
-	else if (angle == 0) { direction = Vec2(1, 0); }
-	else if (angle == 45) {
-		direction = Vec2(1, -1);
-		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
-	}
-	else if (angle == 90) { direction = Vec2(0, -1); }
 
 	Vec2 movement = Vec2(6, -26);
 	movement = movement.rotate(direction);
@@ -307,7 +337,7 @@ Key::Key(){
 	Item::Item();
 	isKey = true;
 	priority = 0;
-	hp = 40;
+	hp = 4;
 	dmg = 25;
 	hitstun = 4 FRAMES;
 	doorDmg = 6;

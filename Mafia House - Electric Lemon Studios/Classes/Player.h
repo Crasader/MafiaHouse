@@ -31,6 +31,8 @@ public:
 	void hide();
 	void hiding();
 
+	void beginThrowItem();
+	void throwItem(GameLayer* mainLayer);
 	void beginUseItem(float angle);
 	void useItem(float angle);
 	void finishUseItem();
@@ -104,6 +106,14 @@ private:
 	class ClimbState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* update(Player* player, GameLayer* mainLayer, float time);
+		void exit(Player* player, GameLayer* mainLayer);
+	};
+	class ThrowState : public State {
+	public:
+		ThrowState() { type = "throw"; }
+		void enter(Player* player, GameLayer* mainLayer, float time);
+		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		void exit(Player* player, GameLayer* mainLayer);
 	};

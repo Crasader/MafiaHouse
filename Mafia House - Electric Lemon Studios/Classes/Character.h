@@ -54,8 +54,10 @@ public:
 	//functions for character actions:
 	virtual void pickUpItem(GameLayer* mainLayer);
 	virtual void dropItem(GameLayer* mainLayer);
+	virtual void throwItem(GameLayer* mainLayer);
 	virtual void breakItem(GameLayer* mainLayer);
 
+	virtual void beginThrowItem();
 	virtual void beginUseItem(float angle);
 	virtual void useItem(float angle);
 	virtual void finishUseItem();
@@ -91,6 +93,8 @@ protected:
 
 	//for aiming
 	float aimAngle = 0;//-90 is up, +90 is down
+	//for throwing items
+	Item* thrownItem = NULL;
 
 	//for movement:
 	float moveSpeed = 1.0f;

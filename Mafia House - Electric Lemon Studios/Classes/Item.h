@@ -43,6 +43,9 @@ public:
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 	virtual void initGroundItem();
 
+	void prepareThrow(float angle);
+	void throwItem(float angle, Vec2 pos, bool flipped);
+
 	virtual void breakItem();
 	void used();
 

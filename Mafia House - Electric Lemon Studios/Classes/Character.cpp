@@ -80,6 +80,29 @@ void Character::dropItem(GameLayer* mainLayer) {
 	}
 }
 
+void Character::throwItem(GameLayer* mainLayer) {
+	if (heldItem != NULL) {
+		//removing dropped item from inventory
+		for (int i = 0; i < inventory.size(); i++) {
+			if (inventory[i] == heldItem) {
+				inventory.erase(inventory.begin() + i);
+				break;
+			}
+		}
+		heldItem->throwItem(aimAngle, convertToWorldSpace(heldItem->getPosition()), flippedX);
+		thrownItem = heldItem;
+		removeChild(heldItem, true);
+		mainLayer->addChild(heldItem);
+		heldItem = NULL;
+	}
+}
+
+void Character::beginThrowItem() {
+	if (heldItem != NULL) {
+		heldItem->prepareThrow(aimAngle);
+	}
+}
+
 void Character::breakItem(GameLayer* mainLayer) {
 	if (heldItem != NULL) {
 		//removing item from inventory
