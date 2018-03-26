@@ -128,6 +128,16 @@ void Character::useItem(float angle) {
 	}
 }
 
+void Character::finishUseItem() {
+	if (heldItem->getAttackType() == Item::STAB) {
+		setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());
+	}
+	else if (heldItem->getAttackType() == Item::SWING) {
+		setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+	}
+	heldItem->getPhysicsBody()->setEnabled(false);
+}
+
 void Character::useDoor() {
 	if (doorToUse != NULL) {
 		doorToUse->use();

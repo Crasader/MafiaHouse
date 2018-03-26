@@ -1592,8 +1592,7 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		enemy->attackPrepareTime = -1.0f;
 	}
 	if (enemy->attackStartTime != -1.0f && time - enemy->attackStartTime >= enemy->heldItem->getAttackTime()) {
-		enemy->setSpriteFrame(enemy->stab.animation->getFrames().at(0)->getSpriteFrame());
-		enemy->heldItem->getPhysicsBody()->setEnabled(false);
+		enemy->finishUseItem();
 		enemy->attackEndTime = time;
 		enemy->attackStartTime = -1.0f;
 	}

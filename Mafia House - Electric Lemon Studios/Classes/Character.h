@@ -58,6 +58,7 @@ public:
 
 	virtual void beginUseItem(float angle);
 	virtual void useItem(float angle);
+	virtual void finishUseItem();
 
 	virtual void useDoor();
 	virtual void useStair(GameLayer* mainLayer);

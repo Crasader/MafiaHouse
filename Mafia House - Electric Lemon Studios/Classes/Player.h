@@ -6,7 +6,7 @@ class Player : public Character
 public:
 	Player();
 	~Player();
-	CREATE_SPRITE_FUNC(Player, "player.png");
+	CREATE_EMPTY_SPRITE_FUNC(Player);
 	CREATE_WITH_FRAME(Player);
 	CREATE_WITH_FRAME_NAME(Player, "player/stand/001.png");
 
@@ -31,6 +31,10 @@ public:
 	void hiding();
 
 	void climb();
+
+	void beginUseItem(float angle);
+	void useItem(float angle);
+	void finishUseItem();
 
 	void wasHit(Item* item, float time);//being hit by an enemy attack
 	
@@ -186,8 +190,8 @@ private:
 	GameAnimation jumping;
 	GameAnimation falling;
 	GameAnimation rolling;
-	//GameAnimation crouchStabAnimation;
-	//GameAnimation crouchSwingAnimation;
+	GameAnimation crouchstab;
+	GameAnimation crouchswing;
 	//GameAnimation crouchThrowAnimation;
 	//GameAnimation hideAnimation;//reverse for uniding
 };

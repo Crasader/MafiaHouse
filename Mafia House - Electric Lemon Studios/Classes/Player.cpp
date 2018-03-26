@@ -24,6 +24,8 @@ Player::Player()
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES, true);
 	stab = GameAnimation(STAB, "player/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "player/swing/%03d.png", 2, 10 FRAMES, false);
+	crouchstab = GameAnimation(CROUCHSTAB, "player/crouch_stab/%03d.png", 2, 10 FRAMES, false);
+	crouchswing = GameAnimation(CROUCHSWING, "player/crouch_swing/%03d.png", 2, 10 FRAMES, false);
 	crouch = GameAnimation(CROUCH, "player/crouch/%03d.png", 5, 10 FRAMES, false);
 	standup = GameAnimation(STANDUP, "player/stand_up/%03d.png", 5, 10 FRAMES, false);
 	crouchwalk = GameAnimation(CROUCHWALK, "player/crouch_walk/%03d.png", 5, 10 FRAMES, true);
@@ -84,7 +86,12 @@ void Player::walkPrepareAttack(Input input, float time) {
 		if (moveDirection == 0) {
 			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 			moveDirection = 1;
-			startAnimation(WALK, walking);
+			if (isCrouched == false) {
+				startAnimation(WALK, walking);
+			}
+			else {
+				startAnimation(CROUCHWALK, crouchwalk);
+			}
 			setSpeed(moveSpeed);
 		}
 		walking.action->setSpeed(moveSpeed);
@@ -94,7 +101,12 @@ void Player::walkPrepareAttack(Input input, float time) {
 		if (moveDirection == 0) {
 			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 			moveDirection = 2;
-			startAnimation(WALK, walking);
+			if (isCrouched == false) {
+				startAnimation(WALK, walking);
+			}
+			else {
+				startAnimation(CROUCHWALK, crouchwalk);
+			}
 			setSpeed(moveSpeed);
 		}
 		walking.action->setSpeed(moveSpeed);
@@ -105,7 +117,13 @@ void Player::walkPrepareAttack(Input input, float time) {
 		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingSound);
 		moveDirection = 0;
 		stopAnimation(WALK);
-		setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+		stopAnimation(CROUCHWALK);
+		if (isCrouched == false) {
+			setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+		}
+		else {
+			setSpriteFrame(crouchwalk.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+		}
 	}
 }
 
@@ -264,12 +282,91 @@ void Player::jump() {
 void Player::pickUpItem(GameLayer* mainLayer) {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
 	Character::pickUpItem(mainLayer);
+	if (isCrouched == true) {
+		if (heldItem != NULL) {
+			heldItem->initCrouchHeldItem();
+		}
+	}
 }
 
 void Player::dropItem(GameLayer* mainLayer) {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/unequip.wav");
 	Character::dropItem(mainLayer);
 }
+
+void Player::beginUseItem(float angle) {
+	if (heldItem != NULL) {
+		if (isCrouched == false) {
+			if (heldItem->getAttackType() == Item::STAB) {
+				heldItem->prepareStab(angle);
+				setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
+			}
+			else if (heldItem->getAttackType() == Item::SWING) {
+				heldItem->prepareSwing(angle);
+				setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+			}
+		}
+		else {
+			if (heldItem->getAttackType() == Item::STAB) {
+				heldItem->prepareCrouchStab(angle);
+				setSpriteFrame(crouchstab.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
+			}
+			else if (heldItem->getAttackType() == Item::SWING) {
+				heldItem->prepareCrouchSwing(angle);
+				setSpriteFrame(crouchswing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+			}
+		}
+	}
+}
+
+void Player::useItem(float angle) {
+	if (heldItem != NULL) {
+		if (isCrouched == false) {
+			heldItem->getPhysicsBody()->setEnabled(true);
+			if (heldItem->getAttackType() == Item::STAB) {
+				heldItem->stabSequence(angle, flippedX);
+				setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());
+			}
+			else if (heldItem->getAttackType() == Item::SWING) {
+				heldItem->swingSequence(angle, flippedX);
+				setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+			}
+		}
+		else {
+			heldItem->getPhysicsBody()->setEnabled(true);
+			if (heldItem->getAttackType() == Item::STAB) {
+				heldItem->crouchStabSequence(angle, flippedX);
+				setSpriteFrame(crouchstab.animation->getFrames().at(1)->getSpriteFrame());
+			}
+			else if (heldItem->getAttackType() == Item::SWING) {
+				heldItem->crouchSwingSequence(angle, flippedX);
+				setSpriteFrame(crouchswing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+			}
+		}
+	}
+}
+
+void Player::finishUseItem() {
+	if (isCrouched == false) {
+		if (heldItem->getAttackType() == Item::STAB) {
+			setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());
+		}
+		else if (heldItem->getAttackType() == Item::SWING) {
+			setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+		}
+	}
+	else {
+		if (heldItem->getAttackType() == Item::STAB) {
+			setSpriteFrame(crouchstab.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
+		}
+		else if (heldItem->getAttackType() == Item::SWING) {
+			setSpriteFrame(crouchswing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+		}
+	}
+	heldItem->getPhysicsBody()->setEnabled(false);
+}
+
+
 
 void Player::useDoor() {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/openDoor.wav");
@@ -376,7 +473,7 @@ void Player::update(GameLayer* mainLayer, float time) {
 		if (inVision == true) {//if player was in enemy vision upon entering hiding
 			wasSeen = true;
 		}
-		setOpacity(155);
+		setOpacity(200);
 		hidden = true;
 	}
 	else{//if they are no longer under object
@@ -436,6 +533,9 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 		player->bodySize = player->standSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
 		//player->startAnimation(STANDUP, player->standup);
+		if (player->heldItem != NULL) {
+			player->heldItem->initHeldItem();
+		}
 	}
 	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 1.0f;
@@ -503,6 +603,9 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
 		//player->startAnimation(CROUCH, player->crouch);
+		if (player->heldItem != NULL) {
+			player->heldItem->initCrouchHeldItem();
+		}
 	}
 	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 0.5f;
@@ -643,10 +746,17 @@ void Player::ClimbState::exit(Player* player, GameLayer* mainLayer) {
 
 //Attack State(using items):
 void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time) {
-	player->moveSpeed = (0.4f);
-	player->setSpeed(player->moveSpeed);
-	player->attackPrepareTime = time;
+	player->stopAllActions();
+	if (player->isCrouched == true) {
+		player->moveSpeed = (0.2f);
+		player->setSpeed(player->moveSpeed);
+	}
+	else {
+		player->moveSpeed = (0.4f);
+		player->setSpeed(player->moveSpeed);
+	}
 	player->beginUseItem(0);
+	player->attackPrepareTime = time;
 }
 Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
@@ -659,12 +769,12 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 	}
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime()) {
 		player->attackStartTime = time;
+
 		player->useItem(player->aimAngle);
 		player->attackPrepareTime = -1.0f;
 	}
 	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->heldItem->getAttackTime()) {
-		player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
-		player->heldItem->getPhysicsBody()->setEnabled(false);
+		player->finishUseItem();
 		player->attackEndTime = time;
 		player->attackStartTime = -1.0f;
 	}
@@ -714,7 +824,6 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		//input for moving
 		if ((input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 			player->walkPrepareAttack(input, time);
-			player->setSpriteFrame(player->stab.animation->getFrames().at(0)->getSpriteFrame());
 		}
 		//input for releasing attack
 		if (input == USE_RELEASE) {
@@ -733,7 +842,12 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 		player->breakItem(mainLayer);
 	}
 	else{
-		player->heldItem->initHeldItem();
+		if (player->isCrouched == false) {
+			player->heldItem->initHeldItem();
+		}
+		else {
+			player->heldItem->initCrouchHeldItem();
+		}
 	}
 }
 
@@ -743,7 +857,11 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
+		if (player->heldItem != NULL) {
+			player->heldItem->initCrouchHeldItem();
+		}
 	}
+	player->heldItem->setVisible(false);
 	player->stopAllActions();
 	player->stop();
 	player->startAnimation(ROLLING, player->rolling);
@@ -766,6 +884,7 @@ Player::State* Player::RollState::handleInput(Player* player, GameLayer* mainLay
 	return nullptr;
 }
 void Player::RollState::exit(Player* player, GameLayer* mainLayer) {
+	player->heldItem->setVisible(true);
 	player->getPhysicsBody()->setLinearDamping(0.0f);
 }
 

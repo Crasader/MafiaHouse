@@ -9,6 +9,18 @@ USING_NS_CC;
 using std::string;
 using std::vector;
 
+#define CREATE_EMPTY_SPRITE_FUNC(__TYPE__) \
+static __TYPE__* create() \
+{ \
+	 __TYPE__ *sprite = new (std::nothrow) __TYPE__(); \
+	if (sprite && sprite->init()) \
+	{ \
+	sprite->autorelease(); \
+	return sprite; \
+	} \
+	CC_SAFE_DELETE(sprite); \
+	return nullptr; \
+}
 #define CREATE_SPRITE_FUNC(__TYPE__, _FILENAME_) \
 static __TYPE__* create(const std::string& filename = _FILENAME_) \
 { \

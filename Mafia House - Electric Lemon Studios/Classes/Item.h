@@ -39,6 +39,7 @@ public:
 
 	virtual void initPickedUpItem();
 	virtual void initHeldItem();
+	virtual void initCrouchHeldItem();
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 	virtual void initGroundItem();
 
@@ -49,9 +50,13 @@ public:
 
 	virtual void prepareStab(float angle);
 	virtual void prepareSwing(float angle);
+	virtual void prepareCrouchStab(float angle);
+	virtual void prepareCrouchSwing(float angle);
 
 	virtual void stabSequence(float angle, bool flip);
 	virtual void swingSequence(float angle, bool flip);
+	virtual void crouchStabSequence(float angle, bool flip);
+	virtual void crouchSwingSequence(float angle, bool flip);
 
 	void checkSpeed();
 
