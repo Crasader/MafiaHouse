@@ -55,8 +55,8 @@ public:
 
 	virtual void stabSequence(float angle, bool flip);
 	virtual void swingSequence(float angle, bool flip);
-	virtual void crouchStabSequence(float angle, bool flip);
-	virtual void crouchSwingSequence(float angle, bool flip);
+
+	virtual void fallAttack();
 
 	void checkSpeed();
 

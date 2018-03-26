@@ -20,6 +20,7 @@ public:
 	void crouchWalk(Input input, float time);
 
 	void jump();
+	void fallAttack();
 
 	void pickUpItem(GameLayer* mainLayer);
 	void dropItem(GameLayer* mainLayer);
@@ -157,6 +158,9 @@ private:
 	float startJumpTime = -1;
 	float jumpTime = 1.0f;//time you are stuck in a jump for before falling
 
+	//for falling attacks
+	bool inFallingAttack = false;
+
 	//for moonwalking
 	bool moonwalking = false;
 	float prevStopTime = -1;
@@ -192,6 +196,8 @@ private:
 	GameAnimation rolling;
 	GameAnimation crouchstab;
 	GameAnimation crouchswing;
+	GameAnimation fallstab;
+	GameAnimation fallswing;
 	//GameAnimation crouchThrowAnimation;
 	//GameAnimation hideAnimation;//reverse for uniding
 };

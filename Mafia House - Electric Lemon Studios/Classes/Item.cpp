@@ -196,57 +196,6 @@ void Item::stabSequence(float angle, bool flip) {
 	runAction(sequence);
 }
 
-void Item::crouchSwingSequence(float angle, bool flip) {
-	Vec2 direction;
-	if (angle == 270) { direction = Vec2(0, 1); }
-	else if (angle == 315) {
-		direction = Vec2(1, 1);
-		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
-	}
-	else if (angle == 0) { direction = Vec2(1, 0); }
-	else if (angle == 45) {
-		direction = Vec2(1, -1);
-		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
-	}
-	else if (angle == 90) { direction = Vec2(0, -1); }
-
-	Vec2 movement = Vec2(6, -26);
-	movement = movement.rotate(direction);
-
-	auto move = MoveBy::create(attackTime * 0.3, movement);
-	auto rotate = RotateBy::create(attackTime * 0.3, 120);
-
-	auto hold = MoveBy::create(attackTime * 0.4, Vec2(0, 0));
-
-	//auto moveback = MoveBy::create(6 FRAMES, Vec2(-10, 5));
-	//auto rotateback = RotateBy::create(6 FRAMES, -135);
-	//Spawn::create(moveback, rotateback)
-
-	auto sequence = Sequence::create(Spawn::create(move, rotate), hold, NULL);
-	runAction(sequence);
-}
-
-void Item::crouchStabSequence(float angle, bool flip) {
-	Vec2 direction;
-	if (angle == 270) { direction = Vec2(0, 1); }
-	else if (angle == 315) {
-		direction = Vec2(1, 1);
-		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
-	}
-	else if (angle == 0) { direction = Vec2(1, 0); }
-	else if (angle == 45) {
-		direction = Vec2(1, -1);
-		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
-	}
-	else if (angle == 90) { direction = Vec2(0, -1); }
-
-	auto move = MoveBy::create(attackTime * 0.125, direction * 25);//stab forward
-	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));//wait
-	auto moveback = MoveBy::create(attackTime * 0.125, -direction * 25);//pull back
-	auto sequence = Sequence::create(move, hold, moveback, NULL);
-	runAction(sequence);
-}
-
 void Item::swingSequence(float angle, bool flip) {
 	Vec2 direction;
 	if (angle == 270) { direction = Vec2(0, 1); }
@@ -275,6 +224,20 @@ void Item::swingSequence(float angle, bool flip) {
 
 	auto sequence = Sequence::create(Spawn::create(move, rotate), hold, NULL);
 	runAction(sequence);
+}
+
+void Item::fallAttack() {
+	getPhysicsBody()->setEnabled(true);
+	if (attackType == STAB) {
+		setPosition(Vec2(50, 20));
+		setRotation(90);
+		setAnchorPoint(Vec2(0, 0.5));
+	}
+	else if (attackType == SWING) {
+		setPosition(Vec2(60, 20));
+		setRotation(10);
+		setAnchorPoint(Vec2(0, 0.5));
+	}
 }
 
 //Fist Class:
