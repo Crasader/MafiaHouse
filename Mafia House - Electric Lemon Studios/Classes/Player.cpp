@@ -861,60 +861,62 @@ Player::State* Player::ThrowState::handleInput(Player* player, GameLayer* mainLa
 		player->attackRelease = true;//forced to release attack
 		//return player->prevState;
 	}
+	//input for releasing attack
+	if (input == THROW_RELEASE) {
+		player->attackRelease = true;
+	}
 	//only register inputs if player is still preparing throw
 	if (player->attackRelease == false) {
 		//input for aiming
 		if (input == AIM_UP) {
 			player->aimAngle = 270;
 		}
-		if (player->isCrouched == false) {
-			if (input == AIM_DOWN) {
+		else if (input == AIM_DOWN) {
+			if (player->isCrouched == false) {
 				player->aimAngle = 90;
 			}
 		}
-		if (input == AIM_UP_LEFT) {
+		else if (input == AIM_UP_LEFT) {
 			if (player->flippedX == false) {
 				player->flipX();
+				player->turned = true;
 			}
 			player->aimAngle = 315;
 		}
-		if (input == AIM_LEFT) {
+		else if (input == AIM_LEFT) {
 			if (player->flippedX == false) {
 				player->flipX();
+				player->turned = true;
 			}
 			player->aimAngle = 0;
 		}
-		if (player->isCrouched == false) {
-			if (input == AIM_DOWN_LEFT) {
-				if (player->flippedX == false) {
-					player->flipX();
-				}
-				player->aimAngle = 45;
+		else if (input == AIM_DOWN_LEFT) {
+			if (player->flippedX == false) {
+				player->flipX();
+				player->turned = true;
 			}
+			player->aimAngle = 45;
 		}
-		if (input == AIM_UP_RIGHT) {
+		else if (input == AIM_UP_RIGHT) {
 			if (player->flippedX == true) {
 				player->flipX();
+				player->turned = false;
 			}
 			player->aimAngle = 315;
 		}
-		if (input == AIM_RIGHT) {
+		else if (input == AIM_RIGHT) {
 			if (player->flippedX == true) {
 				player->flipX();
+				player->turned = false;
 			}
 			player->aimAngle = 0;
 		}
-		if (player->isCrouched == false) {
-			if (input == AIM_DOWN_RIGHT) {
-				if (player->flippedX == true) {
-					player->flipX();
-				}
-				player->aimAngle = 45;
+		else if (input == AIM_DOWN_RIGHT) {
+			if (player->flippedX == true) {
+				player->flipX();
+				player->turned = false;
 			}
-		}
-		//input for releasing attack
-		if (input == THROW_RELEASE) {
-			player->attackRelease = true;
+			player->aimAngle = 45;
 		}
 	}
 	return nullptr;
@@ -984,6 +986,11 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		player->walk(STOP, time);
 		//return player->prevState;
 	}
+	//input for releasing attack
+	if (input == USE_RELEASE) {
+		player->attackRelease = true;
+		player->walkPrepareAttack(STOP, time);
+	}
 	//only register inputs if player is still preparing attack
 	if (player->attackRelease == false) {
 		//input for aiming
@@ -1002,10 +1009,8 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 			if (input == AIM_LEFT) {
 				player->aimAngle = 0;
 			}
-			if (player->isCrouched == false) {
-				if (input == AIM_DOWN_LEFT) {
-					player->aimAngle = 45;
-				}
+			if (input == AIM_DOWN_LEFT) {
+				player->aimAngle = 45;
 			}
 		}
 		if (player->flippedX == false) {//only register right inputs for aiming while facing right
@@ -1015,20 +1020,13 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 			if (input == AIM_RIGHT) {
 				player->aimAngle = 0;
 			}
-			if (player->isCrouched == false) {
-				if (input == AIM_DOWN_RIGHT) {
-					player->aimAngle = 45;
-				}
+			if (input == AIM_DOWN_RIGHT) {
+				player->aimAngle = 45;
 			}
 		}
 		//input for moving
 		if ((input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP)) {
 			player->walkPrepareAttack(input, time);
-		}
-		//input for releasing attack
-		if (input == USE_RELEASE) {
-			player->attackRelease = true;
-			player->walkPrepareAttack(STOP, time);
 		}
 	}
 	return nullptr;
