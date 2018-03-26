@@ -21,7 +21,6 @@ Item::Item()
 void Item::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
-	getPhysicsBody()->setLinearDamping(0.5);
 	retain();
 	initRadius();
 	createOutline(outlineName);
@@ -101,6 +100,7 @@ void Item::initGroundItem() {
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setLinearDamping(0.0f);
 	setName("item");
 	getPhysicsBody()->setName("item");
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
@@ -123,12 +123,10 @@ void Item::prepareThrow(float angle) {
 }
 
 void Item::throwItem(float angle, Vec2 pos, bool flip) {
-	state = THROWN;
+	initThrownItem();
+	getPhysicsBody()->setLinearDamping(1.0f);
 	setAnchorPoint(Vec2(0, 0));
 	setPosition(pos);
-	getPhysicsBody()->setEnabled(true);
-	getPhysicsBody()->setDynamic(true);
-	getPhysicsBody()->setGravityEnable(true);
 	Vec2 direction = angleToDirection(angle);
 	setRotation(angle);
 	if (flip == true) {
@@ -137,18 +135,37 @@ void Item::throwItem(float angle, Vec2 pos, bool flip) {
 	}
 	if (flip == true) {
 		if (direction == Vec2(1, -1)) {
-			moveNoLimit(Vec2(0, -500));
+			moveNoLimit(Vec2(0, -700));
 		}
 		else if (direction == Vec2(1, 1)) {
-			moveNoLimit(Vec2(0, 500));
+			moveNoLimit(Vec2(0, 700));
+		}
+		else if (direction == Vec2(0, 1)) {
+			moveNoLimit(Vec2(-700, 0));
+		}
+		else if (direction == Vec2(0, -1)) {
+			moveNoLimit(Vec2(-700, 0));
 		}
 		else {
-			moveNoLimit(Vec2(500, 0));
+			moveNoLimit(Vec2(700, 0));
 		}
 	}
 	else {
-		moveNoLimit(Vec2(500, 0));
+		moveNoLimit(Vec2(700, 0));
 	}
+}
+
+void Item::initThrownItem() {
+	state = THROWN;
+	outline->setVisible(false);
+	pickUpRadius->getPhysicsBody()->setEnabled(false);
+	getPhysicsBody()->setCategoryBitmask(8);
+	getPhysicsBody()->setCollisionBitmask(42);
+	setName("held_item");
+	getPhysicsBody()->setName("held_item");
+	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setGravityEnable(false);
 }
 
 void Item::breakItem() {
@@ -186,10 +203,21 @@ void Item::hasMoved() {
 }
 
 void Item::checkSpeed() {
-	float speedSq = getPhysicsBody()->getVelocity().getLengthSq();//squared speed
-		if (speedSq < 50 * 50) {//check if speed has gone below threshold
-			initGroundItem();
+	float speedX = abs(getPhysicsBody()->getVelocity().x);
+	float speedY = abs(getPhysicsBody()->getVelocity().y);
+	if (speedY > 200) {
+		initThrownItem();
 	}
+	else if (speedX <= 400) {
+		initGroundItem();
+	}
+	/*float speedSq = getPhysicsBody()->getVelocity().getLengthSq();//squared speed
+	if (speedSq <= 200 * 200) {//check if speed has gone below threshold
+		initGroundItem();
+	}
+	else if ((speedSq > 210 * 210)) {
+		initThrownItem();
+	}*/
 }
 
 void Item::prepareStab(float angle) {
@@ -361,7 +389,7 @@ Hammer::Hammer(){
 	hitstun = 24 FRAMES;
 	doorDmg = 34;
 	canBreakDoor = true;
-	effect = NONE;
+	effect = KNOCKOUT;
 	attackType = SWING;
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;

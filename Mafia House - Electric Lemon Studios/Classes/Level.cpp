@@ -90,9 +90,7 @@ void Level::update(float deltaTime){
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
 			mainLayer->items[i]->hasMoved();
 			mainLayer->items[i]->playerInRange(player);
-		}
-		else if (mainLayer->items[i]->getState() == Item::HELD) {
-
+			mainLayer->items[i]->checkSpeed();
 		}
 		else if (mainLayer->items[i]->getState() == Item::THROWN) {
 			mainLayer->items[i]->checkSpeed();
@@ -261,7 +259,7 @@ void Level::update(float deltaTime){
 	}
 
 	//must be called after checking all player actions
-	player->resetCollisionChecks();
+	player->resetCollisionChecks(gameTime);
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera follow player
@@ -547,14 +545,14 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//player and door
-		if (a->getName() == "player" && b->getName() == "door_radius")
+		if (a->getName() == "player" && (b->getName() == "door_radius" || b->getName() == "vent_radius"))
 		{
 			//CCLOG("CAN OPEN DOOR");
 			player->doorToUse = static_cast<Door*>(b->getParent());
 			static_cast<Door*>(b->getParent())->playerRange = true;
 			return false;
 		}
-		else if (a->getName() == "door_radius" && b->getName() == "player")
+		else if ((a->getName() == "door_radius" || a->getName() == "vent_radius") && b->getName() == "player")
 		{
 			//CCLOG("CAN OPEN DOOR");
 			player->doorToUse = static_cast<Door*>(a->getParent());
@@ -598,20 +596,20 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//enemy and door radius
-		if (a->getName() == "enemy" && b->getName() == "door_radius")
+		if (a->getName() == "enemy" && (b->getName() == "door_radius" || b->getName() == "vent_radius"))
 		{
 			return false;
 		}
-		else if (a->getName() == "door_radius" && b->getName() == "enemy")
+		else if ((a->getName() == "door_radius" || a->getName() == "vent_radius") && b->getName() == "enemy")
 		{
 			return false;
 		}
 		//alert enemy and door radius
-		if (a->getName() == "enemy_alert" && b->getName() == "door_radius")
+		if (a->getName() == "enemy_alert" && (b->getName() == "door_radius" || b->getName() == "vent_radius"))
 		{
 			return false;
 		}
-		else if (a->getName() == "door_radius" && b->getName() == "enemy_alert")
+		else if ((a->getName() == "door_radius" || a->getName() == "vent_radius") && b->getName() == "enemy_alert")
 		{
 			return false;
 		}
@@ -645,6 +643,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
 			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+			if (static_cast<Item*>(b)->getState() == Item::THROWN) {
+				static_cast<Item*>(b)->stop();
+			}
 			return true;
 		}
 		else {
@@ -655,6 +656,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
 			static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+			if (static_cast<Item*>(a)->getState() == Item::THROWN) {
+				static_cast<Item*>(a)->stop();
+			}
 			return true;
 		}
 		else {
@@ -666,7 +670,6 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	if (a->getName() == "player" && b->getName() == "held_item")
 	{
 		if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {//so player doesn't get hit by their own weapon
-																		 //get hit
 			static_cast<Player*>(a)->itemHitBy = (static_cast<Item*>(b));
 			return true;
 		}
@@ -676,7 +679,6 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	}
 	else if (a->getName() == "held_item" && b->getName() == "player") {
 		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
-																		 //get hit
 			static_cast<Player*>(b)->itemHitBy = (static_cast<Item*>(a));
 			return true;
 		}

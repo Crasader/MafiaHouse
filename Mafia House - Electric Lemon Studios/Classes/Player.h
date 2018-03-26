@@ -13,7 +13,7 @@ public:
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
 	//functions for player actions:
-	void resetCollisionChecks();//resets variables used to track what objects/items player will interact with/use
+	void resetCollisionChecks(float time);//resets variables used to track what objects/items player will interact with/use
 
 	void walkPrepareAttack(Input input, float time);
 	void walk(Input input, float time);
@@ -55,6 +55,7 @@ public:
 
 	bool inVision = false;
 	bool wasSeen = false;
+	float seenTime = -1;//last time seen by enemy
 
 	bool isHit = false;
 	bool touchingFloor = true;
@@ -189,6 +190,7 @@ private:
 	bool hidden = false;
 	bool hittingLeft = false;
 	bool hittingRight = false;
+	float visionResetTime = 1.0f;//time it takes for inVision to reset to false
 
 	//for walking:
 	bool turned = false;

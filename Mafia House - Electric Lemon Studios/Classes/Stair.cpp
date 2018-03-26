@@ -251,7 +251,34 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		outlineName = "objects/vent/outline_v.png";
 		useBox = Size(radius, 55 + radius / 2);
 	}
-	Door::initObject(startPos);
+	setContentSize(size);//set the size of the wall
+	GameObject::initObject(startPos);
+
+	auto useRadius = Node::create();
+	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	useRadius->setName("vent_radius");
+
+	auto radiusBody = PhysicsBody::createBox(useBox);
+	radiusBody->setDynamic(false);
+	radiusBody->setCategoryBitmask(4);
+	radiusBody->setCollisionBitmask(3);
+	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setTag(10000);
+	radiusBody->setName("vent_radius");
+	useRadius->setPhysicsBody(radiusBody);
+	addChild(useRadius);
+
+	createOutline(outlineName);
+	//initializing physics body for enemies to walk on
+	auto body = PhysicsBody::createBox(size);//player is half height when crouching
+	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setCategoryBitmask(1);
+	body->setCollisionBitmask(2);//only collide with enemies
+	body->setDynamic(false);
+	enemyWalkBody = Node::create();
+	enemyWalkBody->setPositionNormalized(Vec2(0.5, 0.5));
+	enemyWalkBody->setPhysicsBody(body);
+	addChild(enemyWalkBody);
 }
 
 void Vent::itemHit(Item* item) {

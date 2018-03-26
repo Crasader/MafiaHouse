@@ -74,7 +74,7 @@ void Player::initObject(Vec2 startPos) {
 }
 
 //functions for player actions:
-void Player::resetCollisionChecks() {
+void Player::resetCollisionChecks(float time) {
 	isHidingUnder = false;
 	touchingFloor = false;
 	touchingWall = false;
@@ -84,7 +84,9 @@ void Player::resetCollisionChecks() {
 	stairToUse = NULL;
 	objectToHideBehind = NULL;
 	itemToPickUp = NULL;
-	inVision = false;
+	if (time - seenTime >= visionResetTime || seenTime == -1) {
+		inVision = false;
+	}
 	//bodyToPickUp = NULL;
 }
 
@@ -651,7 +653,7 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27.5));
-		player->pickUpRadius->setPosition(Vec2(35, 20));
+		player->pickUpRadius->setPosition(Vec2(35, 15));
 		if (player->heldItem != NULL) {
 			player->heldItem->initCrouchHeldItem();
 		}
@@ -1033,10 +1035,11 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->wasFalling = true;
 	if (player->prevState->type == "neutral") {
+		player->isCrouched = true;
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27));
-		player->pickUpRadius->setPosition(Vec2(35, 20));
+		player->pickUpRadius->setPosition(Vec2(35, 15));
 		if (player->heldItem != NULL) {
 			player->heldItem->initCrouchHeldItem();
 		}
@@ -1071,7 +1074,6 @@ void Player::RollState::exit(Player* player, GameLayer* mainLayer) {
 	}
 	player->getPhysicsBody()->setLinearDamping(0.0f);
 }
-
 
 //Hide State:
 void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {

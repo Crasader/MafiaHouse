@@ -42,6 +42,7 @@ public:
 	virtual void initCrouchHeldItem();
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 	virtual void initGroundItem();
+	virtual void initThrownItem();
 
 	void prepareThrow(float angle);
 	void throwItem(float angle, Vec2 pos, bool flipped);

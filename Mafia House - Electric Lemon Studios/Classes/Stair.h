@@ -106,4 +106,7 @@ public:
 	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
 
 	void itemHit(Item* item);
+
+private:
+	Node* enemyWalkBody;
 };

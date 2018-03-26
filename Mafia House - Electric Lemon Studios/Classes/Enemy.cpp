@@ -960,6 +960,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 			else if (visionContactName == "player") {//not using tag anymore
 				if (visionContactTag < 10) {//if the player is not hidden
 					static_cast<Player*>(visionContact)->inVision = true;
+					static_cast<Player*>(visionContact)->seenTime = time;
 					detectedPlayer = static_cast<Player*>(visionContact);
 					playerInVision = true;
 					points->push_back(info.contact + offsetAdjust);
