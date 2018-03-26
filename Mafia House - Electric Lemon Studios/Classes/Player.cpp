@@ -298,7 +298,14 @@ void Player::crouchWalk(Input input, float time) {
 
 void Player::jump() {
 	if (touchingFloor == true) {
-		move(Vec2(0, 120));//apply force straight up
+	auto callback = CallFunc::create([this]() {
+		hasJumped = true;
+		move(Vec2(0, 100));//apply force straight up
+	});
+	auto wait = MoveBy::create(10 FRAMES, Vec2(0, 0));
+	auto sequence = Sequence::create(wait, callback, nullptr);//runs the stair use animation and then has character take the stairs
+	
+	runAction(sequence);
 	}
 }
 
@@ -703,7 +710,7 @@ void Player::JumpState::enter(Player* player, GameLayer* mainLayer, float time) 
 	player->startAnimation(JUMP, player->jumping);
 }
 Player::State* Player::JumpState::update(Player* player, GameLayer* mainLayer, float time) {
-	if (player->getPhysicsBody()->getVelocity().y <= 0) {//when player's vertical speed has stopped
+	if (player->hasJumped == true && player ->getPhysicsBody()->getVelocity().y <= 0) {//when player's vertical speed has stopped
 		return new FallState;
 	}
 	return nullptr;
@@ -724,6 +731,7 @@ Player::State* Player::JumpState::handleInput(Player* player, GameLayer* mainLay
 	return nullptr;
 }
 void Player::JumpState::exit(Player* player, GameLayer* mainLayer) {
+	player->hasJumped = false;
 }
 
 //Fall State:

@@ -60,6 +60,7 @@ public:
 	bool touchingFloor = true;
 	bool isCrouched = false;
 	bool wasFalling = false;
+	bool hasJumped = false;
 
 	//for standing on physical objects
 	//Node* feet;
