@@ -65,10 +65,10 @@ void Player::initObject(Vec2 startPos) {
 	//intializing aim indicator
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	aimMarker = Sprite::createWithSpriteFrameName("icons/aim.png");
-	aimMarker->setAnchorPoint(Vec2(-2.4, 0.5));
+	aimMarker->setAnchorPoint(Vec2(-2.3, 0.5));
 	aimMarker->setPositionNormalized(Vec2(0.5, 0.5));
 	aimMarker->getTexture()->setTexParameters(texParams);
-	aimMarker->setGlobalZOrder(9);
+	aimMarker->setGlobalZOrder(10);
 	aimMarker->setVisible(false);
 	addChild(aimMarker);
 }
@@ -300,14 +300,14 @@ void Player::crouchWalk(Input input, float time) {
 
 void Player::jump() {
 	if (touchingFloor == true) {
-	auto callback = CallFunc::create([this]() {
-		hasJumped = true;
-		move(Vec2(0, 100));//apply force straight up
-	});
-	auto wait = MoveBy::create(10 FRAMES, Vec2(0, 0));
-	auto sequence = Sequence::create(wait, callback, nullptr);//runs the stair use animation and then has character take the stairs
+		auto callback = CallFunc::create([this]() {
+			hasJumped = true;
+			move(Vec2(0, 100));//apply force straight up
+		});
+		auto wait = MoveBy::create(10 FRAMES, Vec2(0, 0));
+		auto sequence = Sequence::create(wait, callback, nullptr);//runs the stair use animation and then has character take the stairs
 	
-	runAction(sequence);
+		runAction(sequence);
 	}
 }
 
@@ -328,8 +328,12 @@ void Player::dropItem(GameLayer* mainLayer) {
 
 void Player::beginThrowItem() {
 	if (heldItem != NULL) {
-		heldItem->prepareThrow(aimAngle);
-
+		if (isCrouched == false) {
+			heldItem->prepareThrow(aimAngle);
+		}
+		else {
+			heldItem->prepareCrouchThrow(aimAngle);
+		}
 		aimMarker->setVisible(true);
 		aimMarker->setRotation(aimAngle);
 	}
@@ -569,6 +573,8 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 	player->isCrouched = false;
 	player->stopAllActions();
 	if (player->prevState->type != "attack" && player->prevState->type != "throw") {
+		player->mainBody->setVelocity(player->getPhysicsBody()->getVelocity());
+		player->stop();
 		player->setPhysicsBody(player->mainBody);
 		player->bodySize = player->standSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
@@ -578,7 +584,6 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 		}
 		//player->startAnimation(STANDUP, player->standup);
 	}
-	player->stop();
 	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 1.0f;
 	player->setSpeed(player->moveSpeed);
@@ -620,10 +625,10 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 		player->walk(input, time);
 	}
 	if (input == MOVE_UP) {
-		if (player->objectToClimb == NULL) {//only jump if not colliding with a physical object
+		if (player->objectToClimb == NULL && player->touchingFloor == true) {//only jump if not colliding with a physical object
 			return new JumpState;
 		}
-		else {//player has an object to climb
+		else if (player->objectToClimb != NULL){//player has an object to climb
 			player->climbObject = player->objectToClimb;
 			return new ClimbState;
 		}
@@ -650,6 +655,8 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 	player->isCrouched = true;
 	player->stopAllActions();
 	if (player->prevState->type != "attack" && player->prevState->type != "throw") {
+		player->crouchBody->setVelocity(player->getPhysicsBody()->getVelocity());
+		player->stop();
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27.5));
@@ -662,7 +669,6 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 0.5f;
 	player->setSpeed(player->moveSpeed);
-	player->stop();
 }
 Player::State* Player::CrouchState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
@@ -694,6 +700,10 @@ Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainL
 		return new HideState;
 	}
 	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
+		if (player->wasClimbing == true) {
+			player->wasClimbing = false;
+			player->crouchWalk(STOP, time);
+		}
 		player->crouchWalk(input, time);
 	}
 	if (input == MOVE_UP) {
@@ -741,6 +751,17 @@ void Player::FallState::enter(Player* player, GameLayer* mainLayer, float time) 
 	player->wasFalling = true;
 	player->stopAllActions();
 	player->startAnimation(FALL, player->falling);
+	if (player->prevState->type == "crouch" || player->prevState->type == "roll") {
+		player->mainBody->setVelocity(player->getPhysicsBody()->getVelocity());
+		player->stop();
+		player->setPhysicsBody(player->mainBody);
+		player->bodySize = player->standSize;
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
+		player->pickUpRadius->setPosition(Vec2(35, 64));
+		if (player->heldItem != NULL) {
+			player->heldItem->initHeldItem();
+		}
+	}
 }
 Player::State* Player::FallState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->touchingFloor == true && (player->getPhysicsBody()->getVelocity().y > -20 && player->getPhysicsBody()->getVelocity().y < 20)){//if player has hit the ground
@@ -778,11 +799,14 @@ void Player::FallState::exit(Player* player, GameLayer* mainLayer) {
 
 //Climb State:
 void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time) {
-	player->wasFalling = false;
-	player->maxSpeedY = 60;
+	player->wasFalling = true;
+	player->wasClimbing = true;
+	player->maxSpeedY = 100;
 	//player->stop();
 	player->stopAllActions();
 	//setting physics body to crouching body
+	player->crouchBody->setVelocity(player->getPhysicsBody()->getVelocity());
+	player->stop();
 	player->setPhysicsBody(player->crouchBody);
 	player->bodySize = player->crouchSize;
 	player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
@@ -791,7 +815,7 @@ void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time)
 }
 Player::State* Player::ClimbState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->getPositionY() < player->climbObject->getPositionY() + player->climbObject->getContentSize().height + 4) {
-		player->move(Vec2(0, 30));
+		player->move(Vec2(0, 100));
 	}
 	else {
 		return new CrouchState;
@@ -1036,6 +1060,8 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	player->wasFalling = true;
 	if (player->prevState->type == "neutral") {
 		player->isCrouched = true;
+		player->crouchBody->setVelocity(player->getPhysicsBody()->getVelocity());
+		player->stop();
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27));
@@ -1056,6 +1082,9 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->getPhysicsBody()->getVelocity().x > -10 && player->getPhysicsBody()->getVelocity().x < 10) {//when player's horizontal speed has stopped
 		return new CrouchState;
+	}
+	else if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -150) {
+		return new FallState;
 	}
 	return nullptr;
 }

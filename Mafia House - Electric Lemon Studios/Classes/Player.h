@@ -61,6 +61,7 @@ public:
 	bool touchingFloor = true;
 	bool isCrouched = false;
 	bool wasFalling = false;
+	bool wasClimbing = false;
 	bool hasJumped = false;
 
 	//for standing on physical objects
@@ -131,6 +132,7 @@ private:
 	};
 	class RollState : public State {
 	public:
+		RollState() { type = "roll"; }
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);

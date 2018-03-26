@@ -24,7 +24,8 @@ public:
 	enum State {
 		GROUND,
 		HELD,
-		THROWN
+		THROWN,
+		FALLING
 	};
 
 	State getState() { return state; }
@@ -43,8 +44,10 @@ public:
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 	virtual void initGroundItem();
 	virtual void initThrownItem();
+	virtual void initFallItem();
 
 	void prepareThrow(float angle);
+	void prepareCrouchThrow(float angle);
 	void throwItem(float angle, Vec2 pos, bool flipped);
 
 	virtual void breakItem();
@@ -63,6 +66,7 @@ public:
 	virtual void fallAttack();
 
 	void checkSpeed();
+	void checkFallSpeed();
 
 	void playerInRange(Node* player);
 	void hasMoved();

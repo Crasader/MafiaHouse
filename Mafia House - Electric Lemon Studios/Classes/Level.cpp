@@ -90,10 +90,12 @@ void Level::update(float deltaTime){
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
 			mainLayer->items[i]->hasMoved();
 			mainLayer->items[i]->playerInRange(player);
-			mainLayer->items[i]->checkSpeed();
 		}
 		else if (mainLayer->items[i]->getState() == Item::THROWN) {
 			mainLayer->items[i]->checkSpeed();
+		}
+		else if (mainLayer->items[i]->getState() == Item::FALLING) {
+			mainLayer->items[i]->checkFallSpeed();
 		}
 	}
 
@@ -426,6 +428,9 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				return false;
 			}
 			else {//so enemies don't get hit by their own weapon
+				if (static_cast<Item*>(b)->getState() == Item::THROWN) {
+					return true;
+				}
 				return false;
 			}
 		}
@@ -435,6 +440,9 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				return false;
 			}
 			else {//so enemies don't get hit by their own weapon
+				if (static_cast<Item*>(a)->getState() == Item::THROWN) {
+					return true;
+				}
 				return false;
 			}
 		}
@@ -642,7 +650,15 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
 	{
 		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
-			static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
+				static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+			}
+			else {
+				static_cast<Enemy*>(a)->itemBumpedBy = static_cast<Item*>(b);
+				static_cast<Enemy*>(a)->directionHitFrom = static_cast<Item*>(b)->getPhysicsBody()->getVelocity();
+				static_cast<Item*>(b)->stop();
+				static_cast<Item*>(b)->move(Vec2(-100,0));
+			}
 			if (static_cast<Item*>(b)->getState() == Item::THROWN) {
 				static_cast<Item*>(b)->stop();
 			}
@@ -655,7 +671,15 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	else if (a->getName() == "held_item" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
 	{
 		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
-			static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
+				static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+			}
+			else {
+				static_cast<Enemy*>(b)->itemBumpedBy = static_cast<Item*>(a);
+				static_cast<Enemy*>(b)->directionHitFrom = static_cast<Item*>(a)->getPhysicsBody()->getVelocity();
+				static_cast<Item*>(a)->stop();
+				static_cast<Item*>(a)->move(Vec2(-100, 0));
+			}
 			if (static_cast<Item*>(a)->getState() == Item::THROWN) {
 				static_cast<Item*>(a)->stop();
 			}

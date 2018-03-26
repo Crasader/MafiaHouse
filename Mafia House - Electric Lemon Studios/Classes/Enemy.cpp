@@ -1161,6 +1161,24 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			enemy->pickUpItem(mainLayer);
 		}
 	}
+	//check if enemy has been hit by a slow thrown item
+	if (enemy->itemBumpedBy != NULL) {
+		if (enemy->directionHitFrom.x < 0) {//hit from the right
+			if (enemy->flippedX == true) {
+				enemy->flipX();
+			}
+		}
+		else if (enemy->directionHitFrom.x > 0) {//hit from the left
+			if (enemy->flippedX == false) {
+				enemy->flipX();
+			}
+		}
+		enemy->timeToPauseFor = 7.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
+		enemy->changeSuspicion(enemy->maxSuspicion / 2);
+		enemy->itemBumpedBy = NULL;
+	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
 		return new AlertState;
@@ -1275,6 +1293,24 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	//check if enemy has seen an item
 	if (enemy->itemToPickUp != NULL) {
 		return new GetItemState;
+	}
+	//check if enemy has been hit by a slow thrown item
+	if (enemy->itemBumpedBy != NULL) {
+		if (enemy->directionHitFrom.x < 0) {//hit from the right
+			if (enemy->flippedX == true) {
+				enemy->flipX();
+			}
+		}
+		else if (enemy->directionHitFrom.x > 0) {//hit from the left
+			if (enemy->flippedX == false) {
+				enemy->flipX();
+			}
+		}
+		enemy->timeToPauseFor = 7.0f;
+		enemy->paused = true;
+		enemy->wasFlipped = enemy->flippedX;
+		enemy->changeSuspicion(enemy->maxSuspicion / 2);
+		enemy->itemBumpedBy = NULL;
 	}
 	//check if enemy has heard a noise
 	if (enemy->noiseLocation != NULL) {
@@ -1405,7 +1441,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 			}
 		}
 		//check if there's a better weapon to pick up
-		else if (enemy->heldItem != NULL && enemy->heldItem->isKey == false) {//enemy already has an item that isn't a key
+		else if (enemy->itemToPickUp == NULL && enemy->heldItem != NULL && enemy->heldItem->isKey == false) {//enemy already has an item that isn't a key
 			if (enemy->detectedPlayer->heldItem != NULL && enemy->detectedPlayer->heldItem->isKey == false) {//player has a weapon that isn't a key
 				if (enemy->detectedPlayer->heldItem->powerLevel > enemy->heldItem->powerLevel) {//if player's weapon is better than theirs
 					enemy->itemToPickUp = (enemy->findBetterItem(mainLayer));//find a weapon that is closest to them

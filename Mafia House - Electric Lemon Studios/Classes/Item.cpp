@@ -90,21 +90,6 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 	}
 }
 //used when thrown item becomes ground item
-void Item::initGroundItem() {
-	state = GROUND;
-	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
-	enemyItem = false;
-	outline->setVisible(true);
-	getPhysicsBody()->setCategoryBitmask(32);
-	getPhysicsBody()->setCollisionBitmask(40);
-	getPhysicsBody()->setEnabled(true);
-	getPhysicsBody()->setGravityEnable(true);
-	getPhysicsBody()->setDynamic(true);
-	getPhysicsBody()->setLinearDamping(0.0f);
-	setName("item");
-	getPhysicsBody()->setName("item");
-	pickUpRadius->getPhysicsBody()->setEnabled(true);
-}
 
 Vec2 angleToDirection(float angle) {
 	Vec2 direction;
@@ -118,7 +103,13 @@ Vec2 angleToDirection(float angle) {
 
 void Item::prepareThrow(float angle) {
 	setAnchorPoint(Vec2(0, 0.5));
-	setPosition(Vec2(26, 70));
+	setPosition(Vec2(24, 70));
+	setRotation(angle);
+}
+
+void Item::prepareCrouchThrow(float angle) {
+	setAnchorPoint(Vec2(0, 0.5));
+	setPosition(Vec2(24, 32));
 	setRotation(angle);
 }
 
@@ -168,6 +159,32 @@ void Item::initThrownItem() {
 	getPhysicsBody()->setGravityEnable(false);
 }
 
+void Item::initFallItem() {
+	state = FALLING;
+	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setGravityEnable(true);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setLinearDamping(0.0f);
+	pickUpRadius->getPhysicsBody()->setEnabled(true);
+	outline->setVisible(true);
+}
+
+void Item::initGroundItem() {
+	state = GROUND;
+	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
+	enemyItem = false;
+	outline->setVisible(true);
+	getPhysicsBody()->setCategoryBitmask(32);
+	getPhysicsBody()->setCollisionBitmask(40);
+	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setGravityEnable(true);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setLinearDamping(0.0f);
+	pickUpRadius->getPhysicsBody()->setEnabled(true);
+	setName("item");
+	getPhysicsBody()->setName("item");
+}
+
 void Item::breakItem() {
 	release();
 	getParent()->removeChild(this, true);
@@ -209,15 +226,18 @@ void Item::checkSpeed() {
 		initThrownItem();
 	}
 	else if (speedX <= 400) {
+		initFallItem();
+	}
+}
+
+void Item::checkFallSpeed() {
+	float speedY = abs(getPhysicsBody()->getVelocity().y);
+	if (speedY < 0.5) {
 		initGroundItem();
 	}
-	/*float speedSq = getPhysicsBody()->getVelocity().getLengthSq();//squared speed
-	if (speedSq <= 200 * 200) {//check if speed has gone below threshold
-		initGroundItem();
-	}
-	else if ((speedSq > 210 * 210)) {
+	else if (speedY > 200) {
 		initThrownItem();
-	}*/
+	}
 }
 
 void Item::prepareStab(float angle) {

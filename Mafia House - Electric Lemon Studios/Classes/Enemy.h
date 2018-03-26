@@ -77,6 +77,8 @@ public:
 	Node* lastSeenLocation;
 
 	Item* fallenItem = NULL;//an item that has fallen on top of the enemy
+	Item* itemBumpedBy = NULL;//an item that has hit the enemy, but not hard enough to kill them
+	Vec2 directionHitFrom;
 
 	bool runningAway = false;
 
@@ -241,7 +243,7 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
-	int defaultDegrees = 65;
+	int defaultDegrees = 70;
 	int visionDegrees = defaultDegrees;//width of angle of vision
 	int defaultRadius = 150;
 	int visionRadius = defaultRadius;//how far vision reaches
