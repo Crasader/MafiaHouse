@@ -31,8 +31,6 @@ public:
 	void hide();
 	void hiding();
 
-	void climb();
-
 	void beginUseItem(float angle);
 	void useItem(float angle);
 	void finishUseItem();
@@ -111,6 +109,7 @@ private:
 	};
 	class AttackState : public State {
 	public:
+		AttackState() { type = "attack"; }
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		State* update(Player* player, GameLayer* mainLayer, float time);
@@ -147,6 +146,9 @@ private:
 	State* state = new NeutralState;
 	State* newState = NULL;
 	State* prevState = NULL;
+
+	//for picking up items
+	Node* pickUpRadius;//hitbox for checking if player can pick up an item
 
 	//for crouching (and climbing)
 	PhysicsBody* crouchBody;
@@ -200,4 +202,7 @@ private:
 	GameAnimation fallswing;
 	//GameAnimation crouchThrowAnimation;
 	//GameAnimation hideAnimation;//reverse for uniding
+
+	//indicators:
+	Sprite* aimMarker;
 };

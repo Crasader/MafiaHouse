@@ -22,6 +22,7 @@ Player::Player()
 	stand = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES, true);
 	moonwalk = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES, true);
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES, true);
+	throwing = GameAnimation(THROW, "player/throw/%03d.png", 2, 10 FRAMES, false);
 	stab = GameAnimation(STAB, "player/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "player/swing/%03d.png", 2, 10 FRAMES, false);
 	crouchstab = GameAnimation(STAB, "player/crouch_stab/%03d.png", 2, 10 FRAMES, false);
@@ -50,6 +51,26 @@ void Player::initObject(Vec2 startPos) {
 	crouchBody->setDynamic(true);
 	crouchBody->setRotationEnable(false);
 	crouchBody->retain();
+	//intializing hitbox for item pickup radius
+	auto body = PhysicsBody::createBox(Size(bodySize.width, 54));//player is half height when crouching
+	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setCategoryBitmask(64);
+	body->setCollisionBitmask(4);
+	body->setDynamic(false);
+	pickUpRadius = Node::create();
+	pickUpRadius->setPhysicsBody(body);
+	pickUpRadius->setName("player_pickup");
+	pickUpRadius->setPosition(Vec2(35, 64));
+	addChild(pickUpRadius);
+	//intializing aim indicator
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	aimMarker = Sprite::createWithSpriteFrameName("icons/aim.png");
+	aimMarker->setAnchorPoint(Vec2(0.5, -2.4));
+	aimMarker->setPositionNormalized(Vec2(0.5, 0.5));
+	aimMarker->getTexture()->setTexParameters(texParams);
+	aimMarker->setGlobalZOrder(9);
+	aimMarker->setVisible(false);
+	addChild(aimMarker);
 }
 
 //functions for player actions:
@@ -458,19 +479,6 @@ void Player::hiding() {
 	stayWithin(hideObject);
 }
 
-void Player::climb()
-{
-
-	/*auto moveAction = MoveBy::create(0.5, Vec2(0, climbObject->getPositionY() + climbObject->getContentSize().height - getPositionY() + 4));
-	moveAction->setTag(222);
-	/*auto callback = CallFunc::create([this]() {
-		climbComplete = true;
-	});
-	auto sequence = Sequence::create(moveAction, callback, nullptr);
-	runAction(moveAction);*/
-	startAnimation(CLIMB,climbing);
-}
-
 //Update Checking:
 void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
@@ -538,12 +546,15 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 	player->isCrouched = false;
 	player->stop();
 	player->stopAllActions();
-	player->setPhysicsBody(player->mainBody);
-	player->bodySize = player->standSize;
-	player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
-	//player->startAnimation(STANDUP, player->standup);
-	if (player->heldItem != NULL) {
-		player->heldItem->initHeldItem();
+	if (player->prevState->type != "attack") {
+		player->setPhysicsBody(player->mainBody);
+		player->bodySize = player->standSize;
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, 17));
+		player->pickUpRadius->setPosition(Vec2(35, 64));
+		if (player->heldItem != NULL) {
+			player->heldItem->initHeldItem();
+		}
+		//player->startAnimation(STANDUP, player->standup);
 	}
 	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 1.0f;
@@ -606,12 +617,15 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 	player->isCrouched = true;
 	player->stop();
 	player->stopAllActions();
-	player->setPhysicsBody(player->crouchBody);
-	player->bodySize = player->crouchSize;
-	player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
-	//player->startAnimation(CROUCH, player->crouch);
-	if (player->heldItem != NULL) {
-		player->heldItem->initCrouchHeldItem();
+	if (player->prevState->type != "attack") {
+		player->setPhysicsBody(player->crouchBody);
+		player->bodySize = player->crouchSize;
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27));
+		player->pickUpRadius->setPosition(Vec2(35, 20));
+		if (player->heldItem != NULL) {
+			player->heldItem->initCrouchHeldItem();
+		}
+		//player->startAnimation(CROUCH, player->crouch);
 	}
 	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 0.5f;
@@ -814,8 +828,10 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		if (input == AIM_UP) {
 			player->aimAngle = 270;
 		}
-		if (input == AIM_DOWN) {
-			player->aimAngle = 90;
+		if (player->isCrouched == false) {
+			if (input == AIM_DOWN) {
+				player->aimAngle = 90;
+			}
 		}
 		if (player->flippedX == true) {//only register left inputs for aiming while facing left
 			if (input == AIM_UP_LEFT) {
@@ -824,8 +840,10 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 			if (input == AIM_LEFT) {
 				player->aimAngle = 0;
 			}
-			if (input == AIM_DOWN_LEFT) {
-				player->aimAngle = 45;
+			if (player->isCrouched == false) {
+				if (input == AIM_DOWN_LEFT) {
+					player->aimAngle = 45;
+				}
 			}
 		}
 		if (player->flippedX == false) {//only register right inputs for aiming while facing right
@@ -835,8 +853,10 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 			if (input == AIM_RIGHT) {
 				player->aimAngle = 0;
 			}
-			if (input == AIM_DOWN_RIGHT) {
-				player->aimAngle = 45;
+			if (player->isCrouched == false) {
+				if (input == AIM_DOWN_RIGHT) {
+					player->aimAngle = 45;
+				}
 			}
 		}
 		//input for moving
@@ -877,7 +897,8 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	if (player->prevState->type == "neutral") {
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
-		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27));
+		player->pickUpRadius->setPosition(Vec2(35, 20));
 		if (player->heldItem != NULL) {
 			player->heldItem->initCrouchHeldItem();
 		}

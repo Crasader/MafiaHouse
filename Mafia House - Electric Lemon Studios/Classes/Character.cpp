@@ -145,6 +145,13 @@ void Character::useDoor() {
 }
 
 void Character::useStair(GameLayer* mainLayer) {
+	/*auto callback = CallFunc::create([this, mainLayer]() {
+		if (stairToUse != NULL) {
+			stairToUse->use(this, mainLayer);
+		}
+	});
+	auto sequence = Sequence::create(Animate::create(stairuse.animation), callback, nullptr);//runs the stair use animation and then has character take the stairs
+	*/
 	if (stairToUse != NULL) {
 		stairToUse->use(this, mainLayer);
 	}

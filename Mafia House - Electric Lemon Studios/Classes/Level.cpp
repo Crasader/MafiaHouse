@@ -455,15 +455,25 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 		}
 
-		//check if player can pick up item
+		//player and item radius
 		if (a->getName() == "player" && b->getName() == "item_radius")
+		{
+			return false;
+		}
+		else if (a->getName() == "item_radius" && b->getName() == "player")
+		{
+			return false;
+		}
+
+		//check if player can pick up item
+		if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 		{
 			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = static_cast<Item*>(b->getParent());
 			static_cast<Item*>(b->getParent())->playerRange = true;
 			return false;
 		}
-		else if (a->getName() == "item_radius" && b->getName() == "player")
+		else if (a->getName() == "item_radius" && b->getName() == "player_pickup")
 		{
 			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = static_cast<Item*>(a->getParent());

@@ -114,8 +114,8 @@ protected:
 	GameAnimation walking;
 	GameAnimation stab;
 	GameAnimation swing;
-	//GameAnimation throw;
-	//GameAnimation stair;
+	GameAnimation throwing;
+	GameAnimation stairuse;
 	//GameAnimation pickup;
 	//GameAnimation interact;
 	//GameAnimation death;

@@ -36,7 +36,7 @@ void Item::initRadius() {
 	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
-	pickUpRadiusBody->setCollisionBitmask(3);
+	pickUpRadiusBody->setCollisionBitmask(67);
 	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
 	pickUpRadiusBody->setTag(10000);
 	pickUpRadiusBody->setName("item_radius");
