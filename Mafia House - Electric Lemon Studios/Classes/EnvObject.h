@@ -1,7 +1,6 @@
 #pragma once
 #include "GameObject.h"
-class HideObject : public GameObject
-{
+class HideObject : public GameObject{
 public:
 	HideObject();
 	~HideObject();
@@ -18,8 +17,7 @@ public:
 	bool hiding = false;
 };
 
-class PhysObject : public GameObject
-{
+class PhysObject : public GameObject{
 public:
 	PhysObject();
 	~PhysObject() {}
@@ -27,26 +25,31 @@ public:
 	virtual void initObject();
 
 	void initHideBox();
-	void initSecondBody();
-	void initThirddBody();
 
 protected:
 	Size surfaceSize;
 	Vec2 surfaceOffset;
-	Node* secondBody;
-	Node* thirdBody;
 	Size hideBoxSize;
 	Vec2 hideBoxPosition;
 	Node* hideBox;
 };
 
-class Table : public PhysObject
-{
+class Table : public PhysObject{
 public:
 	Table();
 	~Table() {}
 	CREATE_WITH_FRAME(Table);
 	CREATE_WITH_FRAME_NAME(Table, "objects/table.png");
+
+	void initObject();
+};
+
+class VentCover : public PhysObject {
+public:
+	VentCover();
+	~VentCover() {}
+	CREATE_WITH_FRAME(VentCover);
+	CREATE_WITH_FRAME_NAME(VentCover, "objects/vent_cover.png");
 
 	void initObject();
 };

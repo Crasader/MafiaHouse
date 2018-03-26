@@ -64,35 +64,7 @@ void PhysObject::initObject(){
 	initObjectNoPhysics();
 	initBoxBody(surfaceSize);
 	getPhysicsBody()->setPositionOffset(surfaceOffset);
-	//initSecondBody();
-	//initThirddBody();
 	initHideBox();
-}
-
-void PhysObject::initThirddBody() {
-	thirdBody = Node::create();
-	thirdBody->setName("phys_object");
-	auto body = PhysicsBody::createBox(surfaceSize + Size(20, 20));
-	body->setDynamic(false);
-	body->setCategoryBitmask(0xFFFFFFFF);
-	body->setCollisionBitmask(0xFFFFFFFF);
-	body->setContactTestBitmask(0xFFFFFFFF);
-	thirdBody->setPhysicsBody(body);
-	thirdBody->setPosition(Vec2(70, 50));
-	addChild(thirdBody);
-}
-
-void PhysObject::initSecondBody() {
-	secondBody = Node::create();
-	secondBody->setName("phys_object");
-	auto body = PhysicsBody::createBox(surfaceSize + Size(10,10));
-	body->setDynamic(false);
-	body->setCategoryBitmask(0xFFFFFFFF);
-	body->setCollisionBitmask(0xFFFFFFFF);
-	body->setContactTestBitmask(0xFFFFFFFF);
-	secondBody->setPhysicsBody(body);
-	secondBody->setPosition(Vec2(70,50));
-	addChild(secondBody);
 }
 
 void PhysObject::initHideBox() {
@@ -118,5 +90,18 @@ Table::Table(){
 }
 
 void Table::initObject() {
+	PhysObject::initObject();
+}
+
+//Vent Cover:
+VentCover::VentCover() {
+	PhysObject::PhysObject();
+	surfaceSize = Size(40, 5);
+	surfaceOffset = Vec2(0, 0);
+	hideBoxSize = Size(50, 5);
+	hideBoxPosition = Vec2(30, -3);
+}
+
+void VentCover::initObject() {
 	PhysObject::initObject();
 }

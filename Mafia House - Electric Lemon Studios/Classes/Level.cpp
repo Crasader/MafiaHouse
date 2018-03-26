@@ -937,11 +937,11 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "vent") {
 				DoorData ventData;
 				ventData.type = 2;
-				if (pieces.size() >= 2) {//set vent's position on wall
+				if (pieces.size() > 2) {//set vent's position on wall
 					ventData.pos = atof(pieces[2].c_str());
 				}
 				//set vent as locked
-				if (pieces.size() >= 3) {
+				if (pieces.size() > 3) {
 					if (pieces[3] == "locked") {
 						ventData.locked = true;
 					}
@@ -989,6 +989,9 @@ bool Level::initLevel(string filename){
 				PhysObject* physObject;
 				if (pieces[1] == "table") {
 					physObject = Table::createWithSpriteFrameName();
+				}
+				else if (pieces[1] == "vent_cover") {
+					physObject = VentCover::createWithSpriteFrameName();
 				}
 				physObject->initObject();
 				physObject->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));

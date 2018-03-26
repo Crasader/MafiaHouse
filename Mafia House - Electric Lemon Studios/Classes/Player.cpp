@@ -1023,6 +1023,7 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 
 //Rolling State:
 void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->wasFalling = true;
 	if (player->prevState->type == "neutral") {
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;

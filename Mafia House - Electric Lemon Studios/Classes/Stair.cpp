@@ -243,10 +243,12 @@ Vent::~Vent() {
 void Vent::initObject(int orient, Vec2 startPos) {
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
+		outlineName = "objects/vent/outline_h.png";
 		useBox = Size(55 + radius / 2, radius);
 	}
 	else if (orient == 1) {//vertical
 		size = Size(20, 50);
+		outlineName = "objects/vent/outline_v.png";
 		useBox = Size(radius, 55 + radius / 2);
 	}
 	Door::initObject(startPos);
@@ -258,7 +260,7 @@ void Vent::itemHit(Item* item) {
 			if (locked == true) {
 				unlock();
 				item->hp -= 2;//keys can only be used twice
-			}//you can't lock a vent again, ther's no point
+			}//you can't lock a vent again, there's no point
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
