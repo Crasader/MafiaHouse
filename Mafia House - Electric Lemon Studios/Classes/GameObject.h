@@ -129,10 +129,11 @@ public:
 
 	bool playerRange = false;//for interactable items, check if player is in range to use them
 
+	Sprite* outline;
+
 protected:
 	PhysicsBody * mainBody;
 
-	Sprite* outline;
 	string outlineName;
 
 	Vec2 initialPos;

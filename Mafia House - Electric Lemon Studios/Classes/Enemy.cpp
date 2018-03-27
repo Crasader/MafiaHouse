@@ -961,10 +961,12 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 				return false;
 			}
 			else if (visionContactName == "dead_body") {
-				bodySeen = static_cast<Enemy*>(visionContact);//they have seen a knocked out enemy
-				points->push_back(info.contact + offsetAdjust);
-				didRun = true;
-				return false;
+				if (static_cast<DeadBody*>(visionContact)->isHidden == false) {
+					bodySeen = static_cast<DeadBody*>(visionContact);//they have seen a knocked out enemy
+					points->push_back(info.contact + offsetAdjust);
+					didRun = true;
+					return false;
+				}
 			}
 			//enemy sees the player
 			else if (visionContactName == "player") {//not using tag anymore

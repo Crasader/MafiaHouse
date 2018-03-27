@@ -58,6 +58,7 @@ protected:
 	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera
 	Sprite* healthBar;
 	Sprite* healthFill;
+	Sprite* playerHead;
 
 	GameLayer* mainLayer;//a node which everything in the scene is attached to
 

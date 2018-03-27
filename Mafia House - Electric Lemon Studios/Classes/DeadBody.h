@@ -14,7 +14,9 @@ public:
 	void playerInRange(Node* player);
 
 	void initPickedUpBody();
+	void initHeldBody();
 	void initCrouchPickedUpBody();
+	void initCrouchHeldBody();
 	void initDroppedBody(Vec2 pos, bool flip);
 
 	bool isHidden = false;

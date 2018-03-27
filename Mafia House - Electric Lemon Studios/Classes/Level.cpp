@@ -28,6 +28,11 @@ void Level::setup(){
 	healthFill->setAnchorPoint(Vec2(0, 1));
 	hudLayer->addChild(healthBar);
 	hudLayer->addChild(healthFill);
+	playerHead = Sprite::createWithSpriteFrameName("icons/playerHead.png");
+	playerHead->setGlobalZOrder(20);
+	playerHead->setAnchorPoint(Vec2(0, 1));
+	playerHead->setPosition(Vec2(-50, 10));
+	hudLayer->addChild(playerHead);
 
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
@@ -174,7 +179,7 @@ void Level::update(float deltaTime){
 	}
 	//check if player is dropping item
 	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
-		if (player->heldItem != NULL) {
+		if (player->heldItem != NULL || player->heldBody != NULL) {
 			player->handleInput(mainLayer, gameTime, DROP);
 		}
 	}
@@ -535,26 +540,34 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//enemy and dead body
 		if (a->getName() == "enemy" && b->getName() == "dead_body")
 		{
-			static_cast<Enemy*>(a)->bodySeen = static_cast<DeadBody*>(b);
+			if (static_cast<DeadBody*>(b)->isHidden == false) {
+				static_cast<Enemy*>(a)->bodySeen = static_cast<DeadBody*>(b);
+			}
 			return false;
 		}
 		else if (a->getName() == "dead_body" && b->getName() == "enemy")
 		{
-			static_cast<Enemy*>(b)->bodySeen = static_cast<DeadBody*>(a);
+			if (static_cast<DeadBody*>(a)->isHidden == false) {
+				static_cast<Enemy*>(b)->bodySeen = static_cast<DeadBody*>(a);
+			}
 			return false;
 		}
 
 		//check if player can pick up body
 		if (a->getName() == "player_pickup" && b->getName() == "body_radius")
 		{
-			player->bodyToPickUp = static_cast<DeadBody*>(b->getParent());
-			static_cast<DeadBody*>(b->getParent())->playerRange = true;
+			if ((player->getTag() >= 10 && static_cast<DeadBody*>(b->getParent())->isHidden == true) || (player->getTag() < 10 && static_cast<DeadBody*>(b->getParent())->isHidden == false)) {
+				player->bodyToPickUp = static_cast<DeadBody*>(b->getParent());
+				static_cast<DeadBody*>(b->getParent())->playerRange = true;
+			}
 			return false;
 		}
 		else if (a->getName() == "body_radius" && b->getName() == "player_pickup")
 		{
-			player->bodyToPickUp = static_cast<DeadBody*>(a->getParent());
-			static_cast<DeadBody*>(a->getParent())->playerRange = true;
+			if ((player->getTag() >= 10 && static_cast<DeadBody*>(a->getParent())->isHidden == true) || (player->getTag() < 10 && static_cast<DeadBody*>(a->getParent())->isHidden == false)) {
+				player->bodyToPickUp = static_cast<DeadBody*>(a->getParent());
+				static_cast<DeadBody*>(a->getParent())->playerRange = true;
+			}
 			return false;
 		}
 

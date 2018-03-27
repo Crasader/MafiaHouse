@@ -84,6 +84,7 @@ void Player::resetCollisionChecks(float time) {
 	stairToUse = NULL;
 	objectToHideBehind = NULL;
 	itemToPickUp = NULL;
+	bodyToPickUp = NULL;
 	if (time - seenTime >= visionResetTime || seenTime == -1) {
 		inVision = false;
 	}
@@ -320,18 +321,24 @@ void Player::pickUpBody(GameLayer* mainLayer) {
 		heldBody = bodyToPickUp;
 
 		addChild(heldBody);
-		heldBody->initPickedUpBody();
+		if (isCrouched == false) {
+			heldBody->initPickedUpBody();
+		}
+		else {
+			heldBody->initCrouchPickedUpBody();
+		}
 
 		bodyToPickUp = NULL;
 	}
 }
+
 void Player::dropBody(GameLayer* mainLayer) {
 	if (heldBody != NULL) {
 		if (heldItem != NULL) {
 			heldItem->setVisible(true);
 		}
 
-		heldBody->initDroppedBody(convertToWorldSpace(heldItem->getPosition()), flippedX);
+		heldBody->initDroppedBody(convertToWorldSpace(heldBody->getPosition()), flippedX);
 
 		removeChild(heldBody, true);
 		mainLayer->addChild(heldBody);
@@ -473,9 +480,16 @@ void Player::hide() {
 		}
 		hidden = true;
 		setTag(getTag() + 10);//for enemy vision rays
-		setGlobalZOrder(getGlobalZOrder() - 3);
+		setGlobalZOrder(2);
 		if (heldItem != NULL) {
-			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() - 3);
+			heldItem->setGlobalZOrder(2);
+		}
+		if (heldBody != NULL) {
+			heldBody->isHidden = true;
+			heldBody->setGlobalZOrder(2);
+			heldBody->setOpacity(200);
+			heldBody->outline->setGlobalZOrder(2);
+			heldBody->outline->setOpacity(200);
 		}
 		hideObject->hide();
 	}
@@ -483,9 +497,16 @@ void Player::hide() {
 		hidden = false;
 		wasSeen = false;
 		setTag(getTag() - 10);//for enemy vision rays
-		setGlobalZOrder(getGlobalZOrder() + 3);
+		setGlobalZOrder(5);
 		if (heldItem != NULL) {
-			heldItem->setGlobalZOrder(heldItem->getGlobalZOrder() + 3);
+			heldItem->setGlobalZOrder(6);
+		}
+		if (heldBody != NULL) {
+			heldBody->isHidden = false;
+			heldBody->setGlobalZOrder(6);
+			heldBody->setOpacity(255);
+			heldBody->outline->setGlobalZOrder(6);
+			heldBody->outline->setOpacity(255);
 		}
 		hideObject->unhide();
 	}
@@ -617,6 +638,9 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 		if (player->heldItem != NULL) {
 			player->heldItem->initHeldItem();
 		}
+		if (player->heldBody != NULL) {
+			player->heldBody->initHeldBody();
+		}
 		//player->startAnimation(STANDUP, player->standup);
 	}
 	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
@@ -638,7 +662,12 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 		player->useStair(mainLayer);
 	}
 	if (input == DROP) {
-		player->dropItem(mainLayer);
+		if (player->heldBody == NULL) {
+			player->dropItem(mainLayer);
+		}
+		else {
+			player->dropBody(mainLayer);
+		}
 	}
 	if (input == USE_ITEM) {
 		if (player->heldBody == NULL) {
@@ -675,7 +704,7 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 				return new JumpState;
 			}
 		}
-		else if (player->objectToClimb != NULL){//player has an object to climb
+		else if (player->objectToClimb != NULL && player->heldBody == NULL){//player has an object to climb
 			player->climbObject = player->objectToClimb;
 			return new ClimbState;
 		}
@@ -711,6 +740,9 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 		if (player->heldItem != NULL) {
 			player->heldItem->initCrouchHeldItem();
 		}
+		if (player->heldBody != NULL) {
+			player->heldBody->initCrouchHeldBody();
+		}
 		//player->startAnimation(CROUCH, player->crouch);
 	}
 	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
@@ -732,10 +764,17 @@ Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainL
 		player->useStair(mainLayer);
 	}
 	if (input == DROP) {
-		player->dropItem(mainLayer);
+		if (player->heldBody == NULL) {
+			player->dropItem(mainLayer);
+		}
+		else {
+			player->dropBody(mainLayer);
+		}
 	}
 	if (input == USE_ITEM) {
-		return new AttackState;
+		if (player->heldBody == NULL) {
+			return new AttackState;
+		}
 	}
 	if (input == THROW_ITEM) {
 		return new ThrowState;
@@ -815,6 +854,9 @@ void Player::FallState::enter(Player* player, GameLayer* mainLayer, float time) 
 		player->pickUpRadius->setPosition(Vec2(35, 64));
 		if (player->heldItem != NULL) {
 			player->heldItem->initHeldItem();
+		}
+		if (player->heldBody != NULL) {
+			player->heldBody->initHeldBody();
 		}
 		//player->setPositionY(player->getPositionY() - 35);
 	}
@@ -1175,6 +1217,9 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	player->startAnimation(ROLLING, player->rolling);
 	player->getPhysicsBody()->setLinearDamping(1.0f);
 	player->moveNoLimit(Vec2(420, 0));//applying force for the roll
+	if (player->heldBody != NULL) {
+		player->dropBody(mainLayer);
+	}
 }
 Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->getPhysicsBody()->getVelocity().x > -2.5f && player->getPhysicsBody()->getVelocity().x < 2.5f) {//when player's horizontal speed has stopped
@@ -1228,6 +1273,18 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 			return new NeutralState;
 		}
 	}
+	if (input == DROP) {
+		if (player->heldBody != NULL) {
+			player->dropBody(mainLayer);
+		}
+	}
+	if (input == PICKUP) {
+		if (player->heldBody == NULL) {
+			if (player->bodyToPickUp != NULL) {
+				player->pickUpBody(mainLayer);
+			}
+		}
+	}
 	if (input == MOVE_LEFT) {
 		if (player->hittingLeft == false) {
 			if (player->isCrouched == false) {
@@ -1270,6 +1327,9 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 				if (player->heldItem != NULL) {
 					player->heldItem->initHeldItem();
 				}
+				if (player->heldBody != NULL) {
+					player->heldBody->initHeldBody();
+				}
 				//player->startAnimation(STANDUP, player->standup);
 				player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 				player->moveSpeed = 1.0f;
@@ -1288,6 +1348,9 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 				player->pickUpRadius->setPosition(Vec2(35, 15));
 				if (player->heldItem != NULL) {
 					player->heldItem->initCrouchHeldItem();
+				}
+				if (player->heldBody != NULL) {
+					player->heldBody->initCrouchHeldBody();
 				}
 				//player->startAnimation(CROUCH, player->crouch);
 				player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());

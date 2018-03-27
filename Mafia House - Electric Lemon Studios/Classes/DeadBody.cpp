@@ -17,7 +17,6 @@ DeadBody::DeadBody()
 void DeadBody::initObject(Vec2 startPos)
 {
 	GameObject::initObject(startPos);
-	getPhysicsBody()->setMass(1000000);
 	retain();
 	initRadius();
 	createOutline(outlineName);
@@ -41,19 +40,29 @@ void DeadBody::initRadius() {
 }
 
 void DeadBody::playerInRange(Node* player) {
-	if (player->getTag() >= 1 && player->getTag() <= 9) {
+	if (isHidden == false && (player->getTag() >= 1 && player->getTag() <= 9)) {//body is not hidden and player is not hidden
 		if (playerRange == true) {
 			outline->setColor(ccc3(100, 255, 115));//green
 		}
 		else {
-			outline->setColor(ccc3(255, 255, 255));//white
+			outline->setColor(ccc3(255, 100, 100));//red
 		}
+	}
+	else if (isHidden == true && player->getTag() >= 10){
+		if (playerRange == true) {
+			outline->setColor(ccc3(100, 255, 115));//green
+		}
+		else {
+			outline->setColor(ccc3(100, 100, 100));//grey
+		}
+	}
+	else {
+		outline->setColor(ccc3(100, 100, 100));//grey
 	}
 	playerRange = false;
 }
 
 void DeadBody::initPickedUpBody() {
-	//setAnchorPoint(Vec2(0.5, 0.5));
 	setPosition(Vec2(5, 38));
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
@@ -65,10 +74,32 @@ void DeadBody::initPickedUpBody() {
 	}
 }
 
+void DeadBody::initHeldBody() {
+	setPosition(Vec2(5, 38));
+}
+
+void DeadBody::initCrouchPickedUpBody() {
+	setPosition(Vec2(5, 8));
+	outline->setVisible(false);
+	pickUpRadius->getPhysicsBody()->setEnabled(false);
+	//getPhysicsBody()->setGravityEnable(false);
+	getPhysicsBody()->setDynamic(false);
+	getPhysicsBody()->setCollisionBitmask(1);
+	if (flippedX == true) {
+		flipX();
+	}
+}
+
+void DeadBody::initCrouchHeldBody() {
+	setPosition(Vec2(5, 8));
+}
+
 void  DeadBody::initDroppedBody(Vec2 pos, bool flip) {
 	setPosition(pos);
 	if (flip == true) {
 		flipX();
+		setAnchorPoint(Vec2(0, 0));
+		setRotation(-getRotation());
 	}
 	outline->setVisible(true);
 	getPhysicsBody()->setCollisionBitmask(42);
