@@ -1051,10 +1051,12 @@ void Enemy::gotHit(Item* item, float time) {
 				hp = 0;
 			}
 			else {
-				changeSuspicion(maxSuspicion);
-				wasInHitStun = true;
-				hitStunStart = time;
-				hitStunTime = item->hitstun;
+				if (knockedOut == false) {
+					changeSuspicion(maxSuspicion);
+					wasInHitStun = true;
+					hitStunStart = time;
+					hitStunTime = item->hitstun;
+				}
 			}
 		}
 		else if(item->getEffect() == Item::KNOCKOUT) {
@@ -1658,7 +1660,7 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	}
 	return nullptr;
 }
-void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer) {
+void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->heldItem->didHitWall = false;
 	//if (enemy->heldItem->hp <= 0) {enemy->breakItem(mainLayer);}//enemy items don't break
 	enemy->heldItem->initHeldItem();

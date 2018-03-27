@@ -48,6 +48,8 @@ public:
 	void stayWithin(HideObject* object);
 	//getters:
 	bool isHidden() { return hidden; }
+	float getHP() { return hp; }
+	float getMaxHP() { return maxHP; }
 
 	//pointers for interacting with objects:
 	HideObject* objectToHideBehind = NULL;//the tag of the object the player can hide behind

@@ -16,6 +16,19 @@ void Level::setup(){
 	mainLayer = GameLayer::create();
 	addChild(mainLayer);
 
+	//node all hud elements are attached
+	hudLayer = Node::create();
+	addChild(hudLayer);
+
+	healthBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
+	healthFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	healthBar->setGlobalZOrder(20);
+	healthFill->setGlobalZOrder(20);
+	healthBar->setAnchorPoint(Vec2(0, 1));
+	healthFill->setAnchorPoint(Vec2(0, 1));
+	hudLayer->addChild(healthBar);
+	hudLayer->addChild(healthFill);
+
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
 	mainLayer->addChild(camPos);
@@ -151,7 +164,7 @@ void Level::update(float deltaTime){
 	player->update(mainLayer, gameTime);
 
 	//check if player is going to interact with door/stairway
-	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
+	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
 		if (player->stairToUse != NULL) {
 			player->handleInput(mainLayer, gameTime, USE_STAIR);
 		}
@@ -178,12 +191,12 @@ void Level::update(float deltaTime){
 	}
 	//check if player is throwing item
 	if (INPUTS->getKeyPress(KeyCode::KEY_SHIFT)) {
-		if (player->heldItem != NULL || player->bodyToPickUp != NULL) {
+		if (player->heldItem != NULL || player->heldBody != NULL) {
 			player->handleInput(mainLayer, gameTime, THROW_ITEM);
 		}
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_SHIFT)) {
-		if (player->heldItem != NULL || player->bodyToPickUp != NULL) {
+		if (player->heldItem != NULL || player->heldBody != NULL) {
 			player->handleInput(mainLayer, gameTime, THROW_RELEASE);
 		}
 	}
@@ -279,6 +292,10 @@ void Level::update(float deltaTime){
 	//having camera follow player
 	followBox(camPos, player, camBoundingBox, camOffset);
 	camera->setPosition(camPos->getPosition());
+	hudLayer->setPosition(camera->getPosition()+ Vec2(-400, 250));//make it so hud stays in same location on screen
+	//hudLayer->setPositionZ(camera->getPositionZ() + 459.42983);
+	float percentage = player->getHP() / player->getMaxHP();
+	healthFill->setScaleX(percentage);
 
 	//update the keyboard each frame
 	INPUTS->clearForNextFrame();

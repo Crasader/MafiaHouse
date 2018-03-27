@@ -55,7 +55,9 @@ protected:
 
 	Director* director = Director::getInstance();
 
-	GameLayer* hudLayer;//the layer for the HUD/UI, doesn't move with camera
+	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera
+	Sprite* healthBar;
+	Sprite* healthFill;
 
 	GameLayer* mainLayer;//a node which everything in the scene is attached to
 

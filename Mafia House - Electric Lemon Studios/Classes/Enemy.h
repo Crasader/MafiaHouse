@@ -127,7 +127,7 @@ protected:
 		AttackState() { type = "attack"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
-		void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class UseDoorState : public State {
 	public:
