@@ -172,6 +172,11 @@ private:
 	Size crouchSize;
 	bool climbComplete = false;
 
+	//for climbing
+	float startClimbTime = -1;
+	float startClimbDelay = 0.5f;
+
+
 	//for jumping
 	float startJumpTime = -1;
 	float jumpTime = 1.0f;//time you are stuck in a jump for before falling

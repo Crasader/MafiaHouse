@@ -372,7 +372,17 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				static_cast<Enemy*>(b)->playerTouch();
 				static_cast<Enemy*>(b)->detectedPlayer = player;
 				if (player->getPositionY() < (static_cast<Enemy*>(b)->getPositionY() + static_cast<Enemy*>(b)->getSize().height / 2)) {//only collide if player is below top of enemy
-					solve.setRestitution(10.0f);
+					static_cast<Player*>(a)->stop();
+					float displacement = a->getPositionX() - b->getPositionX();
+					if (displacement <= 0) {
+						static_cast<Enemy*>(b)->moveAbsolute(Vec2(20, 0));
+						static_cast<Player*>(a)->moveAbsolute(Vec2(-200, 0));
+					}
+					else {
+						static_cast<Enemy*>(b)->moveAbsolute(Vec2(-20, 0));
+						static_cast<Player*>(a)->moveAbsolute(Vec2(200, 0));
+					}
+					//solve.setRestitution(5.0f);
 					return true;
 				}
 				else {
@@ -390,7 +400,17 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				static_cast<Enemy*>(a)->playerTouch();
 				static_cast<Enemy*>(a)->detectedPlayer = player;
 				if (player->getPositionY() < (static_cast<Enemy*>(a)->getPositionY() + static_cast<Enemy*>(a)->getSize().height / 2)) {//only collide if player is below top of enemy
-					solve.setRestitution(10.0f);
+					static_cast<Player*>(b)->stop();
+					float displacement = b->getPositionX() - a->getPositionX();
+					if (displacement <= 0) {
+						static_cast<Enemy*>(a)->moveAbsolute(Vec2(20, 0));
+						static_cast<Player*>(b)->moveAbsolute(Vec2(-200, 0));
+					}
+					else {
+						static_cast<Enemy*>(a)->moveAbsolute(Vec2(-20, 0));
+						static_cast<Player*>(b)->moveAbsolute(Vec2(200, 0));
+					}
+					//solve.setRestitution(5.0f);
 					return true;
 				}
 			}

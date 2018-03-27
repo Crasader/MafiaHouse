@@ -92,7 +92,6 @@ void Enemy::initObject(Vec2 startPos)
 	knockedOutBody->setCollisionBitmask(8);
 	knockedOutBody->setDynamic(true);
 	knockedOutBody->setRotationEnable(false);
-	knockedOutBody->setMass(1000);
 	knockedOutBody->retain();
 }
 
@@ -1343,7 +1342,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	}
 	//random chance of turning around and pausing
 	if (enemy->paused == false && time - enemy->prevPauseTime >= enemy->minPauseInterval) {
-		if (randNum(1, 100) % 25 == 0) {//4% chance to stop, 4/100 nums are divisible by 25
+		if (randNum(1, 100) % 30 == 0) {//3% chance to stop, 3/100 nums are divisible by 30
 			enemy->wasFlipped = enemy->flippedX;
 			enemy->timeToPauseFor = static_cast<float>(randNum(1, 6));//will pause for between 1 and 6 seconds
 			enemy->startPauseTime = -1;

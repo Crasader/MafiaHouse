@@ -86,7 +86,7 @@ protected:
 	//for doulbe tap inputs:
 	float prevLeftPressTime = -1;
 	float prevRightPressTime = -1;
-	float doublePressTime = 10 FRAMES;//amount of time for a doulbe press to register
+	float doublePressTime = 12 FRAMES;//amount of time for a doulbe press to register
 
 	bool onContactBegin(PhysicsContact &contact);
 

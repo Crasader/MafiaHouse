@@ -63,6 +63,7 @@ void Item::initPickedUpItem() {
 }
 
 void Item::initHeldItem() {
+	didHitWall = false;
 	setAnchorPoint(Vec2(0, 0));
 	setPosition(Vec2(54, 33));
 	setRotation(-45.0f);
@@ -71,8 +72,9 @@ void Item::initHeldItem() {
 }
 
 void Item::initCrouchHeldItem() {
+	didHitWall = false;
 	setAnchorPoint(Vec2(0, 0));
-	setPosition(Vec2(45, 14));
+	setPosition(Vec2(45, 16));
 	setRotation(20.0f);
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
@@ -126,19 +128,19 @@ void Item::throwItem(float angle, Vec2 pos, bool flip) {
 	}
 	if (flip == true) {
 		if (direction == Vec2(1, -1)) {
-			moveNoLimit(Vec2(0, -700));
+			moveNoLimit(Vec2(0, -800));
 		}
 		else if (direction == Vec2(1, 1)) {
-			moveNoLimit(Vec2(0, 700));
+			moveNoLimit(Vec2(0, 800));
 		}
 		else if (direction == Vec2(0, 1)) {
-			moveNoLimit(Vec2(-700, 0));
+			moveNoLimit(Vec2(-800, 0));
 		}
 		else if (direction == Vec2(0, -1)) {
-			moveNoLimit(Vec2(-700, 0));
+			moveNoLimit(Vec2(-800, 0));
 		}
 		else {
-			moveNoLimit(Vec2(700, 0));
+			moveNoLimit(Vec2(800, 0));
 		}
 	}
 	else {
@@ -148,7 +150,10 @@ void Item::throwItem(float angle, Vec2 pos, bool flip) {
 
 void Item::initThrownItem() {
 	state = THROWN;
-	outline->setVisible(false);
+	didHitWall = false;
+	enemyItem = false;
+	outline->setVisible(true);
+	outline->setColor(ccc3(210, 0, 255));//purple
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setCategoryBitmask(8);
 	getPhysicsBody()->setCollisionBitmask(42);
@@ -166,12 +171,13 @@ void Item::initFallItem() {
 	getPhysicsBody()->setDynamic(true);
 	getPhysicsBody()->setLinearDamping(0.0f);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
-	outline->setVisible(true);
+	outline->setVisible(false);
 }
 
 void Item::initGroundItem() {
 	state = GROUND;
 	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
+	didHitWall = false;
 	enemyItem = false;
 	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
@@ -225,7 +231,7 @@ void Item::checkSpeed() {
 	if (speedY > 200) {
 		initThrownItem();
 	}
-	else if (speedX <= 400) {
+	else if (speedX <= 450) {
 		initFallItem();
 	}
 }
