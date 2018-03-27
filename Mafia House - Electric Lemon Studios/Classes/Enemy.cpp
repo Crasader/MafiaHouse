@@ -17,13 +17,16 @@ Enemy::Enemy()
 	//other proeprties
 	baseSpeed = 50;
 	maxSpeed = baseSpeed;
+	deadBodyName = "enemy/thug/dead.png";
 	//for attacking without a weapon
 	fist = Fist::createWithSpriteFrameName();
 	fist->initObject();
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES, true);
 	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
-	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockout/%03d.png", 1, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockdown/%03d.png", 4, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 20 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES, false);
 	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES, true);
@@ -68,9 +71,9 @@ void Enemy::initObject(Vec2 startPos)
 	qMark->setGlobalZOrder(9);
 	qMark->setVisible(false);
 	addChild(qMark);
-	ZZZ = Sprite::createWithSpriteFrameName("icons/ZZZ/zzz.png");
+	ZZZ = Sprite::createWithSpriteFrameName("icons/ZZZ/004.png");
 	ZZZ->setAnchorPoint(Vec2(0, 0));
-	ZZZ->setPositionNormalized(Vec2(0.2, 1.05));
+	ZZZ->setPositionNormalized(Vec2(0.5, 0.55));
 	ZZZ->getTexture()->setTexParameters(texParams);
 	ZZZ->setGlobalZOrder(9);
 	ZZZ->setVisible(false);
@@ -866,8 +869,10 @@ Item* Enemy::findMoreRange(GameLayer* mainLayer) {
 						}
 					}
 					for (int j = 0; j < enemies.size(); j++) {
-						if (enemies[i]->itemToPickUp == mainLayer->items[i]) {//don't pick up items another enemy is already going to pick up
-							continue;
+						if (enemies[j]->itemToPickUp != NULL){
+							if (enemies[j]->itemToPickUp == mainLayer->items[j]) {//don't pick up items another enemy is already going to pick up
+								continue;
+							}
 						}
 					}
 					reachableItems.push_back(mainLayer->items[i]);
@@ -955,6 +960,12 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 				didRun = true;
 				return false;
 			}
+			else if (visionContactName == "dead_body") {
+				bodySeen = static_cast<Enemy*>(visionContact);//they have seen a knocked out enemy
+				points->push_back(info.contact + offsetAdjust);
+				didRun = true;
+				return false;
+			}
 			//enemy sees the player
 			else if (visionContactName == "player") {//not using tag anymore
 				if (visionContactTag < 10) {//if the player is not hidden
@@ -1020,12 +1031,12 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 void Enemy::gotHit(Item* item, float time) {
 	if (item->didHitWall == false && item->hp > 0) {
 		stopAllActions();
-		wasInHitStun = true;
-		hitStunStart = time;
-		hitStunTime = item->hitstun;
 		item->used();
 		hp -= item->dmg;//dealing damage to enemy
 		if (item->getEffect() == Item::NONE) {
+			wasInHitStun = true;
+			hitStunStart = time;
+			hitStunTime = item->hitstun;
 			if ((flippedX == true && item->knockback.x < 0) || (flippedX == false && item->knockback.x > 0)) {//if the enemy is hit from behind
 				flipX();
 				setSuspicion(maxSuspicion - maxSuspicion * 0.1);
@@ -1041,6 +1052,9 @@ void Enemy::gotHit(Item* item, float time) {
 			}
 			else {
 				changeSuspicion(maxSuspicion);
+				wasInHitStun = true;
+				hitStunStart = time;
+				hitStunTime = item->hitstun;
 			}
 		}
 		else if(item->getEffect() == Item::KNOCKOUT) {
@@ -1048,7 +1062,7 @@ void Enemy::gotHit(Item* item, float time) {
 				knockedOut = true;
 				knockOutTime = baseKnockOutTime * static_cast<float>(item->dmg);//more powerful items knock out for longer
 				knockOutTime = knockOutTime < minKnockOuttime ? minKnockOuttime : knockOutTime;//set minimum knockOutTime to 20 seconds
-				if (state->type == "alert") {
+				if (getName() == "enemy_alert") {
 					knockOutTime /= 2;//knockout time is halved for alerted enemies
 				}
 			}
@@ -1085,7 +1099,14 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 		if (invincible == false) {
 			hitTime = time;
 			invincible = true;
-			gotHit(itemHitBy, time);
+			if (itemHitBy->getState() == Item::THROWN) {
+				if (time - itemHitBy->thrownTime >= thrownItemDelay) {
+					gotHit(itemHitBy, time);
+				}
+			}
+			else {
+				gotHit(itemHitBy, time);
+			}
 		}
 		itemHitBy = NULL;
 	}
@@ -1554,21 +1575,19 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 					return new AttackState;
 				}
 				else {//in range == false
+					if (enemy->runningAway == false) {
+						if (inVerticalRange == false) {//you could get to them horizontally but not vertically
+							//find an item with more vertical range
+							enemy->itemToPickUp = (enemy->findMoreRange(mainLayer));//find a weapon that is closest to them
+							if (enemy->itemToPickUp != NULL) {//if one was found
+								enemy->goingToMoreRange = true;
+								return new GetItemState;//go and get it
+							}
+						}
+					}
 					if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
 						enemy->heldItem = NULL;
 						enemy->removeChild(enemy->fist, true);
-					}
-					if (enemy->runningAway == false) {
-						if (enemy->heldItem != NULL) {//if they have an item
-							if (inVerticalRange == false) {//you could get to them horizontally but not vertically
-								//find an item with more vertical range
-								enemy->itemToPickUp = (enemy->findMoreRange(mainLayer));//find a weapon that is closest to them
-								if (enemy->itemToPickUp != NULL) {//if one was found
-									enemy->goingToMoreRange = true;
-									return new GetItemState;//go and get it
-								}
-							}
-						}
 					}
 				}
 			}
@@ -1596,6 +1615,7 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->stopTime = -1;
 	enemy->lostPlayer = false;
 	enemy->reachedLastSeen = false;
+	enemy->bodySeen = NULL;
 }
 
 //Attack State(using items):
@@ -2099,24 +2119,32 @@ void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 		enemy->heldItem->initHeldItem();
 	}
 	enemy->dropInventory(mainLayer);
+	enemy->knockedOutBody->setVelocity(enemy->getPhysicsBody()->getVelocity());
+	enemy->stop();
 	enemy->setPhysicsBody(enemy->knockedOutBody);
 	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, -35));
-	enemy->setSpriteFrame(enemy->knockout.animation->getFrames().at(0)->getSpriteFrame());//first frame of the knockout animation
+	enemy->startAnimation(KNOCKOUT, enemy->knockout);//running knockout animation
 	enemy->startKockOutTime = time;
 	enemy->visionEnabled = false;
 	enemy->paused = false;
-	enemy->ZZZ->setVisible(true);
-	enemy->ZZZ->runAction(enemy->ZZZAnimation.action);
 	enemy->exMark->setVisible(false);
 	enemy->qMark->setVisible(false);
 	enemy->changeSuspicion(enemy->maxSuspicion * 0.75);//getting knocked out increases suspicion to 3/4
 }
 Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
-		return new DeathState;
+		enemy->toEnter = new DeathState;
+		return enemy->toEnter;
+	}
+	if (enemy->getActionByTag(KNOCKOUT) == NULL) {
+		if (enemy->ZZZ->getActionByTag(ZZZs) == NULL) {
+			enemy->ZZZ->runAction(enemy->ZZZAnimation.action);
+			enemy->ZZZ->setVisible(true);
+		}
 	}
 	if ((time - enemy->startKockOutTime) > (enemy->knockOutTime)) {
-		return enemy->prevState;
+		enemy->toEnter = enemy->prevState;
+		return enemy->toEnter;
 	}
 	else {
 		float percentage = abs(((time - enemy->startKockOutTime) / enemy->knockOutTime) - 1);//inverse percentage of time left until enemy wakes up
@@ -2125,25 +2153,43 @@ Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, f
 	return nullptr;
 }
 void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->setPhysicsBody(enemy->mainBody);
-	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, 35));
-	enemy->setSpriteFrame(enemy->stand.animation->getFrames().at(0)->getSpriteFrame());//first frame of the standing animation
+	if (enemy->toEnter->type != "death") {
+		enemy->mainBody->setVelocity(enemy->getPhysicsBody()->getVelocity());
+		enemy->stop();
+		enemy->setPhysicsBody(enemy->mainBody);
+		enemy->getPhysicsBody()->setPositionOffset(Vec2(0, 35));
+		enemy->setSpriteFrame(enemy->stand.animation->getFrames().at(0)->getSpriteFrame());//first frame of the standing animation
+		enemy->visionEnabled = true;
+	}
 	enemy->knockedOut = false;
-	enemy->visionEnabled = true;
 	enemy->ZZZ->setVisible(false);
 	enemy->ZZZ->stopAllActions();
 }
 
 //Death State:
 void Enemy::DeathState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->visionEnabled = false;
 	enemy->dropInventory(mainLayer);
-	enemy->isDead = true;
-	enemy->setVisible(false);
+	if (enemy->prevState->type == "knockout") {
+		enemy->startAnimation(DEATH, enemy->knockoutDeath);
+	}
+	else {
+		enemy->startAnimation(DEATH, enemy->dying);
+	}
+	enemy->getPhysicsBody()->setDynamic(false);
+	enemy->stop();
 }
 Enemy::State* Enemy::DeathState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	return new DefaultState;//they'll never get to it...
-	//return nullptr;
+	if (enemy->getActionByTag(DEATH) == NULL) {//dying animation has finished
+		return new DefaultState;//they'll never get to it...
+	}
+	return nullptr;
 }
 void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->isDead = true;
 	//create dead body here
+	DeadBody* newBody = DeadBody::createWithSpriteFrameName(enemy->deadBodyName);
+	newBody->initObject(enemy->getPosition());
+	mainLayer->addChild(newBody);
+	mainLayer->bodies.push_back(newBody);
 }

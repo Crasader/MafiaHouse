@@ -87,6 +87,9 @@
     <ClCompile Include="..\Classes\Character.cpp">
       <Filter>Classes\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\DeadBody.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -153,6 +156,9 @@
       <Filter>Classes\Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\Character.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\DeadBody.h">
       <Filter>Classes\Objects</Filter>
     </ClInclude>
   </ItemGroup>

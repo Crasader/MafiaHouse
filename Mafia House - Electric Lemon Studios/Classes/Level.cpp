@@ -93,6 +93,9 @@ void Level::update(float deltaTime){
 		}
 		else if (mainLayer->items[i]->getState() == Item::THROWN) {
 			mainLayer->items[i]->checkSpeed();
+			if (mainLayer->items[i]->getAttackType() == Item::SWING) {
+				mainLayer->items[i]->spin();
+			}
 		}
 		else if (mainLayer->items[i]->getState() == Item::FALLING) {
 			mainLayer->items[i]->checkFallSpeed();
@@ -103,6 +106,10 @@ void Level::update(float deltaTime){
 				i--;
 			}
 		}
+	}
+	//dead bodies update
+	for (int i = 0; i < mainLayer->bodies.size(); i++) {
+		mainLayer->bodies[i]->playerInRange(player);
 	}
 
 	//for drawing vision rays
@@ -171,18 +178,18 @@ void Level::update(float deltaTime){
 	}
 	//check if player is throwing item
 	if (INPUTS->getKeyPress(KeyCode::KEY_SHIFT)) {
-		if (player->heldItem != NULL) {
+		if (player->heldItem != NULL || player->bodyToPickUp != NULL) {
 			player->handleInput(mainLayer, gameTime, THROW_ITEM);
 		}
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_SHIFT)) {
-		if (player->heldItem != NULL) {
+		if (player->heldItem != NULL || player->bodyToPickUp != NULL) {
 			player->handleInput(mainLayer, gameTime, THROW_RELEASE);
 		}
 	}
 	//checking to see if player is picking up an item
 	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
-		if (player->itemToPickUp != NULL && player->heldItem == NULL) {
+		if ((player->itemToPickUp != NULL && player->heldItem == NULL) || player->bodyToPickUp != NULL) {
 			player->handleInput(mainLayer, gameTime, PICKUP);
 		}
 	}
@@ -190,16 +197,6 @@ void Level::update(float deltaTime){
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
 		if (player->objectToHideBehind != NULL) {
 			player->handleInput(mainLayer, gameTime, HIDE);
-		}
-	}
-
-	//for flying only
-	if (player->noclip == true) {
-		if (INPUTS->getKey(KeyCode::KEY_W)) {
-			player->handleInput(mainLayer, gameTime, MOVE_UP);
-		}
-		if (INPUTS->getKey(KeyCode::KEY_S)) {
-			player->handleInput(mainLayer, gameTime, MOVE_DOWN);
 		}
 	}
 
@@ -264,6 +261,15 @@ void Level::update(float deltaTime){
 	//for testing purposes only, do not abuse:
 	if (INPUTS->getKeyPress(KeyCode::KEY_N)) {
 		player->handleInput(mainLayer, gameTime, NO_CLIP);
+	}
+	//for flying only
+	if (player->noclip == true) {
+		if (INPUTS->getKey(KeyCode::KEY_W)) {
+			player->handleInput(mainLayer, gameTime, MOVE_UP);
+		}
+		if (INPUTS->getKey(KeyCode::KEY_S)) {
+			player->handleInput(mainLayer, gameTime, MOVE_DOWN);
+		}
 	}
 
 	//must be called after checking all player actions
@@ -334,6 +340,23 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				//static_cast<Item*>(b->getParent())->playerRange = true;
 			}
 			return false;
+		}
+
+		// check if item has collided with a wall
+		if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "floor" || b->getName() == "ceiling"))
+		{
+			static_cast<Item*>(a)->hitWall();
+			if (static_cast<Item*>(a)->getState() == Item::THROWN) {
+				//solve.setRestitution(0.5f);
+			}
+			return true;
+		}
+		else if ((a->getName() == "wall" || a->getName() == "floor" || a->getName() == "ceiling") && b->getName() == "held_item") {
+			static_cast<Item*>(b)->hitWall();
+			if (static_cast<Item*>(b)->getState() == Item::THROWN) {
+				//solve.setRestitution(0.5f);
+			}
+			return true;
 		}
 
 		// check if player has collided with a wall
@@ -492,27 +515,41 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 		}
 
-		//player and item radius
-		if (a->getName() == "player" && b->getName() == "item_radius")
+		//enemy and dead body
+		if (a->getName() == "enemy" && b->getName() == "dead_body")
 		{
+			static_cast<Enemy*>(a)->bodySeen = static_cast<DeadBody*>(b);
 			return false;
 		}
-		else if (a->getName() == "item_radius" && b->getName() == "player")
+		else if (a->getName() == "dead_body" && b->getName() == "enemy")
 		{
+			static_cast<Enemy*>(b)->bodySeen = static_cast<DeadBody*>(a);
+			return false;
+		}
+
+		//check if player can pick up body
+		if (a->getName() == "player_pickup" && b->getName() == "body_radius")
+		{
+			player->bodyToPickUp = static_cast<DeadBody*>(b->getParent());
+			static_cast<DeadBody*>(b->getParent())->playerRange = true;
+			return false;
+		}
+		else if (a->getName() == "body_radius" && b->getName() == "player_pickup")
+		{
+			player->bodyToPickUp = static_cast<DeadBody*>(a->getParent());
+			static_cast<DeadBody*>(a->getParent())->playerRange = true;
 			return false;
 		}
 
 		//check if player can pick up item
 		if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 		{
-			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = static_cast<Item*>(b->getParent());
 			static_cast<Item*>(b->getParent())->playerRange = true;
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "player_pickup")
 		{
-			//CCLOG("CAN PICK UP ITEM");
 			player->itemToPickUp = static_cast<Item*>(a->getParent());
 			static_cast<Item*>(a->getParent())->playerRange = true;
 			return false;

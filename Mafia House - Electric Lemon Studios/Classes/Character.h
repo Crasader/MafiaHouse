@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.h"
-#include "Item.h"
+//#include "Item.h"
+#include "DeadBody.h"
 #include "Stair.h"
 #include "EnvObject.h"
 #include "GameLayer.h"
@@ -54,7 +55,7 @@ public:
 	//functions for character actions:
 	virtual void pickUpItem(GameLayer* mainLayer);
 	virtual void dropItem(GameLayer* mainLayer);
-	virtual void throwItem(GameLayer* mainLayer);
+	virtual void throwItem(GameLayer* mainLayer, float time);
 	virtual void breakItem(GameLayer* mainLayer);
 
 	virtual void beginThrowItem();
@@ -95,6 +96,7 @@ protected:
 	float aimAngle = 0;//-90 is up, +90 is down
 	//for throwing items
 	Item* thrownItem = NULL;
+	float thrownItemDelay = 10 FRAMES;//the time after you throw an item during which you cannot be hit by it
 
 	//for movement:
 	float moveSpeed = 1.0f;
@@ -120,7 +122,6 @@ protected:
 	GameAnimation swing;
 	GameAnimation throwing;
 	GameAnimation stairuse;
-	//GameAnimation pickup;
+	GameAnimation dying;
 	//GameAnimation interact;
-	//GameAnimation death;
 };

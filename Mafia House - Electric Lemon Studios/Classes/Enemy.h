@@ -156,12 +156,14 @@ protected:
 	};
 	class KnockOutState : public State {
 	public:
+		KnockOutState() { type = "knockout"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class DeathState : public State {
 	public:
+		DeathState() { type = "death"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
@@ -173,7 +175,11 @@ protected:
 
 	//animations:
 	GameAnimation knockout;
+	GameAnimation knockoutDeath;
 	//GameAnimation sleeping;
+
+	//for creating dead body:
+	string deadBodyName;
 
 	//for suspicion indicators
 	Sprite* qMark;
@@ -230,7 +236,7 @@ protected:
 	bool knockedOut = false;
 	bool visionEnabled = true;
 	float startKockOutTime = -1.0f;
-	float baseKnockOutTime = 6.0f;
+	float baseKnockOutTime = 1.0f;
 	float minKnockOuttime = 8.0f;
 	float knockOutTime;
 

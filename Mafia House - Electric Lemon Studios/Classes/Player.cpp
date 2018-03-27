@@ -311,6 +311,34 @@ void Player::jump() {
 	}
 }
 
+void Player::pickUpBody(GameLayer* mainLayer) {
+	if (bodyToPickUp != NULL) {
+		if (heldItem != NULL) {
+			heldItem->setVisible(false);
+		}
+		bodyToPickUp->removeFromParent();
+		heldBody = bodyToPickUp;
+
+		addChild(heldBody);
+		heldBody->initPickedUpBody();
+
+		bodyToPickUp = NULL;
+	}
+}
+void Player::dropBody(GameLayer* mainLayer) {
+	if (heldBody != NULL) {
+		if (heldItem != NULL) {
+			heldItem->setVisible(true);
+		}
+
+		heldBody->initDroppedBody(convertToWorldSpace(heldItem->getPosition()), flippedX);
+
+		removeChild(heldBody, true);
+		mainLayer->addChild(heldBody);
+		heldBody = NULL;
+	}
+}
+
 void Player::pickUpItem(GameLayer* mainLayer) {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
 	Character::pickUpItem(mainLayer);
@@ -339,8 +367,8 @@ void Player::beginThrowItem() {
 	}
 }
 
-void Player::throwItem(GameLayer* mainLayer) {
-	Character::throwItem(mainLayer);
+void Player::throwItem(GameLayer* mainLayer, float time) {
+	Character::throwItem(mainLayer, time);
 	aimMarker->setVisible(false);
 }
 
@@ -389,7 +417,7 @@ void Player::useItem(float angle) {
 				setSpriteFrame(crouchstab.animation->getFrames().at(1)->getSpriteFrame());
 			}
 			else if (heldItem->getAttackType() == Item::SWING) {
-				heldItem->stabSequence(angle, flippedX);
+				heldItem->swingSequence(angle, flippedX);
 				setSpriteFrame(crouchswing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
 			}
 		}
@@ -511,7 +539,14 @@ void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
 	updateRoom(mainLayer->floors[currentFloor].rooms);//checking if room has changed
 	if (itemHitBy != NULL) {
-		wasHit(itemHitBy, time);
+		if (itemHitBy->getState() == Item::THROWN){
+			if (time - itemHitBy->thrownTime >= thrownItemDelay) {
+				wasHit(itemHitBy, time);
+			}
+		}
+		else {
+			wasHit(itemHitBy, time);
+		}
 		itemHitBy = NULL;
 	}
 	if (isHidingUnder == true) {
@@ -606,13 +641,22 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 		player->dropItem(mainLayer);
 	}
 	if (input == USE_ITEM) {
-		return new AttackState;
+		if (player->heldBody == NULL) {
+			return new AttackState;
+		}
 	}
 	if (input == THROW_ITEM) {
 		return new ThrowState;
 	}
 	if (input == PICKUP) {
-		player->pickUpItem(mainLayer);
+		if (player->heldBody == NULL) {
+			if (player->bodyToPickUp == NULL) {
+				player->pickUpItem(mainLayer);
+			}
+			else {
+				player->pickUpBody(mainLayer);
+			}
+		}
 	}
 	if (input == HIDE) {
 		player->hidden = false;
@@ -627,7 +671,9 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 	}
 	if (input == MOVE_UP) {
 		if (player->objectToClimb == NULL && player->touchingFloor == true) {//only jump if not colliding with a physical object
-			return new JumpState;
+			if (player->heldBody == NULL) {
+				return new JumpState;
+			}
 		}
 		else if (player->objectToClimb != NULL){//player has an object to climb
 			player->climbObject = player->objectToClimb;
@@ -695,7 +741,14 @@ Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainL
 		return new ThrowState;
 	}
 	if (input == PICKUP) {
-		player->pickUpItem(mainLayer);
+		if (player->heldBody == NULL) {
+			if (player->bodyToPickUp == NULL) {
+				player->pickUpItem(mainLayer);
+			}
+			else {
+				player->pickUpBody(mainLayer);
+			}
+		}
 	}
 	if (input == HIDE) {
 		player->hidden = false;
@@ -763,9 +816,13 @@ void Player::FallState::enter(Player* player, GameLayer* mainLayer, float time) 
 		if (player->heldItem != NULL) {
 			player->heldItem->initHeldItem();
 		}
+		//player->setPositionY(player->getPositionY() - 35);
 	}
 }
 Player::State* Player::FallState::update(Player* player, GameLayer* mainLayer, float time) {
+	//if (player->touchingCeiling == true) {
+	//	player->move(Vec2(0, -300));
+	//}
 	if (player->touchingFloor == true && (player->getPhysicsBody()->getVelocity().y > -20 && player->getPhysicsBody()->getVelocity().y < 20)){//if player has hit the ground
 		//player->startAnimation(LAND, landing);
 		player->setPhysicsBody(player->crouchBody);
@@ -786,7 +843,9 @@ Player::State* Player::FallState::handleInput(Player* player, GameLayer* mainLay
 		return new AttackState;
 	}
 	if (input == PICKUP) {
-		player->pickUpItem(mainLayer);
+		if (player->heldBody == NULL) {
+			player->pickUpItem(mainLayer);
+		}
 	}
 	if (input == MOVE_UP) {
 		if (player->objectToClimb != NULL) {//player has an object to climb
@@ -863,7 +922,7 @@ Player::State* Player::ThrowState::update(Player* player, GameLayer* mainLayer, 
 	}
 	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime() * 2) {
 		player->attackStartTime = time;
-		player->throwItem(mainLayer);
+		player->throwItem(mainLayer, time);
 		player->attackPrepareTime = -1.0f;
 	}
 	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->thrownItem->getAttackTime()) {
@@ -906,6 +965,9 @@ Player::State* Player::ThrowState::handleInput(Player* player, GameLayer* mainLa
 		else if (input == AIM_DOWN) {
 			if (player->isCrouched == false) {
 				player->aimAngle = 90;
+			}
+			else {
+				player->aimAngle = 45;
 			}
 		}
 		else if (input == AIM_UP_LEFT) {
@@ -960,6 +1022,7 @@ void Player::ThrowState::exit(Player* player, GameLayer* mainLayer) {
 	player->attackStartTime = -1.0f;
 	player->attackEndTime = -1.0f;
 }
+
 //Attack State(using items):
 void Player::AttackState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->wasFalling = false;
@@ -1030,9 +1093,12 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		if (input == AIM_UP) {
 			player->aimAngle = 270;
 		}
-		if (player->isCrouched == false) {
-			if (input == AIM_DOWN) {
+		if (input == AIM_DOWN) {
+			if (player->isCrouched == false) {
 				player->aimAngle = 90;
+			}
+			else {
+				player->aimAngle = 45;
 			}
 		}
 		if (player->flippedX == true) {//only register left inputs for aiming while facing left

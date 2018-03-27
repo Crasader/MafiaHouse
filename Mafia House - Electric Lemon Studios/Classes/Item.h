@@ -10,7 +10,7 @@ public:
 	CREATE_WITH_FRAME_NAME(Item, "items/knife.png");
 
 	virtual void initObject(Vec2 startPos = Vec2(0,0));
-	void initRadius();
+	virtual void initRadius();
 
 	enum AttackType {
 		STAB,
@@ -49,6 +49,7 @@ public:
 	void prepareThrow(float angle);
 	void prepareCrouchThrow(float angle);
 	void throwItem(float angle, Vec2 pos, bool flipped);
+	void spin();
 
 	bool checkBroken();
 	virtual void breakItem();
@@ -69,7 +70,7 @@ public:
 	void checkSpeed();
 	void checkFallSpeed();
 
-	void playerInRange(Node* player);
+	virtual void playerInRange(Node* player);
 	void hasMoved();
 	bool enemyCanUse = false;
 
@@ -87,6 +88,8 @@ public:
 	bool didHitWall = false;
 
 	bool enemyItem = false;//if it's being held by an enemy
+
+	float thrownTime = -1;
 
 protected:
 	State state = GROUND;

@@ -25,6 +25,11 @@ public:
 	void pickUpItem(GameLayer* mainLayer);
 	void dropItem(GameLayer* mainLayer);
 
+	void pickUpBody(GameLayer* mainLayer);
+	void dropBody(GameLayer* mainLayer);
+	void beginThrowBody();
+	void throwBody(GameLayer* mainLayer, float time);
+
 	void useDoor();
 	void useStair(GameLayer* mainLayer);
 
@@ -32,7 +37,7 @@ public:
 	void hiding();
 
 	void beginThrowItem();
-	void throwItem(GameLayer* mainLayer);
+	void throwItem(GameLayer* mainLayer, float time);
 	void beginUseItem(float angle);
 	void useItem(float angle);
 	void finishUseItem();
@@ -48,7 +53,9 @@ public:
 	HideObject* objectToHideBehind = NULL;//the tag of the object the player can hide behind
 	PhysObject* objectToClimb = NULL;
 	bool isHidingUnder = false;
-	//DeadBody* bodyToPickUp = NULL;
+
+	DeadBody* bodyToPickUp = NULL;
+	DeadBody* heldBody = NULL;
 
 	void update(GameLayer* mainLayer, float time);
 	void handleInput(GameLayer* mainLayer, float time, Input input);

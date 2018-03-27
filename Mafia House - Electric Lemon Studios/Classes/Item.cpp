@@ -36,7 +36,7 @@ void Item::initRadius() {
 	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
-	pickUpRadiusBody->setCollisionBitmask(67);
+	pickUpRadiusBody->setCollisionBitmask(66);
 	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
 	pickUpRadiusBody->setTag(10000);
 	pickUpRadiusBody->setName("item_radius");
@@ -91,7 +91,6 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 		setRotation(-getRotation());
 	}
 }
-//used when thrown item becomes ground item
 
 Vec2 angleToDirection(float angle) {
 	Vec2 direction;
@@ -115,12 +114,21 @@ void Item::prepareCrouchThrow(float angle) {
 	setRotation(angle);
 }
 
+void Item::spin() {
+	if (flippedX == false) {
+		setRotation(getRotation() + 30);
+	}
+	else {
+		setRotation(getRotation() - 30);
+	}
+}
+
 void Item::throwItem(float angle, Vec2 pos, bool flip) {
 	initThrownItem();
 	getPhysicsBody()->setLinearDamping(1.0f);
 	setAnchorPoint(Vec2(0, 0));
-	setPosition(pos);
 	Vec2 direction = angleToDirection(angle);
+	setPosition(pos);
 	setRotation(angle);
 	if (flip == true) {
 		flipX();
@@ -144,7 +152,7 @@ void Item::throwItem(float angle, Vec2 pos, bool flip) {
 		}
 	}
 	else {
-		moveNoLimit(Vec2(700, 0));
+		moveNoLimit(Vec2(800, 0));
 	}
 }
 
@@ -210,6 +218,9 @@ void Item::used() {
 
 void Item::hitWall() {
 	didHitWall = true;
+	if (state == THROWN) {
+		move(Vec2(-150, 0));
+	}
 	//getPhysicsBody()->setEnabled(false);
 }
 
@@ -348,6 +359,7 @@ Fist::Fist(){
 	attackTime = 12 FRAMES;
 	lagTime = 14 FRAMES;
 	range = 26;
+	rangeRadius = 90;
 	powerLevel = 0;
 }
 void Fist::initObject(Vec2 startPos){
@@ -409,6 +421,7 @@ Key::Key(){
 	attackTime = 6 FRAMES;
 	lagTime = 4 FRAMES;
 	range = 28;
+	rangeRadius = 90;
 	powerLevel = 0;
 }
 
