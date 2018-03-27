@@ -808,13 +808,19 @@ void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time)
 	player->crouchBody->setVelocity(player->getPhysicsBody()->getVelocity());
 	player->stop();
 	player->setPhysicsBody(player->crouchBody);
-	player->stop();
+	player->stopX();
 	player->getPhysicsBody()->setGravityEnable(false);
 	player->bodySize = player->crouchSize;
 	player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
 	player->maxSpeedY = 100;
 	player->startClimbTime = time;
 	player->startAnimation(CLIMB, player->climbing);
+	if (player->touchingFloor == true) {
+		player->startClimbDelay = 0.25f;
+	}
+	else {
+		player->startClimbDelay = 0.5f;
+	}
 }
 Player::State* Player::ClimbState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (time - player->startClimbTime <= player->startClimbDelay) {
@@ -1102,13 +1108,13 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	player->stop();
 	player->startAnimation(ROLLING, player->rolling);
 	player->getPhysicsBody()->setLinearDamping(1.0f);
-	player->moveNoLimit(Vec2(400, 0));//applying force for the roll
+	player->moveNoLimit(Vec2(420, 0));//applying force for the roll
 }
 Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
-	if (player->getPhysicsBody()->getVelocity().x > -8 && player->getPhysicsBody()->getVelocity().x < 8) {//when player's horizontal speed has stopped
+	if (player->getPhysicsBody()->getVelocity().x > -2.5f && player->getPhysicsBody()->getVelocity().x < 2.5f) {//when player's horizontal speed has stopped
 		return new CrouchState;
 	}
-	else if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -150) {
+	else if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -75) {
 		return new FallState;
 	}
 	return nullptr;

@@ -50,6 +50,7 @@ public:
 	void prepareCrouchThrow(float angle);
 	void throwItem(float angle, Vec2 pos, bool flipped);
 
+	bool checkBroken();
 	virtual void breakItem();
 	void used();
 

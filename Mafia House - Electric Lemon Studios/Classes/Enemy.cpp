@@ -1023,6 +1023,8 @@ void Enemy::gotHit(Item* item, float time) {
 		wasInHitStun = true;
 		hitStunStart = time;
 		hitStunTime = item->hitstun;
+		item->used();
+		hp -= item->dmg;//dealing damage to enemy
 		if (item->getEffect() == Item::NONE) {
 			if ((flippedX == true && item->knockback.x < 0) || (flippedX == false && item->knockback.x > 0)) {//if the enemy is hit from behind
 				flipX();
@@ -1033,8 +1035,6 @@ void Enemy::gotHit(Item* item, float time) {
 			stop();
 			moveAbsoluteNoLimit(item->knockback);
 		}
-		item->used();
-		hp -= item->dmg;//dealing damage to enemy
 		if (item->getEffect() == Item::KILL) {
 			if (getName() != "enemy_alert") {//hitting unalerted enemies with killing weapons will always kill them instantly
 				hp = 0;

@@ -97,6 +97,12 @@ void Level::update(float deltaTime){
 		else if (mainLayer->items[i]->getState() == Item::FALLING) {
 			mainLayer->items[i]->checkFallSpeed();
 		}
+		if (mainLayer->items[i]->getState() != Item::HELD) {
+			if (mainLayer->items[i]->checkBroken() == true) {
+				mainLayer->items.erase(mainLayer->items.begin() + i);
+				i--;
+			}
+		}
 	}
 
 	//for drawing vision rays

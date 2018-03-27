@@ -191,6 +191,14 @@ void Item::initGroundItem() {
 	getPhysicsBody()->setName("item");
 }
 
+bool Item::checkBroken() {
+	if (hp <= 0) {
+		breakItem();
+		return true;
+	}
+	return false;
+}
+
 void Item::breakItem() {
 	release();
 	getParent()->removeChild(this, true);
@@ -331,12 +339,12 @@ Fist::Fist(){
 	hp = 1;
 	dmg = 25;
 	knockback = Vec2(20, 0);
-	hitstun = 10 FRAMES;
+	hitstun = 8 FRAMES;
 	doorDmg = 7;
 	canBreakDoor = true;
-	effect = KILL;
+	effect = NONE;
 	attackType = STAB;
-	startTime = 5 FRAMES;
+	startTime = 6 FRAMES;
 	attackTime = 12 FRAMES;
 	lagTime = 14 FRAMES;
 	range = 26;
