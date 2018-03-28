@@ -43,7 +43,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 		door->initObject(orientation);
 		Vent* vent = Vent::createWithSpriteFrameName();
 		vent->initObject(orientation);
-	
+		
 		Door* d;
 		float length;
 		Vec2 newPos = position;
@@ -64,6 +64,8 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					if (doorData[j].type == 1) {
 						d = Door::create();
 						d->initObject(orientation, newPos);
+						d->leftRoomCoords = doorData[j].leftRoom;
+						d->rightRoomCoords = doorData[j].rightRoom;
 					}
 					else if (doorData[j].type == 2) {
 						d = Vent::create();
@@ -72,7 +74,6 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					length = d->size.height;
 					if (type != 2) {//only add doors or vents if right wall or ceiling
 						if (doorData[j].locked == true) {
-							d->lock();
 							d->defaultLocked = true;
 						}
 						doors->push_back(d);
@@ -103,6 +104,8 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					if (doorData[j].type == 1) {
 						d = Door::create();
 						d->initObject(orientation, newPos);
+						d->leftRoomCoords = doorData[j].leftRoom;
+						d->rightRoomCoords = doorData[j].rightRoom;
 					}
 					else if (doorData[j].type == 2) {
 						d = Vent::create();
@@ -111,7 +114,6 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					length = d->size.width;
 					if (type != 2) {//only add doors or vents if right wall or ceiling
 						if (doorData[j].locked == true) {
-							d->lock();
 							d->defaultLocked = true;
 						}
 						doors->push_back(d);
@@ -138,13 +140,13 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 bool sortByNumber(PathNode* a, PathNode* b) { return (a->num) < (b->num); }//function for sorting vector of PathNodes
 
 //creates a room, made of 4 walls, can have doors/vents and stairways
-void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideObject*> *hideObjects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData roomData, int height)
+void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideObject*> *hideObjects, vector<PhysObject*> *physObjects, vector<Item*> *items, vector<Enemy*> *enemies, vector<PathNode*> *pathNodes, Player* player, Vec2 position, RoomData* roomData, int height)
 {	//setting size of room
-	setContentSize(Size(roomData.width, height));
+	setContentSize(Size(roomData->width, height));
 	setAnchorPoint(Vec2(0, 0));
 
 	//setting background image for room
-	background = Sprite::create("backgrounds/" + roomData.bgName);
+	background = Sprite::create("backgrounds/" + roomData->bgName);
 	background->setContentSize(getContentSize() + Size(fullThick + 1, fullThick + 1));
 	background->setGlobalZOrder(0);
 	background->setAnchorPoint(Vec2(0, 0));
@@ -152,14 +154,14 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideO
 	addChild(background);
 
 	//setting player position
-	if (player->startRoom == roomData.room) {
+	if (player->startRoom == roomData->room) {
 		//player->setRoomPositionNormalized(position, Size(roomData.width, height), player->roomStartPos);
 		player->setRoomPosition(position, player->roomStartPos);
 	}
 	//setting stairway positions
 	if (stairs->size() > 0) {
 		for (int i = 0; i < stairs->size(); i++) {
-			if ((*stairs)[i]->startRoom == roomData.room) {
+			if ((*stairs)[i]->startRoom == roomData->room) {
 				//(*stairs)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*stairs)[i]->roomStartPos);
 				(*stairs)[i]->setRoomPosition(position, (*stairs)[i]->roomStartPos);
 			}
@@ -168,16 +170,25 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideO
 	//setting hide object positions
 	if (hideObjects->size() > 0) {
 		for (int i = 0; i < hideObjects->size(); i++) {
-			if ((*hideObjects)[i]->startRoom == roomData.room) {
-				//(*objects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*objects)[i]->roomStartPos);
+			if ((*hideObjects)[i]->startRoom == roomData->room) {
+				//(*hideObjects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*hideObjects)[i]->roomStartPos);
 				(*hideObjects)[i]->setRoomPosition(position, (*hideObjects)[i]->roomStartPos);
+			}
+		}
+	}
+	//setting physical object positions
+	if (physObjects->size() > 0) {
+		for (int i = 0; i < physObjects->size(); i++) {
+			if ((*physObjects)[i]->startRoom == roomData->room) {
+				//(*physObjects)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*physObjects)[i]->roomStartPos);
+				(*physObjects)[i]->setRoomPosition(position, (*physObjects)[i]->roomStartPos);
 			}
 		}
 	}
 	//setting item positions
 	if (items->size() > 0) {
 		for (int i = 0; i < items->size(); i++) {
-			if ((*items)[i]->startRoom == roomData.room) {
+			if ((*items)[i]->startRoom == roomData->room) {
 				//(*items)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*items)[i]->roomStartPos);
 				(*items)[i]->setRoomPosition(position, (*items)[i]->roomStartPos);
 			}
@@ -187,7 +198,7 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideO
 	if (pathNodes->size() > 0) {
 		for (int i = 0; i < pathNodes->size(); i++) {
 			//positioning path node
-			if ((*pathNodes)[i]->startRoom == roomData.room) {
+			if ((*pathNodes)[i]->startRoom == roomData->room) {
 				(*pathNodes)[i]->setRoomPosition(position, (*pathNodes)[i]->roomStartPos);
 				//assigning path node to correct enemy
 				for (int j = 0; j < enemies->size(); j++) {
@@ -201,7 +212,7 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideO
 	//setting enemy positions
 	if (enemies->size() > 0) {
 		for (int i = 0; i < enemies->size(); i++) {
-			if ((*enemies)[i]->startRoom == roomData.room) {
+			if ((*enemies)[i]->startRoom == roomData->room) {
 				//(*enemies)[i]->setRoomPositionNormalized(position, Size(roomData.width, height), (*enemies)[i]->roomStartPos);
 				(*enemies)[i]->setRoomPosition(position, (*enemies)[i]->roomStartPos);
 				if ((*enemies)[i]->pathNodes.size() > 0) {
@@ -223,14 +234,14 @@ void Room::createRoom(vector<Door*> *doors, vector<Stair*> *stairs, vector<HideO
 	Vec2 wallPos = position - Vec2(thick, thick);//the position for generating the walls of the room
 
 	//floor
-	createWall(doors, 2, 2, wallPos, Size(roomData.width + fullThick, thick), roomData.bottomDoors, "floor");
+	createWall(doors, 2, 2, wallPos, Size(roomData->width + fullThick, thick), roomData->bottomDoors, "floor");
 
 	//ceiling
-	createWall(doors, 2, 1, wallPos + Vec2(0, height + thick), Size(roomData.width + fullThick, thick), roomData.ceilingDoors, "floor");
+	createWall(doors, 2, 1, wallPos + Vec2(0, height + thick), Size(roomData->width + fullThick, thick), roomData->ceilingDoors, "ceiling");
 
 	//left wall
-	createWall(doors, 1, 2, wallPos + Vec2(0, thick), Size(thick, height), roomData.leftDoors, "wall");
+	createWall(doors, 1, 2, wallPos + Vec2(0, thick), Size(thick, height), roomData->leftDoors, "wall");
 
 	//right wall
-	createWall(doors, 1, 1, wallPos + Vec2(roomData.width + thick, thick), Size(thick, height), roomData.rightDoors, "wall");
+	createWall(doors, 1, 1, wallPos + Vec2(roomData->width + thick, thick), Size(thick, height), roomData->rightDoors, "wall");
 }

@@ -25,6 +25,9 @@ public:
 	DoorData() {}
 	~DoorData() {}
 
+	Vec2 rightRoom;
+	Vec2 leftRoom;
+
 	float pos = 0.0f;
 
 	int type = 1;//1 = door, 2 = vent
@@ -43,7 +46,9 @@ public:
 	int right;//right of the room
 
 	bool hasLeftDoor = false;
+	bool rightLocked = false;
 	bool hasRightDoor = false;
+	bool leftLocked = false;
 
 	string bgName = "guestRoom.png";
 
@@ -64,5 +69,5 @@ public:
 	int height;//height of the floor
 	int top;//top of the floor
 	int bot;//bottomg of the floor
-	vector<RoomData> rooms;//rooms the floor contains
+	vector<RoomData*> rooms;//rooms the floor contains
 };

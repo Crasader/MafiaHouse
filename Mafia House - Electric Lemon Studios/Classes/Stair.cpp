@@ -10,7 +10,7 @@ Stair::Stair() {
 	//physics body properties
 	dynamic = false;
 	category = 16;
-	collision = 1;
+	collision = 3;
 
 	outlineName = "objects/stair_outline.png";
 }
@@ -120,25 +120,33 @@ void Door::playerInRange() {
 }
 
 void Door::updateColour() {
-	float percentage = hp / 10.0f;
-	float inversePercentage = abs(percentage - 1);//inverts the percentage
-	if (locked == false) {
-		setColor(ccc3(255 * percentage, 215 * percentage, 255 * inversePercentage));
-	}
-	else {
-		setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
+	if (broken == false) {
+		float percentage = hp / maxHP;
+		float inversePercentage = abs(percentage - 1);//inverts the percentage
+
+		if (locked == false) {
+			setColor(ccc3(255 * percentage, 215 * percentage, 255 * inversePercentage));
+		}
+		else {
+			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
+		}
 	}
 }
 
 void Door::itemHit(Item* item) {
 	if (broken == false) {
 		if (item->isKey == true) {//item is a key
-			unlock();
-			item->hp = 0;//keys can only be used to unlock 1 door
+			if (locked == true) {
+				unlock();
+			}
+			else {
+				lock();//keys can lock doors
+			}
+			item->hp -= 2;//keys can only be used twice
 			item->didHitWall = false;
 		}
-		else if (item->canBreakDoor == true) {
-			hp -= item->dmg;//item deals dmg to the door
+		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
+			hp -= item->doorDmg;//item deals dmg to the door
 			item->hp--;
 		}
 		if (hp <= 0) {
@@ -147,11 +155,19 @@ void Door::itemHit(Item* item) {
 	}
 }
 
+void Door::updateBroken() {
+	if (hp <= 0) {
+		breakDoor();
+	}
+}
+
 void Door::breakDoor() {
-	//will probably change sprite
-	unlock();
-	broken = true;
-	setColor(ccc3(155, 0, 255));//purple
+	if (broken == false) {
+		//will probably change sprite
+		unlock();
+		broken = true;
+		setColor(ccc3(155, 0, 255));//purple
+	}
 }
 
 bool Door::use() {
@@ -182,6 +198,12 @@ void Door::unlock() {
 	if (broken == false) {//can't unlock if it's broken
 		if (locked == true) {
 			locked = false;
+			if (rightRoom != NULL) {
+				rightRoom->leftLocked = false;
+			}
+			if (leftRoom != NULL) {
+				leftRoom->rightLocked = false;
+			}
 			//setColor(ccc3(255, 155, 0));//orange
 		}
 	}
@@ -191,6 +213,12 @@ void Door::lock() {
 	if (broken == false) {//can't lock if it's broken
 		if (locked == false) {
 			locked = true;
+			if (rightRoom != NULL) {
+				rightRoom->leftLocked = true;
+			}
+			if (leftRoom != NULL) {
+				leftRoom->rightLocked = true;
+			}
 			//setColor(ccc3(255, 0, 0));//red
 		}
 	}
@@ -215,11 +243,59 @@ Vent::~Vent() {
 void Vent::initObject(int orient, Vec2 startPos) {
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
-		useBox = Size(55 + radius / 2, radius);
+		outlineName = "objects/vent/outline_h.png";
+		useBox = Size(55 + radius / 2, radius + 10);
 	}
 	else if (orient == 1) {//vertical
 		size = Size(20, 50);
+		outlineName = "objects/vent/outline_v.png";
 		useBox = Size(radius, 55 + radius / 2);
 	}
-	Door::initObject(startPos);
+	setContentSize(size);//set the size of the wall
+	GameObject::initObject(startPos);
+
+	auto useRadius = Node::create();
+	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	useRadius->setName("vent_radius");
+
+	auto radiusBody = PhysicsBody::createBox(useBox);
+	radiusBody->setDynamic(false);
+	radiusBody->setCategoryBitmask(4);
+	radiusBody->setCollisionBitmask(3);
+	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setTag(10000);
+	radiusBody->setName("vent_radius");
+	useRadius->setPhysicsBody(radiusBody);
+	addChild(useRadius);
+
+	createOutline(outlineName);
+	//initializing physics body for enemies to walk on
+	auto body = PhysicsBody::createBox(size);//player is half height when crouching
+	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setCategoryBitmask(1);
+	body->setCollisionBitmask(2);//only collide with enemies
+	body->setDynamic(false);
+	enemyWalkBody = Node::create();
+	enemyWalkBody->setPositionNormalized(Vec2(0.5, 0.5));
+	enemyWalkBody->setPhysicsBody(body);
+	addChild(enemyWalkBody);
+}
+
+void Vent::itemHit(Item* item) {
+	if (broken == false) {
+		if (item->isKey == true) {//item is a key
+			if (locked == true) {
+				unlock();
+				item->hp -= 2;//keys can only be used twice
+			}//you can't lock a vent again, there's no point
+			item->didHitWall = false;
+		}
+		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
+			hp -= item->doorDmg;//item deals dmg to the door
+			item->hp--;
+		}
+		if (hp <= 0) {
+			breakDoor();
+		}
+	}
 }
