@@ -9,11 +9,11 @@ bool Stage1::init()
 	//initialize background
 	setBackground("backgrounds/back.png", 0.5f);
 	//create level
-	initLevel("level_1_test.txt");
-	//initLevel("test_level.txt");
+	//initLevel("level_1_test.txt");
+	initLevel("test_level.txt");
 
 	return true;
-}
+} 
 
 bool Stage2::init()
 {
