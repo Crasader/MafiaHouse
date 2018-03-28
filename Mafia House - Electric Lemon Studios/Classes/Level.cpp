@@ -127,7 +127,12 @@ void Level::update(float deltaTime){
 	}
 	//dead bodies update
 	for (int i = 0; i < mainLayer->bodies.size(); i++) {
-		mainLayer->bodies[i]->playerInRange(player);
+		if (mainLayer->bodies[i]->getState() == Item::GROUND) {
+			mainLayer->bodies[i]->playerInRange(player);
+		}
+		if (mainLayer->bodies[i]->getState() != Item::HELD) {
+			mainLayer->bodies[i]->checkSpeed();
+		}
 	}
 
 	//for drawing vision rays
@@ -169,7 +174,7 @@ void Level::update(float deltaTime){
 	player->update(mainLayer, gameTime);
 
 	//check if player is going to interact with door/stairway
-	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
+	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
 		if (player->stairToUse != NULL) {
 			player->handleInput(mainLayer, gameTime, USE_STAIR);
 		}
@@ -212,7 +217,7 @@ void Level::update(float deltaTime){
 		}
 	}
 	//check if player is going to hide behind object
-	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
+	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
 		if (player->objectToHideBehind != NULL) {
 			player->handleInput(mainLayer, gameTime, HIDE);
 		}

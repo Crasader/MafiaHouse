@@ -41,12 +41,12 @@ void Enemy::flipX() {
 	if (flippedX == true) {
 		qMark->setFlippedX(true);
 		ZZZ->setFlippedX(true);
-		ZZZ->setPositionNormalized(Vec2(-0.2, 1.05));
+		ZZZ->setPositionNormalized(Vec2(0.3, 0.55));
 	}
 	else {
 		qMark->setFlippedX(false);
 		ZZZ->setFlippedX(false);
-		ZZZ->setPositionNormalized(Vec2(0.2, 1.05));
+		ZZZ->setPositionNormalized(Vec2(0.55, 0.55));
 	}
 	fist->knockback *= -1;
 }
@@ -72,8 +72,8 @@ void Enemy::initObject(Vec2 startPos)
 	qMark->setVisible(false);
 	addChild(qMark);
 	ZZZ = Sprite::createWithSpriteFrameName("icons/ZZZ/004.png");
-	ZZZ->setAnchorPoint(Vec2(0, 0));
-	ZZZ->setPositionNormalized(Vec2(0.5, 0.55));
+	ZZZ->setAnchorPoint(Vec2(0.5, 0));
+	ZZZ->setPositionNormalized(Vec2(0.65, 0.55));
 	ZZZ->getTexture()->setTexParameters(texParams);
 	ZZZ->setGlobalZOrder(9);
 	ZZZ->setVisible(false);
@@ -87,7 +87,7 @@ void Enemy::initObject(Vec2 startPos)
 
 	//initializing knocked out physics body
 	//knockedOutBody = Node::create();
-	knockedOutBody = PhysicsBody::createBox(Size(bodySize.width * 2, bodySize.height / 3));
+	knockedOutBody = PhysicsBody::createBox(Size(bodySize.width, bodySize.height / 2));
 	knockedOutBody->setContactTestBitmask(0xFFFFFFFF);
 	knockedOutBody->setTag(555);
 	knockedOutBody->setName("enemy");
@@ -1104,8 +1104,9 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 			hitTime = time;
 			invincible = true;
 			if (itemHitBy->getState() == Item::THROWN) {
-				if (time - itemHitBy->thrownTime >= thrownItemDelay) {
+				if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
 					gotHit(itemHitBy, time);
+					thrownItem = NULL;
 				}
 			}
 			else {
@@ -2069,6 +2070,9 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 	if (enemy->doorToUse != NULL) {
 		return new UseDoorState;
 	}
+	if (enemy->bodySeen == NULL) {
+		return new DefaultState;
+	}
 	if (enemy->paused == false) {
 		if (enemy->reachedLocation == false) {
 			if (enemy->moveToObject(enemy->bodySeen)== true) {
@@ -2126,7 +2130,7 @@ void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 	enemy->knockedOutBody->setVelocity(enemy->getPhysicsBody()->getVelocity());
 	enemy->stop();
 	enemy->setPhysicsBody(enemy->knockedOutBody);
-	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, -35));
+	enemy->getPhysicsBody()->setPositionOffset(Vec2(0, -25));
 	enemy->startAnimation(KNOCKOUT, enemy->knockout);//running knockout animation
 	enemy->startKockOutTime = time;
 	enemy->visionEnabled = false;
@@ -2147,6 +2151,10 @@ Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, f
 		}
 	}
 	if ((time - enemy->startKockOutTime) > (enemy->knockOutTime)) {
+		if (enemy->prevState->type == "attack" || enemy->prevState->type == "knockout") {
+			enemy->toEnter = new DefaultState;
+			return enemy->toEnter;
+		}
 		enemy->toEnter = enemy->prevState;
 		return enemy->toEnter;
 	}
@@ -2161,7 +2169,7 @@ void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 		enemy->mainBody->setVelocity(enemy->getPhysicsBody()->getVelocity());
 		enemy->stop();
 		enemy->setPhysicsBody(enemy->mainBody);
-		enemy->getPhysicsBody()->setPositionOffset(Vec2(0, 35));
+		enemy->getPhysicsBody()->setPositionOffset(Vec2(0, 0));
 		enemy->setSpriteFrame(enemy->stand.animation->getFrames().at(0)->getSpriteFrame());//first frame of the standing animation
 		enemy->visionEnabled = true;
 	}

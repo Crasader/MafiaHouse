@@ -41,7 +41,7 @@ public:
 	void startAnimation(AnimationTag tag, GameAnimation animation);
 	void stopAnimation(AnimationTag tag);
 
-	void flipX();
+	virtual void flipX();
 
 	float getPositionX();
 	Vec2 getPosition();
@@ -96,7 +96,7 @@ protected:
 	float aimAngle = 0;//-90 is up, +90 is down
 	//for throwing items
 	Item* thrownItem = NULL;
-	float thrownItemDelay = 10 FRAMES;//the time after you throw an item during which you cannot be hit by it
+	float thrownItemDelay = 30 FRAMES;//the time after you throw an item during which you cannot be hit by it
 
 	//for movement:
 	float moveSpeed = 1.0f;

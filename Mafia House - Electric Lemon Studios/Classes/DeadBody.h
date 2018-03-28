@@ -18,6 +18,14 @@ public:
 	void initCrouchPickedUpBody();
 	void initCrouchHeldBody();
 	void initDroppedBody(Vec2 pos, bool flip);
+	void throwItem(float angle, Vec2 pos, bool flip);
+	void initThrownItem();
+	void initGroundItem();
+
+	void checkSpeed();
+
+	void prepareThrow();
+	void prepareCrouchThrow();
 
 	bool isHidden = false;
 };

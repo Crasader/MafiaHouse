@@ -65,12 +65,19 @@ void Player::initObject(Vec2 startPos) {
 	//intializing aim indicator
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	aimMarker = Sprite::createWithSpriteFrameName("icons/aim.png");
-	aimMarker->setAnchorPoint(Vec2(-2.3, 0.5));
+	aimMarker->setAnchorPoint(Vec2(-2.2, 0.5));
 	aimMarker->setPositionNormalized(Vec2(0.5, 0.5));
 	aimMarker->getTexture()->setTexParameters(texParams);
 	aimMarker->setGlobalZOrder(10);
 	aimMarker->setVisible(false);
 	addChild(aimMarker);
+}
+
+void Player::flipX() {
+	Character::flipX();
+	if (heldBody != NULL) {
+		heldBody->knockback *= -1;
+	}
 }
 
 //functions for player actions:
@@ -327,6 +334,9 @@ void Player::pickUpBody(GameLayer* mainLayer) {
 		else {
 			heldBody->initCrouchPickedUpBody();
 		}
+		if (flippedX == true) {
+			heldBody->knockback *= -1;
+		}
 
 		bodyToPickUp = NULL;
 	}
@@ -346,6 +356,38 @@ void Player::dropBody(GameLayer* mainLayer) {
 	}
 }
 
+void Player::beginThrowBody(float time) {
+	if (heldBody != NULL) {
+		if (isCrouched == false) {
+			heldBody->prepareThrow();
+		}
+		else {
+			heldBody->prepareCrouchThrow();
+		}
+		aimMarker->setVisible(true);
+		float percentage = (time - attackPrepareTime) / (heldBody->getStartTime() * 2);
+		percentage = percentage > 1 ? 1 : percentage;
+		aimMarker->setScaleY(percentage);
+		aimMarker->setRotation(aimAngle);
+	}
+}
+
+void Player::throwBody(GameLayer* mainLayer, float time) {
+	if (heldBody != NULL) {
+		heldBody->thrownTime = time;
+		heldBody->throwItem(aimAngle, convertToWorldSpace(heldBody->getPosition()), flippedX);
+		removeChild(heldBody, true);
+		mainLayer->addChild(heldBody);
+		heldBody->thrownTime = time;
+		thrownItem = heldBody;
+		heldBody = NULL;
+		if (heldItem != NULL) {
+			heldItem->setVisible(true);
+		}
+		aimMarker->setVisible(false);
+	}
+}
+
 void Player::pickUpItem(GameLayer* mainLayer) {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/equip.wav");
 	Character::pickUpItem(mainLayer);
@@ -361,7 +403,7 @@ void Player::dropItem(GameLayer* mainLayer) {
 	Character::dropItem(mainLayer);
 }
 
-void Player::beginThrowItem() {
+void Player::beginThrowItem(float time) {
 	if (heldItem != NULL) {
 		if (isCrouched == false) {
 			heldItem->prepareThrow(aimAngle);
@@ -370,6 +412,9 @@ void Player::beginThrowItem() {
 			heldItem->prepareCrouchThrow(aimAngle);
 		}
 		aimMarker->setVisible(true);
+		float percentage = (time - attackPrepareTime) / (heldItem->getStartTime() * 2);
+		percentage = percentage > 1 ? 1 : percentage;
+		aimMarker->setScaleY(percentage);
 		aimMarker->setRotation(aimAngle);
 	}
 }
@@ -503,9 +548,9 @@ void Player::hide() {
 		}
 		if (heldBody != NULL) {
 			heldBody->isHidden = false;
-			heldBody->setGlobalZOrder(6);
+			heldBody->setGlobalZOrder(5);
 			heldBody->setOpacity(255);
-			heldBody->outline->setGlobalZOrder(6);
+			heldBody->outline->setGlobalZOrder(5);
 			heldBody->outline->setOpacity(255);
 		}
 		hideObject->unhide();
@@ -561,8 +606,9 @@ void Player::update(GameLayer* mainLayer, float time) {
 	updateRoom(mainLayer->floors[currentFloor].rooms);//checking if room has changed
 	if (itemHitBy != NULL) {
 		if (itemHitBy->getState() == Item::THROWN){
-			if (time - itemHitBy->thrownTime >= thrownItemDelay) {
+			if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
 				wasHit(itemHitBy, time);
+				thrownItem = NULL;
 			}
 		}
 		else {
@@ -953,19 +999,50 @@ void Player::ClimbState::exit(Player* player, GameLayer* mainLayer) {
 void Player::ThrowState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->aimAngle = 0;
 	player->stopAllActions();
-	player->beginThrowItem();
 	player->attackPrepareTime = time;
+	if (player->heldBody == NULL) {
+		player->beginThrowItem(time);
+	}
+	else {
+		player->beginThrowBody(time);
+	}
 }
 Player::State* Player::ThrowState::update(Player* player, GameLayer* mainLayer, float time) {
 	//if (player->checkDead() == true) { return new DeathState; }
 
 	if (player->attackRelease == false) {
-		player->beginThrowItem();
+		if (player->heldBody == NULL) {
+			player->beginThrowItem(time);
+		}
+		else {
+			player->beginThrowBody(time);
+		}
 	}
-	if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime() * 2) {
-		player->attackStartTime = time;
-		player->throwItem(mainLayer, time);
-		player->attackPrepareTime = -1.0f;
+	else if (player->heldItem != NULL || player->heldBody != NULL) {
+		if (player->heldBody == NULL) {
+			if (time - player->attackPrepareTime <= player->heldItem->getStartTime() * 2) {
+				player->beginThrowItem(time);
+			}
+		}
+		else {
+			if (time - player->attackPrepareTime <= player->heldBody->getStartTime() * 2) {
+				player->beginThrowBody(time);
+			}
+		}
+	}
+	if (player->heldBody == NULL) {
+		if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldItem->getStartTime() * 2) {
+			player->attackStartTime = time;
+			player->throwItem(mainLayer, time);
+			player->attackPrepareTime = -1.0f;
+		}
+	}
+	else {
+		if (player->attackRelease == true && player->attackPrepareTime != -1.0f && time - player->attackPrepareTime >= player->heldBody->getStartTime() * 2) {
+			player->attackStartTime = time;
+			player->throwBody(mainLayer, time);
+			player->attackPrepareTime = -1.0f;
+		}
 	}
 	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->thrownItem->getAttackTime()) {
 		player->attackEndTime = time;

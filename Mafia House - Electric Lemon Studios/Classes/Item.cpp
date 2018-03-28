@@ -60,6 +60,7 @@ void Item::initPickedUpItem() {
 	if (flippedX == true) {
 		flipX();
 	}
+	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
 }
 
 void Item::initHeldItem() {
@@ -92,7 +93,7 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 	}
 }
 
-Vec2 angleToDirection(float angle) {
+Vec2 Item::angleToDirection(float angle) {
 	Vec2 direction;
 	if (angle == 270) { direction = Vec2(0, 1); }
 	else if (angle == 315) { direction = Vec2(1, 1); }
@@ -184,7 +185,6 @@ void Item::initFallItem() {
 
 void Item::initGroundItem() {
 	state = GROUND;
-	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
 	didHitWall = false;
 	enemyItem = false;
 	outline->setVisible(true);
@@ -219,6 +219,7 @@ void Item::used() {
 void Item::hitWall() {
 	didHitWall = true;
 	if (state == THROWN) {
+		didHitWall = false;
 		move(Vec2(-150, 0));
 	}
 	//getPhysicsBody()->setEnabled(false);
@@ -248,20 +249,28 @@ void Item::checkSpeed() {
 	float speedX = abs(getPhysicsBody()->getVelocity().x);
 	float speedY = abs(getPhysicsBody()->getVelocity().y);
 	if (speedY > 200) {
-		initThrownItem();
+		if (state != THROWN) {
+			initThrownItem();
+		}
 	}
 	else if (speedX <= 450) {
-		initFallItem();
+		if (state != FALLING) {
+			initFallItem();
+		}
 	}
 }
 
 void Item::checkFallSpeed() {
 	float speedY = abs(getPhysicsBody()->getVelocity().y);
 	if (speedY < 0.5) {
-		initGroundItem();
+		if (state != GROUND) {
+			initGroundItem();
+		}
 	}
 	else if (speedY > 200) {
-		initThrownItem();
+		if (state != THROWN) {
+			initThrownItem();
+		}
 	}
 }
 

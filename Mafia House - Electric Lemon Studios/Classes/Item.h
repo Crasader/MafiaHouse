@@ -38,6 +38,8 @@ public:
 	int getRange() { return range; }
 	int getRangeRadius() { return rangeRadius; }
 
+	Vec2 angleToDirection(float angle);
+
 	virtual void initPickedUpItem();
 	virtual void initHeldItem();
 	virtual void initCrouchHeldItem();
@@ -46,9 +48,9 @@ public:
 	virtual void initThrownItem();
 	virtual void initFallItem();
 
-	void prepareThrow(float angle);
-	void prepareCrouchThrow(float angle);
-	void throwItem(float angle, Vec2 pos, bool flipped);
+	virtual void prepareThrow(float angle);
+	virtual void prepareCrouchThrow(float angle);
+	virtual void throwItem(float angle, Vec2 pos, bool flipped);
 	void spin();
 
 	bool checkBroken();
@@ -67,7 +69,7 @@ public:
 
 	virtual void fallAttack();
 
-	void checkSpeed();
+	virtual void checkSpeed();
 	void checkFallSpeed();
 
 	virtual void playerInRange(Node* player);

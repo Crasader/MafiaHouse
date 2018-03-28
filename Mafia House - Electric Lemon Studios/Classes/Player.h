@@ -12,6 +12,7 @@ public:
 
 	void initObject(Vec2 startPos = Vec2(0, 0));
 
+	void flipX();
 	//functions for player actions:
 	void resetCollisionChecks(float time);//resets variables used to track what objects/items player will interact with/use
 
@@ -27,7 +28,7 @@ public:
 
 	void pickUpBody(GameLayer* mainLayer);
 	void dropBody(GameLayer* mainLayer);
-	void beginThrowBody();
+	void beginThrowBody(float time);
 	void throwBody(GameLayer* mainLayer, float time);
 
 	void useDoor();
@@ -36,7 +37,7 @@ public:
 	void hide();
 	void hiding();
 
-	void beginThrowItem();
+	void beginThrowItem(float time);
 	void throwItem(GameLayer* mainLayer, float time);
 	void beginUseItem(float angle);
 	void useItem(float angle);
