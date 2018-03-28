@@ -47,6 +47,7 @@ void Item::initRadius() {
 
 //used when player picks up item
 void Item::initPickedUpItem() {
+	prevState = state;
 	state = HELD;
 	initHeldItem();
 	outline->setVisible(false);
@@ -111,16 +112,16 @@ void Item::prepareThrow(float angle) {
 
 void Item::prepareCrouchThrow(float angle) {
 	setAnchorPoint(Vec2(0, 0.5));
-	setPosition(Vec2(24, 32));
+	setPosition(Vec2(26, 40));
 	setRotation(angle);
 }
 
 void Item::spin() {
 	if (flippedX == false) {
-		setRotation(getRotation() + 30);
+		setRotation(getRotation() + 25);
 	}
 	else {
-		setRotation(getRotation() - 30);
+		setRotation(getRotation() - 25);
 	}
 }
 
@@ -137,27 +138,28 @@ void Item::throwItem(float angle, Vec2 pos, bool flip) {
 	}
 	if (flip == true) {
 		if (direction == Vec2(1, -1)) {
-			moveNoLimit(Vec2(0, -800));
+			moveNoLimit(Vec2(0, -700));
 		}
 		else if (direction == Vec2(1, 1)) {
-			moveNoLimit(Vec2(0, 800));
+			moveNoLimit(Vec2(0, 700));
 		}
 		else if (direction == Vec2(0, 1)) {
-			moveNoLimit(Vec2(-800, 0));
+			moveNoLimit(Vec2(-700, 0));
 		}
 		else if (direction == Vec2(0, -1)) {
-			moveNoLimit(Vec2(-800, 0));
+			moveNoLimit(Vec2(-700, 0));
 		}
 		else {
-			moveNoLimit(Vec2(800, 0));
+			moveNoLimit(Vec2(700, 0));
 		}
 	}
 	else {
-		moveNoLimit(Vec2(800, 0));
+		moveNoLimit(Vec2(700, 0));
 	}
 }
 
 void Item::initThrownItem() {
+	prevState = state;
 	state = THROWN;
 	didHitWall = false;
 	enemyItem = false;
@@ -174,16 +176,18 @@ void Item::initThrownItem() {
 }
 
 void Item::initFallItem() {
+	prevState = state;
 	state = FALLING;
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);
-	getPhysicsBody()->setLinearDamping(0.0f);
+	getPhysicsBody()->setLinearDamping(0.5f);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	outline->setVisible(false);
 }
 
 void Item::initGroundItem() {
+	prevState = state;
 	state = GROUND;
 	didHitWall = false;
 	enemyItem = false;
@@ -193,7 +197,7 @@ void Item::initGroundItem() {
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);
-	getPhysicsBody()->setLinearDamping(0.0f);
+	getPhysicsBody()->setLinearDamping(1.0f);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	setName("item");
 	getPhysicsBody()->setName("item");
@@ -218,10 +222,6 @@ void Item::used() {
 
 void Item::hitWall() {
 	didHitWall = true;
-	if (state == THROWN) {
-		didHitWall = false;
-		move(Vec2(-150, 0));
-	}
 	//getPhysicsBody()->setEnabled(false);
 }
 
@@ -245,32 +245,43 @@ void Item::hasMoved() {
 	}
 }
 
-void Item::checkSpeed() {
-	float speedX = abs(getPhysicsBody()->getVelocity().x);
-	float speedY = abs(getPhysicsBody()->getVelocity().y);
-	if (speedY > 200) {
-		if (state != THROWN) {
-			initThrownItem();
+void Item::checkThrownSpeed() {
+	float speed = getPhysicsBody()->getVelocity().getLength();
+	if (prevState == HELD) {
+		if (attackType == STAB) {
+			if (speed <= 551) {//speed is less than 450
+				initFallItem();
+			}
+		}
+		else if (attackType == SWING) {
+			if (speed <= 544) {//speed is less than 450
+				initFallItem();
+			}
 		}
 	}
-	else if (speedX <= 450) {
-		if (state != FALLING) {
+	else if (prevState == FALLING) {
+		if (speed < 100) {//speed is less than 450
 			initFallItem();
 		}
 	}
 }
 
-void Item::checkFallSpeed() {
-	float speedY = abs(getPhysicsBody()->getVelocity().y);
-	if (speedY < 0.5) {
-		if (state != GROUND) {
-			initGroundItem();
-		}
+void Item::checkFallingSpeed() {
+	float speed = getPhysicsBody()->getVelocity().getLength();
+	if (speed <= 50) {//speed is less than 50
+		initGroundItem();
 	}
-	else if (speedY > 200) {
-		if (state != THROWN) {
+	if (prevState == GROUND) {
+		if (speed >= 150) {//speed is greater than 150
 			initThrownItem();
 		}
+	}
+}
+
+void Item::checkGroundSpeed() {
+	float speed = getPhysicsBody()->getVelocity().getLength();
+	 if (speed > 50) {//speed becomes greater than 50
+		initFallItem();
 	}
 }
 
@@ -378,6 +389,7 @@ void Fist::initObject(Vec2 startPos){
 	setVisible(false);
 }
 void Fist::initHeldItem() {
+	prevState = state;
 	state = HELD;
 	getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setDynamic(true);

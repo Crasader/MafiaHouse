@@ -250,9 +250,9 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
-	int defaultDegrees = 70;
+	int defaultDegrees = 60;
 	int visionDegrees = defaultDegrees;//width of angle of vision
-	int defaultRadius = 150;
+	int defaultRadius = 180;
 	int visionRadius = defaultRadius;//how far vision reaches
 
 	//for keepign track of if enemy spotted player:

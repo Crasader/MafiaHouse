@@ -13,7 +13,7 @@ Enemy::Enemy()
 	//physics body properties
 	dynamic = true;
 	category = 2;
-	collision = 15;
+	collision = 47;
 	//other proeprties
 	baseSpeed = 50;
 	maxSpeed = baseSpeed;
@@ -2081,7 +2081,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 		}
 		else {//they have reached location
 			enemy->turnOnSpot(time);//stay where body is and look around
-			enemy->changeSuspicion(enemy->maxSuspicion / (30 SECONDS));//suspicion will steadily increase until they become alerted
+			enemy->changeSuspicion(enemy->maxSuspicion / (25 SECONDS));//suspicion will steadily increase until they become alerted
 		}
 	}
 	else {

@@ -22,7 +22,8 @@ public:
 	void initThrownItem();
 	void initGroundItem();
 
-	void checkSpeed();
+	void checkThrownSpeed();
+	void checkGroundSpeed();
 
 	void prepareThrow();
 	void prepareCrouchThrow();

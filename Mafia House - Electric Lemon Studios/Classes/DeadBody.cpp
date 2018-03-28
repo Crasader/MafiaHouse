@@ -175,17 +175,15 @@ void DeadBody::initGroundItem() {
 	getPhysicsBody()->setName("dead_body");
 }
 
-void DeadBody::checkSpeed() {
-	float speedX = abs(getPhysicsBody()->getVelocity().x);
-	float speedY = abs(getPhysicsBody()->getVelocity().y);
-	if (speedY >= 180) {
-		if (state != THROWN) {
-			initThrownItem();
-		}
+void DeadBody::checkThrownSpeed() {
+	float speed = getPhysicsBody()->getVelocity().getLength();
+	if (speed <= 10){
+		initGroundItem();
 	}
-	else if (speedX <= 30){
-		if (state != GROUND) {
-			initGroundItem();
-		}
+}
+void DeadBody::checkGroundSpeed() {
+	float speed = getPhysicsBody()->getVelocity().getLength();
+	if (speed >= 100) {
+		initThrownItem();
 	}
 }

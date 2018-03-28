@@ -105,6 +105,7 @@ public:
 	virtual void updateRoom(vector<RoomData*> rooms);
 
 	//movement functions
+	void stopY();
 	void stopX();
 	void stop();
 	void slowStop();
