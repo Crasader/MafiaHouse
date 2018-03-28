@@ -39,7 +39,7 @@ public:
 	Table();
 	~Table() {}
 	CREATE_WITH_FRAME(Table);
-	CREATE_WITH_FRAME_NAME(Table, "objects/table.png");
+	CREATE_WITH_FRAME_NAME(Table, "objects/fancy_table.png");
 
 	void initObject();
 };
