@@ -244,7 +244,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
 		outlineName = "objects/vent/outline_h.png";
-		useBox = Size(55 + radius / 2, radius);
+		useBox = Size(55 + radius / 2, radius + 10);
 	}
 	else if (orient == 1) {//vertical
 		size = Size(20, 50);

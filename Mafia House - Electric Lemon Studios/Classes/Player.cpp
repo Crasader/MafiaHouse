@@ -310,7 +310,7 @@ void Player::jump() {
 	if (touchingFloor == true) {
 		auto callback = CallFunc::create([this]() {
 			hasJumped = true;
-			move(Vec2(0, 100));//apply force straight up
+			move(Vec2(0, 110));//apply force straight up
 		});
 		auto wait = MoveBy::create(10 FRAMES, Vec2(0, 0));
 		auto sequence = Sequence::create(wait, callback, nullptr);//runs the stair use animation and then has character take the stairs
