@@ -13,7 +13,7 @@ Enemy::Enemy()
 	//physics body properties
 	dynamic = true;
 	category = 2;
-	collision = 13;
+	collision = 15;
 	//other proeprties
 	baseSpeed = 50;
 	maxSpeed = baseSpeed;
@@ -92,7 +92,7 @@ void Enemy::initObject(Vec2 startPos)
 	knockedOutBody->setTag(555);
 	knockedOutBody->setName("enemy");
 	knockedOutBody->setCategoryBitmask(2);
-	knockedOutBody->setCollisionBitmask(8);
+	knockedOutBody->setCollisionBitmask(10);
 	knockedOutBody->setDynamic(true);
 	knockedOutBody->setRotationEnable(false);
 	knockedOutBody->retain();

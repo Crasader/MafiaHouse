@@ -558,6 +558,21 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return false;
 		}
 
+		//enemy and knocked out enemy
+		if (a->getName() == "enemy" && b->getName() == "enemy")
+		{
+			if (static_cast<Enemy*>(b)->isKnockedOut() == true && static_cast<Enemy*>(b)->isKnockedOut() == true) {
+				return true;
+			}
+			else if (static_cast<Enemy*>(b)->isKnockedOut()== true) {
+				static_cast<Enemy*>(a)->bodySeen = static_cast<Enemy*>(b);
+			}
+			else if(static_cast<Enemy*>(a)->isKnockedOut() == true) {
+				static_cast<Enemy*>(b)->bodySeen = static_cast<Enemy*>(a);
+			}
+			return false;
+		}
+
 		//check if player can pick up body
 		if (a->getName() == "player_pickup" && b->getName() == "body_radius")
 		{

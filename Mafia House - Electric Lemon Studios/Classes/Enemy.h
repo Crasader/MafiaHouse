@@ -71,6 +71,7 @@ public:
 	bool seeingPlayer() { return playerInVision; }
 	string getPathTag() { return pathTag; }
 	void setPathTag(string pathtag) { pathTag = pathtag; }
+	bool isKnockedOut() { return knockedOut; }
 	
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
