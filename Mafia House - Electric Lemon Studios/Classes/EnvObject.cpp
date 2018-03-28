@@ -5,7 +5,7 @@ HideObject::HideObject()
 	//sprite properties
 	zOrder = 3;
 	scale = 1.0f;
-	name = "env_object";//used for collision detection
+	name = "hide_object";//used for collision detection
 	//physics body properties
 	tag = 20000;//each object will have a unique tag number
 	dynamic = false;
@@ -45,4 +45,63 @@ void HideObject::unhide() {
 	hiding = false;
 	setOpacity(255);
 	outline->setVisible(true);
+}
+
+//Physical Objects:
+PhysObject::PhysObject(){
+	//sprite properties
+	zOrder = 6;
+	scale = 1.0f;
+	name = "phys_object";//used for collision detection
+	//physics body properties
+	tag = 50000;//each object will have a unique tag number
+	dynamic = false;
+	category = 0xFFFFFFFF;
+	collision = 41;
+}
+
+void PhysObject::initObject(){
+	initObjectNoPhysics();
+	initBoxBody(surfaceSize);
+	getPhysicsBody()->setPositionOffset(surfaceOffset);
+	initHideBox();
+}
+
+void PhysObject::initHideBox() {
+	hideBox = Node::create();
+	hideBox->setName("hide_radius");
+	auto body = PhysicsBody::createBox(hideBoxSize);
+	body->setDynamic(false);
+	body->setCategoryBitmask(4);
+	body->setCollisionBitmask(1);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	hideBox->setPhysicsBody(body);
+	hideBox->setPosition(hideBoxPosition);
+	addChild(hideBox);
+}
+
+//Table:
+Table::Table(){
+	PhysObject::PhysObject();
+	surfaceSize = Size(140, 10);
+	surfaceOffset = Vec2(0, 24);
+	hideBoxSize = Size(92, 50);
+	hideBoxPosition = Vec2(70, 25);
+}
+
+void Table::initObject() {
+	PhysObject::initObject();
+}
+
+//Vent Cover:
+VentCover::VentCover() {
+	PhysObject::PhysObject();
+	surfaceSize = Size(40, 5);
+	surfaceOffset = Vec2(0, 0);
+	hideBoxSize = Size(50, 5);
+	hideBoxPosition = Vec2(30, -3);
+}
+
+void VentCover::initObject() {
+	PhysObject::initObject();
 }

@@ -9,6 +9,18 @@ USING_NS_CC;
 using std::string;
 using std::vector;
 
+#define CREATE_EMPTY_SPRITE_FUNC(__TYPE__) \
+static __TYPE__* create() \
+{ \
+	 __TYPE__ *sprite = new (std::nothrow) __TYPE__(); \
+	if (sprite && sprite->init()) \
+	{ \
+	sprite->autorelease(); \
+	return sprite; \
+	} \
+	CC_SAFE_DELETE(sprite); \
+	return nullptr; \
+}
 #define CREATE_SPRITE_FUNC(__TYPE__, _FILENAME_) \
 static __TYPE__* create(const std::string& filename = _FILENAME_) \
 { \
@@ -50,10 +62,16 @@ enum AnimationTag {
 	STAND,
 	WALK,
 	MOONWALK,
+	CROUCH,
+	STANDUP,
+	CROUCHWALK,
 	STAB,
+	FALLATK,
 	SWING,
 	THROW,
 	CLIMB,
+	JUMP,
+	ROLLING,
 	HIDDEN,
 	FALL,
 	KNOCKOUT,
@@ -84,13 +102,15 @@ public:
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
 	virtual void updateFloor(vector<FloorData> floors);
-	virtual void updateRoom(vector<RoomData> rooms);
+	virtual void updateRoom(vector<RoomData*> rooms);
 
 	//movement functions
 	void stopX();
 	void stop();
 	void slowStop();
 
+	void moveNoLimit(Vec2 velocity);//doesn't check for object's speed limit
+	void moveAbsoluteNoLimit(Vec2 velocity);//doesn't check for object's speed limit
 	void move(Vec2 velocity);//moves relative to direction object is facing
 	void moveAbsolute(Vec2 velocity);//moves in absolute direction, positive is right, up
 
@@ -109,10 +129,11 @@ public:
 
 	bool playerRange = false;//for interactable items, check if player is in range to use them
 
+	Sprite* outline;
+
 protected:
 	PhysicsBody * mainBody;
 
-	Sprite* outline;
 	string outlineName;
 
 	Vec2 initialPos;
@@ -120,7 +141,9 @@ protected:
 	bool flippedX = false;//false = facing right
 	bool flippedY = false;//false = facing upright
 
-	float maxSpeed = 1000.0f;
+	float baseSpeed = 100.0f;
+	float maxSpeed = 100.0f;
+	float maxSpeedY = 100.0f;
 
 	std::string name = "name";//can set name to identify sprite type, used for collision detection
 	float zOrder = 0;//determines what is drawn over top of what
@@ -143,11 +166,16 @@ Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets
 class GameAnimation {
 public:
 	GameAnimation() {}
-	GameAnimation(int tag, char* path, int numFrames, float frameTime) {
+	GameAnimation(int tag, char* path, int numFrames, float frameTime, bool loop) {
 		auto frames = getAnimation(path, numFrames);//change number of frames to correct number
 		animation = Animation::createWithSpriteFrames(frames, frameTime);//change number to correct speed for animation
 		animation->retain();
-		action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
+		if (loop == true) {
+			action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
+		}
+		else {
+			action = Speed::create(Animate::create(animation), 1.0f);
+		}
 		action->retain();
 		action->setTag(tag);
 	}

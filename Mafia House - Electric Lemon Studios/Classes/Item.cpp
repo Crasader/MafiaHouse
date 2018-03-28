@@ -7,7 +7,7 @@ Item::Item()
 	zOrder = 6;
 	//physics body properties
 	category = 32;
-	collision = 8;
+	collision = 40;
 	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
 	rotate = true;
@@ -17,8 +17,6 @@ Item::Item()
 	lagTime = 20 FRAMES;
 	range = 50;
 }
-Item::~Item(){
-}
 
 void Item::initObject(Vec2 startPos)
 {
@@ -26,6 +24,7 @@ void Item::initObject(Vec2 startPos)
 	retain();
 	initRadius();
 	createOutline(outlineName);
+	initGroundItem();
 }
 //initializing pickup radius:
 void Item::initRadius() {
@@ -37,7 +36,7 @@ void Item::initRadius() {
 	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
-	pickUpRadiusBody->setCollisionBitmask(3);
+	pickUpRadiusBody->setCollisionBitmask(66);
 	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
 	pickUpRadiusBody->setTag(10000);
 	pickUpRadiusBody->setName("item_radius");
@@ -47,28 +46,45 @@ void Item::initRadius() {
 }
 
 //used when player picks up item
-void Item::initHeldItem() {
+void Item::initPickedUpItem() {
 	state = HELD;
+	initHeldItem();
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
-	getPhysicsBody()->setEnabled(false);
-	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setDynamic(false);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
 	getPhysicsBody()->setCollisionBitmask(42);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
-	setPosition(Vec2(50, 32));
-	setRotation(-45.0f);
 	if (flippedX == true) {
 		flipX();
 	}
-	setAnchorPoint(Vec2(0, 0));
+	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
 }
+
+void Item::initHeldItem() {
+	didHitWall = false;
+	setAnchorPoint(Vec2(0, 0));
+	setPosition(Vec2(54, 33));
+	setRotation(-45.0f);
+	getPhysicsBody()->setRotationOffset(0);
+	getPhysicsBody()->setEnabled(false);
+}
+
+void Item::initCrouchHeldItem() {
+	didHitWall = false;
+	setAnchorPoint(Vec2(0, 0));
+	setPosition(Vec2(45, 16));
+	setRotation(20.0f);
+	getPhysicsBody()->setRotationOffset(0);
+	getPhysicsBody()->setEnabled(false);
+}
+
 //used when player drops item
 void Item::initDroppedItem(Vec2 pos, bool flip) {
 	initGroundItem();
-	setPosition(pos);
+	setPosition(pos + Vec2(0,10));
 	//setRotation(-20);
 	if (flip == true) {
 		flipX();
@@ -76,18 +92,119 @@ void Item::initDroppedItem(Vec2 pos, bool flip) {
 		setRotation(-getRotation());
 	}
 }
-//used when thrown item becomes ground item
-void Item::initGroundItem() {
-	state = GROUND;
+
+Vec2 Item::angleToDirection(float angle) {
+	Vec2 direction;
+	if (angle == 270) { direction = Vec2(0, 1); }
+	else if (angle == 315) { direction = Vec2(1, 1); }
+	else if (angle == 0) { direction = Vec2(1, 0); }
+	else if (angle == 45) { direction = Vec2(1, -1); }
+	else if (angle == 90) { direction = Vec2(0, -1); }
+	return direction;
+}
+
+void Item::prepareThrow(float angle) {
+	setAnchorPoint(Vec2(0, 0.5));
+	setPosition(Vec2(24, 70));
+	setRotation(angle);
+}
+
+void Item::prepareCrouchThrow(float angle) {
+	setAnchorPoint(Vec2(0, 0.5));
+	setPosition(Vec2(24, 32));
+	setRotation(angle);
+}
+
+void Item::spin() {
+	if (flippedX == false) {
+		setRotation(getRotation() + 30);
+	}
+	else {
+		setRotation(getRotation() - 30);
+	}
+}
+
+void Item::throwItem(float angle, Vec2 pos, bool flip) {
+	initThrownItem();
+	getPhysicsBody()->setLinearDamping(1.0f);
+	setAnchorPoint(Vec2(0, 0));
+	Vec2 direction = angleToDirection(angle);
+	setPosition(pos);
+	setRotation(angle);
+	if (flip == true) {
+		flipX();
+		setRotation(-getRotation());
+	}
+	if (flip == true) {
+		if (direction == Vec2(1, -1)) {
+			moveNoLimit(Vec2(0, -800));
+		}
+		else if (direction == Vec2(1, 1)) {
+			moveNoLimit(Vec2(0, 800));
+		}
+		else if (direction == Vec2(0, 1)) {
+			moveNoLimit(Vec2(-800, 0));
+		}
+		else if (direction == Vec2(0, -1)) {
+			moveNoLimit(Vec2(-800, 0));
+		}
+		else {
+			moveNoLimit(Vec2(800, 0));
+		}
+	}
+	else {
+		moveNoLimit(Vec2(800, 0));
+	}
+}
+
+void Item::initThrownItem() {
+	state = THROWN;
+	didHitWall = false;
+	enemyItem = false;
 	outline->setVisible(true);
-	getPhysicsBody()->setCategoryBitmask(32);
-	getPhysicsBody()->setCollisionBitmask(8);
+	outline->setColor(ccc3(210, 0, 255));//purple
+	pickUpRadius->getPhysicsBody()->setEnabled(false);
+	getPhysicsBody()->setCategoryBitmask(8);
+	getPhysicsBody()->setCollisionBitmask(42);
+	setName("held_item");
+	getPhysicsBody()->setName("held_item");
+	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setGravityEnable(false);
+}
+
+void Item::initFallItem() {
+	state = FALLING;
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setLinearDamping(0.0f);
+	pickUpRadius->getPhysicsBody()->setEnabled(true);
+	outline->setVisible(false);
+}
+
+void Item::initGroundItem() {
+	state = GROUND;
+	didHitWall = false;
+	enemyItem = false;
+	outline->setVisible(true);
+	getPhysicsBody()->setCategoryBitmask(32);
+	getPhysicsBody()->setCollisionBitmask(40);
+	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setGravityEnable(true);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setLinearDamping(0.0f);
+	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	setName("item");
 	getPhysicsBody()->setName("item");
-	pickUpRadius->getPhysicsBody()->setEnabled(true);
+}
+
+bool Item::checkBroken() {
+	if (hp <= 0) {
+		breakItem();
+		return true;
+	}
+	return false;
 }
 
 void Item::breakItem() {
@@ -101,7 +218,11 @@ void Item::used() {
 
 void Item::hitWall() {
 	didHitWall = true;
-	getPhysicsBody()->setEnabled(false);
+	if (state == THROWN) {
+		didHitWall = false;
+		move(Vec2(-150, 0));
+	}
+	//getPhysicsBody()->setEnabled(false);
 }
 
 void Item::playerInRange(Node* player) {
@@ -125,41 +246,89 @@ void Item::hasMoved() {
 }
 
 void Item::checkSpeed() {
-	float speedSq = getPhysicsBody()->getVelocity().getLengthSq();//squared speed
-		if (speedSq < 50 * 50) {//check if speed has gone below threshold
-			initGroundItem();
+	float speedX = abs(getPhysicsBody()->getVelocity().x);
+	float speedY = abs(getPhysicsBody()->getVelocity().y);
+	if (speedY > 200) {
+		if (state != THROWN) {
+			initThrownItem();
+		}
+	}
+	else if (speedX <= 450) {
+		if (state != FALLING) {
+			initFallItem();
+		}
 	}
 }
 
-void Item::beginStab() {
-	setPosition(Vec2(25, 45));
-	setRotation(0);
+void Item::checkFallSpeed() {
+	float speedY = abs(getPhysicsBody()->getVelocity().y);
+	if (speedY < 0.5) {
+		if (state != GROUND) {
+			initGroundItem();
+		}
+	}
+	else if (speedY > 200) {
+		if (state != THROWN) {
+			initThrownItem();
+		}
+	}
+}
+
+void Item::prepareStab(float angle) {
+	setPosition(Vec2(30, 56));
+	setRotation(0 + angle);
+	setAnchorPoint(Vec2(0, 0.5));
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
 	//runAction(prepare);
 }
 
-void Item::beginSwing() {
-	setRotation(-135);
-	setPosition(Vec2(40, 80));
-	setAnchorPoint(Vec2(-0.9, 0.5));
+void Item::prepareSwing(float angle) {
+	setRotation(-135 + angle);
+	setPosition(Vec2(35, 70));
+	setAnchorPoint(Vec2(-0.95, 0.5));
 	//auto prepare = MoveBy::create(10 FRAMES, Vec2(-16, 20));
 	//auto rotate = RotateBy::create(10 FRAMES, -90);
 	//runAction(Spawn::create(prepare,rotate));
 }
 
-void Item::stabSequence() {
-	auto move = MoveBy::create(attackTime * 0.125, Vec2(25, 6));
-	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));
-	auto moveback = MoveBy::create(attackTime * 0.125, Vec2(-25, -6));
+void Item::prepareCrouchStab(float angle) {
+	setPosition(Vec2(30, 26));
+	setRotation(0 + angle);
+	setAnchorPoint(Vec2(0, 0.5));
+}
+
+void Item::prepareCrouchSwing(float angle) {
+	setRotation(-135 + angle);
+	setPosition(Vec2(35, 40));
+	setAnchorPoint(Vec2(-0.95, 0.5));
+}
+
+void Item::stabSequence(float angle, bool flip) {
+	Vec2 direction = angleToDirection(angle);
+	if (direction == Vec2(1, -1) || direction == Vec2(1, 1)) {
+		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+	}
+
+	auto move = MoveBy::create(attackTime * 0.125, direction * 25);//stab forward
+	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));//wait
+	auto moveback = MoveBy::create(attackTime * 0.125, -direction * 25);//pull back
 	auto sequence = Sequence::create(move, hold, moveback, NULL);
 	runAction(sequence);
 }
 
-void Item::swingSequence() {
-	auto move = MoveBy::create(6 FRAMES, Vec2(10, -28));
-	auto rotate = RotateBy::create(6 FRAMES, 120);
+void Item::swingSequence(float angle, bool flip) {
+	Vec2 direction = angleToDirection(angle);
+	if (direction == Vec2(1, -1) || direction == Vec2(1, 1)) {
+		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+	}
 
-	auto hold = MoveBy::create(8 FRAMES, Vec2(0, 0));
+	Vec2 movement = Vec2(6, -26);
+	movement = movement.rotate(direction);
+
+	auto move = MoveBy::create(attackTime * 0.3, movement);
+	auto rotate = RotateBy::create(attackTime * 0.3, 120);
+
+	auto hold = MoveBy::create(attackTime * 0.4, Vec2(0, 0));
 
 	//auto moveback = MoveBy::create(6 FRAMES, Vec2(-10, 5));
 	//auto rotateback = RotateBy::create(6 FRAMES, -135);
@@ -169,56 +338,119 @@ void Item::swingSequence() {
 	runAction(sequence);
 }
 
+void Item::fallAttack() {
+	getPhysicsBody()->setEnabled(true);
+	if (attackType == STAB) {
+		setPosition(Vec2(50, 20));
+		setRotation(90);
+		setAnchorPoint(Vec2(0, 0.5));
+	}
+	else if (attackType == SWING) {
+		setPosition(Vec2(60, 20));
+		setRotation(10);
+		setAnchorPoint(Vec2(0, 0.5));
+	}
+}
+
+//Fist Class:
+Fist::Fist(){
+	Item::Item();
+	priority = -1;
+	hp = 1;
+	dmg = 25;
+	knockback = Vec2(20, 0);
+	hitstun = 8 FRAMES;
+	doorDmg = 7;
+	canBreakDoor = true;
+	effect = NONE;
+	attackType = STAB;
+	startTime = 6 FRAMES;
+	attackTime = 12 FRAMES;
+	lagTime = 14 FRAMES;
+	range = 26;
+	rangeRadius = 90;
+	powerLevel = 0;
+}
+void Fist::initObject(Vec2 startPos){
+	GameObject::initObject(startPos);
+	retain();
+	initHeldItem();
+	setVisible(false);
+}
+void Fist::initHeldItem() {
+	state = HELD;
+	getPhysicsBody()->setEnabled(false);
+	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setGravityEnable(false);
+	getPhysicsBody()->setCategoryBitmask(8);
+	getPhysicsBody()->setCollisionBitmask(42);
+	setName("held_item");
+	getPhysicsBody()->setName("held_item");
+	setPosition(Vec2(50, 32));
+	setRotation(-45.0f);
+	if (flippedX == true) {
+		flipX();
+	}
+	setAnchorPoint(Vec2(0, 0));
+}
+
 //Knife Class:
-Knife::Knife()
-{
+Knife::Knife(){
 	outlineName = "items/knife_outline.png";
 	Item::Item();
-	hp = 1;
-	dmg = 100;
+	priority = 1;
+	hp = 2;
+	dmg = 50;
+	hitstun = 10 FRAMES;
+	doorDmg = 7;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
-	startTime = 6 FRAMES;
+	startTime = 10 FRAMES;
 	attackTime = 8 FRAMES;
-	lagTime = 10 FRAMES;
-	range = 33;
-}
-Knife::~Knife(){
+	lagTime = 12 FRAMES;
+	range = 36;
+	rangeRadius = 100;
+	powerLevel = 5;
 }
 
 //Key Class:
-Key::Key()
-{
+Key::Key(){
 	outlineName = "items/key_outline.png";
 	Item::Item();
 	isKey = true;
+	priority = 0;
 	hp = 4;
 	dmg = 25;
+	hitstun = 4 FRAMES;
+	doorDmg = 6;
 	effect = NONE;
 	attackType = STAB;
 	startTime = 3 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 4 FRAMES;
-	range = 23;
-}
-Key::~Key() {
+	range = 28;
+	rangeRadius = 90;
+	powerLevel = 0;
 }
 
 //Hammer Class:
-Hammer::Hammer()
-{
+Hammer::Hammer(){
 	outlineName = "items/hammer_outline.png";
 	Item::Item();
-	hp = 2;
-	dmg = 50;
+	priority = 3;
+	hp = 3;
+	dmg = 34;
+	knockback = Vec2(80, 0);
+	hitstun = 24 FRAMES;
+	doorDmg = 34;
 	canBreakDoor = true;
 	effect = KNOCKOUT;
 	attackType = SWING;
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;
-	lagTime = 18 FRAMES;
-	range = 52;
-}
-Hammer::~Hammer() {
+	lagTime = 20 FRAMES;
+	range = 47;
+	rangeRadius = 130;
+	powerLevel = 10;
 }

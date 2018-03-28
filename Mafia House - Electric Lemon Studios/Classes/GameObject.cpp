@@ -72,7 +72,7 @@ void GameObject::initAutoBody() {
 	mainBody->setRotationEnable(rotate);
 	mainBody->setContactTestBitmask(0xFFFFFFFF);
 
-	mainBody->setVelocityLimit(maxSpeed);//max object speed
+	//mainBody->setVelocityLimit(maxSpeed);//max object speed
 	mainBody->retain();
 
 	setPhysicsBody(mainBody);
@@ -93,7 +93,7 @@ void GameObject::initBoxBody(Size size) {
 	mainBody->setRotationEnable(rotate);
 	mainBody->setContactTestBitmask(0xFFFFFFFF);
 
-	mainBody->setVelocityLimit(maxSpeed);//max object speed
+	//mainBody->setVelocityLimit(maxSpeed);//max object speed
 	mainBody->retain();
 
 	setPhysicsBody(mainBody);
@@ -133,15 +133,15 @@ void GameObject::setRoomPosition(Vec2 roomPos, Vec2 position) {
 
 void GameObject::updateFloor(vector<FloorData> floors) {
 	for (int i = 0; i < floors.size(); i++) {
-		if ((getPosition().y > floors[i].bot - 10) && (getPosition().y + getContentSize().height < floors[i].top + 10)) {//player in on the floor, inbetween top and bottom
+		if ((getPositionY() > floors[i].bot - 10) && (getPositionY() + getContentSize().height < floors[i].top + 10)) {//player in on the floor, inbetween top and bottom
 			currentFloor = i;
 			break;
 		}
 	}
 }
-void GameObject::updateRoom(vector<RoomData> rooms) {
+void GameObject::updateRoom(vector<RoomData*> rooms) {
 	for (int i = 0; i < rooms.size(); i++) {
-		if ((getPosition().x > rooms[i].left - 10) && (getPositionX() + getContentSize().width < rooms[i].right + 10)) {//player in on the floor, inbetween top and bottom
+		if ((getPositionX() > rooms[i]->left - 10) && (getPositionX() + getContentSize().width < rooms[i]->right + 10)) {//player in on the floor, inbetween top and bottom
 			currentRoom = i;
 			break;
 		}
@@ -154,8 +154,8 @@ void GameObject::stopX() {
 }
 
 void GameObject::stop() {
-	getPhysicsBody()->setVelocity(Vec2(0, 0));
 	getPhysicsBody()->resetForces();
+	getPhysicsBody()->setVelocity(Vec2(0, 0));
 }
 
 void GameObject::slowStop() {
@@ -164,7 +164,7 @@ void GameObject::slowStop() {
 	getPhysicsBody()->applyForce(-force);
 }
 
-void GameObject::move(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
+void GameObject::moveNoLimit(Vec2 velocity) {//doesn't check for object's speed limit
 	auto mass = getPhysicsBody()->getMass();
 
 	Vec2 force = mass * velocity;
@@ -176,7 +176,7 @@ void GameObject::move(Vec2 velocity) {//positive values will always move them fo
 	getPhysicsBody()->applyImpulse(force);
 }
 
-void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
+void GameObject::moveAbsoluteNoLimit(Vec2 velocity) {//doesn't check for object's speed limit
 	auto mass = getPhysicsBody()->getMass();
 
 	Vec2 force = mass * velocity;
@@ -184,8 +184,63 @@ void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move
 	getPhysicsBody()->applyImpulse(force);
 }
 
+void GameObject::move(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
+	auto mass = getPhysicsBody()->getMass();
+
+	Vec2 force = mass * velocity;
+
+	//reversing direction of movement if character is flipped
+	force.x = flippedX == true ? force.x * -1 : force.x;
+	force.y = flippedY == true ? force.y * -1 : force.y;
+
+	bool apply = true;
+	if (force.x > 0) {//if force applying is positive
+		if (getPhysicsBody()->getVelocity().x >= maxSpeed) {//if they have a positive velocity greater than their max speed
+			apply = false;
+		}
+	}
+	if (force.x < 0) {//if force applying is negative
+		if (getPhysicsBody()->getVelocity().x <= -maxSpeed) {//if they have a negative velocity less than their negative max speed
+			apply = false;
+		}
+	}
+
+	if (force.y > 0) {
+		if (getPhysicsBody()->getVelocity().y >= maxSpeedY) {
+			apply = false;
+		}
+	}
+
+	if (apply == true) {
+		getPhysicsBody()->applyImpulse(force);
+	}
+}
+
+void GameObject::moveAbsolute(Vec2 velocity) {//positive values will always move them forward/up relative to the direction they are facing
+	auto mass = getPhysicsBody()->getMass();
+
+	Vec2 force = mass * velocity;
+
+	bool apply = true;
+	if (force.x > 0) {//if force applying is positive
+		if (getPhysicsBody()->getVelocity().x >= maxSpeed) {//if they have a positive velocity greater than their max speed
+			apply = false;
+		}
+	}
+	if (force.x < 0) {//if force applying is negative
+		if (getPhysicsBody()->getVelocity().x <= -maxSpeed) {//if they have a negative velocity less than their negative max speed
+			apply = false;
+		}
+	}
+
+	if (apply == true) {
+		getPhysicsBody()->applyImpulse(force);
+	}
+}
+
 void GameObject::setSpeed(float speed) {
-	getPhysicsBody()->setVelocityLimit(maxSpeed * speed);//max object speed
+	//getPhysicsBody()->setVelocityLimit(maxSpeed * speed);//max object speed
+	maxSpeed = baseSpeed * speed;
 }
 
 void GameObject::flipX() {

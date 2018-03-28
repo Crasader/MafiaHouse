@@ -21,7 +21,7 @@ class Enemy : public Character
 {
 public:
 	Enemy();
-	~Enemy();
+	~Enemy() {}
 	CREATE_SPRITE_FUNC(Enemy, "guard.png");
 	CREATE_WITH_FRAME(Enemy);
 	CREATE_WITH_FRAME_NAME(Enemy, "enemy/thug/stand/001.png");
@@ -35,7 +35,6 @@ public:
 
 	void openDoor();
 	void closeDoor();
-	void breakDoor(float time);//alert enemies will break down locked doors
 
 	//actions for enemies:
 	void pause(float time);
@@ -43,13 +42,20 @@ public:
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
 
-	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos);
-	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time);//find path to location, return true = reached location
+	Stair* pathSearch(GameLayer* mainLayer, vector<Stair*> stairs, float xPos, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, bool hasKey));
+	bool pathTo(GameLayer* mainLayer, float positionX, int floorNum, int roomNum, float time, bool(*checkPathFunc)(GameLayer* mainlayer, int floorNum, int targetX, int searcherX, bool hasKey));//find path to location, return true = reached location
+	void moveFrom(float positionX);
 	void moveTo(float positionX);
 	bool moveToObject(Node* target);
 	bool moveToDoor(Node* target);
+	Vec2 furthestDirection();//finds the direciton in which the enemy can move furthest on current floor
+	void runaway(GameLayer* mainlayer, float time);
+	Item* findClosestItem(GameLayer* mainLayer);
+	Item* findBetterItem(GameLayer* mainLayer);
+	Item* findMoreRange(GameLayer* mainLayer);
 
-	void visionRays(vector<Vec2> *points, Vec2* start);//casts a bunch of rays; the enemies vision cone
+	void noticeItem(Item* item, float time);
+	void visionRays(vector<Vec2> *points, Vec2* start, float time);//casts a bunch of rays; the enemies vision cone
 
 	void changeSuspicion(float num);//increase/decrease suspicion
 	void setSuspicion(float num);//set it to a specific value instantly
@@ -57,23 +63,33 @@ public:
 	void playerTouch() { isTouched = true; }
 	void hitWall() { didHitWall = true; }
 
-	void gotHit(Item* item);//function for when enemy is hit by player's attack
+	void gotHit(Item* item, float time);//function for when enemy is hit by player's attack
 	bool isReallyDead() { return isDead; }
+	bool checkKey() { return hasKey; }
 
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
 	string getPathTag() { return pathTag; }
 	void setPathTag(string pathtag) { pathTag = pathtag; }
+	bool isKnockedOut() { return knockedOut; }
 	
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
-	int detectedTag = -1;
 	Node* lastSeenLocation;
+
+	Item* fallenItem = NULL;//an item that has fallen on top of the enemy
+	Item* itemBumpedBy = NULL;//an item that has hit the enemy, but not hard enough to kill them
+	Vec2 directionHitFrom;
+
+	bool runningAway = false;
 
 	//for going to noises
 	GameObject* noiseLocation = NULL;
 	//for seeing bodies/ knocked out dudes
 	GameObject* bodySeen = NULL;
+
+	//list of enemies
+	vector<Enemy*> enemies;
 
 	vector<PathNode*> pathNodes;
 
@@ -109,9 +125,10 @@ protected:
 	};
 	class AttackState : public State {
 	public:
+		AttackState() { type = "attack"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
-		void exit(Enemy* enemy, GameLayer* mainLayer);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class UseDoorState : public State {
 	public:
@@ -140,12 +157,14 @@ protected:
 	};
 	class KnockOutState : public State {
 	public:
+		KnockOutState() { type = "knockout"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
 	class DeathState : public State {
 	public:
+		DeathState() { type = "death"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
@@ -153,6 +172,21 @@ protected:
 	State* state = new DefaultState;
 	State* newState = NULL;
 	State* prevState = NULL;
+	State* toEnter = NULL;
+
+	//animations:
+	GameAnimation knockout;
+	GameAnimation knockoutDeath;
+	//GameAnimation sleeping;
+
+	//for creating dead body:
+	string deadBodyName;
+
+	//for suspicion indicators
+	Sprite* qMark;
+	Sprite* exMark;
+	Sprite* ZZZ;
+	GameAnimation ZZZAnimation;
 
 	//for pathfinding:
 	vector<Stair*> prevSearched;
@@ -161,21 +195,33 @@ protected:
 	int depth = -1;
 	bool firstEndFound = false;
 
-	//for attacking without a weapon
-	Fist* fist;
+	//for running away
+	bool canRunAway = true;
+	Stair* prevUsedStair = NULL;
+	Stair* prevUsedStair2 = NULL;
+	Stair* stairToTake = NULL;
+	Vec2 furthestMoveDirection = Vec2(0,0);
+	float furthestDistance = 0;
 
-	//animations:
-	GameAnimation knockout;
-	//GameAnimation sleeping;
+	//for going to items while alerted:
+	bool goingToFirstItem = false;
+	bool goingToBetterItem = false;
+	bool goingToMoreRange = false;
 
-	//for suspicion indicators
-	Sprite* qMark;
-	Sprite* exMark;
-	Sprite* ZZZ;
-	GameAnimation ZZZAnimation;
+	//for seeing items:
+	vector<Item*> seenItems;
+	vector<float> seenTimes;
+	float previousForgetTime = -1;
+	float memoryTime = 45.0f;//number of seconds they remember seeing an item for
+
+	//for locking/unlocking doors
+	bool hasKey = false;
 
 	//for attacking the player
 	float distanceToPlayer;
+	bool inAttackRange = false;
+	//for attacking without a weapon
+	Fist* fist;
 
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
@@ -183,6 +229,7 @@ protected:
 	//for being hit:
 	float invicibilityTime = 0.5f;
 	float hitTime = -1;
+	bool invincible = false;
 
 	//for being knocked out
 	//int knockOutHP = 2;
@@ -190,7 +237,7 @@ protected:
 	bool knockedOut = false;
 	bool visionEnabled = true;
 	float startKockOutTime = -1.0f;
-	float baseKnockOutTime = 6.0f;
+	float baseKnockOutTime = 1.0f;
 	float minKnockOuttime = 8.0f;
 	float knockOutTime;
 
@@ -203,7 +250,7 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
-	int defaultDegrees = 65;
+	int defaultDegrees = 70;
 	int visionDegrees = defaultDegrees;//width of angle of vision
 	int defaultRadius = 150;
 	int visionRadius = defaultRadius;//how far vision reaches
@@ -222,7 +269,8 @@ protected:
 	float previousTurnTime = -1;
 	float stopTime = -1;
 	//for turning on spot
-	float turnTime = 5.0f;
+	float defaultTurnTime = 5.0f;
+	float turnTime = defaultTurnTime;
 
 	//for pausing temporaroly
 	bool paused = false;
@@ -244,8 +292,7 @@ protected:
 	//for breakin doors:
 	float startBreakTime = -1;
 	float breakTime = 6.0f;//time in seconds it takes for an enemy to break down a door
-	//for locking/unlocking doors
-	bool hasKey = true;
+	float distanceToDoor;
 
 	//for using doors:
 	bool openedDoor = false;

@@ -55,7 +55,10 @@ protected:
 
 	Director* director = Director::getInstance();
 
-	GameLayer* hudLayer;//the layer for the HUD/UI, doesn't move with camera
+	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera
+	Sprite* healthBar;
+	Sprite* healthFill;
+	Sprite* playerHead;
 
 	GameLayer* mainLayer;//a node which everything in the scene is attached to
 
@@ -71,21 +74,28 @@ protected:
 
 	vector<HideObject*> hideObjects;//the hide objects in the level
 
+	vector<PhysObject*> physObjects;//the physical objects in the level
+
 	vector<Room*> rooms;//the rooms the level is made up of
 
 	vector<Door*> doors;
 
 	Node* camPos;//an invisible node used to position the camera
 	Camera* camera = NULL;
-	Vec2 camBoundingBox = Vec2(200, 0);
+	Vec2 camBoundingBox = Vec2(200, 50);
 	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
 	float camZoom = 1.0f;
+
+	//for doulbe tap inputs:
+	float prevLeftPressTime = -1;
+	float prevRightPressTime = -1;
+	float doublePressTime = 12 FRAMES;//amount of time for a doulbe press to register
 
 	bool onContactBegin(PhysicsContact &contact);
 
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
 
 	//level generation functions; rooms, doors, stairs, objects, items, & enemies are the input parameters
-	void createFloor(Vec2 position, vector<RoomData> *roomData, int height);
+	void createFloor(Vec2 position, vector<RoomData*> *roomData, int height);
 	void createLevel(Vec2 position, float levelWidth);
 };

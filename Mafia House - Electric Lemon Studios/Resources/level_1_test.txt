@@ -1,0 +1,30 @@
+# this is an example level file
+# '#' defines a comment line
+# the format is as follows:
+#
+# FLOOR_HEIGHT - height of the floor is given as an integer value
+# ROOM1_WIDTH | ROOM_OBJECT1_TYPE, DATA_PIECE1 , ..., OBJECT_ROOM_COORDINATES | ROOM_OBJECT2_TYPE, ...etc - each object in a room is deliniated by the '|' symbol
+# ROOM2... - each line is a new room on the floor
+# ROOM3...
+# FLOOR_END - to indicate the end of a floor's data; this MUST BE at the END of EVERY FLOOR! (or it will crash the game)
+#
+# each object in a room is given as pieces of data separated by a ','
+# all coordinates are relative to the room's position; (0,0) is the bottom left corner of the room the object is in
+# doors/vents: door/vent, wall_door_is_on(right, left, top ,bot), position_of_door_on_wall(a single integer value, higher = to the right / to the top of wall)
+# stairs: stair, pair_number(an integer that indicates which other stairway it is linked to), type(A or B, each pair of stairs must have one A and one B), x_coordinate, y_coordinate
+# items/objects/enemies: item/object/enemy, type(what subclass it is), x_coordinate, y_coordinate
+# player: player, x_coordinate, y_coordinate
+#
+175
+700|bg,Hallway.png|door,right|vent,top,300|phys_object,table,250,20|player,100,0|hide_object,plant,100,0|item,hammer,100,50|enemy,guard,400,0
+600|bg,Kitchen.png|door,left|stair,1,A,550,0|enemy,guard,500,0,LEFT,knife|phys_object,table,300,0|item,knife,325,50|node,200,3,3.0,A
+FLOOR_END
+200
+500|bg,LivingRoom.png|door,right|vent,bot,300|phys_object,vent_cover,285,-2|stair,2,A,25,0|enemy,guard,400,0,LEFT|phys_object,table,150,0
+400|bg,Bathroom.png|door,right,locked|door,left|item,knife,100,0|enemy,guard,300,0,STAND_RIGHT|node,100,2,1.0,A|item,hammer,150,0
+400|bg,guestRoom.png|door,left|stair,1,B,300,0|hide_object,plant,100,0|item,key,100,0
+FLOOR_END
+200
+600|bg,MasterBedroom.png|door,right,locked|item,hammer,100,0|enemy,guard,100,0,STAND_LEFT,hammer|enemy,guard,300,0,A,key
+700|bg,UpperHallway.png|door,left|item,knife,650,0|hide_object,plant,500,0|stair,2,B,650,0|node,500,1,0.5,A
+FLOOR_END

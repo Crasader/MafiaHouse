@@ -54,11 +54,13 @@ public:
 
 	void updateColour();
 
-	void itemHit(Item* item);
+	virtual void itemHit(Item* item);
 
 	void breakDoor();
+	void updateBroken();
 
 	bool checkLock() { return locked; }
+	bool checkBroken() { return broken; }
 
 	bool use();
 
@@ -76,7 +78,13 @@ public:
 
 	bool defaultLocked = false;//whether enemies should lock the door or not, also if it starts locked
 
-	float hp = 100;//for items to deal dmg to doors, to break them open if locked
+	const float maxHP = 100;
+	float hp = maxHP;//for items to deal dmg to doors, to break them open if locked
+
+	Vec2 leftRoomCoords = Vec2(-1, -1);
+	Vec2 rightRoomCoords = Vec2(-1, -1);
+	RoomData* leftRoom = NULL;
+	RoomData* rightRoom = NULL;
 
 protected:
 	bool broken = false;
@@ -96,4 +104,9 @@ public:
 	CREATE_WITH_FRAME_NAME(Vent, "objects/vent/001.png");
 
 	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
+
+	void itemHit(Item* item);
+
+private:
+	Node* enemyWalkBody;
 };
