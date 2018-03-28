@@ -70,7 +70,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -108,15 +108,16 @@ void Level::update(float deltaTime){
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
 			mainLayer->items[i]->hasMoved();
 			mainLayer->items[i]->playerInRange(player);
+			mainLayer->items[i]->checkGroundSpeed();
 		}
 		else if (mainLayer->items[i]->getState() == Item::THROWN) {
-			mainLayer->items[i]->checkSpeed();
+			mainLayer->items[i]->checkThrownSpeed();
 			if (mainLayer->items[i]->getAttackType() == Item::SWING) {
 				mainLayer->items[i]->spin();
 			}
 		}
 		else if (mainLayer->items[i]->getState() == Item::FALLING) {
-			mainLayer->items[i]->checkFallSpeed();
+			mainLayer->items[i]->checkFallingSpeed();
 		}
 		if (mainLayer->items[i]->getState() != Item::HELD) {
 			if (mainLayer->items[i]->checkBroken() == true) {
@@ -129,9 +130,10 @@ void Level::update(float deltaTime){
 	for (int i = 0; i < mainLayer->bodies.size(); i++) {
 		if (mainLayer->bodies[i]->getState() == Item::GROUND) {
 			mainLayer->bodies[i]->playerInRange(player);
+			mainLayer->bodies[i]->checkGroundSpeed();
 		}
-		if (mainLayer->bodies[i]->getState() != Item::HELD) {
-			mainLayer->bodies[i]->checkSpeed();
+		if (mainLayer->bodies[i]->getState() == Item::THROWN) {
+			mainLayer->bodies[i]->checkThrownSpeed();
 		}
 	}
 
@@ -369,21 +371,83 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			return false;
 		}
 
-		// check if item has collided with a wall
-		if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "floor" || b->getName() == "ceiling"))
+		// check if item has collided with celing
+		if (a->getName() == "held_item" && b->getName() == "ceiling")
 		{
-			static_cast<Item*>(a)->hitWall();
-			if (static_cast<Item*>(a)->getState() == Item::THROWN) {
-				//solve.setRestitution(0.5f);
+			if (static_cast<Item*>(a)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
+				//solve.setFriction(0);
+				solve.setRestitution(0.45);
+				return true;
 			}
-			return true;
+			else {
+				static_cast<Item*>(a)->hitWall();
+				return true;
+			}
 		}
-		else if ((a->getName() == "wall" || a->getName() == "floor" || a->getName() == "ceiling") && b->getName() == "held_item") {
-			static_cast<Item*>(b)->hitWall();
-			if (static_cast<Item*>(b)->getState() == Item::THROWN) {
-				//solve.setRestitution(0.5f);
+		else if (a->getName() == "ceiling" && b->getName() == "held_item") {
+
+			if (static_cast<Item*>(b)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
+				//solve.setFriction(0);
+				solve.setRestitution(0.45);
+				return true;
 			}
-			return true;
+			else {
+				static_cast<Item*>(b)->hitWall();
+				return true;
+			}
+		}
+		// check if item has collided with floor
+		if (a->getName() == "held_item" && b->getName() == "floor")
+		{
+			if (static_cast<Item*>(a)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
+				static_cast<Item*>(a)->stopY();
+				//static_cast<Item*>(a)->moveNoLimit(Vec2(-200, 0));
+				solve.setFriction(0.2f);
+				solve.setRestitution(0);
+				return true;
+			}
+			else {
+				static_cast<Item*>(a)->hitWall();
+				return true;
+			}
+		}
+		else if (a->getName() == "floor" && b->getName() == "held_item") {
+			
+			if (static_cast<Item*>(b)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
+				static_cast<Item*>(b)->stopY();
+				//static_cast<Item*>(b)->moveNoLimit(Vec2(-200,0));
+				solve.setFriction(0.2f);
+				solve.setRestitution(0);
+				return true;
+			}
+			else {
+				static_cast<Item*>(b)->hitWall();
+				return true;
+			}
+		}
+		// check if item has collided with wall
+		if (a->getName() == "held_item" && b->getName() == "wall")
+		{
+			if (static_cast<Item*>(a)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
+				//solve.setSurfaceVelocity(Vec2(-100, 0));
+				//static_cast<Item*>(a)->move(Vec2(-150, 0));
+				return true;
+			}
+			else {
+				static_cast<Item*>(a)->hitWall();
+				return true;
+			}
+		}
+		else if (a->getName() == "wall" && b->getName() == "held_item") {
+			if (static_cast<Item*>(b)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
+				//solve.setSurfaceVelocity(Vec2(-100, 0));
+				//static_cast<Item*>(b)->move(Vec2(-150, 0));
+				return true;
+			}
+			else {
+				static_cast<Item*>(b)->hitWall();
+				return true;
+			}
 		}
 
 		// check if player has collided with a wall
@@ -527,6 +591,9 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "held_item")
 		{
 			if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {
+				if (static_cast<Item*>(b)->getState() != Item::HELD) {
+					return true;
+				}
 				return false;
 			}
 			else {//so player doesn't get hit by their own weapon
@@ -535,6 +602,9 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "held_item" && b->getName() == "player") {
 			if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {
+				if (static_cast<Item*>(b)->getState() != Item::HELD) {
+					return true;
+				}
 				return false;
 			}
 			else {//so player doesn't get hit by their own weapon
@@ -610,6 +680,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		{
 			return false;
 		}
+
+		//enemy and item
+		if (((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "item") || (a->getName() == "item" && (b->getName() == "enemy" || b->getName() == "enemy_alert")))
+		{
+			return false;
+		}
+
 
 		//player and hide object
 		if (a->getName() == "player" && b->getName() == "hide_object")
@@ -807,7 +884,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	if (a->getName() == "player" && b->getName() == "held_item")
 	{
 		if (static_cast<Item*>(b) != static_cast<Player*>(a)->heldItem) {//so player doesn't get hit by their own weapon
-			static_cast<Player*>(a)->itemHitBy = (static_cast<Item*>(b));
+			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
+				static_cast<Player*>(a)->itemHitBy = (static_cast<Item*>(b));
+			}
 			return true;
 		}
 		else {
@@ -816,7 +895,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	}
 	else if (a->getName() == "held_item" && b->getName() == "player") {
 		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
-			static_cast<Player*>(b)->itemHitBy = (static_cast<Item*>(a));
+			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
+				static_cast<Player*>(b)->itemHitBy = (static_cast<Item*>(a));
+			}
 			return true;
 		}
 		else {

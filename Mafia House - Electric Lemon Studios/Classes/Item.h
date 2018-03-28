@@ -69,8 +69,9 @@ public:
 
 	virtual void fallAttack();
 
-	virtual void checkSpeed();
-	void checkFallSpeed();
+	virtual void checkThrownSpeed();
+	virtual void checkFallingSpeed();
+	virtual void checkGroundSpeed();
 
 	virtual void playerInRange(Node* player);
 	void hasMoved();
@@ -95,6 +96,7 @@ public:
 
 protected:
 	State state = GROUND;
+	State prevState = GROUND;
 	Effect effect = KILL;
 	Node * pickUpRadius;
 	//attack/use action parameters:

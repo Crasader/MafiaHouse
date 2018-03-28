@@ -96,7 +96,7 @@ protected:
 	float aimAngle = 0;//-90 is up, +90 is down
 	//for throwing items
 	Item* thrownItem = NULL;
-	float thrownItemDelay = 30 FRAMES;//the time after you throw an item during which you cannot be hit by it
+	float thrownItemDelay = 10 FRAMES;//the time after you throw an item during which you cannot be hit by it
 
 	//for movement:
 	float moveSpeed = 1.0f;

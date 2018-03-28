@@ -98,22 +98,6 @@ void Player::resetCollisionChecks(float time) {
 	//bodyToPickUp = NULL;
 }
 
-void Player::wasHit(Item* item, float time) {
-	if (item->didHitWall == false) {
-		stopAllActions();
-		wasInHitStun = true;
-		hitStunStart = time;
-		hitStunTime = item->hitstun;
-		//item->used();//enemy items don't break
-		isHit = true;
-		hp -= item->dmg;//taking damage from attack
-		if (touchingWall == false) {
-			stop();
-			moveAbsoluteNoLimit(item->knockback);
-		}
-	}
-}
-
 void Player::walkPrepareAttack(Input input, float time) {
 	if (input == MOVE_LEFT) {
 		if (moveDirection == 0) {
@@ -600,6 +584,22 @@ void Player::hiding() {
 	stayWithin(hideObject);
 }
 
+void Player::wasHit(Item* item, float time) {
+	if (item->didHitWall == false) {
+		stopAllActions();
+		wasInHitStun = true;
+		hitStunStart = time;
+		hitStunTime = item->hitstun;
+		//item->used();//enemy items don't break
+		isHit = true;
+		hp -= item->dmg;//taking damage from attack
+		if (touchingWall == false) {
+			stop();
+			moveAbsoluteNoLimit(item->knockback);
+		}
+	}
+}
+
 //Update Checking:
 void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
@@ -999,6 +999,8 @@ void Player::ClimbState::exit(Player* player, GameLayer* mainLayer) {
 void Player::ThrowState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->aimAngle = 0;
 	player->stopAllActions();
+	player->attackStartTime = -1;
+	player->attackEndTime = -1;
 	player->attackPrepareTime = time;
 	if (player->heldBody == NULL) {
 		player->beginThrowItem(time);
@@ -1044,12 +1046,17 @@ Player::State* Player::ThrowState::update(Player* player, GameLayer* mainLayer, 
 			player->attackPrepareTime = -1.0f;
 		}
 	}
-	if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->thrownItem->getAttackTime()) {
-		player->attackEndTime = time;
-		player->attackStartTime = -1.0f;
+	if (player->thrownItem != NULL) {
+		if (player->attackStartTime != -1.0f && time - player->attackStartTime >= player->thrownItem->getAttackTime()) {
+			player->attackEndTime = time;
+			player->attackStartTime = -1.0f;
+		}
+		if (player->attackEndTime != -1.0f && time - player->attackEndTime >= player->thrownItem->getLagTime()) {
+			player->attackEndTime = -1.0f;
+			return player->prevState;
+		}
 	}
-	if (player->attackEndTime != -1.0f && time - player->attackEndTime >= player->thrownItem->getLagTime()) {
-		player->attackEndTime = -1.0f;
+	else if (player->attackStartTime != -1.0f || player->attackEndTime != -1.0f){
 		return player->prevState;
 	}
 
