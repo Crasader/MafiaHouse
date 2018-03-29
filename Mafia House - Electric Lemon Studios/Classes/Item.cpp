@@ -45,6 +45,21 @@ void Item::initRadius() {
 	addChild(pickUpRadius);
 }
 
+void Item::initMissingItem() {
+	missingItem = MissingItem::createWithSpriteFrameName(itemFile);
+	auto body = PhysicsBody::createBox(missingItem->getContentSize());
+	body->setDynamic(false);
+	body->setCollisionBitmask(0);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setEnabled(false);
+	missingItem->setPhysicsBody(body);
+	missingItem->setName("missing_item");
+	missingItem->setOpacity(155);
+	missingItem->setVisible(false);
+	missingItem->setPosition(getPosition());
+	missingItem->owner = this;
+}
+
 //used when player picks up item
 void Item::initPickedUpItem() {
 	prevState = state;
@@ -231,6 +246,9 @@ bool Item::checkBroken() {
 }
 
 void Item::breakItem() {
+	if (missingItem != NULL) {
+		missingItem->owner = NULL;
+	}
 	release();
 	getParent()->removeChild(this, true);
 }
@@ -269,10 +287,18 @@ void Item::hasMoved() {
 	if (abs((getPosition() - initialPos).getLengthSq()) > 50 * 50) {//if item is not within a 50 px radius of it's starting position
 		enemyCanUse = true;
 		outline->setColor(ccc3(255,100,100));//red
+		if (missingItem != NULL) {
+			missingItem->setVisible(true);
+			missingItem->getPhysicsBody()->setEnabled(true);
+		}
 	}
 	else {
 		enemyCanUse = false;
 		outline->setColor(ccc3(100,100,255));//blue
+		if (missingItem != NULL) {
+			missingItem->setVisible(false);
+			missingItem->getPhysicsBody()->setEnabled(false);
+		}
 	}
 }
 
@@ -439,6 +465,7 @@ void Fist::initHeldItem() {
 
 //Knife Class:
 Knife::Knife(){
+	itemFile = "items/knife.png";
 	outlineName = "items/knife_outline.png";
 	Item::Item();
 	priority = 1;
@@ -461,6 +488,7 @@ Knife::Knife(){
 
 //Key Class:
 Key::Key(){
+	itemFile = "items/key.png";
 	outlineName = "items/key_outline.png";
 	Item::Item();
 	isKey = true;
@@ -483,6 +511,7 @@ Key::Key(){
 
 //Hammer Class:
 Hammer::Hammer(){
+	itemFile = "items/hammer.png";
 	outlineName = "items/hammer_outline.png";
 	Item::Item();
 	priority = 3;

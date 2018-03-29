@@ -1,5 +1,11 @@
 #pragma once
 #include "GameObject.h"
+class MissingItem : public Sprite {
+public:
+	CREATE_WITH_FRAME(MissingItem);
+	CREATE_WITH_FRAME_NAME(MissingItem, "items/fist.png");
+	GameObject* owner = NULL;
+};
 class Item : public GameObject
 {
 public:
@@ -74,6 +80,8 @@ public:
 	virtual void checkFallingSpeed();
 	virtual void checkGroundSpeed();
 
+	void startHeld() { state = HELD; }
+
 	void rotatePickUpRadius(float degrees);
 
 	void stealRange(Node* player);
@@ -104,7 +112,12 @@ public:
 
 	bool holderFlipped = false;
 
+	void initMissingItem();
+
+	MissingItem* missingItem = NULL;
+
 protected:
+	string itemFile = "items/fist.png";
 	State state = GROUND;
 	State prevState = GROUND;
 	Effect effect = KILL;
@@ -134,7 +147,6 @@ class Knife : public Item
 public:
 	Knife();
 	~Knife() {}
-	CREATE_SPRITE_FUNC(Knife, "knife2.png");
 	CREATE_WITH_FRAME(Knife);
 	CREATE_WITH_FRAME_NAME(Knife, "items/knife.png");
 };

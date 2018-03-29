@@ -964,6 +964,24 @@ void Enemy::noticeItem(Item* item, float time) {
 	}
 }
 
+void Enemy::noticeMissingItem(MissingItem* item, float time) {
+	bool noticeItem = true;
+	if (seenMissingItems.size() > 0) {
+		for (int i = 0; i < seenMissingItems.size(); i++) {
+			if (item == seenMissingItems[i]) {//check if enemy has already seen this item before
+				noticeItem = false;
+				break;
+			}
+		}
+	}
+	if (noticeItem == true) {
+		qMark->setVisible(true);
+		changeSuspicion(maxSuspicion / 5);//seeing an item increases their suspicion by a fifth
+		seenMissingItems.push_back(item);
+		seenMissingTimes.push_back(time);
+	}
+}
+
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 	playerInVision = false;
 	didRun = false;
@@ -1043,6 +1061,10 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 					return false;
 				}
 				return true;//enemy cannot pick item up
+			}
+			else if (visionContactName == "missing_item" && getName() != "enemy_alert") {
+				noticeMissingItem(static_cast<MissingItem*>(visionContact), time);
+				return true;
 			}
 			//things to ingore collisions with
 			else {
@@ -1154,7 +1176,16 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 			}
 		}
 	}
-
+	//forgetting what missing items they have seen
+	if (seenMissingItems.size() > 0) {
+		for (int i = 0; i < seenMissingItems.size(); i++) {
+			if (time - seenMissingTimes[i] >= memoryTime) {
+				seenMissingTimes.erase(seenMissingTimes.begin() + i);
+				seenMissingItems.erase(seenMissingItems.begin() + i);
+				i--;
+			}
+		}
+	}
 	//forgetting what items they have seen
 	if (seenItems.size() > 0) {
 		for (int i = 0; i < seenItems.size(); i++) {
@@ -1437,7 +1468,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (20 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (18 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {

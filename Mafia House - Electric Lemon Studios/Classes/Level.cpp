@@ -104,13 +104,18 @@ void Level::onStart(float deltaTime){
 		}
 	}
 
-	//initializing player joints
-	//player->initJoints();
+	for (int i = 0; i < mainLayer->items.size(); i++) {
+		if (mainLayer->items[i]->getState() == Item::GROUND) {
+			mainLayer->items[i]->initMissingItem();
+			//mainLayer->items[i]->missingItem->setTag(mainLayer->items[i]->getTag());//giving missing item the same tag as the actual item
+			mainLayer->addChild(mainLayer->items[i]->missingItem);
+		}
+	}
 
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -1419,6 +1424,7 @@ bool Level::initLevel(string filename){
 					item->initObject();
 					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 					item->startRoom = Vec2(roomNum, floorNum);
+					item->startHeld();
 					mainLayer->items.push_back(item);
 					enemy->itemToPickUp = item;
 				}
