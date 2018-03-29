@@ -16,7 +16,7 @@ DeadBody::DeadBody()
 	effect = NONE;
 	dmg = 0;
 	knockback = Vec2(200, 0);
-	noiseLevel = 0.5f;
+	noiseLevel = 1.0f;
 	state = GROUND;
 }
 
@@ -180,7 +180,7 @@ void DeadBody::initGroundItem() {
 
 void DeadBody::checkThrownSpeed() {
 	float speed = getPhysicsBody()->getVelocity().getLength();
-	if (speed <= 10){
+	if (speed <= 20){
 		initGroundItem();
 	}
 }

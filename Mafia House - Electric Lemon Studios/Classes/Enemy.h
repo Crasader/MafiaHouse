@@ -22,13 +22,12 @@ class Enemy : public Character
 public:
 	Enemy();
 	~Enemy() {}
-	CREATE_SPRITE_FUNC(Enemy, "guard.png");
-	CREATE_WITH_FRAME(Enemy);
-	CREATE_WITH_FRAME_NAME(Enemy, "enemy/thug/stand/001.png");
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
 	void initJoints();//initilaizing joints for physics bodies
 	void flipX();
 	Vec2 getPosition();
+
+	bool checkBoss() { return isBoss; }
 
 	void pickUpItem(GameLayer* mainLayer);
 	void dropInventory(GameLayer* mainLayer);
@@ -180,6 +179,8 @@ protected:
 	State* prevState = new DefaultState;
 	State* toEnter = NULL;
 
+	bool isBoss = false;
+
 	//animations:
 	GameAnimation knockout;
 	GameAnimation knockoutDeath;
@@ -261,6 +262,7 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
+	float eyeHeight = 87;
 	int defaultDegrees = 60;
 	int visionDegrees = defaultDegrees;//width of angle of vision
 	int defaultRadius = 180;
@@ -326,4 +328,39 @@ protected:
 	//for chasing player
 	bool lostPlayer = false;
 	bool reachedLastSeen = false;
+};
+
+class Thug : public Enemy
+{
+public:
+	Thug();
+	~Thug() {}
+	CREATE_WITH_FRAME(Thug);
+	CREATE_WITH_FRAME_NAME(Thug, "enemy/thug/stand/001.png");
+};
+
+class Guard : public Enemy
+{
+public:
+	Guard();
+	~Guard() {}
+	CREATE_WITH_FRAME(Guard);
+	CREATE_WITH_FRAME_NAME(Guard, "enemy/guard/stand/001.png");
+private:
+	class AlertState : public State {
+	public:
+		AlertState() { type = "alert"; }
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
+	};
+};
+
+class Boss : public Enemy
+{
+public:
+	Boss();
+	~Boss() {}
+	CREATE_WITH_FRAME(Boss);
+	CREATE_WITH_FRAME_NAME(Boss, "enemy/boss/stand/001.png");
 };

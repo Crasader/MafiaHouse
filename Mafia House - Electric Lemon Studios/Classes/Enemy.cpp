@@ -14,21 +14,9 @@ Enemy::Enemy()
 	dynamic = true;
 	category = 2;
 	collision = 47;
-	//other proeprties
-	baseSpeed = 50;
-	maxSpeed = baseSpeed;
-	deadBodyName = "enemy/thug/dead.png";
 	//for attacking without a weapon
 	fist = Fist::createWithSpriteFrameName();
 	fist->initObject();
-	//initializing animations:
-	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES, true);
-	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
-	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockdown/%03d.png", 4, 20 FRAMES, false);
-	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
-	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 20 FRAMES, false);
-	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
-	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES, false);
 	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES, true);
 }
 
@@ -133,7 +121,7 @@ void Enemy::dropInventory(GameLayer* mainLayer) {
 }
 
 void Enemy::pickUpItem(GameLayer* mainLayer) {
-	if (itemToPickUp != NULL && itemToPickUp->enemyItem != true) {
+	if (itemToPickUp != NULL && itemToPickUp->getState() == Item::GROUND && itemToPickUp->enemyItem != true) {
 		if (itemToPickUp->isKey == false) {//item is not a key
 			removeChild(heldItem, true);
 
@@ -1077,15 +1065,15 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 		int direction;
 
 		if (flippedX == false) {
-			startPoint = getPosition() + Vec2(bodySize.width - 15, 87);
-			*start = startPoint + Vec2(8, 0);//shift visuals forward a bit
-			offsetAdjust = Vec2(-8, 0);//shift end points back by same amount so visual range is accurate
+			startPoint = getPosition() + Vec2(bodySize.width - 16, eyeHeight);
+			*start = startPoint + Vec2(10, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(-10, 0);//shift end points back by same amount so visual range is accurate
 			direction = 1;
 		}
 		else {
-			startPoint = getPosition() + Vec2(15, 87);
-			*start = startPoint + Vec2(-8, 0);//shift visuals forward a bit
-			offsetAdjust = Vec2(8, 0);//shift end points back by same amount so visual range is accurate
+			startPoint = getPosition() + Vec2(16, eyeHeight);
+			*start = startPoint + Vec2(-10, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(10, 0);//shift end points back by same amount so visual range is accurate
 			direction = -1;
 		}
 
@@ -1468,7 +1456,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (18 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (15 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -1551,6 +1539,7 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.7;
 	if (enemy->prevState->type != "use_door" && enemy->prevState->type != "attack" && enemy->prevState->type != "get_item") {
+		mainLayer->numTimesDetected++;
 		enemy->createNoise(180, 2, time, enemy->getPosition() + Vec2(enemy->getSize().width / 2, enemy->getSize().height), Vec2(enemy->currentRoom, enemy->currentFloor), "enemy_shout", &mainLayer->noises);
 	}
 }
@@ -1614,7 +1603,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->reachedLastSeen = false;
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (40 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (35 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -2344,4 +2333,65 @@ void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	newBody->initObject(enemy->getPosition());
 	mainLayer->addChild(newBody);
 	mainLayer->bodies.push_back(newBody);
+}
+
+Thug::Thug() {
+	//proeprties
+	eyeHeight = 88;
+	defaultDegrees = 60;
+	visionDegrees = defaultDegrees;//width of angle of vision
+	defaultRadius = 180;
+	visionRadius = defaultRadius;//how far vision reaches
+	baseSpeed = 50;
+	maxSpeed = baseSpeed;
+	deadBodyName = "enemy/thug/dead.png";
+	//initializing animations:
+	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockdown/%03d.png", 4, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 20 FRAMES, false);
+	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES, false);
+}
+
+Guard::Guard() {
+	//proeprties
+	eyeHeight = 84;
+	defaultDegrees = 60;
+	visionDegrees = defaultDegrees;//width of angle of vision
+	defaultRadius = 190;
+	visionRadius = defaultRadius;//how far vision reaches
+	baseSpeed = 60;
+	maxSpeed = baseSpeed;
+	deadBodyName = "enemy/guard/dead.png";
+	//initializing animations:
+	stand = GameAnimation(STAND, "enemy/guard/stand/%03d.png", 1, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 7, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/guard/knockdown/%03d.png", 4, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/guard/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 4, 20 FRAMES, false);
+	stab = GameAnimation(STAB, "enemy/guard/stab/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/guard/swing/%03d.png", 2, 10 FRAMES, false);
+}
+
+Boss::Boss() {
+	//proeprties
+	isBoss = true;
+	eyeHeight = 80;
+	defaultDegrees = 60;
+	visionDegrees = defaultDegrees;//width of angle of vision
+	defaultRadius = 180;
+	visionRadius = defaultRadius;//how far vision reaches
+	baseSpeed = 40;
+	maxSpeed = baseSpeed;
+	deadBodyName = "enemy/boss/dead.png";
+	//initializing animations:
+	stand = GameAnimation(STAND, "enemy/boss/stand/%03d.png", 1, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/boss/walk/%03d.png", 7, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/boss/knockdown/%03d.png", 4, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/boss/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/boss/die/%03d.png", 4, 20 FRAMES, false);
+	stab = GameAnimation(STAB, "enemy/boss/stab/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/boss/swing/%03d.png", 2, 10 FRAMES, false);
 }

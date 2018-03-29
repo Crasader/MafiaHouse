@@ -52,6 +52,19 @@ public:
 	void onStart(float deltaTime);
 
 protected:
+	bool levelComplete = false;
+	int numBosses = 0;
+	int numEnemies = 0;
+	int numKilled = 0;
+	//mainLayer->numTimesDetected;
+
+	float completeTime;//get game Time on completion of level
+
+	Node* completionScreen;
+	Label* numKilledDisplay;
+	Label* numEnemiesLeftDisplay;
+	Label* completeTimeDisplay;
+
 	float gameTime = 0.0f;
 
 	Director* director = Director::getInstance();

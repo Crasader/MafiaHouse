@@ -21,4 +21,6 @@ public:
 	vector<Noise*> noises;
 
 	Stair* getPartnerStair(Stair* stair);//returns a stair's partner, the one it leads to
+
+	int numTimesDetected = 0;
 };

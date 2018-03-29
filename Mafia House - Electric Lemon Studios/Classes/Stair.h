@@ -70,6 +70,8 @@ public:
 
 	bool checkOpen() { return isOpen; }
 
+	void setExit() { isExit = true; }
+
 	float radius = 54.0f;//12px on each side of door
 
 	Size size = Size(20, 110);
@@ -95,6 +97,8 @@ protected:
 	bool locked = false;
 
 	bool isOpen = false;
+
+	bool isExit = false;
 };
 
 class Vent : public Door

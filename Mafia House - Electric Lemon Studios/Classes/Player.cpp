@@ -1346,6 +1346,26 @@ void Player::RollState::exit(Player* player, GameLayer* mainLayer) {
 //Hide State:
 void Player::HideState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->hideObject = player->objectToHideBehind;
+	if (player->isCrouched == false) {
+		player->isCrouched = true;
+		player->stopAllActions();
+		player->crouchBody->setVelocity(player->getPhysicsBody()->getVelocity());
+		player->stop();
+		player->setPhysicsBody(player->crouchBody);
+		player->bodySize = player->crouchSize;
+		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27.5));
+		player->pickUpRadius->setPosition(Vec2(35, 15));
+		if (player->heldItem != NULL) {
+			player->heldItem->initCrouchHeldItem();
+		}
+		if (player->heldBody != NULL) {
+			player->heldBody->initCrouchHeldBody();
+		}
+		//player->startAnimation(CROUCH, player->crouch);
+		player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
+		player->moveSpeed = 0.5f;
+		player->setSpeed(player->moveSpeed);
+	}
 	player->hide();
 }
 Player::State* Player::HideState::update(Player* player, GameLayer* mainLayer, float time) {
@@ -1410,7 +1430,7 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 			player->crouchWalk(input, time);
 		}
 	}
-	if (player->hittingLeft == false && player->hittingRight == false) {
+	/*if (player->hittingLeft == false && player->hittingRight == false) {
 		if (input == MOVE_UP) {
 			if (player->isCrouched == true) {
 				player->isCrouched = false;
@@ -1456,6 +1476,7 @@ Player::State* Player::HideState::handleInput(Player* player, GameLayer* mainLay
 			}
 		}
 	}
+	*/
 	return nullptr;
 }
 void Player::HideState::exit(Player* player, GameLayer* mainLayer) {

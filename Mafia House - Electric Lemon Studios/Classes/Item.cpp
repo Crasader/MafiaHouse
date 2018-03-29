@@ -250,7 +250,8 @@ void Item::breakItem() {
 		missingItem->owner = NULL;
 	}
 	release();
-	getParent()->removeChild(this, true);
+	//autorelease();
+	removeFromParent();
 }
 
 void Item::used() {
@@ -480,7 +481,7 @@ Knife::Knife(){
 	startTime = 10 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 12 FRAMES;
-	range = 36;
+	range = 34;
 	rangeRadius = 100;
 	powerLevel = 5;
 	noiseLevel = 0.45f;
@@ -503,7 +504,7 @@ Key::Key(){
 	startTime = 3 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 4 FRAMES;
-	range = 28;
+	range = 26;
 	rangeRadius = 90;
 	powerLevel = 0;
 	noiseLevel = 0.25f;
@@ -527,7 +528,7 @@ Hammer::Hammer(){
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;
 	lagTime = 20 FRAMES;
-	range = 47;
+	range = 45;
 	rangeRadius = 130;
 	powerLevel = 10;
 	noiseLevel = 0.65f;

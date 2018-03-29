@@ -132,6 +132,14 @@ void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
 
+	if (numBosses <= 0) {
+		//activate exits
+	}
+
+	if (levelComplete == true) {
+		//show level completion screen
+	}
+
 	//for drawing vision rays
 	if (noiseCircles) {
 		removeChild(noiseCircles, true);
@@ -218,6 +226,12 @@ void Level::update(float deltaTime){
 	}
 	//dead bodies update
 	for (int i = 0; i < mainLayer->bodies.size(); i++) {
+		mainLayer->bodies[i]->updateFloor(mainLayer->floors);
+		mainLayer->bodies[i]->updateRoom(mainLayer->floors[mainLayer->bodies[i]->currentFloor].rooms);
+		if (mainLayer->bodies[i]->makeNoise == true) {
+			mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() + Vec2(mainLayer->bodies[i]->getContentSize() / 2), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
+			mainLayer->bodies[i]->makeNoise = false;
+		}
 		if (mainLayer->bodies[i]->getState() == Item::GROUND) {
 			mainLayer->bodies[i]->playerInRange(player);
 			mainLayer->bodies[i]->checkGroundSpeed();
@@ -241,6 +255,12 @@ void Level::update(float deltaTime){
 		//remove dead enemies from scene, will be replaced with a dead body
 		//this will be done in Death State exit function
 		if (enemies.at(i)->isReallyDead() == true) {
+			if (enemies[i]->checkBoss() == true) {
+				numBosses--;//you killed a boss
+			}
+			else {
+				numKilled++;
+			}
 			enemies.at(i)->removeFromParentAndCleanup(true);
 			enemies.erase(enemies.begin() + i);
 			i--;
@@ -1293,6 +1313,9 @@ bool Level::initLevel(string filename){
 					if (pieces[2] == "locked") {
 						doorData.locked = true;
 					}
+					else if (pieces[2] == "EXIT") {
+
+					}
 				}
 				if (pieces.size() > 3) {//set door's position on wall
 					doorData.pos = atof(pieces[3].c_str());
@@ -1401,8 +1424,17 @@ bool Level::initLevel(string filename){
 			//Enemies
 			else if (pieces[0] == "enemy") {
 				Enemy* enemy;
-				if (pieces[1] == "guard") {
-					enemy = Enemy::createWithSpriteFrameName();//should be Guard subclass
+				if (pieces[1] == "thug") {
+					enemy = Thug::createWithSpriteFrameName();//should be Guard subclass
+					numEnemies++;
+				}
+				else if (pieces[1] == "guard") {
+					enemy = Guard::createWithSpriteFrameName();//should be Guard subclass
+					numEnemies++;
+				}
+				else if (pieces[1] == "boss") {
+					enemy = Boss::createWithSpriteFrameName();//should be Guard subclass
+					numBosses++;//add a boss to boss level counter
 				}
 				enemy->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				enemy->startRoom = Vec2(roomNum, floorNum);
