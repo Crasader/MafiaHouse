@@ -380,6 +380,11 @@ void Player::pickUpItem(GameLayer* mainLayer) {
 			heldItem->initCrouchHeldItem();
 		}
 	}
+	if (heldItem != NULL) {
+		if (heldItem->enemyItem == true) {
+			heldItem->enemyItem = false;//item was stolen from enemy
+		}
+	}
 }
 
 void Player::dropItem(GameLayer* mainLayer) {
@@ -597,6 +602,7 @@ void Player::wasHit(Item* item, float time) {
 		//item->used();//enemy items don't break
 		isHit = true;
 		hp -= item->dmg;//taking damage from attack
+		hp = hp < 0 ? 0 : hp;
 		if (touchingWall == false) {
 			stop();
 			moveAbsoluteNoLimit(item->knockback);

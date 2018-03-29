@@ -23,6 +23,7 @@ void Level::setup(){
 
 	healthBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
 	healthFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	healthFill->setColor(ccc3(255, 0, 0));//red
 	healthBar->setGlobalZOrder(20);
 	healthFill->setGlobalZOrder(20);
 	healthBar->setAnchorPoint(Vec2(0, 1));
@@ -34,6 +35,27 @@ void Level::setup(){
 	playerHead->setAnchorPoint(Vec2(0, 1));
 	playerHead->setPosition(Vec2(-50, 10));
 	hudLayer->addChild(playerHead);
+	itemBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
+	itemFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	itemFill->setColor(ccc3(0, 0, 255));//blue
+	itemBar->setGlobalZOrder(20);
+	itemBar->setScaleY(0.5);
+	itemBar->setScaleX(0.85);
+	itemFill->setGlobalZOrder(20);
+	itemFill->setScaleY(0.5);
+	itemFill->setScaleX(0.85);
+	itemBar->setAnchorPoint(Vec2(0, 1));
+	itemFill->setAnchorPoint(Vec2(0, 1));
+	itemBar->setPosition(Vec2(30, -20));
+	itemFill->setPosition(Vec2(30, -20));
+	hudLayer->addChild(itemBar);
+	hudLayer->addChild(itemFill);
+	itemIcon = Sprite::create();
+	itemIcon->setGlobalZOrder(20);
+	itemIcon->setAnchorPoint(Vec2(1, 1));
+	itemIcon->setPosition(Vec2(2, -18));
+	itemIcon->setRotation(-90);
+	hudLayer->addChild(itemIcon);
 
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
@@ -71,7 +93,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -152,6 +174,9 @@ void Level::update(float deltaTime){
 			mainLayer->items[i]->hasMoved();
 			mainLayer->items[i]->playerInRange(player);
 			mainLayer->items[i]->checkGroundSpeed();
+		}
+		else if (mainLayer->items[i]->getState() == Item::HELD) {
+			mainLayer->items[i]->stealRange(player);
 		}
 		else if (mainLayer->items[i]->getState() == Item::THROWN) {
 			mainLayer->items[i]->checkThrownSpeed();
@@ -351,6 +376,19 @@ void Level::update(float deltaTime){
 	hudLayer->setPositionZ(camera->getPositionZ() - 459.42983);
 	float percentage = player->getHP() / player->getMaxHP();
 	healthFill->setScaleX(percentage);
+	if (player->heldItem != NULL) {
+		itemIcon->setSpriteFrame(player->heldItem->getSpriteFrame());
+		itemBar->setVisible(true);
+		itemFill->setVisible(true);
+		itemIcon->setVisible(true);
+		float percentage = player->heldItem->hp / player->heldItem->maxHP;
+		itemFill->setScaleX(percentage / 2);
+	}
+	else {
+		itemBar->setVisible(false);
+		itemFill->setVisible(false);
+		itemIcon->setVisible(false);
+	}
 
 	//update the keyboard each frame
 	INPUTS->clearForNextFrame();
@@ -824,8 +862,8 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//enemy and item radius
 		if (a->getName() == "enemy" && b->getName() == "item_radius")
 		{
-			if (static_cast<Item*>(b->getParent())->enemyCanUse == true && static_cast<Item*>(b->getParent())->getPhysicsBody()->getVelocity().y < 0) {//item is moving downwards and has moved from original poaisiton
-				if (static_cast<Enemy*>(a)->fallenItem == NULL) {//if they don't already have an item to pick up
+			if (static_cast<Item*>(b->getParent())->enemyCanUse == true && static_cast<Item*>(b->getParent())->getPhysicsBody()->getVelocity().y < 0 && static_cast<Item*>(b->getParent())->enemyItem == false) {//item is moving downwards and has moved from original poaisiton
+				if (static_cast<Enemy*>(a)->fallenItem == NULL) {//if they don't already have an item that's hit them
 					static_cast<Enemy*>(a)->fallenItem = static_cast<Item*>(b->getParent());
 				}
 			}
@@ -833,8 +871,8 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "enemy")
 		{
-			if (static_cast<Item*>(a->getParent())->enemyCanUse == true && static_cast<Item*>(a->getParent())->getPhysicsBody()->getVelocity().y < 0) {//item is moving downwards and has moved from original poaisiton
-				if (static_cast<Enemy*>(b)->fallenItem == NULL) {//if they don't already have an item to pick up
+			if (static_cast<Item*>(a->getParent())->enemyCanUse == true && static_cast<Item*>(a->getParent())->getPhysicsBody()->getVelocity().y < 0 && static_cast<Item*>(a->getParent())->enemyItem == false) {//item is moving downwards and has moved from original poaisiton
+				if (static_cast<Enemy*>(b)->fallenItem == NULL) {//if they don't already have an item that's hit tiem
 					static_cast<Enemy*>(b)->fallenItem = static_cast<Item*>(a->getParent());
 				}
 			}
@@ -843,15 +881,19 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//alert enemy and item radius
 		if (a->getName() == "enemy_alert" && b->getName() == "item_radius")
 		{
-			if (static_cast<Enemy*>(a)->itemToPickUp == NULL) {//if they don't already have an item to pick up
-				static_cast<Enemy*>(a)->itemToPickUp = static_cast<Item*>(b->getParent());
+			if (static_cast<Item*>(b->getParent())->enemyItem == false) {
+				if (static_cast<Enemy*>(a)->itemToPickUp == NULL) {//if they don't already have an item to pick up
+					static_cast<Enemy*>(a)->itemToPickUp = static_cast<Item*>(b->getParent());
+				}
 			}
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "enemy_alert")
 		{
-			if (static_cast<Enemy*>(b)->itemToPickUp == NULL) {//if they don't already have an item to pick up
-				static_cast<Enemy*>(b)->itemToPickUp = static_cast<Item*>(a->getParent());
+			if (static_cast<Item*>(a->getParent())->enemyItem == false) {
+				if (static_cast<Enemy*>(b)->itemToPickUp == NULL) {//if they don't already have an item to pick up
+					static_cast<Enemy*>(b)->itemToPickUp = static_cast<Item*>(a->getParent());
+				}
 			}
 			return false;
 		}

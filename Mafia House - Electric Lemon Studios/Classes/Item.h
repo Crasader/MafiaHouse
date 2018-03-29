@@ -43,6 +43,7 @@ public:
 	virtual void initPickedUpItem();
 	virtual void initHeldItem();
 	virtual void initCrouchHeldItem();
+	virtual void initOffhand();//for enemies only
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 	virtual void initGroundItem();
 	virtual void initThrownItem();
@@ -73,11 +74,15 @@ public:
 	virtual void checkFallingSpeed();
 	virtual void checkGroundSpeed();
 
+	void rotatePickUpRadius(float degrees);
+
+	void stealRange(Node* player);
 	virtual void playerInRange(Node* player);
 	void hasMoved();
 	bool enemyCanUse = false;
 
-	int hp = 1;//keeps track fo how much item has been used
+	float maxHP = 4;
+	float hp = 1;//keeps track fo how much item has been used
 	float dmg = 0;
 	float doorDmg = 0;
 	Vec2 knockback = Vec2(0, 0);

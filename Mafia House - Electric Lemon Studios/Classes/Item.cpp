@@ -52,6 +52,7 @@ void Item::initPickedUpItem() {
 	initHeldItem();
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
+	pickUpRadius->getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setDynamic(false);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
@@ -80,6 +81,23 @@ void Item::initCrouchHeldItem() {
 	setRotation(20.0f);
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
+}
+
+void Item::initOffhand() {
+	didHitWall = false;
+	setAnchorPoint(Vec2(0, 0));
+	setPosition(Vec2(27, 50));
+	setRotation(135.0f);
+	getPhysicsBody()->setRotationOffset(0);
+	getPhysicsBody()->setEnabled(false);
+	outline->setColor(ccc3(255, 100, 100));//red
+	outline->setVisible(true);
+	pickUpRadius->getPhysicsBody()->setEnabled(true);
+	pickUpRadius->setPositionNormalized(Vec2(0.2, 0.8));
+}
+
+void Item::rotatePickUpRadius(float degrees) {
+	pickUpRadius->getPhysicsBody()->setRotationOffset(degrees);
 }
 
 //used when player drops item
@@ -201,6 +219,7 @@ void Item::initGroundItem() {
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	setName("item");
 	getPhysicsBody()->setName("item");
+	pickUpRadius->getPhysicsBody()->setRotationOffset(0);
 }
 
 bool Item::checkBroken() {
@@ -223,6 +242,18 @@ void Item::used() {
 void Item::hitWall() {
 	didHitWall = true;
 	//getPhysicsBody()->setEnabled(false);
+}
+
+void Item::stealRange(Node* player) {
+	if (player->getTag() >= 1 && player->getTag() <= 9) {
+		if (playerRange == true) {
+			outline->setColor(ccc3(100, 255, 100));//green
+		}
+		else {
+			outline->setColor(ccc3(255, 100, 100));//red
+		}
+	}
+	playerRange = false;
 }
 
 void Item::playerInRange(Node* player) {
@@ -411,7 +442,8 @@ Knife::Knife(){
 	outlineName = "items/knife_outline.png";
 	Item::Item();
 	priority = 1;
-	hp = 2;
+	maxHP = 2;
+	hp = maxHP;
 	dmg = 50;
 	hitstun = 10 FRAMES;
 	doorDmg = 7;
@@ -433,7 +465,8 @@ Key::Key(){
 	Item::Item();
 	isKey = true;
 	priority = 0;
-	hp = 4;
+	maxHP = 4;
+	hp = maxHP;
 	dmg = 25;
 	hitstun = 4 FRAMES;
 	doorDmg = 6;
@@ -453,7 +486,8 @@ Hammer::Hammer(){
 	outlineName = "items/hammer_outline.png";
 	Item::Item();
 	priority = 3;
-	hp = 3;
+	maxHP = 3;
+	hp = maxHP;
 	dmg = 34;
 	knockback = Vec2(80, 0);
 	hitstun = 24 FRAMES;

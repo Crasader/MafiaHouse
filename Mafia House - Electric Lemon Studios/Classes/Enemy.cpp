@@ -133,13 +133,61 @@ void Enemy::dropInventory(GameLayer* mainLayer) {
 }
 
 void Enemy::pickUpItem(GameLayer* mainLayer) {
-	if (itemToPickUp->enemyItem != true) {
-		Character::pickUpItem(mainLayer);
-	}
-	if (heldItem != NULL) {
-		heldItem->enemyItem = true;
-		if (heldItem->isKey == true) {
+	if (itemToPickUp != NULL && itemToPickUp->enemyItem != true) {
+		if (itemToPickUp->isKey == false) {//item is not a key
+			removeChild(heldItem, true);
+
+			if (heldItem != NULL && (offhandItem == NULL || offhandItem->isKey == false)) {//enemy doesn't have an offhand item, or it is not a key
+				removeChild(offhandItem, true);
+				offhandItem = heldItem;
+				offhandItem->initOffhand();
+				addChild(offhandItem);
+			}
+
+			itemToPickUp->removeFromParent();
+			heldItem = itemToPickUp;
+
+			addChild(heldItem);
+			heldItem->initPickedUpItem();
+			inventory.push_back(heldItem);
+
+			itemToPickUp = NULL;
+
+			if (flippedX == true) {
+				heldItem->knockback *= -1;
+			}
+			heldItem->holderFlipped = flippedX;
+
+			heldItem->enemyItem = true;
+			if (heldItem->isKey == true) {
+				hasKey = true;//if they pickup a key, they have a key to open locked doors
+			}
+		}
+		else {//item is a key
+			itemToPickUp->removeFromParent();
+			if (offhandItem == NULL || offhandItem->isKey == false) {//enemy doesn't have an offhand item, or it is not a key
+				removeChild(offhandItem, true);
+				offhandItem = itemToPickUp;
+				offhandItem->initOffhand();
+				addChild(offhandItem);
+			}
+			else if (offhandItem->isKey == true && heldItem == NULL) {//they have an offhand item and it is a key already, and they don't have a held item yet
+				heldItem = itemToPickUp;
+				addChild(heldItem);
+				heldItem->initPickedUpItem();
+			}
+			inventory.push_back(itemToPickUp);
+
+			if (flippedX == true) {
+				itemToPickUp->knockback *= -1;
+			}
+			itemToPickUp->holderFlipped = flippedX;
+
+			itemToPickUp->enemyItem = true;
+
 			hasKey = true;//if they pickup a key, they have a key to open locked doors
+
+			itemToPickUp = NULL;
 		}
 	}
 }
@@ -1084,6 +1132,29 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 void Enemy::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);
 	updateRoom(mainLayer->floors[currentFloor].rooms);
+	if (offhandItem != NULL) {
+		if (flippedX == true) {
+			offhandItem->rotatePickUpRadius(-90);
+		}
+		else {
+			offhandItem->rotatePickUpRadius(0);
+		}
+	}
+	//checking if enemy still has a key, also removing stolen items
+	if (inventory.size() > 0) {
+		hasKey = false;
+		for (int i = 0; i < inventory.size(); i++) {
+			if (inventory[i]->enemyItem == false) {//item has been stolen
+				inventory.erase(inventory.begin() + i);//remove it from their inventory
+				i--;
+				continue;
+			}
+			if (inventory[i]->isKey == true) {//if the item is a key
+				hasKey = true;
+			}
+		}
+	}
+
 	//forgetting what items they have seen
 	if (seenItems.size() > 0) {
 		for (int i = 0; i < seenItems.size(); i++) {

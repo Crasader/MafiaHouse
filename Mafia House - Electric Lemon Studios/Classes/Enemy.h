@@ -77,6 +77,8 @@ public:
 	Player* detectedPlayer = NULL;
 	Node* lastSeenLocation;
 
+	Item* offhandItem = NULL;//item hanging off their belt the player can steal
+
 	Item* fallenItem = NULL;//an item that has fallen on top of the enemy
 	Item* itemBumpedBy = NULL;//an item that has hit the enemy, but not hard enough to kill them
 	Vec2 directionHitFrom;

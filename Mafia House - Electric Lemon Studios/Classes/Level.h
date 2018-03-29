@@ -60,6 +60,9 @@ protected:
 	Sprite* healthBar;
 	Sprite* healthFill;
 	Sprite* playerHead;
+	Sprite* itemBar;
+	Sprite* itemFill;
+	Sprite* itemIcon;
 
 	GameLayer* mainLayer;//a node which everything in the scene is attached to
 
