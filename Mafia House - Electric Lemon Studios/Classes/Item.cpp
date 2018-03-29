@@ -93,7 +93,7 @@ void Item::initOffhand() {
 	outline->setColor(ccc3(255, 100, 100));//red
 	outline->setVisible(true);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
-	pickUpRadius->setPositionNormalized(Vec2(0.2, 0.8));
+	pickUpRadius->setPositionNormalized(Vec2(0.25, 0.75));
 }
 
 void Item::rotatePickUpRadius(float degrees) {

@@ -82,10 +82,27 @@ void Level::setup(){
 void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
-	//initializing enemy joints
-	//for (int i = 0; i < enemies.size(); i++) {
-	//	enemies[i]->initJoints();
-	//}
+	//initializing enemy offhand items
+	for (int i = 0; i < enemies.size(); i++) {
+		if (enemies[i]->offhandItem != NULL) {
+			enemies[i]->offhandItem->removeFromParent();//removing from main layer
+			enemies[i]->offhandItem->initPickedUpItem();
+			enemies[i]->offhandItem->initOffhand();
+			enemies[i]->addChild(enemies[i]->offhandItem);
+			enemies[i]->inventory.push_back(enemies[i]->offhandItem);
+
+			if (enemies[i]->getFlippedX() == true) {
+				enemies[i]->offhandItem->knockback *= -1;
+			}
+			enemies[i]->offhandItem->holderFlipped = enemies[i]->getFlippedX();
+
+			enemies[i]->offhandItem->enemyItem = true;
+
+			if (enemies[i]->offhandItem->isKey == true) {
+				enemies[i]->giveKey();//if they pickup a key, they have a key to open locked doors
+			}
+		}
+	}
 
 	//initializing player joints
 	//player->initJoints();
@@ -1404,6 +1421,23 @@ bool Level::initLevel(string filename){
 					item->startRoom = Vec2(roomNum, floorNum);
 					mainLayer->items.push_back(item);
 					enemy->itemToPickUp = item;
+				}
+				if (pieces.size() > 6) {
+					Item* item;
+					if (pieces[6] == "knife") {
+						item = Knife::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "key") {
+						item = Key::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "hammer") {
+						item = Hammer::createWithSpriteFrameName();
+					}
+					item->initObject();
+					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
+					item->startRoom = Vec2(roomNum, floorNum);
+					mainLayer->items.push_back(item);
+					enemy->offhandItem = item;
 				}
 				enemy->initObject();
 				enemies.push_back(enemy);

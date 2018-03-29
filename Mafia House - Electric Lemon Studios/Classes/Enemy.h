@@ -66,6 +66,7 @@ public:
 	void gotHit(Item* item, float time, GameLayer* mainLayer);//function for when enemy is hit by player's attack
 	bool isReallyDead() { return isDead; }
 	bool checkKey() { return hasKey; }
+	void giveKey() { hasKey = true; }
 
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
