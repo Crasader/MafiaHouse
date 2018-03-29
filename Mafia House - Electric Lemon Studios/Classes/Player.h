@@ -44,6 +44,8 @@ public:
 	void finishUseItem();
 
 	void wasHit(Item* item, float time);//being hit by an enemy attack
+
+	void hearNoise(string name);//for playing audio of noises the player hears
 	
 	//for player staying behind obejcts without causing earthquakes, doesn't use set position
 	void stayWithin(HideObject* object);

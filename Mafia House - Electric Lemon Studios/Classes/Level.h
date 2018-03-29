@@ -13,6 +13,7 @@
 #include "EnvObject.h"
 #include "Stair.h"
 #include "GameLayer.h"
+#include "Noise.h"
 USING_NS_CC;
 using std::vector;
 using std::string;
@@ -64,6 +65,8 @@ protected:
 
 	Sprite* background;//the background image of the level
 	float backgroundScale = 1.0f;
+
+	DrawNode* noiseCircles;//used for drawing circles to visualize noises
 
 	Player* player;//the player character
 	

@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include "Functions.h"
+#include "Noise.h"
 USING_NS_CC;
 using std::string;
 using std::vector;
@@ -118,6 +119,8 @@ public:
 	void setSpeed(float speed);
 
 	virtual void flipX();//flips object on X-axis
+
+	void createNoise(float radius, float duration, float time, Vec2 position, Vec2 roomCoords, string type, vector<Noise*> *noises);
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position
 	//startRoom.y == floor number

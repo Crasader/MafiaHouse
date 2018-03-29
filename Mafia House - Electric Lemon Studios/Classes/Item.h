@@ -85,10 +85,13 @@ public:
 	int priority = 0;//determines which attacks beat which
 	int powerLevel = 0;
 
+	float noiseLevel = 0.5f;
+
 	bool canBreakDoor = false;
 	bool isKey = false;
 
 	bool didHitWall = false;
+	bool makeNoise = false;
 
 	bool enemyItem = false;//if it's being held by an enemy
 

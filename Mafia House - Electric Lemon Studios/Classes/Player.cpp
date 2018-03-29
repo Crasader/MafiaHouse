@@ -584,6 +584,10 @@ void Player::hiding() {
 	stayWithin(hideObject);
 }
 
+void Player::hearNoise(string name) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(("Audio/" + name + ".wav").c_str());
+}
+
 void Player::wasHit(Item* item, float time) {
 	if (item->didHitWall == false) {
 		stopAllActions();
@@ -725,10 +729,10 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 	}
 	if (input == PICKUP) {
 		if (player->heldBody == NULL) {
-			if (player->bodyToPickUp == NULL) {
+			if (player->itemToPickUp != NULL && player->heldItem == NULL) {
 				player->pickUpItem(mainLayer);
 			}
-			else {
+			else if (player->bodyToPickUp != NULL){
 				player->pickUpBody(mainLayer);
 			}
 		}
@@ -827,10 +831,10 @@ Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainL
 	}
 	if (input == PICKUP) {
 		if (player->heldBody == NULL) {
-			if (player->bodyToPickUp == NULL) {
+			if (player->itemToPickUp != NULL && player->heldItem == NULL) {
 				player->pickUpItem(mainLayer);
 			}
-			else {
+			else if (player->bodyToPickUp != NULL) {
 				player->pickUpBody(mainLayer);
 			}
 		}

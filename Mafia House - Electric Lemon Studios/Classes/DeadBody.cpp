@@ -114,8 +114,10 @@ void DeadBody::initCrouchHeldBody() {
 void  DeadBody::initDroppedBody(Vec2 pos, bool flip) {
 	getPhysicsBody()->setDynamic(true);
 	initGroundItem();
-	setGlobalZOrder(6);
-	outline->setGlobalZOrder(6);
+	if (isHidden == false) {
+		setGlobalZOrder(6);
+		outline->setGlobalZOrder(6);
+	}
 	setPosition(pos);
 	if (flip == true) {
 		flipX();

@@ -1156,6 +1156,8 @@ void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->moveSpeed = 1.0f;
 	enemy->setSpeed(enemy->moveSpeed);
 	enemy->turnTime = enemy->defaultTurnTime;
+	enemy->waitTime = enemy->defaultWaitTime;
+	enemy->walkTime = enemy->defaultWalkTime;
 	enemy->setName("enemy");
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
 	enemy->visionDegrees = enemy->defaultDegrees;
@@ -1203,6 +1205,9 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->wasFlipped = enemy->flippedX;
 		enemy->changeSuspicion(enemy->maxSuspicion / 2);
 		enemy->itemBumpedBy = NULL;
+	}
+	if (enemy->noiseLocation != Vec2(0, 0)) {
+		return new SearchState;
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
@@ -1291,8 +1296,8 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->qMark->setVisible(true);
 	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
-	enemy->walkTime *= 0.65f;
-	enemy->waitTime *= 0.65f;
+	enemy->walkTime = enemy->defaultWalkTime * 0.65f;
+	enemy->waitTime = enemy->defaultWaitTime * 0.65f;
 	enemy->setName("enemy");
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
 	enemy->turnTime = enemy->defaultTurnTime * 0.65f;
@@ -1338,7 +1343,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->itemBumpedBy = NULL;
 	}
 	//check if enemy has heard a noise
-	if (enemy->noiseLocation != NULL) {
+	if (enemy->noiseLocation != Vec2(0, 0)) {
 		return new SearchState;
 	}
 	//check if an enemy has become alerted
@@ -1401,9 +1406,6 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	return nullptr;
 }
 void Enemy::SuspectState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->walkTime /= 0.65f;
-	enemy->waitTime /= 0.65f;
-	enemy->turnTime /= 0.65f;
 	enemy->returning = true;
 }
 
@@ -1986,6 +1988,13 @@ void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->paused = false;
 	enemy->startPauseTime = -1;
 	enemy->qMark->setVisible(true);
+	if (enemy->prevState->type != "use_door") {
+		enemy->changeSuspicion(enemy->maxSuspicion / 3);//hearing a noise increases suspicion by third instantly, more later
+	}
+	enemy->moveSpeed = 1.65f;
+	enemy->setSpeed(enemy->moveSpeed);
+	enemy->walkTime = enemy->defaultWalkTime * 0.65f;
+	enemy->waitTime = enemy->defaultWaitTime * 0.65f;
 }
 Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -1997,17 +2006,21 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	}
 	//check if enemy has seen a dead body or knocked out ally
 	if (enemy->bodySeen != NULL) {
+		enemy->noiseLocation = Vec2(0, 0);
+		enemy->noiseRoom = Vec2(0, 0);
 		return new SeenBodyState;
 	}
 	if (enemy->paused == false) {
 		if (enemy->reachedLocation == false) {
-			if (enemy->pathTo(mainLayer, enemy->noiseLocation->getPositionX(), enemy->noiseLocation->startRoom.y, enemy->noiseLocation->startRoom.x, time, checkForPath) == true) {
+			if (enemy->pathTo(mainLayer, enemy->noiseLocation.x, enemy->noiseRoom.y, enemy->noiseRoom.x, time, checkForPath) == true) {
 				enemy->reachedLocation = true;
+				enemy->noiseLocation = Vec2(0, 0);
+				enemy->noiseRoom = Vec2(0, 0);
 			}
 		}
 		else {//they have reached location
 			enemy->walk(time);//start patrolling the area
-			enemy->changeSuspicion(-1 * enemy->maxSuspicion / (22 SECONDS));
+			enemy->changeSuspicion(-1 * enemy->maxSuspicion / (40 SECONDS));
 		}
 		//check if enemy is walking into a door
 		if (enemy->doorToUse != NULL) {
@@ -2020,7 +2033,7 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.5f SECONDS));//takes half a secobnd to reach max suspicion from 0
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -2029,24 +2042,26 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
-		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / 5);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		enemy->noiseLocation = Vec2(0, 0);
+		enemy->noiseRoom = Vec2(0, 0);
 		return new AlertState;
 	}
 	//enemy has dropped to 0 supicion
 	else if (enemy->suspicionLevel <= 0) {
+		enemy->noiseLocation = Vec2(0, 0);
+		enemy->noiseRoom = Vec2(0, 0);
 		return new DefaultState;
 	}
 	return nullptr;
 }
 void Enemy::SearchState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->returning = true;//only used for enemies not following a path
-	enemy->noiseLocation = NULL;
-	enemy->returning = true;
 }
 
 //Seen Body State: (for seeing dead bodies and knocked out enemies)
@@ -2056,7 +2071,9 @@ void Enemy::SeenBodyState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 	enemy->startPauseTime = -1;
 	enemy->qMark->setVisible(true);
 	enemy->changeSuspicion(enemy->maxSuspicion / 3);//seeing body increases suspicion by third instantly, more later
-	enemy->turnTime = 2.5f;
+	enemy->moveSpeed = 1.65f;
+	enemy->setSpeed(enemy->moveSpeed);
+	enemy->turnTime = 2.2f;
 }
 Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -2064,6 +2081,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 	}
 	//check if enemy has been knocked out
 	if (enemy->knockedOut == true) {
+		enemy->bodySeen = NULL;
 		return new KnockOutState;
 	}
 	//check if enemy is walking into a door
@@ -2105,18 +2123,18 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 	}
 	//check if an enemy has become alerted
 	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
+		enemy->bodySeen = NULL;
 		return new AlertState;
 	}
 	//enemy has dropped to 0 supicion somehow...
 	else if (enemy->suspicionLevel <= 0) {
+		enemy->bodySeen = NULL;
 		return new DefaultState;
 	}
 	return nullptr;
 }
 void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->returning = true;
-	enemy->bodySeen = NULL;
-	enemy->turnTime = 6.0f;
 	enemy->reachedLocation = false;
 }
 

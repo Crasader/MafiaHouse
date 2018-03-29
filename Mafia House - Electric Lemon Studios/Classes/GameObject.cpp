@@ -260,6 +260,13 @@ void GameObject::flipX() {
 	}
 }
 
+void GameObject::createNoise(float radius, float duration, float time, Vec2 position, Vec2 roomCoords, string type, vector<Noise*> *noises) {
+	Noise* noise = Noise::create();
+	noise->initNoise(radius, duration, time, position, type, roomCoords);
+	director->getRunningScene()->addChild(noise);//adding noise as child of main layer
+	noises->push_back(noise);//adding noise to list of noises
+}
+
 Vector<SpriteFrame*> getAnimation(const char *format, int count) {
 	auto framecache = SpriteFrameCache::getInstance();
 	Vector<SpriteFrame*> frames;

@@ -14,6 +14,7 @@ void Level::setup(){
 
 	//node everything in level is attached to
 	mainLayer = GameLayer::create();
+	mainLayer->setName("mainLayer");
 	addChild(mainLayer);
 
 	//node all hud elements are attached
@@ -87,6 +88,30 @@ void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
 
+	//for drawing vision rays
+	if (noiseCircles) {
+		removeChild(noiseCircles, true);
+	}
+	noiseCircles = DrawNode::create();
+	noiseCircles->setGlobalZOrder(12);
+	//noise update
+	for (int i = 0; i < mainLayer->noises.size(); i++) {
+		if (gameTime - mainLayer->noises[i]->startTime >= mainLayer->noises[i]->duration) {//noise has expired
+			mainLayer->noises[i]->removeFromParent();//removing noise from game world
+			mainLayer->noises.erase(mainLayer->noises.begin() + i);//removing noise from vector of noises
+			i--;
+			continue;
+		}
+		float percentage = (gameTime - mainLayer->noises[i]->startTime) / mainLayer->noises[i]->duration;//percentage of duration finished
+		float percentage1 = percentage * 1.4 >= 1 ? 1 : percentage * 1.4;
+		float percentage2 = percentage * 1 >= 1 ? 1 : percentage * 1;
+		float percentage3 = percentage * 0.7 >= 1 ? 1 : percentage * 0.7;
+		noiseCircles->drawCircle(mainLayer->noises[i]->getPosition(), mainLayer->noises[i]->radius * percentage1, 0, 60, false, Color4F(1, 1, 1, abs(percentage1 - 1)));
+		noiseCircles->drawCircle(mainLayer->noises[i]->getPosition(), mainLayer->noises[i]->radius * percentage2, 0, 60, false, Color4F(1, 1, 1, abs(percentage2 - 1)));
+		noiseCircles->drawCircle(mainLayer->noises[i]->getPosition(), mainLayer->noises[i]->radius * percentage3, 0, 60, false, Color4F(1, 1, 1, abs(percentage3 - 1)));
+	}
+	addChild(noiseCircles);
+
 	//hide object update
 	for (int i = 0; i < hideObjects.size(); i++) {
 		hideObjects[i]->playerInRange();
@@ -100,11 +125,19 @@ void Level::update(float deltaTime){
 		doors[i]->updateBroken();
 		doors[i]->updateColour();
 		doors[i]->playerInRange();
+		if (doors[i]->noiseLevel != -1) {
+			doors[i]->createNoise(doors[i]->noiseLevel, doors[i]->noiseLevel / 100, gameTime, doors[i]->getPosition() + doors[i]->getContentSize() / 2, doors[i]->roomHitFrom, "door_being_hit", &mainLayer->noises);
+			doors[i]->noiseLevel = -1;
+		}
 	}
 	//items update
 	for (int i = 0; i < mainLayer->items.size(); i++) {
 		mainLayer->items[i]->updateFloor(mainLayer->floors);
 		mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
+		if (mainLayer->items[i]->makeNoise == true){
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * mainLayer->items[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->items[i]->noiseLevel, gameTime, mainLayer->items[i]->getPosition(), Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "item_hitting_wall" ,&mainLayer->noises);
+			mainLayer->items[i]->makeNoise = false;
+		}
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
 			mainLayer->items[i]->hasMoved();
 			mainLayer->items[i]->playerInRange(player);
@@ -319,6 +352,26 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	Node *b = contact.getShapeB()->getBody()->getNode();
 
 	if (a != NULL && b != NULL) {
+		//player and noises
+		if (a->getName() == "player" && b->getName() == "noise")
+		{
+			return false;
+		}
+		else if (a->getName() == "noise" && b->getName() == "player")
+		{
+			return false;
+		}
+
+		//enemy and noises
+		if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "noise")
+		{
+			return false;
+		}
+		else if (a->getName() == "noise" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
+		{
+			return false;
+		}
+
 		//player and physical object
 		if (a->getName() == "player" && b->getName() == "phys_object")
 		{
@@ -825,6 +878,19 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+	//enemy and noises
+	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "noise")
+	{
+		static_cast<Enemy*>(a)->noiseLocation = b->getPosition();
+		static_cast<Enemy*>(a)->noiseRoom = static_cast<Noise*>(b)->room;
+		return false;
+	}
+	else if (a->getName() == "noise" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
+	{
+		static_cast<Enemy*>(b)->noiseLocation = a->getPosition();
+		static_cast<Enemy*>(b)->noiseRoom = static_cast<Noise*>(a)->room;
+		return false;
+	}
 	//two held items
 	if (a->getName() == "held_item" && b->getName() == "held_item") {
 		if (static_cast<Item*>(a)->priority > static_cast<Item*>(b)->priority) {//if a's damage is higher than b's
@@ -964,25 +1030,27 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	if (a->getName() == "held_item" && b->getName() == "door")
 	{
 		static_cast<Item*>(a)->hitWall();
+		static_cast<Item*>(a)->makeNoise = true;
 		static_cast<Door*>(b)->itemHit(static_cast<Item*>(a));
 		return true;
 	}
 	else if (a->getName() == "door" && b->getName() == "held_item")
 	{
 		static_cast<Item*>(b)->hitWall();
+		static_cast<Item*>(b)->makeNoise = true;
 		static_cast<Door*>(a)->itemHit(static_cast<Item*>(b));
 		return true;
 	}
 	//items and walls
-	if (a->getName() == "held_item" && b->getName() == "wall")
+	if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object"))
 	{
-		static_cast<Item*>(a)->hitWall();
-		return false;
+		static_cast<Item*>(a)->makeNoise = true;
+		return true;
 	}
-	else if (a->getName() == "wall" && b->getName() == "held_item")
+	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object") && b->getName() == "held_item")
 	{
-		static_cast<Item*>(b)->hitWall();
-		return false;
+		static_cast<Item*>(b)->makeNoise = true;
+		return true;
 	}
 	return true;
 }

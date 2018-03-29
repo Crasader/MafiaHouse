@@ -424,6 +424,7 @@ Knife::Knife(){
 	range = 36;
 	rangeRadius = 100;
 	powerLevel = 5;
+	noiseLevel = 0.5f;
 }
 
 //Key Class:
@@ -444,6 +445,7 @@ Key::Key(){
 	range = 28;
 	rangeRadius = 90;
 	powerLevel = 0;
+	noiseLevel = 0.3f;
 }
 
 //Hammer Class:
@@ -465,4 +467,5 @@ Hammer::Hammer(){
 	range = 47;
 	rangeRadius = 130;
 	powerLevel = 10;
+	noiseLevel = 0.7f;
 }

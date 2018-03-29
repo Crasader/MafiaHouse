@@ -4,6 +4,7 @@
 #include "Stair.h"
 #include "DeadBody.h"
 #include "Functions.h"
+#include "Noise.h"
 USING_NS_CC;
 using std::vector;
 
@@ -17,6 +18,7 @@ public:
 	vector<Stair*> stairs;
 	vector<FloorData> floors;
 	vector<DeadBody*> bodies;
+	vector<Noise*> noises;
 
 	Stair* getPartnerStair(Stair* stair);//returns a stair's partner, the one it leads to
 };

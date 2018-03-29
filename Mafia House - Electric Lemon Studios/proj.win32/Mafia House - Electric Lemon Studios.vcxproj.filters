@@ -90,6 +90,9 @@
     <ClCompile Include="..\Classes\DeadBody.cpp">
       <Filter>Classes\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\Noise.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -159,6 +162,9 @@
       <Filter>Classes\Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\DeadBody.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Noise.h">
       <Filter>Classes\Objects</Filter>
     </ClInclude>
   </ItemGroup>

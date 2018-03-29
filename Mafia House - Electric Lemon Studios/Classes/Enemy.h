@@ -84,7 +84,8 @@ public:
 	bool runningAway = false;
 
 	//for going to noises
-	GameObject* noiseLocation = NULL;
+	Vec2 noiseLocation = Vec2(0,0);
+	Vec2 noiseRoom = Vec2(0, 0);
 	//for seeing bodies/ knocked out dudes
 	GameObject* bodySeen = NULL;
 
@@ -264,8 +265,10 @@ protected:
 	float hitWallDelay = 3;//time between wall hits to prevent continuous hitting
 
 	//stuff for walking:
-	float walkTime = 6.0f;
-	float waitTime = 2.0f;
+	float defaultWalkTime = 5.0f;
+	float walkTime = defaultWalkTime;
+	float defaultWaitTime = 2.0f;
+	float waitTime = defaultWaitTime;
 	float previousTurnTime = -1;
 	float stopTime = -1;
 	//for turning on spot
