@@ -135,7 +135,17 @@ void Level::update(float deltaTime){
 		mainLayer->items[i]->updateFloor(mainLayer->floors);
 		mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
 		if (mainLayer->items[i]->makeNoise == true){
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * mainLayer->items[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->items[i]->noiseLevel, gameTime, mainLayer->items[i]->getPosition(), Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "item_hitting_wall" ,&mainLayer->noises);
+			if (mainLayer->items[i]->getState() != Item::HELD) {
+				mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * mainLayer->items[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->items[i]->noiseLevel, gameTime, mainLayer->items[i]->getPosition(), Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "item_hitting_wall", &mainLayer->noises);
+			}
+			else {
+				if (mainLayer->items[i]->holderFlipped == false) {
+					mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 100, mainLayer->items[i]->noiseLevel, gameTime, mainLayer->items[i]->convertToWorldSpace(getPosition()) + mainLayer->items[i]->getContentSize(), Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "item_hitting_wall", &mainLayer->noises);
+				}
+				else {
+					mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 100, mainLayer->items[i]->noiseLevel, gameTime, mainLayer->items[i]->convertToWorldSpace(getPosition()) + Vec2(-mainLayer->items[i]->getContentSize().width, mainLayer->items[i]->getContentSize().height), Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "item_hitting_wall", &mainLayer->noises);
+				}
+			}
 			mainLayer->items[i]->makeNoise = false;
 		}
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
@@ -338,7 +348,7 @@ void Level::update(float deltaTime){
 	followBox(camPos, player, camBoundingBox, camOffset);
 	camera->setPosition(camPos->getPosition());
 	hudLayer->setPosition(camera->getPosition()+ Vec2(-400, 250));//make it so hud stays in same location on screen
-	//hudLayer->setPositionZ(camera->getPositionZ() + 459.42983);
+	hudLayer->setPositionZ(camera->getPositionZ() - 459.42983);
 	float percentage = player->getHP() / player->getMaxHP();
 	healthFill->setScaleX(percentage);
 
@@ -849,10 +859,16 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//enemy and door radius
 		if (a->getName() == "enemy" && (b->getName() == "door_radius" || b->getName() == "vent_radius"))
 		{
+			//if (static_cast<Door*>(b->getParent())->getName() == "door") {
+			//	static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
+			//}
 			return false;
 		}
 		else if ((a->getName() == "door_radius" || a->getName() == "vent_radius") && b->getName() == "enemy")
 		{
+			//if (static_cast<Door*>(a->getParent())->getName() == "door") {
+			//	static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
+			//}
 			return false;
 		}
 		//alert enemy and door radius
@@ -1041,7 +1057,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		static_cast<Door*>(a)->itemHit(static_cast<Item*>(b));
 		return true;
 	}
-	//items and walls
+	//held/thrown items and walls
 	if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object"))
 	{
 		static_cast<Item*>(a)->makeNoise = true;
@@ -1050,6 +1066,21 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object") && b->getName() == "held_item")
 	{
 		static_cast<Item*>(b)->makeNoise = true;
+		return true;
+	}
+	//falling items and walls
+	if (a->getName() == "item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object"))
+	{
+		if (static_cast<Item*>(a)->getState() == Item::FALLING) {
+			static_cast<Item*>(a)->makeNoise = true;
+		}
+		return true;
+	}
+	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object") && b->getName() == "item")
+	{
+		if (static_cast<Item*>(b)->getState() == Item::FALLING) {
+			static_cast<Item*>(b)->makeNoise = true;
+		}
 		return true;
 	}
 	return true;

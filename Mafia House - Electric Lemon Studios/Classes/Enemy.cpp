@@ -952,8 +952,10 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 					bodySeen = static_cast<Enemy*>(visionContact);//they have seen a knocked out enemy
 				}
 				if (visionContactName == "enemy_alert" && getName() != "enemy_alert") {
-					if (suspicionLevel < maxSuspicion) {
-						setSuspicion(maxSuspicion + 100);//enemies that see other alerted enemies will become alerted
+					if (time - alertEndTime >= alertCooldown || alertEndTime == -1) {//only become alert if they did not just come out of being alert
+						if (suspicionLevel < maxSuspicion) {
+							setSuspicion(maxSuspicion + 100);//enemies that see other alerted enemies will become alerted
+						}
 					}
 				}
 				points->push_back(info.contact + offsetAdjust);
@@ -1030,7 +1032,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 	}
 }
 
-void Enemy::gotHit(Item* item, float time) {
+void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 	if (item->didHitWall == false && item->hp > 0) {
 		stopAllActions();
 		item->used();
@@ -1054,6 +1056,7 @@ void Enemy::gotHit(Item* item, float time) {
 			}
 			else {
 				if (knockedOut == false) {
+					createNoise(130, 1.5, time, getPosition() + Vec2(getSize().width / 2, getSize().height), Vec2(currentRoom, currentFloor), "enemy_wail", &mainLayer->noises);
 					changeSuspicion(maxSuspicion);
 					wasInHitStun = true;
 					hitStunStart = time;
@@ -1067,6 +1070,7 @@ void Enemy::gotHit(Item* item, float time) {
 				knockOutTime = baseKnockOutTime * static_cast<float>(item->dmg);//more powerful items knock out for longer
 				knockOutTime = knockOutTime < minKnockOuttime ? minKnockOuttime : knockOutTime;//set minimum knockOutTime to 20 seconds
 				if (getName() == "enemy_alert") {
+					createNoise(130, 1.5, time, getPosition() + Vec2(getSize().width / 2, getSize().height), Vec2(currentRoom, currentFloor), "enemy_wail", &mainLayer->noises);
 					knockOutTime /= 2;//knockout time is halved for alerted enemies
 				}
 			}
@@ -1105,12 +1109,12 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 			invincible = true;
 			if (itemHitBy->getState() == Item::THROWN) {
 				if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
-					gotHit(itemHitBy, time);
+					gotHit(itemHitBy, time, mainLayer);
 					thrownItem = NULL;
 				}
 			}
 			else {
-				gotHit(itemHitBy, time);
+				gotHit(itemHitBy, time, mainLayer);
 			}
 		}
 		itemHitBy = NULL;
@@ -1303,6 +1307,9 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->turnTime = enemy->defaultTurnTime * 0.65f;
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.3;
+	if (enemy->prevState->type == "alert") {
+		enemy->alertEndTime = time;
+	}
 }
 Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -1359,7 +1366,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (24 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (20 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -1441,6 +1448,9 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->reachedLastSeen = false;
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.7;
+	if (enemy->prevState->type != "use_door" && enemy->prevState->type != "attack" && enemy->prevState->type != "get_item") {
+		enemy->createNoise(180, 2, time, enemy->getPosition() + Vec2(enemy->getSize().width / 2, enemy->getSize().height), Vec2(enemy->currentRoom, enemy->currentFloor), "enemy_shout", &mainLayer->noises);
+	}
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->hp < enemy->maxHP / 2) {
@@ -1744,6 +1754,10 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			if (enemy->startWaitTime != -1 && time - enemy->startWaitTime >= enemy->doorWaitTime) {
 				enemy->flipX();
 				enemy->startWaitTime = -1;
+				enemy->returning = true;
+				enemy->noiseLocation = Vec2(0, 0);
+				enemy->itemToPickUp = NULL;
+				enemy->bodySeen = NULL;
 				enemy->toEnter = new DefaultState;
 				return enemy->toEnter;
 			}
@@ -1989,7 +2003,7 @@ void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->startPauseTime = -1;
 	enemy->qMark->setVisible(true);
 	if (enemy->prevState->type != "use_door") {
-		enemy->changeSuspicion(enemy->maxSuspicion / 3);//hearing a noise increases suspicion by third instantly, more later
+		enemy->changeSuspicion(enemy->maxSuspicion / 4);//hearing a noise increases suspicion by quarter instantly, more later
 	}
 	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
@@ -2070,10 +2084,13 @@ void Enemy::SeenBodyState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 	enemy->paused = false;
 	enemy->startPauseTime = -1;
 	enemy->qMark->setVisible(true);
-	enemy->changeSuspicion(enemy->maxSuspicion / 3);//seeing body increases suspicion by third instantly, more later
 	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
 	enemy->turnTime = 2.2f;
+	if (enemy->prevState->type != "use_door") {
+		enemy->changeSuspicion(enemy->maxSuspicion / 3);//seeing body increases suspicion by third instantly, more later
+		enemy->createNoise(180, 2, time, enemy->getPosition() + Vec2(enemy->getSize().width / 2, enemy->getSize().height), Vec2(enemy->currentRoom, enemy->currentFloor), "enemy_shout", &mainLayer->noises);
+	}
 }
 Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -2099,7 +2116,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 		}
 		else {//they have reached location
 			enemy->turnOnSpot(time);//stay where body is and look around
-			enemy->changeSuspicion(enemy->maxSuspicion / (25 SECONDS));//suspicion will steadily increase until they become alerted
+			enemy->changeSuspicion(enemy->maxSuspicion / (20 SECONDS));//suspicion will steadily increase until they become alerted
 		}
 	}
 	else {
@@ -2204,6 +2221,9 @@ void Enemy::DeathState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 		enemy->startAnimation(DEATH, enemy->knockoutDeath);
 	}
 	else {
+		if (enemy->suspicionLevel >= enemy->maxSuspicion / 2) {
+			enemy->createNoise(250, 3, time, enemy->getPosition() + Vec2(enemy->getSize().width / 2, enemy->getSize().height), Vec2(enemy->currentRoom, enemy->currentFloor), "enemy_scream", &mainLayer->noises);
+		}
 		enemy->startAnimation(DEATH, enemy->dying);
 	}
 	enemy->getPhysicsBody()->setDynamic(false);

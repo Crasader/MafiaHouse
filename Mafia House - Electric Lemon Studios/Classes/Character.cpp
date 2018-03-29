@@ -23,6 +23,7 @@ void Character::flipX() {
 	GameObject::flipX();
 	if (heldItem != NULL) {
 		heldItem->knockback *= -1;
+		heldItem->holderFlipped = flippedX;
 	}
 }
 
@@ -60,6 +61,7 @@ void Character::pickUpItem(GameLayer* mainLayer) {
 		if (flippedX == true) {
 			heldItem->knockback *= -1;
 		}
+		heldItem->holderFlipped = flippedX;
 	}
 }
 

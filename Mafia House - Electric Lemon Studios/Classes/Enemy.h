@@ -63,7 +63,7 @@ public:
 	void playerTouch() { isTouched = true; }
 	void hitWall() { didHitWall = true; }
 
-	void gotHit(Item* item, float time);//function for when enemy is hit by player's attack
+	void gotHit(Item* item, float time, GameLayer* mainLayer);//function for when enemy is hit by player's attack
 	bool isReallyDead() { return isDead; }
 	bool checkKey() { return hasKey; }
 
@@ -140,6 +140,7 @@ protected:
 	};
 	class GetItemState : public State {
 	public:
+		GetItemState() { type = "get_item"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
@@ -172,7 +173,7 @@ protected:
 	};
 	State* state = new DefaultState;
 	State* newState = NULL;
-	State* prevState = NULL;
+	State* prevState = new DefaultState;
 	State* toEnter = NULL;
 
 	//animations:
@@ -188,6 +189,10 @@ protected:
 	Sprite* exMark;
 	Sprite* ZZZ;
 	GameAnimation ZZZAnimation;
+
+	//for not being alert forever
+	float alertCooldown = 90.0f;
+	float alertEndTime = -1;
 
 	//for pathfinding:
 	vector<Stair*> prevSearched;

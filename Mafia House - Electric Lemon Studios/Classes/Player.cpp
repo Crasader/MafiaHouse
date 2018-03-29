@@ -920,6 +920,7 @@ Player::State* Player::FallState::update(Player* player, GameLayer* mainLayer, f
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
+		player->createNoise(25, 0.6, time, player->getPosition() + Vec2(player->getSize().width / 2, 0), Vec2(player->currentFloor, player->currentRoom), "player_land", &mainLayer->noises);
 		return new CrouchState;
 	}
 	//if (player->touchingFloor == true && player->getActionByTag(LAND) == NULL) {//player's landing animation has finished
@@ -1201,6 +1202,7 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 	}
 	else {//player is performing a falling attack
 		if (player->touchingFloor == true) {//they hit the ground
+			player->createNoise(60, 0.6, time, player->getPosition() + Vec2(player->getSize().width, 0), Vec2(player->currentFloor, player->currentRoom), "player_land", &mainLayer->noises);
 			return new CrouchState;
 		}
 	}
@@ -1308,6 +1310,7 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	if (player->heldBody != NULL) {
 		player->dropBody(mainLayer);
 	}
+	player->createNoise(35, 0.4, time, player->getPosition() + Vec2(player->getSize().width, 0), Vec2(player->currentFloor, player->currentRoom), "player_roll", &mainLayer->noises);
 }
 Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->getPhysicsBody()->getVelocity().x > -2.5f && player->getPhysicsBody()->getVelocity().x < 2.5f) {//when player's horizontal speed has stopped

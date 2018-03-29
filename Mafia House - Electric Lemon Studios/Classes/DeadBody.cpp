@@ -16,6 +16,7 @@ DeadBody::DeadBody()
 	effect = NONE;
 	dmg = 0;
 	knockback = Vec2(200, 0);
+	noiseLevel = 0.5f;
 	state = GROUND;
 }
 

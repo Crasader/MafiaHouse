@@ -97,6 +97,8 @@ public:
 
 	float thrownTime = -1;
 
+	bool holderFlipped = false;
+
 protected:
 	State state = GROUND;
 	State prevState = GROUND;

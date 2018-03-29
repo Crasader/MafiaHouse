@@ -120,6 +120,8 @@ public:
 
 	virtual void flipX();//flips object on X-axis
 
+	bool getFlippedX() { return flippedX; }
+
 	void createNoise(float radius, float duration, float time, Vec2 position, Vec2 roomCoords, string type, vector<Noise*> *noises);
 
 	Vec2 roomStartPos = Vec2(0, 0);//position object starts in relative to room position

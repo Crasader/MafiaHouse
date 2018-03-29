@@ -146,7 +146,7 @@ void Door::itemHit(Item* item) {
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
-			noiseLevel = item->doorDmg * 6;
+			noiseLevel = item->doorDmg * 5;
 			roomHitFrom = Vec2(item->currentRoom, item->currentFloor);
 			hp -= item->doorDmg;//item deals dmg to the door
 			item->hp--;
@@ -293,6 +293,7 @@ void Vent::itemHit(Item* item) {
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
+			noiseLevel = item->doorDmg * 3;
 			hp -= item->doorDmg;//item deals dmg to the door
 			item->hp--;
 		}
