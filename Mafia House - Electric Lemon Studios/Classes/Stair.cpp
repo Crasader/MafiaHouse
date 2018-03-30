@@ -73,6 +73,7 @@ Door::Door() {
 	outlineName = "objects/door/closed_outline.png";
 	outline2Name = "objects/door/opened_outline.png";
 	opening = GameAnimation(OBJECT, "objects/door/%03d.png", 5, 1 FRAMES, false);
+	closing = GameAnimation(OBJECT, "objects/door/close/%03d.png", 5, 1 FRAMES, false);
 }
 Door::~Door() {
 }
@@ -101,7 +102,6 @@ void Door::initObject(Vec2 startPos) {
 	outline2->setVisible(false);
 	outline2->setGlobalZOrder(2);
 	//outline2->setOpacity(100);
-	outline->setGlobalZOrder(5);
 }
 
 void Door::initObject(int orient, Vec2 startPos) {
@@ -189,10 +189,12 @@ bool Door::use() {
 			setGlobalZOrder(2);
 			//setOpacity(100);
 			outline->setVisible(false);
-			outline2->setVisible(true);
 			stopAllActions();
-			opening.action->setSpeed(1);//opening door
-			startAnimation(OBJECT, opening);
+			auto callback = CallFunc::create([this]() {
+				outline2->setVisible(true);
+			});
+			auto action = Animate::create(opening.animation);
+			runAction(Sequence::create(action, callback, nullptr));
 			return true;
 		}
 		else {
@@ -201,10 +203,12 @@ bool Door::use() {
 			setGlobalZOrder(5);
 			//setOpacity(255);
 			outline2->setVisible(false);
-			outline->setVisible(true);
+			auto callback = CallFunc::create([this]() {
+				outline->setVisible(true);
+			});
 			stopAllActions();
-			opening.action->setSpeed(-1);//closing door
-			startAnimation(OBJECT, opening);
+			auto action = Animate::create(closing.animation);
+			runAction(Sequence::create(action, callback, nullptr));
 			return true;
 		}
 	}
@@ -330,7 +334,7 @@ Exit::Exit() {
 	name = "exit_door";
 	tag = 70000;
 	//sprite properties
-	zOrder = 7;
+	zOrder = 6;
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;

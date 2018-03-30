@@ -92,6 +92,7 @@ public:
 
 protected:
 	GameAnimation opening;
+	GameAnimation closing;
 
 	bool broken = false;
 

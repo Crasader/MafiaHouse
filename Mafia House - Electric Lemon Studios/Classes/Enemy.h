@@ -347,13 +347,13 @@ public:
 	CREATE_WITH_FRAME(Guard);
 	CREATE_WITH_FRAME_NAME(Guard, "enemy/guard/stand/001.png");
 private:
-	class AlertState : public State {
+	/*class AlertState : public State {
 	public:
 		AlertState() { type = "alert"; }
 		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
 		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
-	};
+	};*/
 };
 
 class Boss : public Enemy

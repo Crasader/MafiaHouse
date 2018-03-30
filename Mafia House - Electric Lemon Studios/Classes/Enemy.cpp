@@ -121,15 +121,22 @@ void Enemy::dropInventory(GameLayer* mainLayer) {
 }
 
 void Enemy::pickUpItem(GameLayer* mainLayer) {
+	if (itemToPickUp->getState() == Item::HELD) {
+		itemToPickUp = NULL;
+	}
 	if (itemToPickUp != NULL && itemToPickUp->getState() == Item::GROUND && itemToPickUp->enemyItem != true) {
 		if (itemToPickUp->isKey == false) {//item is not a key
-			removeChild(heldItem, true);
-
-			if (heldItem != NULL && (offhandItem == NULL || offhandItem->isKey == false)) {//enemy doesn't have an offhand item, or it is not a key
-				removeChild(offhandItem, true);
+			if (heldItem != NULL && (offhandItem == NULL || (offhandItem != NULL && offhandItem->isKey == false))) {//enemy has a held item already, and offhand item is not a key
+				if (offhandItem != NULL) {
+					removeChild(offhandItem, true);
+				}
+				heldItem->initOffhand();
 				offhandItem = heldItem;
-				offhandItem->initOffhand();
-				addChild(offhandItem);
+			}
+			else {//held item is not replacing offhand item because it is a key
+				if (heldItem != NULL) {
+					removeChild(heldItem, true);
+				}
 			}
 
 			itemToPickUp->removeFromParent();
@@ -154,7 +161,9 @@ void Enemy::pickUpItem(GameLayer* mainLayer) {
 		else {//item is a key
 			itemToPickUp->removeFromParent();
 			if (offhandItem == NULL || offhandItem->isKey == false) {//enemy doesn't have an offhand item, or it is not a key
-				removeChild(offhandItem, true);
+				if (offhandItem != NULL) {
+					removeChild(offhandItem, true);
+				}
 				offhandItem = itemToPickUp;
 				offhandItem->initOffhand();
 				addChild(offhandItem);
@@ -1583,6 +1592,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	//check if enemy has run into an item
 	if (enemy->itemToPickUp != NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {//enemy doesn't have a held item or it is a key
+		enemy->itemToPickUp = NULL;
 		//enemy->pickUpItem(mainLayer);//removing for now, could be annoying
 	}
 	//check if enemy is walking into a door
@@ -1689,6 +1699,10 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 							enemy->itemToPickUp = (enemy->findMoreRange(mainLayer));//find a weapon that is closest to them
 							if (enemy->itemToPickUp != NULL) {//if one was found
 								enemy->goingToMoreRange = true;
+								if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
+									enemy->heldItem = NULL;
+									enemy->removeChild(enemy->fist, true);
+								}
 								return new GetItemState;//go and get it
 							}
 						}
@@ -1724,6 +1738,10 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->lostPlayer = false;
 	enemy->reachedLastSeen = false;
 	enemy->bodySeen = NULL;
+	if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
+		enemy->heldItem = NULL;
+		enemy->removeChild(enemy->fist, true);
+	}
 }
 
 //Attack State(using items):
@@ -2360,9 +2378,9 @@ Guard::Guard() {
 	eyeHeight = 84;
 	defaultDegrees = 60;
 	visionDegrees = defaultDegrees;//width of angle of vision
-	defaultRadius = 190;
+	defaultRadius = 185;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 60;
+	baseSpeed = 55;
 	maxSpeed = baseSpeed;
 	deadBodyName = "enemy/guard/dead.png";
 	//initializing animations:
