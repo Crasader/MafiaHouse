@@ -322,6 +322,15 @@ Exit::~Exit() {
 }
 
 void Exit::initObject(int orient, Vec2 startPos) {
+	if (orient == 2) {//horizontal
+		size = Size(110, 20);
+		useBox = Size(110, radius);
+	}
+	else if (orient == 1) {//vertical
+		size = Size(20, 110);
+		useBox = Size(radius, 110);
+	}
+	//setColor(ccc3(255, 155, 0));//orange
 	setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
 
@@ -334,6 +343,7 @@ void Exit::initObject(int orient, Vec2 startPos) {
 	radiusBody->setCategoryBitmask(4);
 	radiusBody->setCollisionBitmask(1);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setTag(10000);
 	radiusBody->setName("exit_radius");
 	useRadius->setPhysicsBody(radiusBody);
 	addChild(useRadius);
@@ -342,7 +352,7 @@ void Exit::initObject(int orient, Vec2 startPos) {
 }
 
 void Exit::initExit() {
-	auto body = PhysicsBody::createBox(Size(110, 40));
+	auto body = PhysicsBody::createBox(Size(30, 130));
 	body->setEnabled(false);
 	body->setDynamic(false);
 	body->setCategoryBitmask(4);
@@ -354,11 +364,11 @@ void Exit::initExit() {
 	exitBox->setAnchorPoint(Vec2(0, 0));
 	addChild(exitBox);
 	if (side == 1) {//right side
-		exitBox->setPosition(Vec2(20, 0));
+		exitBox->setPosition(Vec2(45, 55));
 	}
 	else {//left side
 		setPosition(getPosition() - Vec2(10, 0));
-		exitBox->setPosition(Vec2(-20, 0));
+		exitBox->setPosition(Vec2(-25, 55));
 	}
 }
 

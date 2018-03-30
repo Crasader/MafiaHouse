@@ -122,7 +122,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -296,11 +296,11 @@ void Level::update(float deltaTime){
 
 	//check if player is going to interact with door/stairway
 	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
-		if (player->stairToUse != NULL) {
-			player->handleInput(mainLayer, gameTime, USE_STAIR);
-		}
-		else if (player->doorToUse != NULL) {
+		if (player->doorToUse != NULL) {
 			player->handleInput(mainLayer, gameTime, USE_DOOR);
+		}
+		else if (player->stairToUse != NULL) {
+			player->handleInput(mainLayer, gameTime, USE_STAIR);
 		}
 	}
 	//check if player is dropping item
@@ -1175,25 +1175,25 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		return true;
 	}
 	//held/thrown items and walls
-	if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object"))
+	if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object" || b->getName() == "exit_door"))
 	{
 		static_cast<Item*>(a)->makeNoise = true;
 		return true;
 	}
-	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object") && b->getName() == "held_item")
+	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object" || a->getName() == "exit_door") && b->getName() == "held_item")
 	{
 		static_cast<Item*>(b)->makeNoise = true;
 		return true;
 	}
 	//falling items and walls
-	if (a->getName() == "item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object"))
+	if (a->getName() == "item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object" || b->getName() == "exit_door"))
 	{
 		if (static_cast<Item*>(a)->getState() == Item::FALLING) {
 			static_cast<Item*>(a)->makeNoise = true;
 		}
 		return true;
 	}
-	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object") && b->getName() == "item")
+	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object" || a->getName() == "exit_door") && b->getName() == "item")
 	{
 		if (static_cast<Item*>(b)->getState() == Item::FALLING) {
 			static_cast<Item*>(b)->makeNoise = true;

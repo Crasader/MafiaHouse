@@ -478,7 +478,7 @@ Knife::Knife(){
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
-	startTime = 10 FRAMES;
+	startTime = 11 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 12 FRAMES;
 	range = 34;
