@@ -36,16 +36,6 @@ void Character::updateRoom(vector<RoomData*> rooms) {
 	}
 }
 
-void Character::startAnimation(AnimationTag tag, GameAnimation animation) {
-	if (getActionByTag(tag) == NULL) {
-		runAction(animation.action);
-	}
-}
-
-void Character::stopAnimation(AnimationTag tag) {
-	stopActionByTag(tag);
-}
-
 void Character::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp != NULL) {
 		removeChild(heldItem, true);

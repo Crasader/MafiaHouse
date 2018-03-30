@@ -111,6 +111,16 @@ void GameObject::initObjectNoPhysics(Vec2 startPos) {
 	initObjectNoPhysics();
 }
 
+void GameObject::startAnimation(AnimationTag tag, GameAnimation animation) {
+	if (getActionByTag(tag) == NULL) {
+		runAction(animation.action);
+	}
+}
+
+void GameObject::stopAnimation(AnimationTag tag) {
+	stopActionByTag(tag);
+}
+
 void GameObject::createOutline(string name) {
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	outline = Sprite::createWithSpriteFrameName(name);
@@ -118,6 +128,15 @@ void GameObject::createOutline(string name) {
 	outline->setPositionNormalized(Vec2(0.5, 0.5));
 	outline->setGlobalZOrder(zOrder);
 	addChild(outline);
+}
+
+void GameObject::createOutline2(string name) {
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	outline2 = Sprite::createWithSpriteFrameName(name);
+	outline2->getTexture()->setTexParameters(texParams);
+	outline2->setPositionNormalized(Vec2(0.5, 0.5));
+	outline2->setGlobalZOrder(zOrder);
+	addChild(outline2);
 }
 
 void GameObject::setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position) {

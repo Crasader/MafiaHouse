@@ -38,9 +38,6 @@ class Character : public GameObject
 public:
 	virtual void initObject(Vec2 startPos = Vec2(0, 0));
 
-	void startAnimation(AnimationTag tag, GameAnimation animation);
-	void stopAnimation(AnimationTag tag);
-
 	virtual void flipX();
 
 	float getPositionX();
