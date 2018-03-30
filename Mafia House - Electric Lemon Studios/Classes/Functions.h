@@ -30,9 +30,11 @@ public:
 
 	float pos = 0.0f;
 
-	int type = 1;//1 = door, 2 = vent
+	int type = 1;//1 = door, 2 = vent, 3 = exit
 
 	bool locked = false;//true, starts locked, enemies will lock it automatically
+
+	bool isExit = false;
 };
 
 class RoomData {

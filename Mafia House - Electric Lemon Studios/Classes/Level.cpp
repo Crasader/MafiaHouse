@@ -82,6 +82,13 @@ void Level::setup(){
 void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
+	//initializing exits
+	for (int i = 0; i < doors.size(); i++) {
+		if (doors[i]->checkExit() == true) {
+			static_cast<Exit*>(doors[i])->initExit();
+		}
+	}
+
 	//initializing enemy offhand items
 	for (int i = 0; i < enemies.size(); i++) {
 		if (enemies[i]->offhandItem != NULL) {
@@ -132,11 +139,8 @@ void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
 
-	if (numBosses <= 0) {
-		//activate exits
-	}
-
 	if (levelComplete == true) {
+		resetLevel();
 		//show level completion screen
 	}
 
@@ -180,6 +184,11 @@ void Level::update(float deltaTime){
 		if (doors[i]->noiseLevel != -1) {
 			doors[i]->createNoise(doors[i]->noiseLevel, doors[i]->noiseLevel / 100, gameTime, doors[i]->getPosition() + doors[i]->getContentSize() / 2, doors[i]->roomHitFrom, "door_being_hit", &mainLayer->noises);
 			doors[i]->noiseLevel = -1;
+		}
+		if (doors[i]->checkExit() == true) {
+			if (numBosses <= 0) {//all bosses have been killed
+				static_cast<Exit*>(doors[i])->canOpen = true;//activate level exits
+			}
 		}
 	}
 	//items update
@@ -424,7 +433,7 @@ void Level::update(float deltaTime){
 		itemFill->setVisible(true);
 		itemIcon->setVisible(true);
 		float percentage = player->heldItem->hp / player->heldItem->maxHP;
-		itemFill->setScaleX(percentage / 2);
+		itemFill->setScaleX(percentage * 0.85);
 	}
 	else {
 		itemBar->setVisible(false);
@@ -442,6 +451,30 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	Node *b = contact.getShapeB()->getBody()->getNode();
 
 	if (a != NULL && b != NULL) {
+		//player and exit hitbox
+		if (a->getName() == "player" && b->getName() == "level_exit")
+		{
+			levelComplete = true;
+			return false;
+		}
+		else if (a->getName() == "level_exit" && b->getName() == "player")
+		{
+			levelComplete = true;
+			return false;
+		}
+		//player and exit door
+		if (a->getName() == "player" && b->getName() == "exit_radius")
+		{
+			player->doorToUse = static_cast<Door*>(b->getParent());
+			static_cast<Door*>(b->getParent())->playerRange = true;
+			return false;
+		}
+		else if (a->getName() == "exit_radius" && b->getName() == "player")
+		{
+			player->doorToUse = static_cast<Door*>(a->getParent());
+			static_cast<Door*>(a->getParent())->playerRange = true;
+			return false;
+		}
 		//player and noises
 		if (a->getName() == "player" && b->getName() == "noise")
 		{
@@ -1313,8 +1346,37 @@ bool Level::initLevel(string filename){
 					if (pieces[2] == "locked") {
 						doorData.locked = true;
 					}
-					else if (pieces[2] == "EXIT") {
-
+				}
+				if (pieces.size() > 3) {//set door's position on wall
+					doorData.pos = atof(pieces[3].c_str());
+				}
+				//set what wall door is on
+				if (pieces[1] == "right") {
+					doorData.leftRoom = Vec2(roomNum, floorNum);
+					doorData.rightRoom = Vec2(roomNum + 1, floorNum);
+					roomData->rightDoors.push_back(doorData);
+					roomData->hasRightDoor = true;
+				}
+				else if (pieces[1] == "left") {
+					doorData.leftRoom = Vec2(roomNum - 1, floorNum);
+					doorData.rightRoom = Vec2(roomNum, floorNum);
+					roomData->leftDoors.push_back(doorData);
+					roomData->hasLeftDoor = true;
+				}
+				else if (pieces[1] == "top") {
+					roomData->ceilingDoors.push_back(doorData);
+				}
+				else if (pieces[1] == "bot") {
+					roomData->bottomDoors.push_back(doorData);
+				}
+			}
+			else if (pieces[0] == "exit") {
+				DoorData doorData;
+				doorData.type = 3;
+				//set door as locked
+				if (pieces.size() > 2) {
+					if (pieces[2] == "locked") {
+						doorData.locked = true;
 					}
 				}
 				if (pieces.size() > 3) {//set door's position on wall
@@ -1343,14 +1405,14 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "vent") {
 				DoorData ventData;
 				ventData.type = 2;
-				if (pieces.size() > 2) {//set vent's position on wall
-					ventData.pos = atof(pieces[2].c_str());
-				}
 				//set vent as locked
-				if (pieces.size() > 3) {
-					if (pieces[3] == "locked") {
+				if (pieces.size() > 2) {
+					if (pieces[2] == "locked") {
 						ventData.locked = true;
 					}
+				}
+				if (pieces.size() > 3) {//set vent's position on wall
+					ventData.pos = atof(pieces[3].c_str());
 				}
 				//set what wall vent is on
 				if (pieces[1] == "right") {

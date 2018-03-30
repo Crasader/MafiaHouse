@@ -125,7 +125,7 @@ void Door::updateColour() {
 		float inversePercentage = abs(percentage - 1);//inverts the percentage
 
 		if (locked == false) {
-			setColor(ccc3(255 * percentage, 215 * percentage, 255 * inversePercentage));
+			setColor(ccc3(255 * percentage, 175 * percentage, 255 * inversePercentage));
 		}
 		else {
 			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
@@ -301,4 +301,86 @@ void Vent::itemHit(Item* item) {
 			breakDoor();
 		}
 	}
+}
+
+//Exit Class
+Exit::Exit() {
+	isExit = true;
+	radius = 40.0f;
+	name = "exit_door";
+	tag = 70000;
+	//sprite properties
+	zOrder = 7;
+	scale = 1.0f;
+	//physics body properties
+	dynamic = false;
+	category = 0xFFFFFFFF;
+	collision = 0xFFFFFFFF;
+	outlineName = "objects/door/outline.png";
+}
+Exit::~Exit() {
+}
+
+void Exit::initObject(int orient, Vec2 startPos) {
+	setContentSize(size);//set the size of the wall
+	GameObject::initObject(startPos);
+
+	auto useRadius = Node::create();
+	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	useRadius->setName("exit_radius");
+
+	auto radiusBody = PhysicsBody::createBox(useBox);
+	radiusBody->setDynamic(false);
+	radiusBody->setCategoryBitmask(4);
+	radiusBody->setCollisionBitmask(1);
+	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setName("exit_radius");
+	useRadius->setPhysicsBody(radiusBody);
+	addChild(useRadius);
+
+	createOutline(outlineName);
+}
+
+void Exit::initExit() {
+	auto body = PhysicsBody::createBox(Size(110, 40));
+	body->setEnabled(false);
+	body->setDynamic(false);
+	body->setCategoryBitmask(4);
+	body->setCollisionBitmask(1);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	exitBox = Node::create();
+	exitBox->setPhysicsBody(body);
+	exitBox->setName("level_exit");
+	exitBox->setAnchorPoint(Vec2(0, 0));
+	addChild(exitBox);
+	if (side == 1) {//right side
+		exitBox->setPosition(Vec2(20, 0));
+	}
+	else {//left side
+		setPosition(getPosition() - Vec2(10, 0));
+		exitBox->setPosition(Vec2(-20, 0));
+	}
+}
+
+void Exit::updateColour() {
+	if (canOpen == true) {//you can exit the level
+		setColor(ccc3(55, 255, 55));//green
+	}
+	else {//you can't exit the level yet
+		setColor(ccc3(55, 55, 255));//blue
+	}
+}
+
+bool Exit::use() {
+	if (canOpen == true) {
+		exitBox->getPhysicsBody()->setEnabled(true);
+		isOpen = true;
+		getPhysicsBody()->setEnabled(false);
+		setGlobalZOrder(2);
+		setOpacity(100);
+		outline->setGlobalZOrder(2);
+		outline->setOpacity(100);
+		return true;
+	}
+	return false;
 }

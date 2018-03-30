@@ -1583,7 +1583,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	//check if enemy has run into an item
 	if (enemy->itemToPickUp != NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {//enemy doesn't have a held item or it is a key
-		enemy->pickUpItem(mainLayer);
+		//enemy->pickUpItem(mainLayer);//removing for now, could be annoying
 	}
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {

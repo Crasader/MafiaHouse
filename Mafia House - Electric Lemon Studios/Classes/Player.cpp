@@ -872,6 +872,9 @@ void Player::JumpState::enter(Player* player, GameLayer* mainLayer, float time) 
 	player->startAnimation(JUMP, player->jumping);
 }
 Player::State* Player::JumpState::update(Player* player, GameLayer* mainLayer, float time) {
+	if (player->wasInHitStun == true) {
+		return new NeutralState;
+	}
 	if (player->hasJumped == true && player ->getPhysicsBody()->getVelocity().y <= 0) {//when player's vertical speed has stopped
 		return new FallState;
 	}
