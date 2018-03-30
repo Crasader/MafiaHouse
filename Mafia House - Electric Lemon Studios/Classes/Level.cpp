@@ -139,6 +139,18 @@ void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
 
+	//camera zoom button
+	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
+		camera->stopAllActions();
+		auto zoomOut = MoveTo::create(1.0, Vec3(0, 0, 459.42983 / 0.4));
+		camera->runAction(zoomOut);
+	}
+	else if (INPUTS->getKeyRelease(KeyCode::KEY_CTRL)) {
+		camera->stopAllActions();
+		auto zoomIn = MoveTo::create(1.0, Vec3(0, 0, 459.42983 / 1.0));
+		camera->runAction(zoomIn);
+	}
+
 	if (levelComplete == true) {
 		resetLevel();
 		//show level completion screen
@@ -266,9 +278,31 @@ void Level::update(float deltaTime){
 		if (enemies.at(i)->isReallyDead() == true) {
 			if (enemies[i]->checkBoss() == true) {
 				numBosses--;//you killed a boss
+				Label* bossKillLabel;
+				if (numBosses <= 0){
+					bossKillLabel = Label::createWithTTF("MISSION COMPLETE. RETURN TO EXIT.", "fonts/pixelFJ8pt1__.ttf", 10);
+				}
+				else {
+					bossKillLabel = Label::createWithTTF("BOSS KILLED. " + std::to_string(numBosses) + " LEFT TO KILL." , "fonts/pixelFJ8pt1__.ttf", 10);
+				}
+				bossKillLabel->getFontAtlas()->setAliasTexParameters();
+				bossKillLabel->setGlobalZOrder(20);
+				addChild(bossKillLabel);
+				bossKillLabel->setOpacity(0);
+				bossKillLabel->setPosition(player->getPosition() + Vec2(0,90));
+				auto fadeIn = FadeIn::create(0.5);
+				auto moveUp = MoveBy::create(5.0, Vec2(0, 35));
+				auto wait = MoveBy::create(2.5, Vec2(0, 0));
+				auto fadeOut = FadeOut::create(2.0);
+				auto callback = CallFunc::create([bossKillLabel]() {
+					bossKillLabel->removeFromParent();
+				});
+				bossKillLabel->runAction(Sequence::create(fadeIn, wait, fadeOut, callback, nullptr));
+				bossKillLabel->runAction(moveUp);
 			}
 			else {
 				numKilled++;
+				numEnemies--;
 			}
 			enemies.at(i)->removeFromParentAndCleanup(true);
 			enemies.erase(enemies.begin() + i);
