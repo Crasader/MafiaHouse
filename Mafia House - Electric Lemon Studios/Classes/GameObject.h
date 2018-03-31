@@ -131,6 +131,8 @@ public:
 
 	virtual void updateFloor(vector<FloorData> floors);
 	virtual void updateRoom(vector<RoomData*> rooms);
+	void updateHeldItemFloor(vector<FloorData> floors);
+	void updateHeldItemRoom(vector<RoomData*> rooms);
 
 	//movement functions
 	void stopY();

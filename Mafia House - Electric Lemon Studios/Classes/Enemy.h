@@ -32,6 +32,9 @@ public:
 	void pickUpItem(GameLayer* mainLayer);
 	void dropInventory(GameLayer* mainLayer);
 
+	void beginUseItem(float angle);
+	void useItem(float angle);
+
 	void openDoor();
 	void closeDoor();
 

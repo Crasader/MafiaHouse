@@ -114,8 +114,28 @@ void Level::onStart(float deltaTime){
 				enemies[i]->giveKey();//if they pickup a key, they have a key to open locked doors
 			}
 		}
+		if (enemies[i]->itemToPickUp != NULL) {
+			enemies[i]->itemToPickUp->removeFromParent();//removing from main layer
+			enemies[i]->heldItem = enemies[i]->itemToPickUp;
+			enemies[i]->heldItem->initPickedUpItem();
+			enemies[i]->addChild(enemies[i]->heldItem);
+			enemies[i]->inventory.push_back(enemies[i]->heldItem);
+
+			if (enemies[i]->getFlippedX() == true) {
+				enemies[i]->heldItem->knockback *= -1;
+			}
+			enemies[i]->heldItem->holderFlipped = enemies[i]->getFlippedX();
+
+			enemies[i]->heldItem->enemyItem = true;
+
+			if (enemies[i]->heldItem->isKey == true) {
+				enemies[i]->giveKey();//if they pickup a key, they have a key to open locked doors
+			}
+			enemies[i]->itemToPickUp = NULL;
+		}
 	}
 
+	//initializing missing items
 	for (int i = 0; i < mainLayer->items.size(); i++) {
 		if (mainLayer->items[i]->getState() == Item::GROUND) {
 			mainLayer->items[i]->initMissingItem();
@@ -422,10 +442,23 @@ void Level::update(float deltaTime){
 			}
 		}
 	}
+
+	//for drawing gun shots
+	if (gunShots) {
+		removeChild(gunShots, true);
+	}
+	gunShots = DrawNode::create();
+	gunShots->setGlobalZOrder(9);
 	//items update
 	for (int i = 0; i < mainLayer->items.size(); i++) {
-		mainLayer->items[i]->updateFloor(mainLayer->floors);
-		mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
+		if (mainLayer->items[i]->getState() != Item::HELD) {
+			mainLayer->items[i]->updateFloor(mainLayer->floors);
+			mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
+		}
+		else {//updating room/foor for held items
+			mainLayer->items[i]->updateHeldItemFloor(mainLayer->floors);
+			mainLayer->items[i]->updateHeldItemRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
+		}
 		if (mainLayer->items[i]->makeNoise == true){
 			if (mainLayer->items[i]->getState() != Item::HELD) {
 				mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * mainLayer->items[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->items[i]->noiseLevel, gameTime, mainLayer->items[i]->getPosition(), Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "item_hitting_wall", &mainLayer->noises);
@@ -463,7 +496,19 @@ void Level::update(float deltaTime){
 				i--;
 			}
 		}
+		//for guns being shot
+		if (mainLayer->items[i]->getAttackType() == Item::SHOOT && mainLayer->items[i]->wasShot == true) {
+			mainLayer->items[i]->wasShot = false;
+			mainLayer->items[i]->shotTime = gameTime;
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 100, mainLayer->items[i]->noiseLevel - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 100, (mainLayer->items[i]->noiseLevel - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+		}
+		if (mainLayer->items[i]->shotTime != -1 && gameTime - mainLayer->items[i]->shotTime <= 0.5f) {//time to display gunshot for
+			gunShots->drawSegment(mainLayer->items[i]->startpoint, mainLayer->items[i]->endpoint, 1, Color4F(1, 1, 1, 1));
+		}
 	}
+	addChild(gunShots);
+
 	//dead bodies update
 	for (int i = 0; i < mainLayer->bodies.size(); i++) {
 		mainLayer->bodies[i]->updateFloor(mainLayer->floors);
@@ -482,12 +527,11 @@ void Level::update(float deltaTime){
 	}
 
 	//for drawing vision rays
-	if (visionRays){
+	if (visionRays) {
 		removeChild(visionRays, true);
 	}
 	visionRays = DrawNode::create();
 	visionRays->setGlobalZOrder(10);
-
 	//enemy update
 	vector<Vec2> points;
 	Vec2 start;
@@ -1748,6 +1792,9 @@ bool Level::initLevel(string filename){
 				else if (pieces[1] == "hammer") {
 					item = Hammer::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "gun") {
+					item = Gun::createWithSpriteFrameName();
+				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				item->startRoom = Vec2(roomNum, floorNum);
@@ -1785,6 +1832,9 @@ bool Level::initLevel(string filename){
 					else if (pieces[5] == "hammer") {
 						item = Hammer::createWithSpriteFrameName();
 					}
+					else if (pieces[5] == "gun") {
+						item = Gun::createWithSpriteFrameName();
+					}
 					item->initObject();
 					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 					item->startRoom = Vec2(roomNum, floorNum);
@@ -1802,6 +1852,9 @@ bool Level::initLevel(string filename){
 					}
 					else if (pieces[6] == "hammer") {
 						item = Hammer::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "gun") {
+						item = Gun::createWithSpriteFrameName();
 					}
 					item->initObject();
 					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));

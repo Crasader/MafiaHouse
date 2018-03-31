@@ -152,6 +152,9 @@ void Character::finishUseItem() {
 	else if (heldItem->getAttackType() == Item::SWING) {
 		setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
 	}
+	else if (heldItem->getAttackType() == Item::SHOOT) {
+		setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+	}
 	heldItem->getPhysicsBody()->setEnabled(false);
 }
 

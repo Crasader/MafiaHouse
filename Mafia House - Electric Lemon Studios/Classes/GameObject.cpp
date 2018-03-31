@@ -167,6 +167,23 @@ void GameObject::updateRoom(vector<RoomData*> rooms) {
 	}
 }
 
+void GameObject::updateHeldItemFloor(vector<FloorData> floors) {
+	for (int i = 0; i < floors.size(); i++) {
+		if ((getParent()->convertToWorldSpace(getPosition()).y > floors[i].bot - 10) && (getParent()->convertToWorldSpace(getPosition()).y + getContentSize().height < floors[i].top + 10)) {//player in on the floor, inbetween top and bottom
+			currentFloor = i;
+			break;
+		}
+	}
+}
+void GameObject::updateHeldItemRoom(vector<RoomData*> rooms) {
+	for (int i = 0; i < rooms.size(); i++) {
+		if ((getParent()->convertToWorldSpace(getPosition()).x > rooms[i]->left - 10) && (getParent()->convertToWorldSpace(getPosition()).x + getContentSize().width < rooms[i]->right + 10)) {//player in on the floor, inbetween top and bottom
+			currentRoom = i;
+			break;
+		}
+	}
+}
+
 void GameObject::stopX() {
 	getPhysicsBody()->setVelocity(Vec2(0, getPhysicsBody()->getVelocity().y));
 	getPhysicsBody()->resetForces();

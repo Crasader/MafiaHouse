@@ -424,6 +424,10 @@ void Player::beginUseItem(float angle) {
 				heldItem->prepareSwing(angle);
 				setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
 			}
+			else if (heldItem->getAttackType() == Item::SHOOT) {
+				heldItem->prepareShoot(angle);
+				setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());//first frame of shooting animation
+			}
 		}
 		else {
 			if (heldItem->getAttackType() == Item::STAB) {
@@ -433,6 +437,10 @@ void Player::beginUseItem(float angle) {
 			else if (heldItem->getAttackType() == Item::SWING) {
 				heldItem->prepareCrouchSwing(angle);
 				setSpriteFrame(crouchswing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+			}
+			else if (heldItem->getAttackType() == Item::SHOOT) {
+				heldItem->prepareCrouchShoot(angle);
+				setSpriteFrame(crouchstab.animation->getFrames().at(1)->getSpriteFrame());//first frame of shooting animation
 			}
 		}
 	}
@@ -450,6 +458,9 @@ void Player::useItem(float angle) {
 				heldItem->swingSequence(angle, flippedX);
 				setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
 			}
+			else if (heldItem->getAttackType() == Item::SHOOT) {
+				heldItem->playerShoot(angle);
+			}
 		}
 		else {
 			heldItem->getPhysicsBody()->setEnabled(true);
@@ -460,6 +471,9 @@ void Player::useItem(float angle) {
 			else if (heldItem->getAttackType() == Item::SWING) {
 				heldItem->swingSequence(angle, flippedX);
 				setSpriteFrame(crouchswing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+			}
+			else if (heldItem->getAttackType() == Item::SHOOT) {
+				heldItem->playerShoot(angle);
 			}
 		}
 	}
@@ -1277,6 +1291,12 @@ void Player::AttackState::exit(Player* player, GameLayer* mainLayer) {
 	player->moveSpeed = (1.0f);
 	player->setSpeed(player->moveSpeed);
 	if (player->heldItem->hp <= 0) {//if item is broken, no hp left
+		if (player->isCrouched == false) {
+			player->heldItem->initHeldItem();
+		}
+		else {
+			player->heldItem->initCrouchHeldItem();
+		}
 		player->breakItem(mainLayer);
 	}
 	else{

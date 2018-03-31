@@ -102,6 +102,8 @@ protected:
 	Sprite* background;//the background image of the level
 	float backgroundScale = 1.0f;
 
+	DrawNode* gunShots;
+
 	DrawNode* noiseCircles;//used for drawing circles to visualize noises
 
 	Player* player;//the player character

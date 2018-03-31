@@ -64,7 +64,7 @@ public:
 	void initLevelOption(int num, string labelText, bool checkComplete, bool checkAchievement1, bool checkAchievement2, string recordedTime) {
 		optionNumber = num;
 
-		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 29);
+		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 31);
 		label->getFontAtlas()->setAliasTexParameters();
 		label->setPositionNormalized(Vec2(0.48, 0.5));
 		addChild(label);

@@ -20,7 +20,8 @@ public:
 
 	enum AttackType {
 		STAB,
-		SWING
+		SWING,
+		SHOOT
 	};
 	enum Effect {
 		NONE,
@@ -65,6 +66,11 @@ public:
 	void used();
 
 	void hitWall();
+
+	void prepareShoot(float angle);
+	void prepareCrouchShoot(float angle);
+	void enemyShoot(Vec2 target);
+	void playerShoot(float angle);
 
 	virtual void prepareStab(float angle);
 	virtual void prepareSwing(float angle);
@@ -116,6 +122,11 @@ public:
 
 	MissingItem* missingItem = NULL;
 
+	float shotTime = -1;
+	bool wasShot = false;
+	Vec2 endpoint;
+	Vec2 startpoint;
+
 protected:
 	string itemFile = "items/fist.png";
 	State state = GROUND;
@@ -129,6 +140,15 @@ protected:
 	float lagTime;//enlag time of attack
 	int range;//range of the weapons attack, for enemy ai
 	float rangeRadius = 100;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
+};
+
+class Gun : public Item//enemy attacking barehand, actually an invisible item
+{
+public:
+	Gun();
+	~Gun() {}
+	CREATE_WITH_FRAME(Gun);
+	CREATE_WITH_FRAME_NAME(Gun, "items/gun.png");
 };
 
 class Fist : public Item//enemy attacking barehand, actually an invisible item

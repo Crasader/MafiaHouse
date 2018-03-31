@@ -119,7 +119,6 @@ void Enemy::dropInventory(GameLayer* mainLayer) {
 	}
 	heldItem = NULL;
 }
-
 void Enemy::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp->getState() == Item::HELD) {
 		itemToPickUp = NULL;
@@ -185,6 +184,24 @@ void Enemy::pickUpItem(GameLayer* mainLayer) {
 			hasKey = true;//if they pickup a key, they have a key to open locked doors
 
 			itemToPickUp = NULL;
+		}
+	}
+}
+
+void Enemy::beginUseItem(float angle) {
+	Character::beginUseItem(angle);
+	if (heldItem != NULL) {
+		if (heldItem->getAttackType() == Item::SHOOT) {
+			heldItem->prepareShoot(0);
+			setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());//first frame of shooting animation
+		}
+	}
+}
+void Enemy::useItem(float angle) {
+	Character::useItem(angle);
+	if (heldItem != NULL) {
+		if (heldItem->getAttackType() == Item::SHOOT) {//always shoot directly at the player
+			heldItem->enemyShoot(detectedPlayer->getPosition() + detectedPlayer->getSize() / 2);
 		}
 	}
 }
@@ -1102,7 +1119,9 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 	if (item->didHitWall == false && item->hp > 0) {
 		stopAllActions();
-		item->used();
+		if (item->getAttackType() != Item::SHOOT) {
+			item->used();
+		}
 		hp -= item->dmg;//dealing damage to enemy
 		/*auto emitter = ParticleFireworks::create();
 		emitter->setStartColor(Color4F(255, 0, 0, 1));

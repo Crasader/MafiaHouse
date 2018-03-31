@@ -26,6 +26,11 @@ bool LevelSelectMenu::init() {
 	selectionIndicator->setScale(2.0f);
 	mainLayer->addChild(selectionIndicator, 2);
 
+	auto label = Label::createWithTTF("Backspace:\nReturn to Main Menu", "fonts/pixelFJ8pt1__.ttf", 22);
+	label->getFontAtlas()->setAliasTexParameters();
+	label->setPositionNormalized(Vec2(0.105, 0.94));
+	addChild(label);
+
 	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen
 	selectionIndicator->setPosition(optionPosition + Vec2(-600, -50));
 
@@ -133,6 +138,9 @@ void LevelSelectMenu::update(float deltaTime) {
 		else if (selectedLevel->optionNumber == 2) {
 			director->replaceScene(Stage3::createScene());
 		}
+	}
+	else if (INPUTS->getKeyPress(KeyCode::KEY_BACKSPACE)) {//select currently selected level
+		//director->replaceScene(MainMenu::createScene());
 	}
 
 	INPUTS->clearForNextFrame();

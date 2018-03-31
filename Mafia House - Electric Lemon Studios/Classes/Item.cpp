@@ -1,4 +1,6 @@
 #include "Item.h"
+#include "Player.h"
+#include "Enemy.h"
 
 Item::Item()
 {
@@ -247,22 +249,22 @@ bool Item::checkBroken() {
 
 void Item::breakItem() {
 	auto emitter = ParticleExplosion::create();
-	emitter->setStartColor(Color4F(100, 100, 255, 1));
+	emitter->setStartColor(Color4F(50, 50, 255, 1));
 	emitter->setEndColor(Color4F(0, 0, 255, 1));//blue
 	emitter->setStartSize(3.0f);
 	emitter->setStartSizeVar(1.0f);
 	emitter->setEndSize(0.5f);
 	emitter->setEndSizeVar(0.5f);
-	emitter->setSpeed(1200.0f);
+	emitter->setSpeed(1600.0f);
 	emitter->setSpeedVar(0.0f);
 	emitter->setTotalParticles(150);
 	emitter->setEmissionRate(1000000.0f);
 	emitter->setEmitterMode(ParticleSystem::Mode::RADIUS);
 	emitter->setStartRadius(0.0f);
 	emitter->setEndRadius(50.0f);
-	emitter->setEndRadiusVar(25.0f);
+	emitter->setEndRadiusVar(30.0f);
 	emitter->setLife(0.1f);
-	emitter->setLifeVar(2.0f);
+	emitter->setLifeVar(1.5f);
 	emitter->setTextureWithRect(frameCache->getSpriteFrameByName("particles/pixel.png")->getTexture(), frameCache->getSpriteFrameByName("particles/pixel.png")->getRect());
 	emitter->setGlobalZOrder(30);
 	if (state == HELD) {
@@ -444,6 +446,114 @@ void Item::fallAttack() {
 		setPosition(Vec2(60, 20));
 		setRotation(10);
 		setAnchorPoint(Vec2(0, 0.5));
+	}
+}
+
+//Gun Class:
+Gun::Gun() {
+	itemFile = "items/gun.png";
+	outlineName = "items/gun_outline.png";
+	Item::Item();
+	priority = 20;
+	maxHP = 3;
+	hp = maxHP;
+	dmg = 100;
+	hitstun = 20 FRAMES;
+	doorDmg = 100;
+	canBreakDoor = true;
+	//tag = 10100;//10100 - 10199 for knives
+	effect = KILL;
+	attackType = SHOOT;
+	startTime = 20 FRAMES;
+	attackTime = 30 FRAMES;
+	lagTime = 20 FRAMES;
+	range = 200;
+	rangeRadius = 200;
+	powerLevel = 20;
+	noiseLevel = 3.0f;
+}
+
+void Item::prepareShoot(float angle) {
+	setRotation(angle);
+	setPosition(Vec2(35, 70));
+	setAnchorPoint(Vec2(-0.95, 0.5));
+}
+
+void Item::prepareCrouchShoot(float angle) {
+	setRotation(angle);
+	setPosition(Vec2(35, 35));
+	setAnchorPoint(Vec2(-0.95, 0.5));
+}
+
+void Item::enemyShoot(Vec2 target) {
+	wasShot = true;
+	endpoint = Vec2(0, 0);
+	PhysicsRayCastCallbackFunc func = [this](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
+	{
+		string contactName = info.shape->getBody()->getNode()->getName();
+		Node* contact = info.shape->getBody()->getNode();
+
+		if (contactName == "wall" || contactName == "floor" || contactName == "ceiling" || contactName == "phys_object" || contactName == "exit_door") {//raycast stopped by physical objects
+			endpoint = info.contact;
+			return false;
+		}
+		else if (contactName == "door") {
+			static_cast<Door*>(contact)->itemHit(this);
+			endpoint = info.contact;
+			return false;
+		}
+		else if (contactName == "player") {//hit the player
+			static_cast<Player*>(contact)->itemHitBy = this;//set item they were hit by to this gun
+			endpoint = info.contact;
+			return false;
+		}
+		return true;
+	};
+	if (holderFlipped == false) {
+		startpoint = getParent()->convertToWorldSpace(getPosition()) + Vec2(60, 0);
+	}
+	else {
+		startpoint = getParent()->convertToWorldSpace(getPosition()) - Vec2(60, 0);
+	}
+	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//ray cast directly towards target
+	if (endpoint == Vec2(0, 0)) {//nothing was hit
+		endpoint = target * 2;//for drawing bullet line
+	}
+}
+
+void Item::playerShoot(float angle) {
+	used();
+	wasShot = true;
+	Vec2 direction = angleToDirection(angle);
+	if (holderFlipped == true) {
+		direction.x *= -1;
+	}
+	endpoint = Vec2(0, 0);
+	PhysicsRayCastCallbackFunc func = [this](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
+	{
+		string contactName = info.shape->getBody()->getNode()->getName();
+		Node* contact = info.shape->getBody()->getNode();
+
+		if (contactName == "wall" || contactName == "floor" || contactName == "ceiling" || contactName == "phys_object" || contactName == "exit_door") {//raycast stopped by physical objects
+ 			endpoint = info.contact;
+			return false;
+		}
+		else if (contactName == "door") {
+			static_cast<Door*>(contact)->itemHit(this);
+			endpoint = info.contact;
+			return false;
+		}
+		else if (contactName == "enemy" || contactName == "enemy_alert") {//hit an enemy
+			static_cast<Enemy*>(contact)->itemHitBy = this;//set item they were hit by to this gun
+			endpoint = info.contact;
+			return false;
+		}
+		return true;
+	};
+	startpoint = getParent()->convertToWorldSpace(getPosition()) + direction * 60;
+	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast in direction of aim
+	if (endpoint == Vec2(0, 0)) {//nothing was hit
+		endpoint = startpoint + direction * 1000;//for drawing bullet line
 	}
 }
 
