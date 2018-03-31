@@ -1104,6 +1104,25 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 		stopAllActions();
 		item->used();
 		hp -= item->dmg;//dealing damage to enemy
+		/*auto emitter = ParticleFireworks::create();
+		emitter->setStartColor(Color4F(255, 0, 0, 1));
+		emitter->setEndColor(Color4F(255, 100, 100, 1));//red
+		//emitter->setDuration(1.0f);
+		//emitter->setStartSize(3.0f);
+		//emitter->setStartSizeVar(1.0f);
+		//emitter->setEndSize(0.5f);
+		//emitter->setEndSizeVar(0.5f);
+		//emitter->setSpeed(1200.0f);
+		//emitter->setSpeedVar(0.0f);
+		//emitter->setEmitterMode(ParticleSystem::Mode::GRAVITY);
+		//emitter->setTotalParticles(150);
+		//emitter->setEmissionRate(1000000.0f);
+		//emitter->setLife(0.1f);
+		//emitter->setLifeVar(2.0f);
+		emitter->setTextureWithRect(frameCache->getSpriteFrameByName("particles/pixel.png")->getTexture(), frameCache->getSpriteFrameByName("particles/pixel.png")->getRect());
+		emitter->setGlobalZOrder(30);
+		//emitter->setPosition(getPosition());
+		addChild(emitter);*/
 		if (item->getEffect() == Item::NONE) {
 			wasInHitStun = true;
 			hitStunStart = time;
