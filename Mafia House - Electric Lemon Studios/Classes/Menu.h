@@ -101,14 +101,15 @@ public:
 
 class GameMenu : public Scene{
 public:
-	
-
-protected:
 	vector<MenuOption*> options;
 
 	Sprite* selectionIndicator;
 
 	Sprite* background;
+
+	Director* director;
+	Vec2 visibleSize;
+	Vec2 origin;
 };
 
 
