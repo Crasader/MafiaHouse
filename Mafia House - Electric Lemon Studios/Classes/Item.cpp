@@ -89,6 +89,7 @@ void Item::initHeldItem() {
 	setRotation(-45.0f);
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
+	outline->setVisible(false);
 }
 
 void Item::initCrouchHeldItem() {
@@ -464,9 +465,9 @@ Gun::Gun() {
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KNOCKOUT;
 	attackType = SHOOT;
-	startTime = 20 FRAMES;
+	startTime = 30 FRAMES;
 	attackTime = 30 FRAMES;
-	lagTime = 20 FRAMES;
+	lagTime = 30 FRAMES;
 	range = 300;
 	rangeRadius = 300;
 	powerLevel = 20;

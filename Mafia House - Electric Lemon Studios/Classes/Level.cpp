@@ -462,7 +462,7 @@ void Level::update(float deltaTime){
 			mainLayer->items[i]->updateFloor(mainLayer->floors);
 			mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
 		}
-		else {//updating room/foor for held items
+		else if (mainLayer->items[i]->getState() == Item::HELD) {//updating room/foor for held items
 			mainLayer->items[i]->updateHeldItemFloor(mainLayer->floors);
 			mainLayer->items[i]->updateHeldItemRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
 		}
@@ -953,23 +953,23 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//alert enemy and wall
-		if (a->getName() == "enemy_alert" && (b->getName() == "wall" || b->getName() == "door"))
+		if (a->getName() == "enemy_alert" && (b->getName() == "wall" || b->getName() == "door" || b->getName() == "exit_door"))
 		{
 			static_cast<Enemy*>(a)->touchingWall = true;
 			return true;
 		}
-		else if ((a->getName() == "wall" || a->getName() == "door") && b->getName() == "enemy_alert")
+		else if ((a->getName() == "wall" || a->getName() == "door" || a->getName() == "exit_door") && b->getName() == "enemy_alert")
 		{
 			static_cast<Enemy*>(b)->touchingWall = true;
 			return true;
 		}
 		//enemy and wall
-		if (a->getName() == "enemy" && (b->getName() == "wall" || b->getName() == "door"))
+		if (a->getName() == "enemy" && (b->getName() == "wall" || b->getName() == "door" || b->getName() == "exit_door"))
 		{
 			static_cast<Enemy*>(a)->touchingWall = true;
 			return true;
 		}
-		else if ((a->getName() == "wall" || a->getName() == "door") && b->getName() == "enemy")
+		else if ((a->getName() == "wall" || a->getName() == "door" || a->getName() == "exit_door") && b->getName() == "enemy")
 		{
 			static_cast<Enemy*>(b)->touchingWall = true;
 			return true;
@@ -1060,7 +1060,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 			else {//so enemies don't get hit by their own weapon
 				if (static_cast<Item*>(b)->getState() == Item::THROWN) {
-					return true;
+					return false;
 				}
 				return false;
 			}
@@ -1072,7 +1072,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 			else {//so enemies don't get hit by their own weapon
 				if (static_cast<Item*>(a)->getState() == Item::THROWN) {
-					return true;
+					return false;
 				}
 				return false;
 			}
@@ -1366,10 +1366,10 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Item*>(b)->stop();
 				static_cast<Item*>(b)->move(Vec2(-100,0));
 			}
-			if (static_cast<Item*>(b)->getState() == Item::THROWN) {
+			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Enemy*>(a)->thrownItem) {
 				static_cast<Item*>(b)->stop();
 			}
-			return true;
+			return false;
 		}
 		else {
 			return false;
@@ -1390,10 +1390,10 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Item*>(a)->stop();
 				static_cast<Item*>(a)->move(Vec2(-100, 0));
 			}
-			if (static_cast<Item*>(a)->getState() == Item::THROWN) {
+			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Enemy*>(b)->thrownItem) {
 				static_cast<Item*>(a)->stop();
 			}
-			return true;
+			return false;
 		}
 		else {
 			return false;
@@ -1407,6 +1407,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
 				static_cast<Player*>(a)->itemHitBy = (static_cast<Item*>(b));
 			}
+			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Player*>(a)->thrownItem) {
+				static_cast<Item*>(b)->stop();
+			}
 			return true;
 		}
 		else {
@@ -1417,6 +1420,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
 			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
 				static_cast<Player*>(b)->itemHitBy = (static_cast<Item*>(a));
+			}
+			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Player*>(b)->thrownItem) {
+				static_cast<Item*>(a)->stop();
 			}
 			return true;
 		}
@@ -1458,23 +1464,23 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		return false;
 	}
 	//alert enemy and wall
-	if (a->getName() == "enemy_alert" && b->getName() == "wall")
+	if (a->getName() == "enemy_alert" && (b->getName() == "wall" || b->getName() == "exit_door"))
 	{
 		static_cast<Enemy*>(a)->hitWall();
 		return true;
 	}
-	else if (a->getName() == "wall" && b->getName() == "enemy_alert")
+	else if ((a->getName() == "wall" || a->getName() == "exit_door") && b->getName() == "enemy_alert")
 	{
 		static_cast<Enemy*>(b)->hitWall();
 		return true;
 	}
 	//enemy and wall
-	if (a->getName() == "enemy" && b->getName() == "wall")
+	if (a->getName() == "enemy" && (b->getName() == "wall" || b->getName() == "exit_door"))
 	{
 		static_cast<Enemy*>(a)->hitWall();
 		return true;
 	}
-	else if (a->getName() == "wall" && b->getName() == "enemy")
+	else if ((a->getName() == "wall" || a->getName() == "exit_door") && b->getName() == "enemy")
 	{
 		static_cast<Enemy*>(b)->hitWall();
 		return true;

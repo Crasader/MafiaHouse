@@ -78,6 +78,8 @@ public:
 
 	Item* itemHitBy = NULL;
 
+	Item* thrownItem = NULL;
+
 	std::vector<Item*> inventory;//items the character is carrying
 
 protected:
@@ -92,7 +94,6 @@ protected:
 	//for aiming
 	float aimAngle = 0;//-90 is up, +90 is down
 	//for throwing items
-	Item* thrownItem = NULL;
 	float thrownItemDelay = 10 FRAMES;//the time after you throw an item during which you cannot be hit by it
 
 	//for movement:

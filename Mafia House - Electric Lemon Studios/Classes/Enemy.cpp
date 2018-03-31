@@ -201,7 +201,39 @@ void Enemy::useItem(float angle) {
 	Character::useItem(angle);
 	if (heldItem != NULL) {
 		if (heldItem->getAttackType() == Item::SHOOT) {//always shoot directly at the player
-			heldItem->enemyShoot(detectedPlayer->getPosition() + detectedPlayer->getSize() / 2);
+			heldItem->enemyShoot(targetLocation);
+		}
+	}
+}
+
+void Enemy::replaceThrownItem() {
+	if (heldItem == NULL) {
+		if (offhandItem != NULL & offhandItem->isKey == false) {//have a offhand item that isn't a key
+			offhandItem->initHeldItem();
+			heldItem = offhandItem;//replace held item with offhand item
+			offhandItem = NULL;
+			if (inventory.size() > 1) {//they have another item in their inventory
+				for (int i = 0; i < inventory.size(); i++) {
+					if (inventory[i] != heldItem) {
+						offhandItem = inventory[i];//set offhand item to new inventory item
+						offhandItem->initOffhand();
+						addChild(offhandItem);
+						break;
+					}
+				}
+			}
+		}
+		else {//they don't have an offhand item, or it's a key
+			if (inventory.size() > 1) {//they have another item in their inventory
+				for (int i = 0; i < inventory.size(); i++) {
+					if (inventory[i] != offhandItem) {//the item is not their current offhand item
+						heldItem = inventory[i];
+						heldItem->initHeldItem();//replace held item with inventory item
+						addChild(heldItem);
+						break;
+					}
+				}
+			}
 		}
 	}
 }
@@ -1252,16 +1284,23 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	//checking if they've been hit
 	if (itemHitBy != NULL) {
 		if (invincible == false) {
-			hitTime = time;
-			invincible = true;
-			if (itemHitBy->getState() == Item::THROWN) {
+			if (itemHitBy->getState() == Item::THROWN || itemHitBy->getState() == Item::FALLING) {
 				if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
 					gotHit(itemHitBy, time, mainLayer);
+					hitTime = time;
+					invincible = true;
 					thrownItem = NULL;
+				}
+				else if (itemHitBy != thrownItem) {
+					gotHit(itemHitBy, time, mainLayer);
+					hitTime = time;
+					invincible = true;
 				}
 			}
 			else {
 				gotHit(itemHitBy, time, mainLayer);
+				hitTime = time;
+				invincible = true;
 			}
 		}
 		itemHitBy = NULL;
@@ -1601,7 +1640,7 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	}
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (enemy->hp < enemy->maxHP / 2) {
+	if (enemy->hp <= enemy->maxHP / 2) {
 		enemy->runningAway = true;
 	}
 	if (enemy->checkDead() == true) {
@@ -1618,7 +1657,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		//check if enemy has no weapon
 		if (enemy->itemToPickUp == NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {
 			if (enemy->detectedPlayer->heldItem != NULL && enemy->detectedPlayer->heldItem->isKey == false) {//player has a held item and it is not a key
-				enemy->itemToPickUp = (enemy->findClosestItem(mainLayer));//find a weapon that is closest to them
+				if (enemy->detectedPlayer->currentFloor == enemy->currentFloor && checkForPath(mainLayer, enemy->currentFloor, enemy->detectedPlayer->currentRoom, enemy->currentRoom, enemy->checkKey()) == true) {
+					enemy->itemToPickUp = (enemy->findClosestItem(mainLayer));//find a weapon that is closest to them
+				}
 				if (enemy->itemToPickUp != NULL) {//if one was found
 					enemy->goingToFirstItem = true;
 					return new GetItemState;//go and get it
@@ -1774,6 +1815,46 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	else {//enemy has less than half hp, and can run away
 		enemy->inAttackRange = false;
+		if (enemy->heldItem != NULL) {
+			if (enemy->heldItem->isKey == false) {
+				Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);//displacement between enemy and player
+				if ((displacement.getLength() <= 200 && displacement.getLength() > 150) && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//check if player is in throw range, and they're on the same floor as you
+					float angle = displacement.getAngle() * 180 / M_PI;
+					if ((angle > -22.5 && angle <= 22.5) || (angle > 157.5 || angle <= -157.5)) {
+						enemy->aimAngle = 0;
+					}
+					else if ((angle > -67.5 && angle <= -22.5) || (angle > -157.5 && angle <= -112.5)) {
+						enemy->aimAngle = 45;
+					}
+					else if ((angle > 22.5 && angle <= 67.5) || (angle > 112.5 && angle <= 157.5)) {
+						enemy->aimAngle = 315;
+					}
+					else if ((angle > 67.5 && angle <= 112.5)) {
+						enemy->aimAngle = 270;
+					}
+					else if ((angle > -112.5 && angle <= -67.5)) {
+						enemy->aimAngle = 90;
+					}
+					if (displacement.x < 0) {//player it to the left
+						if (enemy->flippedX == false) {
+							enemy->flipX();
+						}
+					}
+					else if (displacement.x > 0) {//player is to the right
+						if (enemy->flippedX == true) {
+							enemy->flipX();
+						}
+					}
+					if (enemy->heldItem->getAttackType() != Item::SHOOT) {
+						return new ThrowState;
+					}
+					else {//enemy has a gun
+						return new AttackState;
+					}
+				}
+			}
+		}
+
 		enemy->runaway(mainLayer, time);
 	}
 	return nullptr;
@@ -1801,6 +1882,7 @@ void Enemy::AttackState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->stop();
 	enemy->attackPrepareTime = time;
 	enemy->beginUseItem(enemy->aimAngle);
+	enemy->targetLocation = enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2;
 }
 Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -1840,6 +1922,46 @@ void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 		enemy->heldItem = NULL;
 		enemy->removeChild(enemy->fist, true);
 	}
+	enemy->targetLocation = enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2;
+}
+
+//Throw State:
+void Enemy::ThrowState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->stopAllActions();
+	enemy->stop();
+	enemy->attackStartTime = -1;
+	enemy->attackEndTime = -1;
+	enemy->attackPrepareTime = time;
+	enemy->beginThrowItem();
+}
+Enemy::State* Enemy::ThrowState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		return new DeathState;
+	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
+	}
+
+	if (enemy->attackPrepareTime != -1.0f && time - enemy->attackPrepareTime >= enemy->heldItem->getStartTime()) {
+		enemy->attackStartTime = time;
+		enemy->throwItem(mainLayer, time);
+		enemy->attackPrepareTime = -1.0f;
+	}
+	if (enemy->attackStartTime != -1.0f && time - enemy->attackStartTime >= enemy->thrownItem->getAttackTime()) {
+		enemy->attackEndTime = time;
+		enemy->attackStartTime = -1.0f;
+	}
+	if (enemy->attackEndTime != -1.0f && time - enemy->attackEndTime >= enemy->thrownItem->getLagTime()) {
+		enemy->attackEndTime = -1.0f;
+		return enemy->prevState;
+	}
+
+	return nullptr;
+}
+void Enemy::ThrowState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->aimAngle = 0;
+	enemy->replaceThrownItem();
 }
 
 //Use Door State:
@@ -2423,13 +2545,18 @@ Thug::Thug() {
 
 Guard::Guard() {
 	//proeprties
+	isGuard = true;
 	eyeHeight = 84;
 	defaultDegrees = 60;
 	visionDegrees = defaultDegrees;//width of angle of vision
 	defaultRadius = 185;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 55;
+	baseSpeed = 60;
 	maxSpeed = baseSpeed;
+	defaultTurnTime = 3.0f;
+	defaultWalkTime = 4.0f;
+	baseKnockOutTime = 0.8f;
+	minKnockOuttime = 6.0f;
 	deadBodyName = "enemy/guard/dead.png";
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/guard/stand/%03d.png", 1, 10 FRAMES, true);
@@ -2444,6 +2571,7 @@ Guard::Guard() {
 Boss::Boss() {
 	//proeprties
 	isBoss = true;
+	runningAway = true;//the boss will always run away from you
 	eyeHeight = 80;
 	defaultDegrees = 60;
 	visionDegrees = defaultDegrees;//width of angle of vision

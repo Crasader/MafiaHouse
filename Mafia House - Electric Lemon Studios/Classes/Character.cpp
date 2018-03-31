@@ -75,7 +75,7 @@ void Character::dropItem(GameLayer* mainLayer) {
 
 void Character::throwItem(GameLayer* mainLayer, float time) {
 	if (heldItem != NULL) {
-		//removing dropped item from inventory
+		//removing thrown item from inventory
 		for (int i = 0; i < inventory.size(); i++) {
 			if (inventory[i] == heldItem) {
 				inventory.erase(inventory.begin() + i);

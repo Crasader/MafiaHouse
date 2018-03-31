@@ -639,10 +639,13 @@ void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
 	updateRoom(mainLayer->floors[currentFloor].rooms);//checking if room has changed
 	if (itemHitBy != NULL) {
-		if (itemHitBy->getState() == Item::THROWN){
+		if (itemHitBy->getState() == Item::THROWN || itemHitBy->getState() == Item::FALLING){
 			if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
 				wasHit(itemHitBy, time);
 				thrownItem = NULL;
+			}
+			else if (itemHitBy != thrownItem){
+				wasHit(itemHitBy, time);
 			}
 		}
 		else {

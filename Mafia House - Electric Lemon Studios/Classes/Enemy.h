@@ -35,6 +35,8 @@ public:
 	void beginUseItem(float angle);
 	void useItem(float angle);
 
+	void replaceThrownItem();
+
 	void openDoor();
 	void closeDoor();
 
@@ -137,6 +139,13 @@ protected:
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
+	class ThrowState : public State {
+	public:
+		ThrowState() { type = "attack"; }
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
+	};
 	class UseDoorState : public State {
 	public:
 		UseDoorState() { type = "use_door"; }
@@ -183,6 +192,7 @@ protected:
 	State* toEnter = NULL;
 
 	bool isBoss = false;
+	bool isGuard = false;
 
 	//animations:
 	GameAnimation knockout;
@@ -237,6 +247,8 @@ protected:
 	bool inAttackRange = false;
 	//for attacking without a weapon
 	Fist* fist;
+	//for shooting at player
+	Vec2 targetLocation;
 
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
@@ -247,7 +259,6 @@ protected:
 	bool invincible = false;
 
 	//for being knocked out
-	//int knockOutHP = 2;
 	PhysicsBody* knockedOutBody;
 	bool knockedOut = false;
 	bool visionEnabled = true;
@@ -349,14 +360,6 @@ public:
 	~Guard() {}
 	CREATE_WITH_FRAME(Guard);
 	CREATE_WITH_FRAME_NAME(Guard, "enemy/guard/stand/001.png");
-private:
-	/*class AlertState : public State {
-	public:
-		AlertState() { type = "alert"; }
-		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
-		State * update(Enemy* enemy, GameLayer* mainLayer, float time);
-		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
-	};*/
 };
 
 class Boss : public Enemy
