@@ -5,6 +5,7 @@
 #include "Functions.h"
 #include <vector>
 #include <string>
+#include <iomanip>
 #include<fstream>
 #include "Player.h"
 #include "Enemy.h"
@@ -49,20 +50,30 @@ public:
 
 	void update(float deltaTime);
 
+	void pauseScreen(float deltaTime);
+
 	void onStart(float deltaTime);
+
+	void getStats(float deltaTime);
 
 	void onEnd(float deltaTime);
 
 protected:
+	int levelNum;
+
+	float levelFinishTime = -1;
+	float completeScreenDisplayTime = 6.0f;//minimum time the completion screen will display for
+
+	bool gotBestTime = false;
+	bool fullAssassin = false;//kill all enemies without being detected
+	bool silentSpectre = false;//kill no enemies without being detected
 	bool levelComplete = false;
 	int numBosses = 0;
 	int numEnemies = 0;
 	int numKilled = 0;
 	//mainLayer->numTimesDetected;
 
-	float completeTime;//get game Time on completion of level
-
-	Node* completionScreen;
+	Sprite* completionScreen;
 	Label* numKilledDisplay;
 	Label* numEnemiesLeftDisplay;
 	Label* completeTimeDisplay;
@@ -72,6 +83,7 @@ protected:
 	Director* director = Director::getInstance();
 
 	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera
+	Node* pauseLayer;//layer for pause screen
 	Sprite* healthBar;
 	Sprite* healthFill;
 	Sprite* playerHead;

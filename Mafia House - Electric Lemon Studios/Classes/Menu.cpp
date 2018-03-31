@@ -23,10 +23,11 @@ bool LevelSelectMenu::init() {
 	addChild(background, 0);
 
 	selectionIndicator = Sprite::create("menu/MenuGun.png");
+	selectionIndicator->setScale(2.0f);
 	mainLayer->addChild(selectionIndicator, 2);
 
 	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen
-	selectionIndicator->setPosition(optionPosition + Vec2(-400, 0));
+	selectionIndicator->setPosition(optionPosition + Vec2(-600, -50));
 
 	initMenu("menu/levels.txt");
 	for (int i = 0; i < levels.size(); i++) {
@@ -89,10 +90,6 @@ void LevelSelectMenu::onStart(float deltaTime) {
 }
 
 void LevelSelectMenu::update(float deltaTime) {
-	selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
-
-	selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-400, 0));//setting position of seletion indicator
-	
 	for (int i = 0; i < levels.size(); i++) {//increaseing size of selected option
 		if (levels[i] == selectedLevel) {
 			levels[i]->setScale(1.5);
@@ -102,31 +99,38 @@ void LevelSelectMenu::update(float deltaTime) {
 		}
 	}
 
-	if (selectionIndicator->getPositionY() < origin.y) {
-		mainLayer->setPosition(getPosition() + Vec2(0, visibleSize.y));
-	}
-	else if (selectionIndicator->getPositionY() > origin.y + visibleSize.y) {
-		mainLayer->setPosition(getPosition() - Vec2(0, visibleSize.y));
-	}
-
 	if (INPUTS->getKeyPress(KeyCode::KEY_W)) {//move seletor up
 		if (selectedOptionNum >  0) {//number of selected option is greater than 0, first option in menu
 			selectedOptionNum--;//go up one option
+			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
+			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-600, -50));//setting position of seletion indicator
+
+			if (scrollNum >=  1) {
+				mainLayer->setPosition(mainLayer->getPosition() - Vec2(0, 185));
+				scrollNum--;
+			}
 		}
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_S)) {//move selector down
 		if (selectedOptionNum < levels.size() - 1) {//number of selected option is greater then last option in menu
 			selectedOptionNum++;//go down one option
+			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
+			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-600, -50));//setting position of seletion indicator
+
+			if (selectedOptionNum >=  2) {
+				mainLayer->setPosition(mainLayer->getPosition() + Vec2(0, 185));
+				scrollNum++;
+			}
 		}
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {//select currently selected level
-		if (selectedLevel->optionNumber == 1) {
+		if (selectedLevel->optionNumber == 0) {
 			director->replaceScene(Stage1::createScene());
 		}
-		else if (selectedLevel->optionNumber == 2) {
+		else if (selectedLevel->optionNumber == 1) {
 			director->replaceScene(Stage2::createScene());
 		}
-		else if (selectedLevel->optionNumber == 3) {
+		else if (selectedLevel->optionNumber == 2) {
 			director->replaceScene(Stage3::createScene());
 		}
 	}

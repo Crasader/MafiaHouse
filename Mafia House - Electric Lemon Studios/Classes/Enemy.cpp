@@ -206,7 +206,7 @@ void Enemy::closeDoor() {
 	}
 }
 
-void Enemy::pause(float time) {
+void Enemy::Pause(float time) {
 	if (startPauseTime == -1) {
 		stop();
 		startPauseTime = time;
@@ -1404,7 +1404,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 	return nullptr;
 }
@@ -1500,7 +1500,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->paused == false && time - enemy->prevPauseTime >= enemy->minPauseInterval) {
 		if (randNum(1, 100) % 30 == 0) {//3% chance to stop, 3/100 nums are divisible by 30
 			enemy->wasFlipped = enemy->flippedX;
-			enemy->timeToPauseFor = static_cast<float>(randNum(1, 6));//will pause for between 1 and 6 seconds
+			enemy->timeToPauseFor = static_cast<float>(randNum(1, 6));//will Pause for between 1 and 6 seconds
 			enemy->startPauseTime = -1;
 			enemy->paused = true;
 			enemy->flipX();
@@ -1525,7 +1525,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	return nullptr;
@@ -1901,7 +1901,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 				}
 			}
 			else {
-				enemy->pause(time);
+				enemy->Pause(time);
 			}
 		}
 
@@ -2078,7 +2078,7 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	//checking if enemy spotted player
@@ -2170,7 +2170,7 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	//checking if enemy spotted player
@@ -2248,7 +2248,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	//checking if enemy spotted player

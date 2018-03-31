@@ -1,4 +1,5 @@
 #include "Level.h"
+#include "Menu.h"
 
 void Level::setup(){
 	//loading sprite sheet into sprite frame cache
@@ -23,6 +24,8 @@ void Level::setup(){
 
 	healthBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
 	healthFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	healthBar->setPosition(Vec2(-400, 250));
+	healthFill->setPosition(Vec2(-400, 250));
 	healthFill->setColor(ccc3(255, 0, 0));//red
 	healthBar->setGlobalZOrder(20);
 	healthFill->setGlobalZOrder(20);
@@ -33,7 +36,7 @@ void Level::setup(){
 	playerHead = Sprite::createWithSpriteFrameName("icons/playerHead.png");
 	playerHead->setGlobalZOrder(20);
 	playerHead->setAnchorPoint(Vec2(0, 1));
-	playerHead->setPosition(Vec2(-50, 10));
+	playerHead->setPosition(Vec2(-50, 10) + Vec2(-400, 250));
 	hudLayer->addChild(playerHead);
 	itemBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
 	itemFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
@@ -46,16 +49,23 @@ void Level::setup(){
 	itemFill->setScaleX(0.85);
 	itemBar->setAnchorPoint(Vec2(0, 1));
 	itemFill->setAnchorPoint(Vec2(0, 1));
-	itemBar->setPosition(Vec2(30, -20));
-	itemFill->setPosition(Vec2(30, -20));
+	itemBar->setPosition(Vec2(30, -20) + Vec2(-400, 250));
+	itemFill->setPosition(Vec2(30, -20) + Vec2(-400, 250));
 	hudLayer->addChild(itemBar);
 	hudLayer->addChild(itemFill);
 	itemIcon = Sprite::create();
 	itemIcon->setGlobalZOrder(20);
 	itemIcon->setAnchorPoint(Vec2(1, 1));
-	itemIcon->setPosition(Vec2(2, -18));
+	itemIcon->setPosition(Vec2(2, -18) + Vec2(-400, 250));
 	itemIcon->setRotation(-90);
 	hudLayer->addChild(itemIcon);
+
+	pauseLayer = Node::create();
+	addChild(pauseLayer);
+	pauseLayer->setVisible(false);
+	auto pauseLabel = Label::createWithTTF("PAUSED", "fonts/pixelFJ8pt1__.ttf", 40);
+	pauseLabel->runAction(RepeatForever::create(Blink::create(2.0, 1)));
+	pauseLayer->addChild(pauseLabel);
 
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
@@ -130,10 +140,121 @@ void Level::onStart(float deltaTime){
 	scheduleUpdate();
 }
 
-void Level::onEnd(float deltaTime) {
-	//show level completion screen
+void Level::getStats(float deltaTime) {
+	unschedule(schedule_selector(Level::getStats));
 
-	//write stats to level file
+	//check for achievements
+	if (numKilled == 0 && mainLayer->numTimesDetected == 0) {//silent spectre
+		silentSpectre = true;
+	}
+	if (numKilled == numEnemies && mainLayer->numTimesDetected == 0) {//full assassin
+		fullAssassin = true;
+	}
+
+	//reading in level fime
+	std::ifstream inFile;
+	inFile.open("menu/levels.txt");
+
+	vector<vector<string>> levels;
+
+	string line;
+	while (getline(inFile, line)) {//each interation gets a single line from the file; gets data for a single room
+		if (line[0] == '#') { continue; }//ignoring comment lines, which begin with the '#' character
+
+		//getting single pieces of data:
+		vector<string> pieces;
+		std::istringstream sstream(line);//putting line into a string stream
+		string piece;
+		while (getline(sstream, piece, ',')) {//each iteration gets a piece of the chunck, delmimited by the ',' character; gets a single piece of data for a component
+			pieces.push_back(piece);
+		}
+
+		levels.push_back(pieces);
+	}
+	inFile.close();
+
+	//setting level complete to true
+	levels[levelNum][1] = "1";
+	//checking if achievemnts were met
+	if (fullAssassin == true) {
+		levels[levelNum][2] = "1";
+	}
+	if (silentSpectre == true) {
+		levels[levelNum][3] = "1";
+	}
+	//checking if best time was beaten
+	if (gameTime < atof(levels[levelNum][4].c_str()) || atof(levels[levelNum][4].c_str()) <= 0) {
+		gotBestTime = true;
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(3) << gameTime;
+		levels[levelNum][4] = stream.str();
+	}
+
+	//writing to level file
+	std::ofstream outFile;
+	outFile.open("menu/levels.txt");
+
+	for (int i = 0; i < levels.size(); i++) {
+		for (int j = 0; j < levels[i].size(); j++) {
+			outFile << levels[i][j];
+			if (j < levels[i].size() - 1) {
+				outFile << ',';
+			}
+			else {
+				outFile << '\n';
+			}
+		}
+	}
+	outFile.close();
+
+	completionScreen = Sprite::create("menu/completionLogo.png");
+	completionScreen->setGlobalZOrder(30);
+	hudLayer->addChild(completionScreen);
+
+	levelFinishTime = gameTime;
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(3) << levelFinishTime;
+
+	completeTimeDisplay = Label::createWithTTF("COMPLETION TIME: " + stream.str(), "fonts/pixelFJ8pt1__.ttf", 20);
+	completeTimeDisplay->getFontAtlas()->setAliasTexParameters();
+	completeTimeDisplay->setGlobalZOrder(30);
+	hudLayer->addChild(completeTimeDisplay);
+
+	schedule(schedule_selector(Level::onEnd));
+}
+
+void Level::onEnd(float deltaTime) {
+	gameTime += deltaTime;
+	//Display Level Completion Screen
+
+
+	if (gameTime - levelFinishTime >= completeScreenDisplayTime) {
+		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//finish the level
+			director->replaceScene(LevelSelectMenu::createScene());
+		}
+	}
+	INPUTS->clearForNextFrame();
+}
+
+void Level::pauseScreen(float deltaTime) {
+	if (INPUTS->getKeyPress(KeyCode::KEY_P)) {//finish the level
+		unschedule(schedule_selector(Level::pauseScreen));
+		getScene()->getPhysicsWorld()->setSpeed(1);
+		scheduleUpdate();
+		pauseLayer->setVisible(false);
+		camera->resume();
+		player->resume();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->resume();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->resume();
+		}
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_R)) {//restart the level
+		resetLevel();
+	}
+	INPUTS->clearForNextFrame();
 }
 
 void Level::update(float deltaTime){
@@ -141,9 +262,18 @@ void Level::update(float deltaTime){
 	gameTime += deltaTime;
 
 	if (levelComplete == true) {//finish level
-		//resetLevel();
 		unscheduleUpdate();
-		schedule(schedule_selector(Level::onEnd));
+		getScene()->getPhysicsWorld()->setSpeed(0);
+		schedule(schedule_selector(Level::pauseScreen));
+		camera->pause();
+		player->pause();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->pause();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->pause();
+		}
+		schedule(schedule_selector(Level::getStats));
 	}
 
 	//camera zoom button
@@ -304,7 +434,6 @@ void Level::update(float deltaTime){
 			}
 			else {
 				numKilled++;
-				numEnemies--;
 			}
 			enemies.at(i)->removeFromParentAndCleanup(true);
 			enemies.erase(enemies.begin() + i);
@@ -459,7 +588,7 @@ void Level::update(float deltaTime){
 	//having camera follow player
 	followBox(camPos, player, camBoundingBox, camOffset);
 	camera->setPosition(camPos->getPosition());
-	hudLayer->setPosition(camera->getPosition()+ Vec2(-400, 250));//make it so hud stays in same location on screen
+	hudLayer->setPosition(camera->getPosition());//make it so hud stays in same location on screen
 	hudLayer->setPositionZ(camera->getPositionZ() - 459.42983);
 	float percentage = player->getHP() / player->getMaxHP();
 	healthFill->setScaleX(percentage);
@@ -475,6 +604,24 @@ void Level::update(float deltaTime){
 		itemBar->setVisible(false);
 		itemFill->setVisible(false);
 		itemIcon->setVisible(false);
+	}
+
+	//pausing game
+	if (INPUTS->getKeyPress(KeyCode::KEY_P)) {
+		unscheduleUpdate();
+		getScene()->getPhysicsWorld()->setSpeed(0);
+		schedule(schedule_selector(Level::pauseScreen));
+		pauseLayer->setPositionZ(camera->getPositionZ() - 459.42983);
+		pauseLayer->setPosition(camera->getPosition());
+		pauseLayer->setVisible(true);
+		camera->pause();
+		player->pause();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->pause();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->pause();
+		}
 	}
 
 	//update the keyboard each frame

@@ -36,7 +36,7 @@ public:
 	void closeDoor();
 
 	//actions for enemies:
-	void pause(float time);
+	void Pause(float time);
 	void turnOnSpot(float time);//enemy stands still and turns around
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);

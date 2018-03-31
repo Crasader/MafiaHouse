@@ -39,6 +39,7 @@ public:
 	void initOption(int num, string labelText) {
 		optionNumber = num;
 		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 11);
+		label->getFontAtlas()->setAliasTexParameters();
 	}
 
 
@@ -63,28 +64,34 @@ public:
 	void initLevelOption(int num, string labelText, bool checkComplete, bool checkAchievement1, bool checkAchievement2, string recordedTime) {
 		optionNumber = num;
 
-		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 20);
-		label->setPositionNormalized(Vec2(0.5, 0.5));
+		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 29);
+		label->getFontAtlas()->setAliasTexParameters();
+		label->setPositionNormalized(Vec2(0.48, 0.5));
 		addChild(label);
 
 		if (checkComplete == true) {
-			complete->setPositionNormalized(Vec2(-1, 0.5));
+			complete->setPositionNormalized(Vec2(2.0, 0.5));
+			complete->setGlobalZOrder(10);
 			addChild(complete);
 		}
 
 		if (checkAchievement1 == true) {
-			achievement1->setPositionNormalized(Vec2(1, 0.5));
+			achievement1->setPositionNormalized(Vec2(0.17, 0.5));
+			achievement1->setGlobalZOrder(10);
 			addChild(achievement1);
 		}
 
 		if (checkAchievement2 == true) {
-			achievement2->setPositionNormalized(Vec2(1.5, 0.5));
+			achievement2->setPositionNormalized(Vec2(0.80, 0.5));
+			achievement2->setGlobalZOrder(10);
 			addChild(achievement2);
 		}
 
 		if (recordedTime != "0.000") {
-			bestTime = Label::createWithTTF("Best Time: " + recordedTime, "fonts/pixelFJ8pt1__.ttf", 20);
-			bestTime->setPositionNormalized(Vec2(0.5,-1));
+			bestTime = Label::createWithTTF("Best Time: " + recordedTime, "fonts/pixelFJ8pt1__.ttf", 24);
+			bestTime->getFontAtlas()->setAliasTexParameters();
+			bestTime->setPositionNormalized(Vec2(1.4,0.5));
+			bestTime->setGlobalZOrder(10);
 			addChild(bestTime);
 		}
 	}
@@ -111,6 +118,8 @@ public:
 	Sprite* background;
 
 	Node* mainLayer;
+
+	int scrollNum = 0;
 
 	Director* director;
 	Vec2 visibleSize;
