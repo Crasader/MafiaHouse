@@ -75,8 +75,14 @@ protected:
 
 	Sprite* completionScreen;
 	Label* numKilledDisplay;
-	Label* numEnemiesLeftDisplay;
+	Label* numTimesDetectedDisplay;
 	Label* completeTimeDisplay;
+	Label* fullAssassinLabel;
+	Label* silentSpectreLabel;
+	Label* continueLabel;
+
+	Sprite* achievement1;
+	Sprite* achievement2;
 
 	float gameTime = 0.0f;
 

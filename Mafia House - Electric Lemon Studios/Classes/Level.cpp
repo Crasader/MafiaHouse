@@ -64,7 +64,7 @@ void Level::setup(){
 	addChild(pauseLayer);
 	pauseLayer->setVisible(false);
 	auto pauseLabel = Label::createWithTTF("PAUSED", "fonts/pixelFJ8pt1__.ttf", 40);
-	pauseLabel->runAction(RepeatForever::create(Blink::create(2.0, 1)));
+	pauseLabel->runAction(RepeatForever::create(Blink::create(2.5, 1)));
 	pauseLayer->addChild(pauseLabel);
 
 	//Invisible Node for the camera to follow
@@ -209,6 +209,8 @@ void Level::getStats(float deltaTime) {
 
 	completionScreen = Sprite::create("menu/completionLogo.png");
 	completionScreen->setGlobalZOrder(30);
+	completionScreen->setPosition(Vec2(0, 100));
+	completionScreen->runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
 	hudLayer->addChild(completionScreen);
 
 	levelFinishTime = gameTime;
@@ -218,7 +220,65 @@ void Level::getStats(float deltaTime) {
 	completeTimeDisplay = Label::createWithTTF("COMPLETION TIME: " + stream.str(), "fonts/pixelFJ8pt1__.ttf", 20);
 	completeTimeDisplay->getFontAtlas()->setAliasTexParameters();
 	completeTimeDisplay->setGlobalZOrder(30);
+	completeTimeDisplay->setPosition(Vec2(0, -90));
+	completeTimeDisplay->setVisible(false);
 	hudLayer->addChild(completeTimeDisplay);
+
+	numKilledDisplay = Label::createWithTTF("ENEMIES KILLED: " + std::to_string(numKilled), "fonts/pixelFJ8pt1__.ttf", 20);
+	numKilledDisplay->getFontAtlas()->setAliasTexParameters();
+	numKilledDisplay->setGlobalZOrder(30);
+	numKilledDisplay->setPosition(Vec2(0, -140));
+	numKilledDisplay->setVisible(false);
+	hudLayer->addChild(numKilledDisplay);
+
+	numTimesDetectedDisplay = Label::createWithTTF("TIMES DETECTED: " + std::to_string(mainLayer->numTimesDetected), "fonts/pixelFJ8pt1__.ttf", 20);
+	numTimesDetectedDisplay->getFontAtlas()->setAliasTexParameters();
+	numTimesDetectedDisplay->setGlobalZOrder(30);
+	numTimesDetectedDisplay->setPosition(Vec2(0, -190));
+	numTimesDetectedDisplay->setVisible(false);
+	hudLayer->addChild(numTimesDetectedDisplay);
+
+	fullAssassinLabel = Label::createWithTTF("KILL ALL ENEMIES\nWITHOUT BEING\nDETECTED: ", "fonts/pixelFJ8pt1__.ttf", 10);
+	fullAssassinLabel->getFontAtlas()->setAliasTexParameters();
+	fullAssassinLabel->setGlobalZOrder(30);
+	fullAssassinLabel->setPosition(Vec2(-300, -100));
+	fullAssassinLabel->setVisible(false);
+	hudLayer->addChild(fullAssassinLabel);
+	silentSpectreLabel = Label::createWithTTF("KILL NO ENEMIES\nWITHOUT BEING\nDETECTED: ", "fonts/pixelFJ8pt1__.ttf", 10);
+	silentSpectreLabel->getFontAtlas()->setAliasTexParameters();
+	silentSpectreLabel->setGlobalZOrder(30);
+	silentSpectreLabel->setPosition(Vec2(300, -100));
+	silentSpectreLabel->setVisible(false);
+	hudLayer->addChild(silentSpectreLabel);
+
+	if (fullAssassin == true) {
+		achievement1 = Sprite::create("menu/achievement1.png");
+		achievement1->setGlobalZOrder(30);
+		achievement1->setPosition(Vec2(-300, -160));
+		achievement1->setVisible(false);
+		hudLayer->addChild(achievement1);
+	}
+	if (silentSpectre == true) {
+		achievement2 = Sprite::create("menu/achievement2.png");
+		achievement2->setGlobalZOrder(30);
+		achievement2->setPosition(Vec2(300, -160));
+		achievement2->setVisible(false);
+		hudLayer->addChild(achievement2);
+	}
+
+	continueLabel = Label::createWithTTF("PRESS SPACE TO CONTINUE", "fonts/pixelFJ8pt1__.ttf", 20);
+	continueLabel->getFontAtlas()->setAliasTexParameters();
+	continueLabel->setGlobalZOrder(30);
+	continueLabel->setPosition(Vec2(0, -240));
+	continueLabel->setVisible(false);
+	hudLayer->addChild(continueLabel);
+
+	runAction(MoveBy::create(1.0f, Vec2(0, 0)))->setTag(0);
+	runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
+	runAction(MoveBy::create(3.0f, Vec2(0, 0)))->setTag(2);
+	runAction(MoveBy::create(4.0f, Vec2(0, 0)))->setTag(3);
+	runAction(MoveBy::create(5.0f, Vec2(0, 0)))->setTag(4);
+	runAction(MoveBy::create(4.5f, Vec2(0, 0)))->setTag(5);
 
 	schedule(schedule_selector(Level::onEnd));
 }
@@ -226,6 +286,33 @@ void Level::getStats(float deltaTime) {
 void Level::onEnd(float deltaTime) {
 	gameTime += deltaTime;
 	//Display Level Completion Screen
+
+	if (getActionByTag(0) == NULL) {
+		completeTimeDisplay->setVisible(true);
+	}
+	if (getActionByTag(1) == NULL) {
+		numKilledDisplay->setVisible(true);
+	}
+	if (getActionByTag(2) == NULL) {
+		numTimesDetectedDisplay->setVisible(true);
+	}
+	if (getActionByTag(3) == NULL) {
+		fullAssassinLabel->setVisible(true);
+		silentSpectreLabel->setVisible(true);
+	}
+	if (getActionByTag(4) == NULL) {
+		if (fullAssassin == true) {
+			achievement1->setVisible(true);
+		}
+		if (silentSpectre == true) {
+			achievement2->setVisible(true);
+		}
+	}
+	if (getActionByTag(5) == NULL) {
+		if (continueLabel->getActionByTag(10) == NULL) {
+			continueLabel->runAction(RepeatForever::create(Blink::create(3.0, 1)))->setTag(10);
+		}
+	}
 
 
 	if (gameTime - levelFinishTime >= completeScreenDisplayTime) {

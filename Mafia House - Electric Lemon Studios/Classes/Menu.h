@@ -69,11 +69,11 @@ public:
 		label->setPositionNormalized(Vec2(0.48, 0.5));
 		addChild(label);
 
-		if (checkComplete == true) {
+		/*if (checkComplete == true) {
 			complete->setPositionNormalized(Vec2(2.0, 0.5));
 			complete->setGlobalZOrder(10);
 			addChild(complete);
-		}
+		}*/
 
 		if (checkAchievement1 == true) {
 			achievement1->setPositionNormalized(Vec2(0.17, 0.5));
