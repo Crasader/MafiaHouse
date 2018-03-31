@@ -1122,7 +1122,17 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 		if (item->getAttackType() != Item::SHOOT) {
 			item->used();
 		}
-		hp -= item->dmg;//dealing damage to enemy
+		if (item->getAttackType() == Item::SHOOT) {
+			if (item->getEffect() == Item::KILL) {
+				hp -= 100;
+			}
+			else {
+				hp -= 34;
+			}
+		}
+		else {
+			hp -= item->dmg;//dealing damage to enemy
+		}
 		/*auto emitter = ParticleFireworks::create();
 		emitter->setStartColor(Color4F(255, 0, 0, 1));
 		emitter->setEndColor(Color4F(255, 100, 100, 1));//red
@@ -1146,9 +1156,9 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 			wasInHitStun = true;
 			hitStunStart = time;
 			hitStunTime = item->hitstun;
-			if ((flippedX == true && item->knockback.x < 0) || (flippedX == false && item->knockback.x > 0)) {//if the enemy is hit from behind
+			setSuspicion(maxSuspicion);
+			if ((flippedX == true && item->holderFlipped == true) || (flippedX == false && item->holderFlipped == false)) {//if the enemy is hit from behind
 				flipX();
-				setSuspicion(maxSuspicion - maxSuspicion * 0.1);
 			}
 		}
 		if (touchingWall == false) {

@@ -339,7 +339,7 @@ void Item::checkThrownSpeed() {
 				initFallItem();
 			}
 		}
-		else if (attackType == SWING) {
+		else if (attackType == SWING || attackType == SHOOT) {
 			if (speed <= 544) {//speed is less than 450
 				initFallItem();
 			}
@@ -442,7 +442,7 @@ void Item::fallAttack() {
 		setRotation(90);
 		setAnchorPoint(Vec2(0, 0.5));
 	}
-	else if (attackType == SWING) {
+	else if (attackType == SWING || attackType == SHOOT) {
 		setPosition(Vec2(60, 20));
 		setRotation(10);
 		setAnchorPoint(Vec2(0, 0.5));
@@ -457,12 +457,12 @@ Gun::Gun() {
 	priority = 20;
 	maxHP = 3;
 	hp = maxHP;
-	dmg = 100;
+	dmg = 50;
 	hitstun = 20 FRAMES;
 	doorDmg = 100;
 	canBreakDoor = true;
 	//tag = 10100;//10100 - 10199 for knives
-	effect = KILL;
+	effect = KNOCKOUT;
 	attackType = SHOOT;
 	startTime = 20 FRAMES;
 	attackTime = 30 FRAMES;
@@ -470,7 +470,12 @@ Gun::Gun() {
 	range = 200;
 	rangeRadius = 200;
 	powerLevel = 20;
-	noiseLevel = 3.0f;
+	noiseLevel = 0.5f;
+}
+
+void Gun::initHeldItem() {
+	Item::initHeldItem();
+	effect = KNOCKOUT;
 }
 
 void Item::prepareShoot(float angle) {
@@ -486,6 +491,7 @@ void Item::prepareCrouchShoot(float angle) {
 }
 
 void Item::enemyShoot(Vec2 target) {
+	effect = KILL;
 	wasShot = true;
 	endpoint = Vec2(0, 0);
 	PhysicsRayCastCallbackFunc func = [this](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
@@ -501,6 +507,18 @@ void Item::enemyShoot(Vec2 target) {
 			static_cast<Door*>(contact)->itemHit(this);
 			endpoint = info.contact;
 			return false;
+		}
+		else if (contactName == "door_radius") {//collides with a door radius
+			if (static_cast<Door*>(contact->getParent())->checkOpen() == false) {//the doors is closed
+				static_cast<Door*>(contact->getParent())->itemHit(this);
+				if (holderFlipped == true) {
+					endpoint = info.contact - Vec2(12, 0);
+				}
+				else {
+					endpoint = info.contact + Vec2(12, 0);
+				}
+				return false;
+			}
 		}
 		else if (contactName == "player") {//hit the player
 			static_cast<Player*>(contact)->itemHitBy = this;//set item they were hit by to this gun
@@ -522,6 +540,7 @@ void Item::enemyShoot(Vec2 target) {
 }
 
 void Item::playerShoot(float angle) {
+	effect = KILL;
 	used();
 	wasShot = true;
 	Vec2 direction = angleToDirection(angle);
@@ -542,6 +561,18 @@ void Item::playerShoot(float angle) {
 			static_cast<Door*>(contact)->itemHit(this);
 			endpoint = info.contact;
 			return false;
+		}
+		else if (contactName == "door_radius") {//collides with a door radius
+			if (static_cast<Door*>(contact->getParent())->checkOpen() == false) {//the doors is closed
+				static_cast<Door*>(contact->getParent())->itemHit(this);
+				if (holderFlipped == true) {
+					endpoint = info.contact - Vec2(12, 0);
+				}
+				else {
+					endpoint = info.contact + Vec2(12, 0);
+				}
+				return false;
+			}
 		}
 		else if (contactName == "enemy" || contactName == "enemy_alert") {//hit an enemy
 			static_cast<Enemy*>(contact)->itemHitBy = this;//set item they were hit by to this gun

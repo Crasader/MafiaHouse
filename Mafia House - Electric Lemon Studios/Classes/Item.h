@@ -149,6 +149,7 @@ public:
 	~Gun() {}
 	CREATE_WITH_FRAME(Gun);
 	CREATE_WITH_FRAME_NAME(Gun, "items/gun.png");
+	void initHeldItem();
 };
 
 class Fist : public Item//enemy attacking barehand, actually an invisible item

@@ -155,10 +155,23 @@ void Door::itemHit(Item* item) {
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
-			noiseLevel = item->doorDmg * 5;
+			if (item->getAttackType() == Item::SHOOT) {
+				if (item->getEffect() == Item::KILL) {//door was shot
+					noiseLevel = 50;
+					hp -= 100;
+				}
+				else {//gun was thrown at door
+					noiseLevel = 150;
+					hp -= 34;
+					item->hp--;
+				}
+			}
+			else {//item is not a gun
+				noiseLevel = item->doorDmg * 5;
+				hp -= item->doorDmg;//item deals dmg to the door
+				item->hp--;
+			}
 			roomHitFrom = Vec2(item->currentRoom, item->currentFloor);
-			hp -= item->doorDmg;//item deals dmg to the door
-			item->hp--;
 		}
 		if (hp <= 0) {
 			breakDoor();

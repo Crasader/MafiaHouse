@@ -452,6 +452,13 @@ void Level::update(float deltaTime){
 	//items update
 	for (int i = 0; i < mainLayer->items.size(); i++) {
 		if (mainLayer->items[i]->getState() != Item::HELD) {
+			if (mainLayer->items[i]->checkBroken() == true) {
+				mainLayer->items.erase(mainLayer->items.begin() + i);
+				i--;
+				continue;
+			}
+		}
+		if (mainLayer->items[i]->getState() != Item::HELD) {
 			mainLayer->items[i]->updateFloor(mainLayer->floors);
 			mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
 		}
@@ -483,25 +490,19 @@ void Level::update(float deltaTime){
 		}
 		else if (mainLayer->items[i]->getState() == Item::THROWN) {
 			mainLayer->items[i]->checkThrownSpeed();
-			if (mainLayer->items[i]->getAttackType() == Item::SWING) {
+			if (mainLayer->items[i]->getAttackType() == Item::SWING || mainLayer->items[i]->getAttackType() == Item::SHOOT) {
 				mainLayer->items[i]->spin();
 			}
 		}
 		else if (mainLayer->items[i]->getState() == Item::FALLING) {
 			mainLayer->items[i]->checkFallingSpeed();
 		}
-		if (mainLayer->items[i]->getState() != Item::HELD) {
-			if (mainLayer->items[i]->checkBroken() == true) {
-				mainLayer->items.erase(mainLayer->items.begin() + i);
-				i--;
-			}
-		}
 		//for guns being shot
 		if (mainLayer->items[i]->getAttackType() == Item::SHOOT && mainLayer->items[i]->wasShot == true) {
 			mainLayer->items[i]->wasShot = false;
 			mainLayer->items[i]->shotTime = gameTime;
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 100, mainLayer->items[i]->noiseLevel - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 100, (mainLayer->items[i]->noiseLevel - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 600, (mainLayer->items[i]->noiseLevel * 6) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 600, ((mainLayer->items[i]->noiseLevel * 6) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
 		}
 		if (mainLayer->items[i]->shotTime != -1 && gameTime - mainLayer->items[i]->shotTime <= 0.5f) {//time to display gunshot for
 			gunShots->drawSegment(mainLayer->items[i]->startpoint, mainLayer->items[i]->endpoint, 1, Color4F(1, 1, 1, 1));
@@ -1355,6 +1356,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
 				static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+				if (static_cast<Enemy*>(a)->itemHitBy->getAttackType() == Item::SHOOT) {//guns lose health when thrown at enemies
+					static_cast<Enemy*>(a)->itemHitBy->used();
+				}
 			}
 			else {
 				static_cast<Enemy*>(a)->itemBumpedBy = static_cast<Item*>(b);
@@ -1376,6 +1380,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
 				static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+				if (static_cast<Enemy*>(b)->itemHitBy->getAttackType() == Item::SHOOT) {
+					static_cast<Enemy*>(b)->itemHitBy->used();
+				}
 			}
 			else {
 				static_cast<Enemy*>(b)->itemBumpedBy = static_cast<Item*>(a);

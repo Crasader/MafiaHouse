@@ -615,7 +615,17 @@ void Player::wasHit(Item* item, float time) {
 		hitStunTime = item->hitstun;
 		//item->used();//enemy items don't break
 		isHit = true;
-		hp -= item->dmg;//taking damage from attack
+		if (item->getAttackType() == Item::SHOOT) {
+			if (item->wasShot == true) {
+				hp -= 100;
+			}
+			else {
+				hp -= 50;
+			}
+		}
+		else {
+			hp -= item->dmg;//taking damage from attack
+		}
 		hp = hp < 0 ? 0 : hp;
 		if (touchingWall == false) {
 			stop();
@@ -1236,6 +1246,17 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 		player->attackRelease = true;//forced to release attack
 		player->walk(STOP, time);
 		//return player->prevState;
+	}
+	if (input == THROW_ITEM) {//cancel your attack
+		if (player->heldItem != NULL) {
+			if (player->isCrouched == false) {
+				player->heldItem->initHeldItem();
+			}
+			else {
+				player->heldItem->initCrouchHeldItem();
+			}
+			return player->prevState;
+		}
 	}
 	//input for releasing attack
 	if (input == USE_RELEASE) {
