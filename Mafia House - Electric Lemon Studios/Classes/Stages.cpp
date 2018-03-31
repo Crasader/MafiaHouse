@@ -28,3 +28,18 @@ bool Stage2::init()
 
 	return true;
 }
+
+bool Stage3::init()
+{
+	if (!Scene::initWithPhysics()) { return false; }
+
+	//initlializes stuff that is the same for all levels
+	setup();
+	//initialize background
+	setBackground("background2.png", 1.0f);
+	//create level
+	initLevel("stage2.txt");
+
+	return true;
+}
+

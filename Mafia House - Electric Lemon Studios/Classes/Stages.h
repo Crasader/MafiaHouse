@@ -26,3 +26,14 @@ public:
 
 	bool init();
 };
+
+class Stage3 : public Level
+{
+public:
+	CREATE_SCENE_FUNC(Stage2);
+	CREATE_FUNC(Stage2);
+
+	RESET_LEVEL;
+
+	bool init();
+};

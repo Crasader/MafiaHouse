@@ -51,6 +51,8 @@ public:
 
 	void onStart(float deltaTime);
 
+	void onEnd(float deltaTime);
+
 protected:
 	bool levelComplete = false;
 	int numBosses = 0;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include<fstream>
+#include "Stages.h"
 USING_NS_CC;
 using std::vector;
 using std::string;
@@ -62,7 +63,7 @@ public:
 	void initLevelOption(int num, string labelText, bool checkComplete, bool checkAchievement1, bool checkAchievement2, string recordedTime) {
 		optionNumber = num;
 
-		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 11);
+		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 20);
 		label->setPositionNormalized(Vec2(0.5, 0.5));
 		addChild(label);
 
@@ -82,7 +83,7 @@ public:
 		}
 
 		if (recordedTime != "0.000") {
-			bestTime = Label::createWithTTF("Best Time: " + recordedTime, "fonts/pixelFJ8pt1__.ttf", 11);
+			bestTime = Label::createWithTTF("Best Time: " + recordedTime, "fonts/pixelFJ8pt1__.ttf", 20);
 			bestTime->setPositionNormalized(Vec2(0.5,-1));
 			addChild(bestTime);
 		}
@@ -103,18 +104,24 @@ class GameMenu : public Scene{
 public:
 	vector<MenuOption*> options;
 
+	MenuOption* selectedOption;
+
 	Sprite* selectionIndicator;
 
 	Sprite* background;
 
+	Node* mainLayer;
+
 	Director* director;
 	Vec2 visibleSize;
 	Vec2 origin;
+	Vec2 centre;
 };
 
 
 class MainMenu : public GameMenu {
 public:
+	CREATE_FUNC(MainMenu);
 	CREATE_MENU_FUNC(MainMenu);
 
 	bool init();
@@ -123,12 +130,21 @@ public:
 
 class LevelSelectMenu : public GameMenu {
 public:
+	CREATE_FUNC(LevelSelectMenu);
 	CREATE_MENU_FUNC(LevelSelectMenu);
 
 	bool init();
 
 	bool initMenu(string filename);
 
+	void update(float deltaTime);
+
+	void onStart(float deltaTime);
+
 private:
 	vector<LevelMenuOption*> levels;
+
+	LevelMenuOption* selectedLevel;
+
+	int selectedOptionNum = 0;
 };

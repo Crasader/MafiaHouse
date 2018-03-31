@@ -70,11 +70,6 @@ void Level::setup(){
 	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
-	/*auto label1 = Label::createWithTTF("Space for Pick Up", "fonts/Pixel-Noir Skinny Short.ttf", 24);
-	label1->setPosition(player->getPosition());
-	label1->setGlobalZOrder(10);
-	mainLayer->addChild(label1, 3000);*/
-
 	//for running the update function
 	schedule(schedule_selector(Level::onStart));
 }
@@ -135,9 +130,21 @@ void Level::onStart(float deltaTime){
 	scheduleUpdate();
 }
 
+void Level::onEnd(float deltaTime) {
+	//show level completion screen
+
+	//write stats to level file
+}
+
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
+
+	if (levelComplete == true) {//finish level
+		//resetLevel();
+		unscheduleUpdate();
+		schedule(schedule_selector(Level::onEnd));
+	}
 
 	//camera zoom button
 	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
@@ -149,11 +156,6 @@ void Level::update(float deltaTime){
 		camera->stopAllActions();
 		auto zoomIn = MoveTo::create(1.0, Vec3(0, 0, 459.42983 / 1.0));
 		camera->runAction(zoomIn);
-	}
-
-	if (levelComplete == true) {
-		resetLevel();
-		//show level completion screen
 	}
 
 	//for drawing vision rays
