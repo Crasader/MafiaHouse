@@ -62,13 +62,13 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				}
 				else {//on odd number iterations, make a door or vent
 					if (doorData[j].type == 1) {
-						d = Door::create();
+						d = Door::createWithSpriteFrameName();
 						d->initObject(orientation, newPos);
 						d->leftRoomCoords = doorData[j].leftRoom;
 						d->rightRoomCoords = doorData[j].rightRoom;
 					}
 					else if (doorData[j].type == 2) {
-						d = Vent::create();
+						d = Vent::createWithSpriteFrameName();
 						d->initObject(orientation, newPos);
 					}
 					length = d->size.height;
@@ -102,13 +102,13 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				}
 				else {//on odd number iterations, make a door or vent
 					if (doorData[j].type == 1) {
-						d = Door::create();
+						d = Door::createWithSpriteFrameName();
 						d->initObject(orientation, newPos);
 						d->leftRoomCoords = doorData[j].leftRoom;
 						d->rightRoomCoords = doorData[j].rightRoom;
 					}
 					else if (doorData[j].type == 2) {
-						d = Vent::create();
+						d = Vent::createWithSpriteFrameName();
 						d->initObject(orientation, newPos);
 					}
 					length = d->size.width;
