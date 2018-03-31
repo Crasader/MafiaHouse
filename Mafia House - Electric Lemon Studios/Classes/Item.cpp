@@ -467,8 +467,8 @@ Gun::Gun() {
 	startTime = 20 FRAMES;
 	attackTime = 30 FRAMES;
 	lagTime = 20 FRAMES;
-	range = 200;
-	rangeRadius = 200;
+	range = 300;
+	rangeRadius = 300;
 	powerLevel = 20;
 	noiseLevel = 0.5f;
 }
