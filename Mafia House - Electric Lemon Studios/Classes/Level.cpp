@@ -1,4 +1,5 @@
 #include "Level.h"
+#include "Menu.h"
 
 void Level::setup(){
 	//loading sprite sheet into sprite frame cache
@@ -22,7 +23,12 @@ void Level::setup(){
 	addChild(hudLayer);
 
 	healthBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
+	healthBar->getTexture()->setTexParameters(texParams);
 	healthFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	healthFill->getTexture()->setTexParameters(texParams);
+	healthBar->setPosition(Vec2(-400, 250));
+	healthFill->setPosition(Vec2(-400, 250));
+	healthFill->setColor(ccc3(255, 0, 0));//red
 	healthBar->setGlobalZOrder(20);
 	healthFill->setGlobalZOrder(20);
 	healthBar->setAnchorPoint(Vec2(0, 1));
@@ -30,10 +36,61 @@ void Level::setup(){
 	hudLayer->addChild(healthBar);
 	hudLayer->addChild(healthFill);
 	playerHead = Sprite::createWithSpriteFrameName("icons/playerHead.png");
+	playerHead->getTexture()->setTexParameters(texParams);
 	playerHead->setGlobalZOrder(20);
 	playerHead->setAnchorPoint(Vec2(0, 1));
-	playerHead->setPosition(Vec2(-50, 10));
+	playerHead->setPosition(Vec2(-50, 10) + Vec2(-400, 250));
 	hudLayer->addChild(playerHead);
+	itemBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
+	itemBar->getTexture()->setTexParameters(texParams);
+	itemFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	itemFill->getTexture()->setTexParameters(texParams);
+	itemFill->setColor(ccc3(0, 0, 255));//blue
+	itemBar->setGlobalZOrder(20);
+	itemBar->setScaleY(0.5);
+	itemBar->setScaleX(0.85);
+	itemFill->setGlobalZOrder(20);
+	itemFill->setScaleY(0.5);
+	itemFill->setScaleX(0.85);
+	itemBar->setAnchorPoint(Vec2(0, 1));
+	itemFill->setAnchorPoint(Vec2(0, 1));
+	itemBar->setPosition(Vec2(30, -20) + Vec2(-400, 250));
+	itemFill->setPosition(Vec2(30, -20) + Vec2(-400, 250));
+	hudLayer->addChild(itemBar);
+	hudLayer->addChild(itemFill);
+	itemIcon = Sprite::create();
+	itemIcon->getTexture()->setTexParameters(texParams);
+	itemIcon->setGlobalZOrder(20);
+	itemIcon->setAnchorPoint(Vec2(1, 1));
+	itemIcon->setPosition(Vec2(2, -18) + Vec2(-400, 250));
+	itemIcon->setRotation(-90);
+	hudLayer->addChild(itemIcon);
+
+
+	//initializing pause screen
+	pauseLayer = Node::create();
+	addChild(pauseLayer);
+	pauseLayer->setVisible(false);
+	auto pauseLabel = Label::createWithTTF("PAUSED", "fonts/pixelFJ8pt1__.ttf", 40);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
+	pauseLabel->runAction(RepeatForever::create(Blink::create(2.5, 1)));
+	pauseLayer->addChild(pauseLabel);
+	pauseLabel = Label::createWithTTF("P: Unpause", "fonts/pixelFJ8pt1__.ttf", 18);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
+	pauseLabel->setPosition(Vec2(0, -180));
+	pauseLayer->addChild(pauseLabel);
+	pauseLabel = Label::createWithTTF("SHIFT + R: Restart", "fonts/pixelFJ8pt1__.ttf", 18);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
+	pauseLabel->setPosition(Vec2(-275, -239));
+	pauseLayer->addChild(pauseLabel);
+	pauseLabel = Label::createWithTTF("SHIFT + BACKSPACE: Quit", "fonts/pixelFJ8pt1__.ttf", 18);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
+	pauseLabel->setPosition(Vec2(275, -239));
+	pauseLayer->addChild(pauseLabel);
 
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
@@ -48,11 +105,6 @@ void Level::setup(){
 	contactListener->onContactPreSolve = CC_CALLBACK_2(Level::onContactPreSolve, this);
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
 
-	/*auto label1 = Label::createWithTTF("Space for Pick Up", "fonts/Pixel-Noir Skinny Short.ttf", 24);
-	label1->setPosition(player->getPosition());
-	label1->setGlobalZOrder(10);
-	mainLayer->addChild(label1, 3000);*/
-
 	//for running the update function
 	schedule(schedule_selector(Level::onStart));
 }
@@ -60,13 +112,62 @@ void Level::setup(){
 void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
-	//initializing enemy joints
-	//for (int i = 0; i < enemies.size(); i++) {
-	//	enemies[i]->initJoints();
-	//}
+	//initializing exits
+	for (int i = 0; i < doors.size(); i++) {
+		if (doors[i]->checkExit() == true) {
+			static_cast<Exit*>(doors[i])->initExit();
+		}
+	}
 
-	//initializing player joints
-	//player->initJoints();
+	//initializing enemy offhand items
+	for (int i = 0; i < enemies.size(); i++) {
+		if (enemies[i]->offhandItem != NULL) {
+			enemies[i]->offhandItem->removeFromParent();//removing from main layer
+			enemies[i]->offhandItem->initPickedUpItem();
+			enemies[i]->offhandItem->initOffhand();
+			enemies[i]->addChild(enemies[i]->offhandItem);
+			enemies[i]->inventory.push_back(enemies[i]->offhandItem);
+
+			if (enemies[i]->getFlippedX() == true) {
+				enemies[i]->offhandItem->knockback *= -1;
+			}
+			enemies[i]->offhandItem->holderFlipped = enemies[i]->getFlippedX();
+
+			enemies[i]->offhandItem->enemyItem = true;
+
+			if (enemies[i]->offhandItem->isKey == true) {
+				enemies[i]->giveKey();//if they pickup a key, they have a key to open locked doors
+			}
+		}
+		if (enemies[i]->itemToPickUp != NULL) {
+			enemies[i]->itemToPickUp->removeFromParent();//removing from main layer
+			enemies[i]->heldItem = enemies[i]->itemToPickUp;
+			enemies[i]->heldItem->initPickedUpItem();
+			enemies[i]->addChild(enemies[i]->heldItem);
+			enemies[i]->inventory.push_back(enemies[i]->heldItem);
+
+			if (enemies[i]->getFlippedX() == true) {
+				enemies[i]->heldItem->knockback *= -1;
+			}
+			enemies[i]->heldItem->holderFlipped = enemies[i]->getFlippedX();
+
+			enemies[i]->heldItem->enemyItem = true;
+
+			if (enemies[i]->heldItem->isKey == true) {
+				enemies[i]->giveKey();//if they pickup a key, they have a key to open locked doors
+			}
+			enemies[i]->itemToPickUp = NULL;
+		}
+	}
+
+	//initializing missing items
+	for (int i = 0; i < mainLayer->items.size(); i++) {
+		if (mainLayer->items[i]->getState() == Item::GROUND) {
+			mainLayer->items[i]->initMissingItem();
+			//mainLayer->items[i]->missingItem->setTag(mainLayer->items[i]->getTag());//giving missing item the same tag as the actual item
+			mainLayer->addChild(mainLayer->items[i]->missingItem);
+		}
+	}
 
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
@@ -84,9 +185,295 @@ void Level::onStart(float deltaTime){
 	scheduleUpdate();
 }
 
+void Level::getStats(float deltaTime) {
+	unschedule(schedule_selector(Level::getStats));
+
+	//check for achievements
+	if (numKilled == 0 && mainLayer->numTimesDetected == 0) {//silent spectre
+		silentSpectre = true;
+	}
+	if (numKilled == numEnemies && mainLayer->numTimesDetected == 0) {//full assassin
+		fullAssassin = true;
+	}
+
+	//reading in level fime
+	std::ifstream inFile;
+	inFile.open("menu/levels.txt");
+
+	vector<vector<string>> levels;
+
+	string line;
+	while (getline(inFile, line)) {//each interation gets a single line from the file; gets data for a single room
+		if (line[0] == '#') { continue; }//ignoring comment lines, which begin with the '#' character
+
+		//getting single pieces of data:
+		vector<string> pieces;
+		std::istringstream sstream(line);//putting line into a string stream
+		string piece;
+		while (getline(sstream, piece, ',')) {//each iteration gets a piece of the chunck, delmimited by the ',' character; gets a single piece of data for a component
+			pieces.push_back(piece);
+		}
+
+		levels.push_back(pieces);
+	}
+	inFile.close();
+
+	//setting level complete to true
+	levels[levelNum][1] = "1";
+	//checking if achievemnts were met
+	if (fullAssassin == true) {
+		levels[levelNum][2] = "1";
+	}
+	if (silentSpectre == true) {
+		levels[levelNum][3] = "1";
+	}
+	//checking if best time was beaten
+	if (gameTime < atof(levels[levelNum][4].c_str()) || atof(levels[levelNum][4].c_str()) <= 0) {
+		gotBestTime = true;
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(3) << gameTime;
+		levels[levelNum][4] = stream.str();
+	}
+
+	//writing to level file
+	std::ofstream outFile;
+	outFile.open("menu/levels.txt");
+
+	for (int i = 0; i < levels.size(); i++) {
+		for (int j = 0; j < levels[i].size(); j++) {
+			outFile << levels[i][j];
+			if (j < levels[i].size() - 1) {
+				outFile << ',';
+			}
+			else {
+				outFile << '\n';
+			}
+		}
+	}
+	outFile.close();
+
+	completionScreen = Sprite::create("menu/completionLogo.png");
+	completionScreen->getTexture()->setTexParameters(texParams);
+	completionScreen->setGlobalZOrder(30);
+	completionScreen->setPosition(Vec2(0, 100));
+	completionScreen->runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
+	hudLayer->addChild(completionScreen);
+
+	levelFinishTime = gameTime;
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(3) << levelFinishTime;
+
+	completeTimeDisplay = Label::createWithTTF("COMPLETION TIME: " + stream.str(), "fonts/pixelFJ8pt1__.ttf", 20);
+	completeTimeDisplay->getFontAtlas()->setAliasTexParameters();
+	completeTimeDisplay->setGlobalZOrder(30);
+	completeTimeDisplay->setPosition(Vec2(0, -90));
+	completeTimeDisplay->setVisible(false);
+	hudLayer->addChild(completeTimeDisplay);
+
+	numKilledDisplay = Label::createWithTTF("ENEMIES KILLED: " + std::to_string(numKilled), "fonts/pixelFJ8pt1__.ttf", 20);
+	numKilledDisplay->getFontAtlas()->setAliasTexParameters();
+	numKilledDisplay->setGlobalZOrder(30);
+	numKilledDisplay->setPosition(Vec2(0, -140));
+	numKilledDisplay->setVisible(false);
+	hudLayer->addChild(numKilledDisplay);
+
+	numTimesDetectedDisplay = Label::createWithTTF("TIMES DETECTED: " + std::to_string(mainLayer->numTimesDetected), "fonts/pixelFJ8pt1__.ttf", 20);
+	numTimesDetectedDisplay->getFontAtlas()->setAliasTexParameters();
+	numTimesDetectedDisplay->setGlobalZOrder(30);
+	numTimesDetectedDisplay->setPosition(Vec2(0, -190));
+	numTimesDetectedDisplay->setVisible(false);
+	hudLayer->addChild(numTimesDetectedDisplay);
+
+	fullAssassinLabel = Label::createWithTTF("KILL ALL ENEMIES\nWITHOUT BEING\nDETECTED: ", "fonts/pixelFJ8pt1__.ttf", 10);
+	fullAssassinLabel->getFontAtlas()->setAliasTexParameters();
+	fullAssassinLabel->setGlobalZOrder(30);
+	fullAssassinLabel->setPosition(Vec2(-300, -100));
+	fullAssassinLabel->setVisible(false);
+	hudLayer->addChild(fullAssassinLabel);
+	silentSpectreLabel = Label::createWithTTF("KILL NO ENEMIES\nWITHOUT BEING\nDETECTED: ", "fonts/pixelFJ8pt1__.ttf", 10);
+	silentSpectreLabel->getFontAtlas()->setAliasTexParameters();
+	silentSpectreLabel->setGlobalZOrder(30);
+	silentSpectreLabel->setPosition(Vec2(300, -100));
+	silentSpectreLabel->setVisible(false);
+	hudLayer->addChild(silentSpectreLabel);
+
+	if (fullAssassin == true) {
+		achievement1 = Sprite::create("menu/achievement1.png");
+		achievement1->getTexture()->setTexParameters(texParams);
+		achievement1->setGlobalZOrder(30);
+		achievement1->setPosition(Vec2(-300, -160));
+		achievement1->setVisible(false);
+		hudLayer->addChild(achievement1);
+	}
+	if (silentSpectre == true) {
+		achievement2 = Sprite::create("menu/achievement2.png");
+		achievement2->getTexture()->setTexParameters(texParams);
+		achievement2->setGlobalZOrder(30);
+		achievement2->setPosition(Vec2(300, -160));
+		achievement2->setVisible(false);
+		hudLayer->addChild(achievement2);
+	}
+
+	continueLabel = Label::createWithTTF("PRESS SPACE TO CONTINUE", "fonts/pixelFJ8pt1__.ttf", 20);
+	continueLabel->getFontAtlas()->setAliasTexParameters();
+	continueLabel->setGlobalZOrder(30);
+	continueLabel->setPosition(Vec2(0, -240));
+	continueLabel->setVisible(false);
+	hudLayer->addChild(continueLabel);
+
+	runAction(MoveBy::create(1.0f, Vec2(0, 0)))->setTag(0);
+	runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
+	runAction(MoveBy::create(3.0f, Vec2(0, 0)))->setTag(2);
+	runAction(MoveBy::create(4.0f, Vec2(0, 0)))->setTag(3);
+	runAction(MoveBy::create(5.0f, Vec2(0, 0)))->setTag(4);
+	runAction(MoveBy::create(4.5f, Vec2(0, 0)))->setTag(5);
+
+	schedule(schedule_selector(Level::onEnd));
+}
+
+void Level::onEnd(float deltaTime) {
+	gameTime += deltaTime;
+	//Display Level Completion Screen
+
+	if (getActionByTag(0) == NULL) {
+		completeTimeDisplay->setVisible(true);
+	}
+	if (getActionByTag(1) == NULL) {
+		numKilledDisplay->setVisible(true);
+	}
+	if (getActionByTag(2) == NULL) {
+		numTimesDetectedDisplay->setVisible(true);
+	}
+	if (getActionByTag(3) == NULL) {
+		fullAssassinLabel->setVisible(true);
+		silentSpectreLabel->setVisible(true);
+	}
+	if (getActionByTag(4) == NULL) {
+		if (fullAssassin == true) {
+			achievement1->setVisible(true);
+		}
+		if (silentSpectre == true) {
+			achievement2->setVisible(true);
+		}
+	}
+	if (getActionByTag(5) == NULL) {
+		if (continueLabel->getActionByTag(10) == NULL) {
+			continueLabel->runAction(RepeatForever::create(Blink::create(3.0, 1)))->setTag(10);
+		}
+	}
+
+
+	if (gameTime - levelFinishTime >= completeScreenDisplayTime) {
+		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//finish the level
+			director->replaceScene(LevelSelectMenu::createScene());
+		}
+	}
+	INPUTS->clearForNextFrame();
+}
+
+void Level::pauseScreen(float deltaTime) {
+	if (INPUTS->getKeyPress(KeyCode::KEY_P)) {//resume game
+		unschedule(schedule_selector(Level::pauseScreen));
+		getScene()->getPhysicsWorld()->setSpeed(1);
+		scheduleUpdate();
+		pauseLayer->setVisible(false);
+		camera->resume();
+		player->resume();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->resume();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->resume();
+		}
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_R)) {//restart the level
+		resetLevel();
+	}
+	else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//quit to level select
+		director->replaceScene(LevelSelectMenu::createScene());
+	}
+	INPUTS->clearForNextFrame();
+}
+
+void Level::gameOver(float deltaTime) {
+	if (initGameOver == false) {
+		gameOverScreen = Sprite::create("menu/gameOver.png");
+		gameOverScreen->getTexture()->setTexParameters(texParams);
+		gameOverScreen->setGlobalZOrder(20);
+		gameOverScreen->setOpacity(0);
+		gameOverScreen->runAction(FadeIn::create(4.0f))->setTag(1);
+		hudLayer->addChild(gameOverScreen);
+		initGameOver = true;
+	}
+	if (gameOverScreen->getActionByTag(1) == NULL && initGameOverLabels == false) {
+		auto pauseLabel = Label::createWithTTF("SPACE: Retry Level", "fonts/pixelFJ8pt1__.ttf", 22);
+		pauseLabel->getFontAtlas()->setAliasTexParameters();
+		pauseLabel->setGlobalZOrder(20);
+		pauseLabel->setPosition(Vec2(0, -190));
+		hudLayer->addChild(pauseLabel);
+		pauseLabel = Label::createWithTTF("BACKSPACE: Quit", "fonts/pixelFJ8pt1__.ttf", 22);
+		pauseLabel->getFontAtlas()->setAliasTexParameters();
+		pauseLabel->setGlobalZOrder(20);
+		pauseLabel->setPosition(Vec2(0, -240));
+		hudLayer->addChild(pauseLabel);
+		initGameOverLabels = true;
+	}
+	if (initGameOverLabels == true) {
+		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//restart level
+			resetLevel();
+		}
+		else if (INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//quit to main menu
+			director->replaceScene(LevelSelectMenu::createScene());
+		}
+	}
+	INPUTS->clearForNextFrame();
+}
+
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
+
+	if (player->isReallyDead() == true) {//player died, gameover
+		unscheduleUpdate();
+		getScene()->getPhysicsWorld()->setSpeed(0);
+		schedule(schedule_selector(Level::pauseScreen));
+		camera->pause();
+		player->pause();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->pause();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->pause();
+		}
+		schedule(schedule_selector(Level::gameOver));
+	}
+
+	if (levelComplete == true) {//finish level
+		unscheduleUpdate();
+		getScene()->getPhysicsWorld()->setSpeed(0);
+		schedule(schedule_selector(Level::pauseScreen));
+		camera->pause();
+		player->pause();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->pause();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->pause();
+		}
+		schedule(schedule_selector(Level::getStats));
+	}
+
+	//camera zoom button
+	if (INPUTS->getKeyPress(KeyCode::KEY_CTRL)) {
+		camera->stopAllActions();
+		auto zoomOut = MoveTo::create(1.0, Vec3(0, 0, 459.42983 / 0.4));
+		camera->runAction(zoomOut);
+	}
+	else if (INPUTS->getKeyRelease(KeyCode::KEY_CTRL)) {
+		camera->stopAllActions();
+		auto zoomIn = MoveTo::create(1.0, Vec3(0, 0, 459.42983 / 1.0));
+		camera->runAction(zoomIn);
+	}
 
 	//for drawing vision rays
 	if (noiseCircles) {
@@ -129,11 +516,36 @@ void Level::update(float deltaTime){
 			doors[i]->createNoise(doors[i]->noiseLevel, doors[i]->noiseLevel / 100, gameTime, doors[i]->getPosition() + doors[i]->getContentSize() / 2, doors[i]->roomHitFrom, "door_being_hit", &mainLayer->noises);
 			doors[i]->noiseLevel = -1;
 		}
+		if (doors[i]->checkExit() == true) {
+			if (numBosses <= 0) {//all bosses have been killed
+				static_cast<Exit*>(doors[i])->canOpen = true;//activate level exits
+			}
+		}
 	}
+
+	//for drawing gun shots
+	if (gunShots) {
+		removeChild(gunShots, true);
+	}
+	gunShots = DrawNode::create();
+	gunShots->setGlobalZOrder(9);
 	//items update
 	for (int i = 0; i < mainLayer->items.size(); i++) {
-		mainLayer->items[i]->updateFloor(mainLayer->floors);
-		mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
+		if (mainLayer->items[i]->getState() != Item::HELD) {
+			if (mainLayer->items[i]->checkBroken() == true) {
+				mainLayer->items.erase(mainLayer->items.begin() + i);
+				i--;
+				continue;
+			}
+		}
+		if (mainLayer->items[i]->getState() != Item::HELD) {
+			mainLayer->items[i]->updateFloor(mainLayer->floors);
+			mainLayer->items[i]->updateRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
+		}
+		else if (mainLayer->items[i]->getState() == Item::HELD) {//updating room/foor for held items
+			mainLayer->items[i]->updateHeldItemFloor(mainLayer->floors);
+			mainLayer->items[i]->updateHeldItemRoom(mainLayer->floors[mainLayer->items[i]->currentFloor].rooms);
+		}
 		if (mainLayer->items[i]->makeNoise == true){
 			if (mainLayer->items[i]->getState() != Item::HELD) {
 				mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * mainLayer->items[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->items[i]->noiseLevel, gameTime, mainLayer->items[i]->getPosition(), Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "item_hitting_wall", &mainLayer->noises);
@@ -153,24 +565,39 @@ void Level::update(float deltaTime){
 			mainLayer->items[i]->playerInRange(player);
 			mainLayer->items[i]->checkGroundSpeed();
 		}
+		else if (mainLayer->items[i]->getState() == Item::HELD) {
+			mainLayer->items[i]->stealRange(player);
+		}
 		else if (mainLayer->items[i]->getState() == Item::THROWN) {
 			mainLayer->items[i]->checkThrownSpeed();
-			if (mainLayer->items[i]->getAttackType() == Item::SWING) {
+			if (mainLayer->items[i]->getAttackType() == Item::SWING || mainLayer->items[i]->getAttackType() == Item::SHOOT) {
 				mainLayer->items[i]->spin();
 			}
 		}
 		else if (mainLayer->items[i]->getState() == Item::FALLING) {
 			mainLayer->items[i]->checkFallingSpeed();
 		}
-		if (mainLayer->items[i]->getState() != Item::HELD) {
-			if (mainLayer->items[i]->checkBroken() == true) {
-				mainLayer->items.erase(mainLayer->items.begin() + i);
-				i--;
-			}
+		//for guns being shot
+		if (mainLayer->items[i]->getAttackType() == Item::SHOOT && mainLayer->items[i]->wasShot == true) {
+			mainLayer->items[i]->wasShot = false;
+			mainLayer->items[i]->shotTime = gameTime;
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 800, (mainLayer->items[i]->noiseLevel * 5) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 800, ((mainLayer->items[i]->noiseLevel * 5) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+		}
+		if (mainLayer->items[i]->shotTime != -1 && gameTime - mainLayer->items[i]->shotTime <= 0.5f) {//time to display gunshot for
+			gunShots->drawSegment(mainLayer->items[i]->startpoint, mainLayer->items[i]->endpoint, 1, Color4F(1, 1, 1, 1));
 		}
 	}
+	addChild(gunShots);
+
 	//dead bodies update
 	for (int i = 0; i < mainLayer->bodies.size(); i++) {
+		mainLayer->bodies[i]->updateFloor(mainLayer->floors);
+		mainLayer->bodies[i]->updateRoom(mainLayer->floors[mainLayer->bodies[i]->currentFloor].rooms);
+		if (mainLayer->bodies[i]->makeNoise == true) {
+			mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() + Vec2(mainLayer->bodies[i]->getContentSize() / 2), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
+			mainLayer->bodies[i]->makeNoise = false;
+		}
 		if (mainLayer->bodies[i]->getState() == Item::GROUND) {
 			mainLayer->bodies[i]->playerInRange(player);
 			mainLayer->bodies[i]->checkGroundSpeed();
@@ -181,12 +608,11 @@ void Level::update(float deltaTime){
 	}
 
 	//for drawing vision rays
-	if (visionRays){
+	if (visionRays) {
 		removeChild(visionRays, true);
 	}
 	visionRays = DrawNode::create();
 	visionRays->setGlobalZOrder(10);
-
 	//enemy update
 	vector<Vec2> points;
 	Vec2 start;
@@ -194,6 +620,33 @@ void Level::update(float deltaTime){
 		//remove dead enemies from scene, will be replaced with a dead body
 		//this will be done in Death State exit function
 		if (enemies.at(i)->isReallyDead() == true) {
+			if (enemies[i]->checkBoss() == true) {
+				numBosses--;//you killed a boss
+				Label* bossKillLabel;
+				if (numBosses <= 0){
+					bossKillLabel = Label::createWithTTF("MISSION COMPLETE. RETURN TO EXIT.", "fonts/pixelFJ8pt1__.ttf", 10);
+				}
+				else {
+					bossKillLabel = Label::createWithTTF("BOSS KILLED. " + std::to_string(numBosses) + " LEFT TO KILL." , "fonts/pixelFJ8pt1__.ttf", 10);
+				}
+				bossKillLabel->getFontAtlas()->setAliasTexParameters();
+				bossKillLabel->setGlobalZOrder(20);
+				addChild(bossKillLabel);
+				bossKillLabel->setOpacity(0);
+				bossKillLabel->setPosition(player->getPosition() + Vec2(0,90));
+				auto fadeIn = FadeIn::create(0.5);
+				auto moveUp = MoveBy::create(5.0, Vec2(0, 35));
+				auto wait = MoveBy::create(2.5, Vec2(0, 0));
+				auto fadeOut = FadeOut::create(2.0);
+				auto callback = CallFunc::create([bossKillLabel]() {
+					bossKillLabel->removeFromParent();
+				});
+				bossKillLabel->runAction(Sequence::create(fadeIn, wait, fadeOut, callback, nullptr));
+				bossKillLabel->runAction(moveUp);
+			}
+			else {
+				numKilled++;
+			}
 			enemies.at(i)->removeFromParentAndCleanup(true);
 			enemies.erase(enemies.begin() + i);
 			i--;
@@ -220,11 +673,11 @@ void Level::update(float deltaTime){
 
 	//check if player is going to interact with door/stairway
 	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
-		if (player->stairToUse != NULL) {
-			player->handleInput(mainLayer, gameTime, USE_STAIR);
-		}
-		else if (player->doorToUse != NULL) {
+		if (player->doorToUse != NULL) {
 			player->handleInput(mainLayer, gameTime, USE_DOOR);
+		}
+		else if (player->stairToUse != NULL) {
+			player->handleInput(mainLayer, gameTime, USE_STAIR);
 		}
 	}
 	//check if player is dropping item
@@ -342,15 +795,50 @@ void Level::update(float deltaTime){
 
 	//must be called after checking all player actions
 	player->resetCollisionChecks(gameTime);
+	//reseting item collision check with hide radii
+	for (int i = 0; i < mainLayer->items.size(); i++) {
+		mainLayer->items[i]->isUnderObject = false;
+	}
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera follow player
 	followBox(camPos, player, camBoundingBox, camOffset);
 	camera->setPosition(camPos->getPosition());
-	hudLayer->setPosition(camera->getPosition()+ Vec2(-400, 250));//make it so hud stays in same location on screen
+	hudLayer->setPosition(camera->getPosition());//make it so hud stays in same location on screen
 	hudLayer->setPositionZ(camera->getPositionZ() - 459.42983);
 	float percentage = player->getHP() / player->getMaxHP();
 	healthFill->setScaleX(percentage);
+	if (player->heldItem != NULL) {
+		itemIcon->setSpriteFrame(player->heldItem->getSpriteFrame());
+		itemBar->setVisible(true);
+		itemFill->setVisible(true);
+		itemIcon->setVisible(true);
+		float percentage = player->heldItem->hp / player->heldItem->maxHP;
+		itemFill->setScaleX(percentage * 0.85);
+	}
+	else {
+		itemBar->setVisible(false);
+		itemFill->setVisible(false);
+		itemIcon->setVisible(false);
+	}
+
+	//pausing game
+	if (INPUTS->getKeyPress(KeyCode::KEY_P)) {
+		unscheduleUpdate();
+		getScene()->getPhysicsWorld()->setSpeed(0);
+		schedule(schedule_selector(Level::pauseScreen));
+		pauseLayer->setPositionZ(camera->getPositionZ() - 459.42983);
+		pauseLayer->setPosition(camera->getPosition());
+		pauseLayer->setVisible(true);
+		camera->pause();
+		player->pause();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->pause();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->pause();
+		}
+	}
 
 	//update the keyboard each frame
 	INPUTS->clearForNextFrame();
@@ -362,6 +850,30 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	Node *b = contact.getShapeB()->getBody()->getNode();
 
 	if (a != NULL && b != NULL) {
+		//player and exit hitbox
+		if (a->getName() == "player" && b->getName() == "level_exit")
+		{
+			levelComplete = true;
+			return false;
+		}
+		else if (a->getName() == "level_exit" && b->getName() == "player")
+		{
+			levelComplete = true;
+			return false;
+		}
+		//player and exit door
+		if (a->getName() == "player" && b->getName() == "exit_radius")
+		{
+			player->doorToUse = static_cast<Door*>(b->getParent());
+			static_cast<Door*>(b->getParent())->playerRange = true;
+			return false;
+		}
+		else if (a->getName() == "exit_radius" && b->getName() == "player")
+		{
+			player->doorToUse = static_cast<Door*>(a->getParent());
+			static_cast<Door*>(a->getParent())->playerRange = true;
+			return false;
+		}
 		//player and noises
 		if (a->getName() == "player" && b->getName() == "noise")
 		{
@@ -430,6 +942,22 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			if (player->isCrouched == true) {
 				player->isHidingUnder = true;
 				//static_cast<Item*>(b->getParent())->playerRange = true;
+			}
+			return false;
+		}
+
+		//item and hide radius
+		if (a->getName() == "held_item" && b->getName() == "hide_radius")
+		{
+			if (static_cast<Item*>(a)->getAttackType() != Item::SHOOT) {
+				static_cast<Item*>(a)->isUnderObject = true;
+			}
+			return false;
+		}
+		else if (a->getName() == "hide_radius" && b->getName() == "held_item")
+		{
+			if (static_cast<Item*>(b)->getAttackType() != Item::SHOOT) {
+				static_cast<Item*>(b)->isUnderObject = true;
 			}
 			return false;
 		}
@@ -525,23 +1053,23 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		//alert enemy and wall
-		if (a->getName() == "enemy_alert" && (b->getName() == "wall" || b->getName() == "door"))
+		if (a->getName() == "enemy_alert" && (b->getName() == "wall" || b->getName() == "door" || b->getName() == "exit_door"))
 		{
 			static_cast<Enemy*>(a)->touchingWall = true;
 			return true;
 		}
-		else if ((a->getName() == "wall" || a->getName() == "door") && b->getName() == "enemy_alert")
+		else if ((a->getName() == "wall" || a->getName() == "door" || a->getName() == "exit_door") && b->getName() == "enemy_alert")
 		{
 			static_cast<Enemy*>(b)->touchingWall = true;
 			return true;
 		}
 		//enemy and wall
-		if (a->getName() == "enemy" && (b->getName() == "wall" || b->getName() == "door"))
+		if (a->getName() == "enemy" && (b->getName() == "wall" || b->getName() == "door" || b->getName() == "exit_door"))
 		{
 			static_cast<Enemy*>(a)->touchingWall = true;
 			return true;
 		}
-		else if ((a->getName() == "wall" || a->getName() == "door") && b->getName() == "enemy")
+		else if ((a->getName() == "wall" || a->getName() == "door" || a->getName() == "exit_door") && b->getName() == "enemy")
 		{
 			static_cast<Enemy*>(b)->touchingWall = true;
 			return true;
@@ -632,7 +1160,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 			else {//so enemies don't get hit by their own weapon
 				if (static_cast<Item*>(b)->getState() == Item::THROWN) {
-					return true;
+					return false;
 				}
 				return false;
 			}
@@ -644,7 +1172,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 			else {//so enemies don't get hit by their own weapon
 				if (static_cast<Item*>(a)->getState() == Item::THROWN) {
-					return true;
+					return false;
 				}
 				return false;
 			}
@@ -824,8 +1352,8 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//enemy and item radius
 		if (a->getName() == "enemy" && b->getName() == "item_radius")
 		{
-			if (static_cast<Item*>(b->getParent())->enemyCanUse == true && static_cast<Item*>(b->getParent())->getPhysicsBody()->getVelocity().y < 0) {//item is moving downwards and has moved from original poaisiton
-				if (static_cast<Enemy*>(a)->fallenItem == NULL) {//if they don't already have an item to pick up
+			if (static_cast<Item*>(b->getParent())->enemyCanUse == true && static_cast<Item*>(b->getParent())->getPhysicsBody()->getVelocity().y < 0 && static_cast<Item*>(b->getParent())->enemyItem == false) {//item is moving downwards and has moved from original poaisiton
+				if (static_cast<Enemy*>(a)->fallenItem == NULL) {//if they don't already have an item that's hit them
 					static_cast<Enemy*>(a)->fallenItem = static_cast<Item*>(b->getParent());
 				}
 			}
@@ -833,8 +1361,8 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "enemy")
 		{
-			if (static_cast<Item*>(a->getParent())->enemyCanUse == true && static_cast<Item*>(a->getParent())->getPhysicsBody()->getVelocity().y < 0) {//item is moving downwards and has moved from original poaisiton
-				if (static_cast<Enemy*>(b)->fallenItem == NULL) {//if they don't already have an item to pick up
+			if (static_cast<Item*>(a->getParent())->enemyCanUse == true && static_cast<Item*>(a->getParent())->getPhysicsBody()->getVelocity().y < 0 && static_cast<Item*>(a->getParent())->enemyItem == false) {//item is moving downwards and has moved from original poaisiton
+				if (static_cast<Enemy*>(b)->fallenItem == NULL) {//if they don't already have an item that's hit tiem
 					static_cast<Enemy*>(b)->fallenItem = static_cast<Item*>(a->getParent());
 				}
 			}
@@ -843,15 +1371,19 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//alert enemy and item radius
 		if (a->getName() == "enemy_alert" && b->getName() == "item_radius")
 		{
-			if (static_cast<Enemy*>(a)->itemToPickUp == NULL) {//if they don't already have an item to pick up
-				static_cast<Enemy*>(a)->itemToPickUp = static_cast<Item*>(b->getParent());
+			if (static_cast<Item*>(b->getParent())->enemyItem == false) {
+				if (static_cast<Enemy*>(a)->itemToPickUp == NULL) {//if they don't already have an item to pick up
+					static_cast<Enemy*>(a)->itemToPickUp = static_cast<Item*>(b->getParent());
+				}
 			}
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "enemy_alert")
 		{
-			if (static_cast<Enemy*>(b)->itemToPickUp == NULL) {//if they don't already have an item to pick up
-				static_cast<Enemy*>(b)->itemToPickUp = static_cast<Item*>(a->getParent());
+			if (static_cast<Item*>(a->getParent())->enemyItem == false) {
+				if (static_cast<Enemy*>(b)->itemToPickUp == NULL) {//if they don't already have an item to pick up
+					static_cast<Enemy*>(b)->itemToPickUp = static_cast<Item*>(a->getParent());
+				}
 			}
 			return false;
 		}
@@ -894,6 +1426,21 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+	//item and hide radius
+	if (a->getName() == "held_item" && b->getName() == "hide_radius")
+	{
+		if (static_cast<Item*>(a)->getAttackType() != Item::SHOOT) {
+			static_cast<Item*>(a)->isUnderObject = true;
+		}
+		return false;
+	}
+	else if (a->getName() == "hide_radius" && b->getName() == "held_item")
+	{
+		if (static_cast<Item*>(b)->getAttackType() != Item::SHOOT) {
+			static_cast<Item*>(b)->isUnderObject = true;
+		}
+		return false;
+	}
 	//enemy and noises
 	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "noise")
 	{
@@ -923,7 +1470,12 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
-				static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+				if (static_cast<Item*>(b)->isUnderObject == false) {
+					static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+					if (static_cast<Enemy*>(a)->itemHitBy->getAttackType() == Item::SHOOT) {//guns lose health when thrown at enemies
+						static_cast<Enemy*>(a)->itemHitBy->used();
+					}
+				}
 			}
 			else {
 				static_cast<Enemy*>(a)->itemBumpedBy = static_cast<Item*>(b);
@@ -931,10 +1483,10 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Item*>(b)->stop();
 				static_cast<Item*>(b)->move(Vec2(-100,0));
 			}
-			if (static_cast<Item*>(b)->getState() == Item::THROWN) {
+			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Enemy*>(a)->thrownItem) {
 				static_cast<Item*>(b)->stop();
 			}
-			return true;
+			return false;
 		}
 		else {
 			return false;
@@ -944,7 +1496,12 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
-				static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+				if (static_cast<Item*>(a)->isUnderObject == false) {
+					static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+					if (static_cast<Enemy*>(b)->itemHitBy->getAttackType() == Item::SHOOT) {
+						static_cast<Enemy*>(b)->itemHitBy->used();
+					}
+				}
 			}
 			else {
 				static_cast<Enemy*>(b)->itemBumpedBy = static_cast<Item*>(a);
@@ -952,10 +1509,10 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Item*>(a)->stop();
 				static_cast<Item*>(a)->move(Vec2(-100, 0));
 			}
-			if (static_cast<Item*>(a)->getState() == Item::THROWN) {
+			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Enemy*>(b)->thrownItem) {
 				static_cast<Item*>(a)->stop();
 			}
-			return true;
+			return false;
 		}
 		else {
 			return false;
@@ -969,6 +1526,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
 				static_cast<Player*>(a)->itemHitBy = (static_cast<Item*>(b));
 			}
+			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Player*>(a)->thrownItem) {
+				static_cast<Item*>(b)->stop();
+			}
 			return true;
 		}
 		else {
@@ -979,6 +1539,9 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
 			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
 				static_cast<Player*>(b)->itemHitBy = (static_cast<Item*>(a));
+			}
+			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Player*>(b)->thrownItem) {
+				static_cast<Item*>(a)->stop();
 			}
 			return true;
 		}
@@ -1020,23 +1583,23 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		return false;
 	}
 	//alert enemy and wall
-	if (a->getName() == "enemy_alert" && b->getName() == "wall")
+	if (a->getName() == "enemy_alert" && (b->getName() == "wall" || b->getName() == "exit_door"))
 	{
 		static_cast<Enemy*>(a)->hitWall();
 		return true;
 	}
-	else if (a->getName() == "wall" && b->getName() == "enemy_alert")
+	else if ((a->getName() == "wall" || a->getName() == "exit_door") && b->getName() == "enemy_alert")
 	{
 		static_cast<Enemy*>(b)->hitWall();
 		return true;
 	}
 	//enemy and wall
-	if (a->getName() == "enemy" && b->getName() == "wall")
+	if (a->getName() == "enemy" && (b->getName() == "wall" || b->getName() == "exit_door"))
 	{
 		static_cast<Enemy*>(a)->hitWall();
 		return true;
 	}
-	else if (a->getName() == "wall" && b->getName() == "enemy")
+	else if ((a->getName() == "wall" || a->getName() == "exit_door") && b->getName() == "enemy")
 	{
 		static_cast<Enemy*>(b)->hitWall();
 		return true;
@@ -1058,25 +1621,25 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		return true;
 	}
 	//held/thrown items and walls
-	if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object"))
+	if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object" || b->getName() == "exit_door"))
 	{
 		static_cast<Item*>(a)->makeNoise = true;
 		return true;
 	}
-	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object") && b->getName() == "held_item")
+	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object" || a->getName() == "exit_door") && b->getName() == "held_item")
 	{
 		static_cast<Item*>(b)->makeNoise = true;
 		return true;
 	}
 	//falling items and walls
-	if (a->getName() == "item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object"))
+	if (a->getName() == "item" && (b->getName() == "wall" || b->getName() == "ceiling" || b->getName() == "floor" || b->getName() == "phys_object" || b->getName() == "exit_door"))
 	{
 		if (static_cast<Item*>(a)->getState() == Item::FALLING) {
 			static_cast<Item*>(a)->makeNoise = true;
 		}
 		return true;
 	}
-	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object") && b->getName() == "item")
+	else if ((a->getName() == "wall" || a->getName() == "ceiling" || a->getName() == "floor" || a->getName() == "phys_object" || a->getName() == "exit_door") && b->getName() == "item")
 	{
 		if (static_cast<Item*>(b)->getState() == Item::FALLING) {
 			static_cast<Item*>(b)->makeNoise = true;
@@ -1224,6 +1787,39 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "door") {
 				DoorData doorData;
 				doorData.type = 1;
+				doorData.floorNum = floorNum;
+				//set door as locked
+				if (pieces.size() > 2) {
+					if (pieces[2] == "locked") {
+						doorData.locked = true;
+					}
+				}
+				if (pieces.size() > 3) {//set door's position on wall
+					doorData.pos = atof(pieces[3].c_str());
+				}
+				//set what wall door is on
+				if (pieces[1] == "right") {
+					doorData.leftRoom = Vec2(roomNum, floorNum);
+					doorData.rightRoom = Vec2(roomNum + 1, floorNum);
+					roomData->rightDoors.push_back(doorData);
+					roomData->hasRightDoor = true;
+				}
+				else if (pieces[1] == "left") {
+					doorData.leftRoom = Vec2(roomNum - 1, floorNum);
+					doorData.rightRoom = Vec2(roomNum, floorNum);
+					roomData->leftDoors.push_back(doorData);
+					roomData->hasLeftDoor = true;
+				}
+				else if (pieces[1] == "top") {
+					roomData->ceilingDoors.push_back(doorData);
+				}
+				else if (pieces[1] == "bot") {
+					roomData->bottomDoors.push_back(doorData);
+				}
+			}
+			else if (pieces[0] == "exit") {
+				DoorData doorData;
+				doorData.type = 3;
 				//set door as locked
 				if (pieces.size() > 2) {
 					if (pieces[2] == "locked") {
@@ -1256,14 +1852,14 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "vent") {
 				DoorData ventData;
 				ventData.type = 2;
-				if (pieces.size() > 2) {//set vent's position on wall
-					ventData.pos = atof(pieces[2].c_str());
-				}
 				//set vent as locked
-				if (pieces.size() > 3) {
-					if (pieces[3] == "locked") {
+				if (pieces.size() > 2) {
+					if (pieces[2] == "locked") {
 						ventData.locked = true;
 					}
+				}
+				if (pieces.size() > 3) {//set vent's position on wall
+					ventData.pos = atof(pieces[3].c_str());
 				}
 				//set what wall vent is on
 				if (pieces[1] == "right") {
@@ -1329,6 +1925,9 @@ bool Level::initLevel(string filename){
 				else if (pieces[1] == "hammer") {
 					item = Hammer::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "gun") {
+					item = Gun::createWithSpriteFrameName();
+				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				item->startRoom = Vec2(roomNum, floorNum);
@@ -1337,8 +1936,17 @@ bool Level::initLevel(string filename){
 			//Enemies
 			else if (pieces[0] == "enemy") {
 				Enemy* enemy;
-				if (pieces[1] == "guard") {
-					enemy = Enemy::createWithSpriteFrameName();//should be Guard subclass
+				if (pieces[1] == "thug") {
+					enemy = Thug::createWithSpriteFrameName();//should be Guard subclass
+					numEnemies++;
+				}
+				else if (pieces[1] == "guard") {
+					enemy = Guard::createWithSpriteFrameName();//should be Guard subclass
+					numEnemies++;
+				}
+				else if (pieces[1] == "boss") {
+					enemy = Boss::createWithSpriteFrameName();//should be Guard subclass
+					numBosses++;//add a boss to boss level counter
 				}
 				enemy->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				enemy->startRoom = Vec2(roomNum, floorNum);
@@ -1357,11 +1965,35 @@ bool Level::initLevel(string filename){
 					else if (pieces[5] == "hammer") {
 						item = Hammer::createWithSpriteFrameName();
 					}
+					else if (pieces[5] == "gun") {
+						item = Gun::createWithSpriteFrameName();
+					}
+					item->initObject();
+					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
+					item->startRoom = Vec2(roomNum, floorNum);
+					item->startHeld();
+					mainLayer->items.push_back(item);
+					enemy->itemToPickUp = item;
+				}
+				if (pieces.size() > 6) {
+					Item* item;
+					if (pieces[6] == "knife") {
+						item = Knife::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "key") {
+						item = Key::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "hammer") {
+						item = Hammer::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "gun") {
+						item = Gun::createWithSpriteFrameName();
+					}
 					item->initObject();
 					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 					item->startRoom = Vec2(roomNum, floorNum);
 					mainLayer->items.push_back(item);
-					enemy->itemToPickUp = item;
+					enemy->offhandItem = item;
 				}
 				enemy->initObject();
 				enemies.push_back(enemy);
@@ -1419,6 +2051,7 @@ bool Level::initLevel(string filename){
 		doors[i]->setTag(doors[i]->getTag() + i);//giving a unique tag to each door
 		mainLayer->addChild(doors[i]);
 	}
+	mainLayer->doors = doors;
 	//stairways
 	for (int i = 0; i < mainLayer->stairs.size(); i++) {
 		mainLayer->addChild(mainLayer->stairs[i]);//Do Not give unique tag to each stairway, already done elsewhere

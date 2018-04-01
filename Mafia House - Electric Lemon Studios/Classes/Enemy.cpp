@@ -14,21 +14,9 @@ Enemy::Enemy()
 	dynamic = true;
 	category = 2;
 	collision = 47;
-	//other proeprties
-	baseSpeed = 50;
-	maxSpeed = baseSpeed;
-	deadBodyName = "enemy/thug/dead.png";
 	//for attacking without a weapon
 	fist = Fist::createWithSpriteFrameName();
 	fist->initObject();
-	//initializing animations:
-	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES, true);
-	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
-	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockdown/%03d.png", 4, 20 FRAMES, false);
-	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
-	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 20 FRAMES, false);
-	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
-	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES, false);
 	ZZZAnimation = GameAnimation(ZZZs, "icons/ZZZ/%03d.png", 4, 50 FRAMES, true);
 }
 
@@ -82,7 +70,7 @@ void Enemy::initObject(Vec2 startPos)
 	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
 		flipX();
 	}
-	lastSeenLocation = Node::create();
+	lastSeenLocation = GameObject::create();
 	addChild(lastSeenLocation);
 
 	//initializing knocked out physics body
@@ -131,15 +119,121 @@ void Enemy::dropInventory(GameLayer* mainLayer) {
 	}
 	heldItem = NULL;
 }
-
 void Enemy::pickUpItem(GameLayer* mainLayer) {
-	if (itemToPickUp->enemyItem != true) {
-		Character::pickUpItem(mainLayer);
+	if (itemToPickUp->getState() == Item::HELD) {
+		itemToPickUp = NULL;
 	}
-	if (heldItem != NULL) {
-		heldItem->enemyItem = true;
-		if (heldItem->isKey == true) {
+	if (itemToPickUp != NULL && itemToPickUp->getState() == Item::GROUND && itemToPickUp->enemyItem != true) {
+		if (itemToPickUp->isKey == false) {//item is not a key
+			if (heldItem != NULL && (offhandItem == NULL || (offhandItem != NULL && offhandItem->isKey == false))) {//enemy has a held item already, and offhand item is not a key
+				if (offhandItem != NULL) {
+					removeChild(offhandItem, true);
+				}
+				heldItem->initOffhand();
+				offhandItem = heldItem;
+			}
+			else {//held item is not replacing offhand item because it is a key
+				if (heldItem != NULL) {
+					removeChild(heldItem, true);
+				}
+			}
+
+			itemToPickUp->removeFromParent();
+			heldItem = itemToPickUp;
+
+			addChild(heldItem);
+			heldItem->initPickedUpItem();
+			inventory.push_back(heldItem);
+
+			itemToPickUp = NULL;
+
+			if (flippedX == true) {
+				heldItem->knockback *= -1;
+			}
+			heldItem->holderFlipped = flippedX;
+
+			heldItem->enemyItem = true;
+			if (heldItem->isKey == true) {
+				hasKey = true;//if they pickup a key, they have a key to open locked doors
+			}
+		}
+		else {//item is a key
+			itemToPickUp->removeFromParent();
+			if (offhandItem == NULL || offhandItem->isKey == false) {//enemy doesn't have an offhand item, or it is not a key
+				if (offhandItem != NULL) {
+					removeChild(offhandItem, true);
+				}
+				offhandItem = itemToPickUp;
+				offhandItem->initOffhand();
+				addChild(offhandItem);
+			}
+			else if (offhandItem->isKey == true && heldItem == NULL) {//they have an offhand item and it is a key already, and they don't have a held item yet
+				heldItem = itemToPickUp;
+				addChild(heldItem);
+				heldItem->initPickedUpItem();
+			}
+			inventory.push_back(itemToPickUp);
+
+			if (flippedX == true) {
+				itemToPickUp->knockback *= -1;
+			}
+			itemToPickUp->holderFlipped = flippedX;
+
+			itemToPickUp->enemyItem = true;
+
 			hasKey = true;//if they pickup a key, they have a key to open locked doors
+
+			itemToPickUp = NULL;
+		}
+	}
+}
+
+void Enemy::beginUseItem(float angle) {
+	Character::beginUseItem(angle);
+	if (heldItem != NULL) {
+		if (heldItem->getAttackType() == Item::SHOOT) {
+			heldItem->prepareShoot(0);
+			setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());//first frame of shooting animation
+		}
+	}
+}
+void Enemy::useItem(float angle) {
+	Character::useItem(angle);
+	if (heldItem != NULL) {
+		if (heldItem->getAttackType() == Item::SHOOT) {//always shoot directly at the player
+			heldItem->enemyShoot(targetLocation);
+		}
+	}
+}
+
+void Enemy::replaceThrownItem() {
+	if (heldItem == NULL) {
+		if (offhandItem != NULL & offhandItem->isKey == false) {//have a offhand item that isn't a key
+			offhandItem->initHeldItem();
+			heldItem = offhandItem;//replace held item with offhand item
+			offhandItem = NULL;
+			if (inventory.size() > 1) {//they have another item in their inventory
+				for (int i = 0; i < inventory.size(); i++) {
+					if (inventory[i] != heldItem) {
+						offhandItem = inventory[i];//set offhand item to new inventory item
+						offhandItem->initOffhand();
+						addChild(offhandItem);
+						break;
+					}
+				}
+			}
+		}
+		else {//they don't have an offhand item, or it's a key
+			if (inventory.size() > 1) {//they have another item in their inventory
+				for (int i = 0; i < inventory.size(); i++) {
+					if (inventory[i] != offhandItem) {//the item is not their current offhand item
+						heldItem = inventory[i];
+						heldItem->initHeldItem();//replace held item with inventory item
+						addChild(heldItem);
+						break;
+					}
+				}
+			}
 		}
 	}
 }
@@ -161,7 +255,7 @@ void Enemy::closeDoor() {
 	}
 }
 
-void Enemy::pause(float time) {
+void Enemy::Pause(float time) {
 	if (startPauseTime == -1) {
 		stop();
 		startPauseTime = time;
@@ -916,6 +1010,24 @@ void Enemy::noticeItem(Item* item, float time) {
 	}
 }
 
+void Enemy::noticeMissingItem(MissingItem* item, float time) {
+	bool noticeItem = true;
+	if (seenMissingItems.size() > 0) {
+		for (int i = 0; i < seenMissingItems.size(); i++) {
+			if (item == seenMissingItems[i]) {//check if enemy has already seen this item before
+				noticeItem = false;
+				break;
+			}
+		}
+	}
+	if (noticeItem == true) {
+		qMark->setVisible(true);
+		changeSuspicion(maxSuspicion / 5);//seeing an item increases their suspicion by a fifth
+		seenMissingItems.push_back(item);
+		seenMissingTimes.push_back(time);
+	}
+}
+
 void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 	playerInVision = false;
 	didRun = false;
@@ -996,6 +1108,10 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 				}
 				return true;//enemy cannot pick item up
 			}
+			else if (visionContactName == "missing_item" && getName() != "enemy_alert") {
+				noticeMissingItem(static_cast<MissingItem*>(visionContact), time);
+				return true;
+			}
 			//things to ingore collisions with
 			else {
 				return true;
@@ -1007,15 +1123,15 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 		int direction;
 
 		if (flippedX == false) {
-			startPoint = getPosition() + Vec2(bodySize.width - 15, 87);
-			*start = startPoint + Vec2(8, 0);//shift visuals forward a bit
-			offsetAdjust = Vec2(-8, 0);//shift end points back by same amount so visual range is accurate
+			startPoint = getPosition() + Vec2(bodySize.width - 16, eyeHeight);
+			*start = startPoint + Vec2(10, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(-10, 0);//shift end points back by same amount so visual range is accurate
 			direction = 1;
 		}
 		else {
-			startPoint = getPosition() + Vec2(15, 87);
-			*start = startPoint + Vec2(-8, 0);//shift visuals forward a bit
-			offsetAdjust = Vec2(8, 0);//shift end points back by same amount so visual range is accurate
+			startPoint = getPosition() + Vec2(16, eyeHeight);
+			*start = startPoint + Vec2(-10, 0);//shift visuals forward a bit
+			offsetAdjust = Vec2(10, 0);//shift end points back by same amount so visual range is accurate
 			direction = -1;
 		}
 
@@ -1033,17 +1149,48 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 }
 
 void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
-	if (item->didHitWall == false && item->hp > 0) {
+	if (item->didHitWall == false) {
 		stopAllActions();
-		item->used();
-		hp -= item->dmg;//dealing damage to enemy
+		if (item->getAttackType() != Item::SHOOT) {
+			item->used();
+		}
+		if (item->getAttackType() == Item::SHOOT) {
+			if (item->getEffect() == Item::KILL) {
+				hp -= 100;
+			}
+			else {
+				hp -= 34;
+			}
+		}
+		else {
+			hp -= item->dmg;//dealing damage to enemy
+		}
+		/*auto emitter = ParticleFireworks::create();
+		emitter->setStartColor(Color4F(255, 0, 0, 1));
+		emitter->setEndColor(Color4F(255, 100, 100, 1));//red
+		//emitter->setDuration(1.0f);
+		//emitter->setStartSize(3.0f);
+		//emitter->setStartSizeVar(1.0f);
+		//emitter->setEndSize(0.5f);
+		//emitter->setEndSizeVar(0.5f);
+		//emitter->setSpeed(1200.0f);
+		//emitter->setSpeedVar(0.0f);
+		//emitter->setEmitterMode(ParticleSystem::Mode::GRAVITY);
+		//emitter->setTotalParticles(150);
+		//emitter->setEmissionRate(1000000.0f);
+		//emitter->setLife(0.1f);
+		//emitter->setLifeVar(2.0f);
+		emitter->setTextureWithRect(frameCache->getSpriteFrameByName("particles/pixel.png")->getTexture(), frameCache->getSpriteFrameByName("particles/pixel.png")->getRect());
+		emitter->setGlobalZOrder(30);
+		//emitter->setPosition(getPosition());
+		addChild(emitter);*/
 		if (item->getEffect() == Item::NONE) {
 			wasInHitStun = true;
 			hitStunStart = time;
 			hitStunTime = item->hitstun;
-			if ((flippedX == true && item->knockback.x < 0) || (flippedX == false && item->knockback.x > 0)) {//if the enemy is hit from behind
+			setSuspicion(maxSuspicion);
+			if ((flippedX == true && item->holderFlipped == true) || (flippedX == false && item->holderFlipped == false)) {//if the enemy is hit from behind
 				flipX();
-				setSuspicion(maxSuspicion - maxSuspicion * 0.1);
 			}
 		}
 		if (touchingWall == false) {
@@ -1084,6 +1231,38 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 void Enemy::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);
 	updateRoom(mainLayer->floors[currentFloor].rooms);
+	if (offhandItem != NULL) {
+		if (flippedX == true) {
+			offhandItem->rotatePickUpRadius(-90);
+		}
+		else {
+			offhandItem->rotatePickUpRadius(0);
+		}
+	}
+	//checking if enemy still has a key, also removing stolen items
+	if (inventory.size() > 0) {
+		hasKey = false;
+		for (int i = 0; i < inventory.size(); i++) {
+			if (inventory[i]->enemyItem == false) {//item has been stolen
+				inventory.erase(inventory.begin() + i);//remove it from their inventory
+				i--;
+				continue;
+			}
+			if (inventory[i]->isKey == true) {//if the item is a key
+				hasKey = true;
+			}
+		}
+	}
+	//forgetting what missing items they have seen
+	if (seenMissingItems.size() > 0) {
+		for (int i = 0; i < seenMissingItems.size(); i++) {
+			if (time - seenMissingTimes[i] >= memoryTime) {
+				seenMissingTimes.erase(seenMissingTimes.begin() + i);
+				seenMissingItems.erase(seenMissingItems.begin() + i);
+				i--;
+			}
+		}
+	}
 	//forgetting what items they have seen
 	if (seenItems.size() > 0) {
 		for (int i = 0; i < seenItems.size(); i++) {
@@ -1103,18 +1282,27 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 		invincible = false;
 	}
 	//checking if they've been hit
-	if (itemHitBy != NULL) {
-		if (invincible == false) {
-			hitTime = time;
-			invincible = true;
-			if (itemHitBy->getState() == Item::THROWN) {
-				if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
-					gotHit(itemHitBy, time, mainLayer);
-					thrownItem = NULL;
+	if (itemHitBy != NULL ) {
+		if (itemHitBy->isUnderObject == false) {
+			if (invincible == false) {
+				if (itemHitBy->getState() == Item::THROWN || itemHitBy->getState() == Item::FALLING) {
+					if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
+						gotHit(itemHitBy, time, mainLayer);
+						hitTime = time;
+						invincible = true;
+						thrownItem = NULL;
+					}
+					else if (itemHitBy != thrownItem) {
+						gotHit(itemHitBy, time, mainLayer);
+						hitTime = time;
+						invincible = true;
+					}
 				}
-			}
-			else {
-				gotHit(itemHitBy, time, mainLayer);
+				else {
+					gotHit(itemHitBy, time, mainLayer);
+					hitTime = time;
+					invincible = true;
+				}
 			}
 		}
 		itemHitBy = NULL;
@@ -1286,7 +1474,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 	return nullptr;
 }
@@ -1366,7 +1554,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (20 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (15 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -1382,7 +1570,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	if (enemy->paused == false && time - enemy->prevPauseTime >= enemy->minPauseInterval) {
 		if (randNum(1, 100) % 30 == 0) {//3% chance to stop, 3/100 nums are divisible by 30
 			enemy->wasFlipped = enemy->flippedX;
-			enemy->timeToPauseFor = static_cast<float>(randNum(1, 6));//will pause for between 1 and 6 seconds
+			enemy->timeToPauseFor = static_cast<float>(randNum(1, 6));//will Pause for between 1 and 6 seconds
 			enemy->startPauseTime = -1;
 			enemy->paused = true;
 			enemy->flipX();
@@ -1407,7 +1595,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	return nullptr;
@@ -1449,11 +1637,12 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.7;
 	if (enemy->prevState->type != "use_door" && enemy->prevState->type != "attack" && enemy->prevState->type != "get_item") {
+		mainLayer->numTimesDetected++;
 		enemy->createNoise(180, 2, time, enemy->getPosition() + Vec2(enemy->getSize().width / 2, enemy->getSize().height), Vec2(enemy->currentRoom, enemy->currentFloor), "enemy_shout", &mainLayer->noises);
 	}
 }
 Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
-	if (enemy->hp < enemy->maxHP / 2) {
+	if (enemy->hp <= enemy->maxHP / 2) {
 		enemy->runningAway = true;
 	}
 	if (enemy->checkDead() == true) {
@@ -1470,7 +1659,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		//check if enemy has no weapon
 		if (enemy->itemToPickUp == NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {
 			if (enemy->detectedPlayer->heldItem != NULL && enemy->detectedPlayer->heldItem->isKey == false) {//player has a held item and it is not a key
-				enemy->itemToPickUp = (enemy->findClosestItem(mainLayer));//find a weapon that is closest to them
+				if (enemy->detectedPlayer->currentFloor == enemy->currentFloor && checkForPath(mainLayer, enemy->currentFloor, enemy->detectedPlayer->currentRoom, enemy->currentRoom, enemy->checkKey()) == true) {
+					enemy->itemToPickUp = (enemy->findClosestItem(mainLayer));//find a weapon that is closest to them
+				}
 				if (enemy->itemToPickUp != NULL) {//if one was found
 					enemy->goingToFirstItem = true;
 					return new GetItemState;//go and get it
@@ -1492,7 +1683,8 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	//check if enemy has run into an item
 	if (enemy->itemToPickUp != NULL && (enemy->heldItem == NULL || enemy->heldItem->isKey == true)) {//enemy doesn't have a held item or it is a key
-		enemy->pickUpItem(mainLayer);
+		enemy->itemToPickUp = NULL;
+		//enemy->pickUpItem(mainLayer);//removing for now, could be annoying
 	}
 	//check if enemy is walking into a door
 	if (enemy->doorToUse != NULL) {
@@ -1512,7 +1704,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->reachedLastSeen = false;
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (40 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (35 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -1531,8 +1723,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		//if the player wasn't seen going into hiding
 		if (enemy->detectedPlayer->wasSeen == false && enemy->lostPlayer == false) {
 			enemy->lostPlayer = true;
-			enemy->lastSeenLocation->setPositionX(enemy->detectedPlayer->getPositionX());
-			enemy->lastSeenLocation->setPositionY(enemy->detectedPlayer->currentFloor);//use y position for floor player was on
+			enemy->lastSeenLocation->currentFloor = enemy->detectedPlayer->currentFloor;
+			enemy->lastSeenLocation->currentRoom = enemy->detectedPlayer->currentRoom;
+			enemy->lastSeenLocation->setPosition(enemy->detectedPlayer->getPosition());
 		}
 	}
 
@@ -1563,29 +1756,50 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 				}
 				//check if enemy is in range to attack player
 				if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within horizontal range to attack player
-					Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);
-					//check vertical range
-					if (displacement.getLength() <= enemy->heldItem->getRangeRadius()) {//check for radial range
-						enemy->inAttackRange = true;
-						float angle = displacement.getAngle() * 180 / M_PI;
-						if ((angle > -22.5 && angle <= 22.5) || (angle > 157.5 || angle <= -157.5)) {
-							enemy->aimAngle = 0;
+					if (checkForPath(mainLayer, enemy->currentFloor, enemy->detectedPlayer->currentRoom, enemy->detectedPlayer->currentFloor, false) == true) {//enemy is in same room as player
+						Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);
+						bool doorInbetween = false;
+						for (int i = 0; i < mainLayer->doors.size(); i++) {//checking if door is inbetween enemy and player
+							if (mainLayer->doors[i]->getName() == "door" && mainLayer->doors[i]->checkOpen() == false && mainLayer->doors[i]->startRoom.y == enemy->currentFloor) {
+								if (displacement.x < 0) {//player is to the left
+									if (mainLayer->doors[i]->getPositionX() < enemy->getPositionX() && mainLayer->doors[i]->getPositionX() > enemy->detectedPlayer->getPositionX()) {//door is between enemy and player
+										doorInbetween = true;
+										break;
+									}
+								}
+								else {//player is to the right
+									if (mainLayer->doors[i]->getPositionX() > enemy->getPositionX() && mainLayer->doors[i]->getPositionX() < enemy->detectedPlayer->getPositionX()) {//door is between enemy and player
+										doorInbetween = true;
+										break;
+									}
+								}
+							}
 						}
-						else if ((angle > -67.5 && angle <= -22.5) || (angle > -157.5 && angle <= -112.5)) {
-							enemy->aimAngle = 45;
+						if (doorInbetween == false) {
+							//check vertical range
+							if (displacement.getLength() <= enemy->heldItem->getRangeRadius()) {//check for radial range
+								enemy->inAttackRange = true;
+								float angle = displacement.getAngle() * 180 / M_PI;
+								if ((angle > -22.5 && angle <= 22.5) || (angle > 157.5 || angle <= -157.5)) {
+									enemy->aimAngle = 0;
+								}
+								else if ((angle > -67.5 && angle <= -22.5) || (angle > -157.5 && angle <= -112.5)) {
+									enemy->aimAngle = 45;
+								}
+								else if ((angle > 22.5 && angle <= 67.5) || (angle > 112.5 && angle <= 157.5)) {
+									enemy->aimAngle = 315;
+								}
+								else if ((angle > 67.5 && angle <= 112.5)) {
+									enemy->aimAngle = 270;
+								}
+								else if ((angle > -112.5 && angle <= -67.5)) {
+									enemy->aimAngle = 90;
+								}
+							}
+							else {
+								inVerticalRange = false;
+							}
 						}
-						else if ((angle > 22.5 && angle <= 67.5) || (angle > 112.5 && angle <= 157.5)) {
-							enemy->aimAngle = 315;
-						}
-						else if ((angle > 67.5 && angle <= 112.5)) {
-							enemy->aimAngle = 270;
-						}
-						else if ((angle > -112.5 && angle <= -67.5)) {
-							enemy->aimAngle = 90;
-						}
-					}
-					else {
-						inVerticalRange = false;
 					}
 				}
 				if (enemy->inAttackRange == true) {
@@ -1598,6 +1812,10 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 							enemy->itemToPickUp = (enemy->findMoreRange(mainLayer));//find a weapon that is closest to them
 							if (enemy->itemToPickUp != NULL) {//if one was found
 								enemy->goingToMoreRange = true;
+								if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
+									enemy->heldItem = NULL;
+									enemy->removeChild(enemy->fist, true);
+								}
 								return new GetItemState;//go and get it
 							}
 						}
@@ -1612,7 +1830,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		//enemy didn't see player hide
 		else {
 			if (enemy->reachedLastSeen == false) {
-				enemy->reachedLastSeen = enemy->pathTo(mainLayer, enemy->lastSeenLocation->getPositionX(), enemy->lastSeenLocation->getPositionY(), enemy->lastSeenLocation->getPositionX(), time, checkForPath);
+				enemy->reachedLastSeen = enemy->pathTo(mainLayer, enemy->lastSeenLocation->getPositionX(), enemy->lastSeenLocation->currentFloor, enemy->lastSeenLocation->currentRoom, time, checkForPath);
 			}
 			else {//they have reached player's last seen location
 				enemy->walk(time);
@@ -1621,6 +1839,46 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 	else {//enemy has less than half hp, and can run away
 		enemy->inAttackRange = false;
+		if (enemy->heldItem != NULL) {
+			if (enemy->heldItem->isKey == false) {
+				Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);//displacement between enemy and player
+				if ((displacement.getLength() <= 200 && displacement.getLength() > 150) && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//check if player is in throw range, and they're on the same floor as you
+					float angle = displacement.getAngle() * 180 / M_PI;
+					if ((angle > -22.5 && angle <= 22.5) || (angle > 157.5 || angle <= -157.5)) {
+						enemy->aimAngle = 0;
+					}
+					else if ((angle > -67.5 && angle <= -22.5) || (angle > -157.5 && angle <= -112.5)) {
+						enemy->aimAngle = 45;
+					}
+					else if ((angle > 22.5 && angle <= 67.5) || (angle > 112.5 && angle <= 157.5)) {
+						enemy->aimAngle = 315;
+					}
+					else if ((angle > 67.5 && angle <= 112.5)) {
+						enemy->aimAngle = 270;
+					}
+					else if ((angle > -112.5 && angle <= -67.5)) {
+						enemy->aimAngle = 90;
+					}
+					if (displacement.x < 0) {//player it to the left
+						if (enemy->flippedX == false) {
+							enemy->flipX();
+						}
+					}
+					else if (displacement.x > 0) {//player is to the right
+						if (enemy->flippedX == true) {
+							enemy->flipX();
+						}
+					}
+					if (enemy->heldItem->getAttackType() != Item::SHOOT) {
+						return new ThrowState;
+					}
+					else {//enemy has a gun
+						return new AttackState;
+					}
+				}
+			}
+		}
+
 		enemy->runaway(mainLayer, time);
 	}
 	return nullptr;
@@ -1633,6 +1891,10 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->lostPlayer = false;
 	enemy->reachedLastSeen = false;
 	enemy->bodySeen = NULL;
+	if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
+		enemy->heldItem = NULL;
+		enemy->removeChild(enemy->fist, true);
+	}
 }
 
 //Attack State(using items):
@@ -1644,8 +1906,12 @@ void Enemy::AttackState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->stop();
 	enemy->attackPrepareTime = time;
 	enemy->beginUseItem(enemy->aimAngle);
+	enemy->targetLocation = enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2;
 }
 Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->wasInHitStun == true) {
+		return enemy->prevState;
+	}
 	if (enemy->checkDead() == true) {
 		return new DeathState;
 	}
@@ -1676,6 +1942,9 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	return nullptr;
 }
 void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->attackPrepareTime = -1.0f;
+	enemy->attackStartTime = -1.0f;
+	enemy->attackEndTime = -1.0f;
 	enemy->heldItem->didHitWall = false;
 	//if (enemy->heldItem->hp <= 0) {enemy->breakItem(mainLayer);}//enemy items don't break
 	enemy->heldItem->initHeldItem();
@@ -1683,6 +1952,46 @@ void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 		enemy->heldItem = NULL;
 		enemy->removeChild(enemy->fist, true);
 	}
+	enemy->targetLocation = enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2;
+}
+
+//Throw State:
+void Enemy::ThrowState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->stopAllActions();
+	enemy->stop();
+	enemy->attackStartTime = -1;
+	enemy->attackEndTime = -1;
+	enemy->attackPrepareTime = time;
+	enemy->beginThrowItem();
+}
+Enemy::State* Enemy::ThrowState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->checkDead() == true) {
+		return new DeathState;
+	}
+	//check if enemy has been knocked out
+	if (enemy->knockedOut == true) {
+		return new KnockOutState;
+	}
+
+	if (enemy->attackPrepareTime != -1.0f && time - enemy->attackPrepareTime >= enemy->heldItem->getStartTime()) {
+		enemy->attackStartTime = time;
+		enemy->throwItem(mainLayer, time);
+		enemy->attackPrepareTime = -1.0f;
+	}
+	if (enemy->attackStartTime != -1.0f && time - enemy->attackStartTime >= enemy->thrownItem->getAttackTime()) {
+		enemy->attackEndTime = time;
+		enemy->attackStartTime = -1.0f;
+	}
+	if (enemy->attackEndTime != -1.0f && time - enemy->attackEndTime >= enemy->thrownItem->getLagTime()) {
+		enemy->attackEndTime = -1.0f;
+		return enemy->prevState;
+	}
+
+	return nullptr;
+}
+void Enemy::ThrowState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->aimAngle = 0;
+	enemy->replaceThrownItem();
 }
 
 //Use Door State:
@@ -1773,7 +2082,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 				}
 			}
 			else {
-				enemy->pause(time);
+				enemy->Pause(time);
 			}
 		}
 
@@ -1950,7 +2259,7 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	//checking if enemy spotted player
@@ -2042,7 +2351,7 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	//checking if enemy spotted player
@@ -2120,7 +2429,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 		}
 	}
 	else {
-		enemy->pause(time);
+		enemy->Pause(time);
 	}
 
 	//checking if enemy spotted player
@@ -2242,4 +2551,71 @@ void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	newBody->initObject(enemy->getPosition());
 	mainLayer->addChild(newBody);
 	mainLayer->bodies.push_back(newBody);
+}
+
+Thug::Thug() {
+	//proeprties
+	eyeHeight = 88;
+	defaultDegrees = 60;
+	visionDegrees = defaultDegrees;//width of angle of vision
+	defaultRadius = 180;
+	visionRadius = defaultRadius;//how far vision reaches
+	baseSpeed = 50;
+	maxSpeed = baseSpeed;
+	deadBodyName = "enemy/thug/dead.png";
+	//initializing animations:
+	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockdown/%03d.png", 4, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 20 FRAMES, false);
+	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES, false);
+}
+
+Guard::Guard() {
+	//proeprties
+	isGuard = true;
+	eyeHeight = 84;
+	defaultDegrees = 60;
+	visionDegrees = defaultDegrees;//width of angle of vision
+	defaultRadius = 185;
+	visionRadius = defaultRadius;//how far vision reaches
+	baseSpeed = 60;
+	maxSpeed = baseSpeed;
+	defaultTurnTime = 3.0f;
+	defaultWalkTime = 4.0f;
+	baseKnockOutTime = 0.8f;
+	minKnockOuttime = 6.0f;
+	deadBodyName = "enemy/guard/dead.png";
+	//initializing animations:
+	stand = GameAnimation(STAND, "enemy/guard/stand/%03d.png", 1, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 7, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/guard/knockdown/%03d.png", 4, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/guard/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 4, 20 FRAMES, false);
+	stab = GameAnimation(STAB, "enemy/guard/stab/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/guard/swing/%03d.png", 2, 10 FRAMES, false);
+}
+
+Boss::Boss() {
+	//proeprties
+	isBoss = true;
+	runningAway = true;//the boss will always run away from you
+	eyeHeight = 80;
+	defaultDegrees = 60;
+	visionDegrees = defaultDegrees;//width of angle of vision
+	defaultRadius = 180;
+	visionRadius = defaultRadius;//how far vision reaches
+	baseSpeed = 40;
+	maxSpeed = baseSpeed;
+	deadBodyName = "enemy/boss/dead.png";
+	//initializing animations:
+	stand = GameAnimation(STAND, "enemy/boss/stand/%03d.png", 1, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/boss/walk/%03d.png", 7, 10 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/boss/knockdown/%03d.png", 4, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/boss/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/boss/die/%03d.png", 4, 20 FRAMES, false);
+	stab = GameAnimation(STAB, "enemy/boss/stab/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/boss/swing/%03d.png", 2, 10 FRAMES, false);
 }

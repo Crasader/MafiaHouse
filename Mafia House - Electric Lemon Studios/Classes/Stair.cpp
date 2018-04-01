@@ -70,18 +70,21 @@ Door::Door() {
 	category = 0xFFFFFFFF;
 	collision = 0xFFFFFFFF;
 
-	outlineName = "objects/door/outline.png";
+	outlineName = "objects/door/closed_outline.png";
+	outline2Name = "objects/door/opened_outline.png";
+	opening = GameAnimation(OBJECT, "objects/door/%03d.png", 5, 1 FRAMES, false);
+	closing = GameAnimation(OBJECT, "objects/door/close/%03d.png", 5, 1 FRAMES, false);
 }
 Door::~Door() {
 }
 
 void Door::initObject(Vec2 startPos) {
-	//setColor(ccc3(255, 155, 0));//orange
-	setContentSize(size);//set the size of the wall
+	//setColor(ccc3(255, 175, 0));//orange
+	//setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
 
 	auto useRadius = Node::create();
-	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	useRadius->setPosition(Vec2(10, 55));
 	useRadius->setName("door_radius");
 
 	auto radiusBody = PhysicsBody::createBox(useBox);
@@ -95,6 +98,10 @@ void Door::initObject(Vec2 startPos) {
 	addChild(useRadius);
 
 	createOutline(outlineName);
+	createOutline2(outline2Name);
+	outline2->setVisible(false);
+	outline2->setGlobalZOrder(2);
+	//outline2->setOpacity(100);
 }
 
 void Door::initObject(int orient, Vec2 startPos) {
@@ -112,9 +119,11 @@ void Door::initObject(int orient, Vec2 startPos) {
 void Door::playerInRange() {
 	if (playerRange == true) {
 		outline->setColor(ccc3(255, 235, 50));//yellow
+		outline2->setColor(ccc3(255, 235, 50));//yellow
 	}
 	else {
 		outline->setColor(ccc3(155, 155, 155));//grey
+		outline2->setColor(ccc3(155, 155, 155));//grey
 	}
 	playerRange = false;
 }
@@ -125,7 +134,7 @@ void Door::updateColour() {
 		float inversePercentage = abs(percentage - 1);//inverts the percentage
 
 		if (locked == false) {
-			setColor(ccc3(255 * percentage, 215 * percentage, 255 * inversePercentage));
+			setColor(ccc3(255 * percentage, 100 * percentage, 255 * inversePercentage));
 		}
 		else {
 			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
@@ -146,10 +155,23 @@ void Door::itemHit(Item* item) {
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
-			noiseLevel = item->doorDmg * 5;
+			if (item->getAttackType() == Item::SHOOT) {
+				if (item->getEffect() == Item::KILL) {//door was shot
+					noiseLevel = 50;
+					hp -= 100;
+				}
+				else {//gun was thrown at door
+					noiseLevel = 150;
+					hp -= 34;
+					item->hp--;
+				}
+			}
+			else {//item is not a gun
+				noiseLevel = item->doorDmg * 5;
+				hp -= item->doorDmg;//item deals dmg to the door
+				item->hp--;
+			}
 			roomHitFrom = Vec2(item->currentRoom, item->currentFloor);
-			hp -= item->doorDmg;//item deals dmg to the door
-			item->hp--;
 		}
 		if (hp <= 0) {
 			breakDoor();
@@ -178,18 +200,28 @@ bool Door::use() {
 			isOpen = true;
 			getPhysicsBody()->setEnabled(false);
 			setGlobalZOrder(2);
-			setOpacity(100);
-			outline->setGlobalZOrder(2);
-			outline->setOpacity(100);
+			//setOpacity(100);
+			outline->setVisible(false);
+			stopAllActions();
+			auto callback = CallFunc::create([this]() {
+				outline2->setVisible(true);
+			});
+			auto action = Animate::create(opening.animation);
+			runAction(Sequence::create(action, callback, nullptr));
 			return true;
 		}
 		else {
 			isOpen = false;
 			getPhysicsBody()->setEnabled(true);
 			setGlobalZOrder(5);
-			setOpacity(255);
-			outline->setGlobalZOrder(5);
-			outline->setOpacity(255);
+			//setOpacity(255);
+			outline2->setVisible(false);
+			auto callback = CallFunc::create([this]() {
+				outline->setVisible(true);
+			});
+			stopAllActions();
+			auto action = Animate::create(closing.animation);
+			runAction(Sequence::create(action, callback, nullptr));
 			return true;
 		}
 	}
@@ -238,6 +270,7 @@ Vent::Vent() {
 	dynamic = false;
 	category = 0xFFFFFFFF;
 	collision = 0xFFFFFFFF;
+	opening = GameAnimation(OBJECT, "objects/vent/%03d.png", 1, 1 FRAMES, false);
 }
 Vent::~Vent() {
 }
@@ -246,11 +279,13 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
 		outlineName = "objects/vent/outline_h.png";
+		outline2Name = "objects/vent/outline_h.png";
 		useBox = Size(55 + radius / 2, radius + 10);
 	}
 	else if (orient == 1) {//vertical
 		size = Size(20, 50);
 		outlineName = "objects/vent/outline_v.png";
+		outline2Name = "objects/vent/outline_v.png";
 		useBox = Size(radius, 55 + radius / 2);
 	}
 	setContentSize(size);//set the size of the wall
@@ -271,6 +306,8 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	addChild(useRadius);
 
 	createOutline(outlineName);
+	createOutline2(outline2Name);
+	outline2->setVisible(false);
 	//initializing physics body for enemies to walk on
 	auto body = PhysicsBody::createBox(size);//player is half height when crouching
 	body->setContactTestBitmask(0xFFFFFFFF);
@@ -301,4 +338,100 @@ void Vent::itemHit(Item* item) {
 			breakDoor();
 		}
 	}
+}
+
+//Exit Class
+Exit::Exit() {
+	isExit = true;
+	radius = 40.0f;
+	name = "exit_door";
+	tag = 70000;
+	//sprite properties
+	zOrder = 6;
+	scale = 1.0f;
+	//physics body properties
+	dynamic = false;
+	category = 0xFFFFFFFF;
+	collision = 0xFFFFFFFF;
+	outlineName = "objects/door/closed_outline.png";
+	outline2Name = "objects/door/opened_outline.png";
+	opening = GameAnimation(OBJECT, "objects/door/%03d.png", 5, 1 FRAMES, false);
+}
+Exit::~Exit() {
+}
+
+void Exit::initObject(int orient, Vec2 startPos) {
+	if (orient == 2) {//horizontal
+		size = Size(110, 20);
+		useBox = Size(110, radius);
+	}
+	else if (orient == 1) {//vertical
+		size = Size(20, 110);
+		useBox = Size(radius, 110);
+	}
+	//setColor(ccc3(255, 155, 0));//orange
+	//setContentSize(size);//set the size of the wall
+	GameObject::initObject(startPos);
+
+	auto useRadius = Node::create();
+	useRadius->setPosition(Vec2(10, 55));
+	useRadius->setName("exit_radius");
+
+	auto radiusBody = PhysicsBody::createBox(useBox);
+	radiusBody->setDynamic(false);
+	radiusBody->setCategoryBitmask(4);
+	radiusBody->setCollisionBitmask(1);
+	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setTag(10000);
+	radiusBody->setName("exit_radius");
+	useRadius->setPhysicsBody(radiusBody);
+	addChild(useRadius);
+
+	createOutline(outlineName);
+	createOutline2(outline2Name);
+	outline2->setVisible(false);
+}
+
+void Exit::initExit() {
+	auto body = PhysicsBody::createBox(Size(30, 130));
+	body->setEnabled(false);
+	body->setDynamic(false);
+	body->setCategoryBitmask(4);
+	body->setCollisionBitmask(1);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	exitBox = Node::create();
+	exitBox->setPhysicsBody(body);
+	exitBox->setName("level_exit");
+	exitBox->setAnchorPoint(Vec2(0, 0));
+	addChild(exitBox);
+	if (side == 1) {//right side
+		exitBox->setPosition(Vec2(45, 55));
+	}
+	else {//left side
+		setPosition(getPosition() - Vec2(10, 0));
+		exitBox->setPosition(Vec2(-25, 55));
+	}
+}
+
+void Exit::updateColour() {
+	if (canOpen == true) {//you can exit the level
+		setColor(ccc3(55, 255, 55));//green
+	}
+	else {//you can't exit the level yet
+		setColor(ccc3(55, 55, 255));//blue
+	}
+}
+
+bool Exit::use() {
+	if (canOpen == true) {
+		exitBox->getPhysicsBody()->setEnabled(true);
+		isOpen = true;
+		getPhysicsBody()->setEnabled(false);
+		setGlobalZOrder(2);
+		setOpacity(100);
+		outline->setGlobalZOrder(2);
+		outline->setOpacity(100);
+		return true;
+	}
+	return false;
 }

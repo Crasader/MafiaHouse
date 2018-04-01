@@ -38,9 +38,6 @@ class Character : public GameObject
 public:
 	virtual void initObject(Vec2 startPos = Vec2(0, 0));
 
-	void startAnimation(AnimationTag tag, GameAnimation animation);
-	void stopAnimation(AnimationTag tag);
-
 	virtual void flipX();
 
 	float getPositionX();
@@ -66,6 +63,7 @@ public:
 	virtual void useDoor();
 	virtual void useStair(GameLayer* mainLayer);
 
+	bool isReallyDead() { return isDead; }
 	bool checkDead();
 
 	bool touchingWall = false;
@@ -81,6 +79,8 @@ public:
 
 	Item* itemHitBy = NULL;
 
+	Item* thrownItem = NULL;
+
 	std::vector<Item*> inventory;//items the character is carrying
 
 protected:
@@ -95,7 +95,6 @@ protected:
 	//for aiming
 	float aimAngle = 0;//-90 is up, +90 is down
 	//for throwing items
-	Item* thrownItem = NULL;
 	float thrownItemDelay = 10 FRAMES;//the time after you throw an item during which you cannot be hit by it
 
 	//for movement:

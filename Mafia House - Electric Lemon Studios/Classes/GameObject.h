@@ -78,7 +78,30 @@ enum AnimationTag {
 	KNOCKOUT,
 	DEATH,
 	SLEEP,
-	ZZZs
+	ZZZs,
+	OBJECT
+};
+
+Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
+
+class GameAnimation {
+public:
+	GameAnimation() {}
+	GameAnimation(int tag, char* path, int numFrames, float frameTime, bool loop) {
+		auto frames = getAnimation(path, numFrames);//change number of frames to correct number
+		animation = Animation::createWithSpriteFrames(frames, frameTime);//change number to correct speed for animation
+		animation->retain();
+		if (loop == true) {
+			action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
+		}
+		else {
+			action = Speed::create(Animate::create(animation), 1.0f);
+		}
+		action->retain();
+		action->setTag(tag);
+	}
+	Speed* action;
+	Animation* animation;
 };
 
 class GameObject: public Sprite
@@ -86,7 +109,7 @@ class GameObject: public Sprite
 public:
 	GameObject();
 	~GameObject();
-	CREATE_SPRITE_FUNC(GameObject, "default.png");//must overload create function of Sprite to derive class properly
+	CREATE_EMPTY_SPRITE_FUNC(GameObject);//must overload create function of Sprite to derive class properly
 	CREATE_WITH_FRAME(GameObject);//this is just used by the below function
 	CREATE_WITH_FRAME_NAME(GameObject, "default.png");//use this function to create a sprite when using sprite sheet
 
@@ -97,13 +120,19 @@ public:
 	virtual void initObjectNoPhysics(Vec2 startPos);
 	virtual void initObject(Vec2 startPos);
 
+	void startAnimation(AnimationTag tag, GameAnimation animation);
+	void stopAnimation(AnimationTag tag);
+
 	virtual void createOutline(string name);
+	virtual void createOutline2(string name);
 
 	void setRoomPositionNormalized(Vec2 roomPos, Size roomSize, Vec2 position);//set the objects nomalized position relative to the room it is generated inside
 	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
 	virtual void updateFloor(vector<FloorData> floors);
 	virtual void updateRoom(vector<RoomData*> rooms);
+	void updateHeldItemFloor(vector<FloorData> floors);
+	void updateHeldItemRoom(vector<RoomData*> rooms);
 
 	//movement functions
 	void stopY();
@@ -136,11 +165,13 @@ public:
 	bool playerRange = false;//for interactable items, check if player is in range to use them
 
 	Sprite* outline;
+	Sprite* outline2;
 
 protected:
 	PhysicsBody * mainBody;
 
 	string outlineName;
+	string outline2Name;
 
 	Vec2 initialPos;
 
@@ -165,26 +196,4 @@ protected:
 
 	Director* director = Director::getInstance();
 	SpriteFrameCache* frameCache = SpriteFrameCache::getInstance();
-};
-
-Vector<cocos2d::SpriteFrame*> getAnimation(const char *format, int count);//gets animation from sprite sheet
-
-class GameAnimation {
-public:
-	GameAnimation() {}
-	GameAnimation(int tag, char* path, int numFrames, float frameTime, bool loop) {
-		auto frames = getAnimation(path, numFrames);//change number of frames to correct number
-		animation = Animation::createWithSpriteFrames(frames, frameTime);//change number to correct speed for animation
-		animation->retain();
-		if (loop == true) {
-			action = Speed::create(RepeatForever::create(Animate::create(animation)), 1.0f);
-		}
-		else {
-			action = Speed::create(Animate::create(animation), 1.0f);
-		}
-		action->retain();
-		action->setTag(tag);
-	}
-	Speed* action;
-	Animation* animation;
 };

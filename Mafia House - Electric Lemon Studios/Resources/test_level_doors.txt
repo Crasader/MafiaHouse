@@ -15,16 +15,16 @@
 # items/objects/enemies: item/object/enemy, type(what subclass it is), x_coordinate, y_coordinate
 # player: player, x_coordinate, y_coordinate
 #
-175
-700|bg,Hallway.png|door,right|vent,top,300|phys_object,table,250,20|player,100,0|hide_object,plant,100,0|item,hammer,100,50|enemy,guard,400,0
-600|bg,Kitchen.png|door,left|stair,1,A,550,0|enemy,guard,500,0,LEFT|phys_object,table,300,0|item,knife,325,50|node,200,3,3.0,A
+200
+700|bg,Hallway.png|door,right|vent,top,300|phys_object,table,300,0|phys_object,table,200,50|player,100,0|hide_object,plant,100,0|item,knife,100,50|item,hammer,50,50|enemy,thug,200,0
+600|bg,Kitchen.png|door,left|stair,1,A,550,0|item,hammer,100,50|enemy,guard,300,0|phys_object,table,300,0
 FLOOR_END
 200
-500|bg,LivingRoom.png|door,right|vent,bot,300|phys_object,vent_cover,285,-2|stair,2,A,25,0|item,hammer,650,0|enemy,guard,400,0,LEFT|phys_object,table,150,0
-400|bg,Bathroom.png|door,right,locked|door,left|item,knife,100,0|enemy,guard,350,0,STAND_RIGHT|node,100,2,1.0,A
-400|bg,guestRoom.png|door,left|stair,1,B,300,0|hide_object,plant,100,0|item,key,100,0
+500|bg,LivingRoom.png|door,right|vent,bot,300|phys_object,vent_cover,285,0|stair,2,A,25,0|item,hammer,650,0
+400|bg,Bathroom.png|door,right,locked|door,left|item,knife,650,0
+400|bg,guestRoom.png|door,left|stair,1,B,300,0|hide_object,plant,100,0|node,200,2,2.0,B|item,key,100,0
 FLOOR_END
 200
-600|bg,MasterBedroom.png|door,right,locked|item,hammer,100,0|enemy,guard,100,0,STAND_LEFT,hammer|enemy,guard,300,0,A,key
-700|bg,UpperHallway.png|door,left|item,knife,650,0|hide_object,plant,500,0|stair,2,B,650,0|node,500,1,0.5,A
+600|bg,MasterBedroom.png|door,right,locked|item,hammer,100,0
+700|bg,UpperHallway.png|door,left|item,knife,650,0|hide_object,plant,500,0|stair,2,B,650,0
 FLOOR_END

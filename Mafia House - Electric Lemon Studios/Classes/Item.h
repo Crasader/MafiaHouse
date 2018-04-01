@@ -1,5 +1,11 @@
 #pragma once
 #include "GameObject.h"
+class MissingItem : public Sprite {
+public:
+	CREATE_WITH_FRAME(MissingItem);
+	CREATE_WITH_FRAME_NAME(MissingItem, "items/fist.png");
+	GameObject* owner = NULL;
+};
 class Item : public GameObject
 {
 public:
@@ -14,7 +20,8 @@ public:
 
 	enum AttackType {
 		STAB,
-		SWING
+		SWING,
+		SHOOT
 	};
 	enum Effect {
 		NONE,
@@ -43,6 +50,7 @@ public:
 	virtual void initPickedUpItem();
 	virtual void initHeldItem();
 	virtual void initCrouchHeldItem();
+	virtual void initOffhand();//for enemies only
 	virtual void initDroppedItem(Vec2 pos, bool flip);
 	virtual void initGroundItem();
 	virtual void initThrownItem();
@@ -59,6 +67,11 @@ public:
 
 	void hitWall();
 
+	void prepareShoot(float angle);
+	void prepareCrouchShoot(float angle);
+	void enemyShoot(Vec2 target);
+	void playerShoot(float angle);
+
 	virtual void prepareStab(float angle);
 	virtual void prepareSwing(float angle);
 	virtual void prepareCrouchStab(float angle);
@@ -73,11 +86,17 @@ public:
 	virtual void checkFallingSpeed();
 	virtual void checkGroundSpeed();
 
+	void startHeld() { state = HELD; }
+
+	void rotatePickUpRadius(float degrees);
+
+	void stealRange(Node* player);
 	virtual void playerInRange(Node* player);
 	void hasMoved();
 	bool enemyCanUse = false;
 
-	int hp = 1;//keeps track fo how much item has been used
+	float maxHP = 4;
+	float hp = 1;//keeps track fo how much item has been used
 	float dmg = 0;
 	float doorDmg = 0;
 	Vec2 knockback = Vec2(0, 0);
@@ -99,7 +118,19 @@ public:
 
 	bool holderFlipped = false;
 
+	bool isUnderObject = false;
+
+	void initMissingItem();
+
+	MissingItem* missingItem = NULL;
+
+	float shotTime = -1;
+	bool wasShot = false;
+	Vec2 endpoint;
+	Vec2 startpoint;
+
 protected:
+	string itemFile = "items/fist.png";
 	State state = GROUND;
 	State prevState = GROUND;
 	Effect effect = KILL;
@@ -111,6 +142,17 @@ protected:
 	float lagTime;//enlag time of attack
 	int range;//range of the weapons attack, for enemy ai
 	float rangeRadius = 100;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
+	bool hitTarget = false;//for shooting guns
+};
+
+class Gun : public Item//enemy attacking barehand, actually an invisible item
+{
+public:
+	Gun();
+	~Gun() {}
+	CREATE_WITH_FRAME(Gun);
+	CREATE_WITH_FRAME_NAME(Gun, "items/gun.png");
+	void initHeldItem();
 };
 
 class Fist : public Item//enemy attacking barehand, actually an invisible item
@@ -129,7 +171,6 @@ class Knife : public Item
 public:
 	Knife();
 	~Knife() {}
-	CREATE_SPRITE_FUNC(Knife, "knife2.png");
 	CREATE_WITH_FRAME(Knife);
 	CREATE_WITH_FRAME_NAME(Knife, "items/knife.png");
 };

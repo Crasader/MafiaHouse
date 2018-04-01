@@ -36,16 +36,6 @@ void Character::updateRoom(vector<RoomData*> rooms) {
 	}
 }
 
-void Character::startAnimation(AnimationTag tag, GameAnimation animation) {
-	if (getActionByTag(tag) == NULL) {
-		runAction(animation.action);
-	}
-}
-
-void Character::stopAnimation(AnimationTag tag) {
-	stopActionByTag(tag);
-}
-
 void Character::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp != NULL) {
 		removeChild(heldItem, true);
@@ -85,7 +75,7 @@ void Character::dropItem(GameLayer* mainLayer) {
 
 void Character::throwItem(GameLayer* mainLayer, float time) {
 	if (heldItem != NULL) {
-		//removing dropped item from inventory
+		//removing thrown item from inventory
 		for (int i = 0; i < inventory.size(); i++) {
 			if (inventory[i] == heldItem) {
 				inventory.erase(inventory.begin() + i);
@@ -161,6 +151,9 @@ void Character::finishUseItem() {
 	}
 	else if (heldItem->getAttackType() == Item::SWING) {
 		setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+	}
+	else if (heldItem->getAttackType() == Item::SHOOT) {
+		setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
 	}
 	heldItem->getPhysicsBody()->setEnabled(false);
 }

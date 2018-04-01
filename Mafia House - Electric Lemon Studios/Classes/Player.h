@@ -89,7 +89,7 @@ private:
 		virtual void enter(Player* player, GameLayer* mainLayer, float time);
 		virtual State* update(Player* player, GameLayer* mainLayer, float time);
 		virtual State* handleInput(Player* player, GameLayer* mainLayer, float time, Input input);
-		virtual void exit(Player* player, GameLayer* mainLayer);
+		virtual void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class NeutralState : public State {
 	public:
@@ -97,7 +97,7 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class CrouchState : public State {
 	public:
@@ -111,20 +111,20 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class FallState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class ClimbState : public State {
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class ThrowState : public State {
 	public:
@@ -132,7 +132,7 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		State* update(Player* player, GameLayer* mainLayer, float time);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class AttackState : public State {
 	public:
@@ -140,7 +140,7 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		State* update(Player* player, GameLayer* mainLayer, float time);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class RollState : public State {
 	public:
@@ -148,7 +148,7 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class HideState : public State {
 	public:
@@ -156,7 +156,7 @@ private:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	class DeathState : public State {
 	public:
@@ -168,7 +168,7 @@ private:
 	public:
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
-		void exit(Player* player, GameLayer* mainLayer);
+		void exit(Player* player, GameLayer* mainLayer, float time);
 	};
 	//initial state
 	State* state = new NeutralState;

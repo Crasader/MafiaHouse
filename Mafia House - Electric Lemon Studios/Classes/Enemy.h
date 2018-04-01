@@ -22,22 +22,26 @@ class Enemy : public Character
 public:
 	Enemy();
 	~Enemy() {}
-	CREATE_SPRITE_FUNC(Enemy, "guard.png");
-	CREATE_WITH_FRAME(Enemy);
-	CREATE_WITH_FRAME_NAME(Enemy, "enemy/thug/stand/001.png");
 	void initObject(Vec2 startPos = Vec2(0,0));//will be deprecated one enemies have animations
 	void initJoints();//initilaizing joints for physics bodies
 	void flipX();
 	Vec2 getPosition();
 
+	bool checkBoss() { return isBoss; }
+
 	void pickUpItem(GameLayer* mainLayer);
 	void dropInventory(GameLayer* mainLayer);
+
+	void beginUseItem(float angle);
+	void useItem(float angle);
+
+	void replaceThrownItem();
 
 	void openDoor();
 	void closeDoor();
 
 	//actions for enemies:
-	void pause(float time);
+	void Pause(float time);
 	void turnOnSpot(float time);//enemy stands still and turns around
 	void walk(float time);//enemies that do not have a path to follow walk back and forth
 	void followPath(GameLayer* mainLayer, float time);
@@ -55,6 +59,7 @@ public:
 	Item* findMoreRange(GameLayer* mainLayer);
 
 	void noticeItem(Item* item, float time);
+	void noticeMissingItem(MissingItem* item, float time);
 	void visionRays(vector<Vec2> *points, Vec2* start, float time);//casts a bunch of rays; the enemies vision cone
 
 	void changeSuspicion(float num);//increase/decrease suspicion
@@ -64,8 +69,8 @@ public:
 	void hitWall() { didHitWall = true; }
 
 	void gotHit(Item* item, float time, GameLayer* mainLayer);//function for when enemy is hit by player's attack
-	bool isReallyDead() { return isDead; }
 	bool checkKey() { return hasKey; }
+	void giveKey() { hasKey = true; }
 
 	//getters:
 	bool seeingPlayer() { return playerInVision; }
@@ -75,7 +80,9 @@ public:
 	
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
-	Node* lastSeenLocation;
+	GameObject* lastSeenLocation;
+
+	Item* offhandItem = NULL;//item hanging off their belt the player can steal
 
 	Item* fallenItem = NULL;//an item that has fallen on top of the enemy
 	Item* itemBumpedBy = NULL;//an item that has hit the enemy, but not hard enough to kill them
@@ -131,6 +138,13 @@ protected:
 		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
 		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
 	};
+	class ThrowState : public State {
+	public:
+		ThrowState() { type = "attack"; }
+		void enter(Enemy* enemy, GameLayer* mainLayer, float time);
+		State* update(Enemy* enemy, GameLayer* mainLayer, float time);
+		void exit(Enemy* enemy, GameLayer* mainLayer, float time);
+	};
 	class UseDoorState : public State {
 	public:
 		UseDoorState() { type = "use_door"; }
@@ -176,6 +190,9 @@ protected:
 	State* prevState = new DefaultState;
 	State* toEnter = NULL;
 
+	bool isBoss = false;
+	bool isGuard = false;
+
 	//animations:
 	GameAnimation knockout;
 	GameAnimation knockoutDeath;
@@ -216,8 +233,9 @@ protected:
 
 	//for seeing items:
 	vector<Item*> seenItems;
+	vector<MissingItem*> seenMissingItems;
+	vector<float> seenMissingTimes;
 	vector<float> seenTimes;
-	float previousForgetTime = -1;
 	float memoryTime = 45.0f;//number of seconds they remember seeing an item for
 
 	//for locking/unlocking doors
@@ -228,17 +246,18 @@ protected:
 	bool inAttackRange = false;
 	//for attacking without a weapon
 	Fist* fist;
+	//for shooting at player
+	Vec2 targetLocation;
 
 	//for going to noises, going to bodies
 	bool reachedLocation = false;
 
 	//for being hit:
-	float invicibilityTime = 0.5f;
+	float invicibilityTime = 10 FRAMES;
 	float hitTime = -1;
 	bool invincible = false;
 
 	//for being knocked out
-	//int knockOutHP = 2;
 	PhysicsBody* knockedOutBody;
 	bool knockedOut = false;
 	bool visionEnabled = true;
@@ -256,6 +275,7 @@ protected:
 
 	//Stuff for Vision Fields:
 	bool didRun;
+	float eyeHeight = 87;
 	int defaultDegrees = 60;
 	int visionDegrees = defaultDegrees;//width of angle of vision
 	int defaultRadius = 180;
@@ -321,4 +341,31 @@ protected:
 	//for chasing player
 	bool lostPlayer = false;
 	bool reachedLastSeen = false;
+};
+
+class Thug : public Enemy
+{
+public:
+	Thug();
+	~Thug() {}
+	CREATE_WITH_FRAME(Thug);
+	CREATE_WITH_FRAME_NAME(Thug, "enemy/thug/stand/001.png");
+};
+
+class Guard : public Enemy
+{
+public:
+	Guard();
+	~Guard() {}
+	CREATE_WITH_FRAME(Guard);
+	CREATE_WITH_FRAME_NAME(Guard, "enemy/guard/stand/001.png");
+};
+
+class Boss : public Enemy
+{
+public:
+	Boss();
+	~Boss() {}
+	CREATE_WITH_FRAME(Boss);
+	CREATE_WITH_FRAME_NAME(Boss, "enemy/boss/stand/001.png");
 };

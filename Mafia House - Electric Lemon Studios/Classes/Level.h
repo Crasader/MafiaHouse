@@ -5,6 +5,7 @@
 #include "Functions.h"
 #include <vector>
 #include <string>
+#include <iomanip>
 #include<fstream>
 #include "Player.h"
 #include "Enemy.h"
@@ -49,22 +50,67 @@ public:
 
 	void update(float deltaTime);
 
+	void pauseScreen(float deltaTime);
+
 	void onStart(float deltaTime);
 
+	void getStats(float deltaTime);
+
+	void onEnd(float deltaTime);
+
+	void gameOver(float deltaTime);
+
 protected:
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+
+	int levelNum;
+
+	float levelFinishTime = -1;
+	float completeScreenDisplayTime = 6.0f;//minimum time the completion screen will display for
+
+	bool gotBestTime = false;
+	bool fullAssassin = false;//kill all enemies without being detected
+	bool silentSpectre = false;//kill no enemies without being detected
+	bool levelComplete = false;
+	int numBosses = 0;
+	int numEnemies = 0;
+	int numKilled = 0;
+	//mainLayer->numTimesDetected;
+
+	Sprite* completionScreen;
+	Label* numKilledDisplay;
+	Label* numTimesDetectedDisplay;
+	Label* completeTimeDisplay;
+	Label* fullAssassinLabel;
+	Label* silentSpectreLabel;
+	Label* continueLabel;
+
+	Sprite* achievement1;
+	Sprite* achievement2;
+
+	Sprite* gameOverScreen;
+	bool initGameOver = false;
+	bool initGameOverLabels = false;
+
 	float gameTime = 0.0f;
 
 	Director* director = Director::getInstance();
 
 	Node* hudLayer;//the layer for the HUD/UI, doesn't move with camera
+	Node* pauseLayer;//layer for pause screen
 	Sprite* healthBar;
 	Sprite* healthFill;
 	Sprite* playerHead;
+	Sprite* itemBar;
+	Sprite* itemFill;
+	Sprite* itemIcon;
 
 	GameLayer* mainLayer;//a node which everything in the scene is attached to
 
 	Sprite* background;//the background image of the level
 	float backgroundScale = 1.0f;
+
+	DrawNode* gunShots;
 
 	DrawNode* noiseCircles;//used for drawing circles to visualize noises
 

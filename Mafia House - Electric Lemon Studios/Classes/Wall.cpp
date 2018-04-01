@@ -63,6 +63,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				else {//on odd number iterations, make a door or vent
 					if (doorData[j].type == 1) {
 						d = Door::createWithSpriteFrameName();
+						d->startRoom.y = doorData[j].floorNum;
 						d->initObject(orientation, newPos);
 						d->leftRoomCoords = doorData[j].leftRoom;
 						d->rightRoomCoords = doorData[j].rightRoom;
@@ -71,10 +72,25 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 						d = Vent::createWithSpriteFrameName();
 						d->initObject(orientation, newPos);
 					}
+					else if (doorData[j].type == 3) {
+						d = Exit::createWithSpriteFrameName();
+						d->initObject(orientation, newPos);
+					}
 					length = d->size.height;
-					if (type != 2) {//only add doors or vents if right wall or ceiling
-						if (doorData[j].locked == true) {
-							d->defaultLocked = true;
+					if (d->checkExit() == false) {
+						if (type != 2) {//only add doors or vents if right wall or ceiling
+							if (doorData[j].locked == true) {
+								d->defaultLocked = true;
+							}
+							doors->push_back(d);
+						}
+					}
+					else {//door is an exit, add no matter what side
+						if (type == 1) {//right exit
+							static_cast<Exit*>(d)->side = 1;
+						}
+						else {
+							static_cast<Exit*>(d)->side = 2;
 						}
 						doors->push_back(d);
 					}
@@ -103,6 +119,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				else {//on odd number iterations, make a door or vent
 					if (doorData[j].type == 1) {
 						d = Door::createWithSpriteFrameName();
+						d->startRoom.y = doorData[j].floorNum;
 						d->initObject(orientation, newPos);
 						d->leftRoomCoords = doorData[j].leftRoom;
 						d->rightRoomCoords = doorData[j].rightRoom;
@@ -111,10 +128,25 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 						d = Vent::createWithSpriteFrameName();
 						d->initObject(orientation, newPos);
 					}
+					else if (doorData[j].type == 3) {
+						d = Exit::createWithSpriteFrameName();
+						d->initObject(orientation, newPos);
+					}
 					length = d->size.width;
-					if (type != 2) {//only add doors or vents if right wall or ceiling
-						if (doorData[j].locked == true) {
-							d->defaultLocked = true;
+					if (d->checkExit() == false) {
+						if (type != 2) {//only add doors or vents if right wall or ceiling
+							if (doorData[j].locked == true) {
+								d->defaultLocked = true;
+							}
+							doors->push_back(d);
+						}
+					}
+					else {//door is an exit, add no matter what side
+						if (type == 1) {//right exit
+							static_cast<Exit*>(d)->side = 1;
+						}
+						else {
+							static_cast<Exit*>(d)->side = 2;
 						}
 						doors->push_back(d);
 					}

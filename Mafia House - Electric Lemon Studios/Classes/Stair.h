@@ -17,7 +17,6 @@ class Stair : public GameObject
 public:
 	Stair();
 	~Stair();
-	CREATE_SPRITE_FUNC(Stair, "stair.png");
 	CREATE_WITH_FRAME(Stair);
 	CREATE_WITH_FRAME_NAME(Stair, "objects/stair.png");
 	void initObject();
@@ -42,7 +41,6 @@ class Door : public GameObject
 public:
 	Door();
 	~Door();
-	CREATE_SPRITE_FUNC(Door, "door.png");
 	CREATE_WITH_FRAME(Door);
 	CREATE_WITH_FRAME_NAME(Door, "objects/door/001.png");
 
@@ -52,7 +50,7 @@ public:
 
 	void playerInRange();
 
-	void updateColour();
+	virtual void updateColour();
 
 	virtual void itemHit(Item* item);
 
@@ -62,13 +60,16 @@ public:
 	bool checkLock() { return locked; }
 	bool checkBroken() { return broken; }
 
-	bool use();
+	virtual bool use();
 
 	void unlock();
 
 	void lock();
 
 	bool checkOpen() { return isOpen; }
+
+	void setExit() { isExit = true; }
+	bool checkExit() { return isExit; }
 
 	float radius = 54.0f;//12px on each side of door
 
@@ -90,11 +91,16 @@ public:
 	RoomData* rightRoom = NULL;
 
 protected:
+	GameAnimation opening;
+	GameAnimation closing;
+
 	bool broken = false;
 
 	bool locked = false;
 
 	bool isOpen = false;
+
+	bool isExit = false;
 };
 
 class Vent : public Door
@@ -102,7 +108,6 @@ class Vent : public Door
 public:
 	Vent();
 	~Vent();
-	CREATE_SPRITE_FUNC(Vent, "vent.png");
 	CREATE_WITH_FRAME(Vent);
 	CREATE_WITH_FRAME_NAME(Vent, "objects/vent/001.png");
 
@@ -112,4 +117,28 @@ public:
 
 private:
 	Node* enemyWalkBody;
+};
+
+class Exit : public Door
+{
+public:
+	Exit();
+	~Exit();
+	CREATE_WITH_FRAME(Exit);
+	CREATE_WITH_FRAME_NAME(Exit, "objects/door/001.png");
+
+	void initObject(int orient, Vec2 startPos = Vec2(0, 0));
+
+	void initExit();
+
+	void updateColour();
+
+	bool use();
+
+	bool canOpen = false;
+
+	int side;
+
+private:
+	Node* exitBox;
 };
