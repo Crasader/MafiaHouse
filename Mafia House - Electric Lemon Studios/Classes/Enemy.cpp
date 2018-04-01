@@ -74,7 +74,6 @@ void Enemy::initObject(Vec2 startPos)
 	addChild(lastSeenLocation);
 
 	//initializing knocked out physics body
-	//knockedOutBody = Node::create();
 	knockedOutBody = PhysicsBody::createBox(Size(bodySize.width, bodySize.height / 2));
 	knockedOutBody->setContactTestBitmask(0xFFFFFFFF);
 	knockedOutBody->setTag(555);
@@ -208,17 +207,31 @@ void Enemy::useItem(float angle) {
 
 void Enemy::replaceThrownItem() {
 	if (heldItem == NULL) {
-		if (offhandItem != NULL & offhandItem->isKey == false) {//have a offhand item that isn't a key
-			offhandItem->initHeldItem();
-			heldItem = offhandItem;//replace held item with offhand item
-			offhandItem = NULL;
-			if (inventory.size() > 1) {//they have another item in their inventory
-				for (int i = 0; i < inventory.size(); i++) {
-					if (inventory[i] != heldItem) {
-						offhandItem = inventory[i];//set offhand item to new inventory item
-						offhandItem->initOffhand();
-						addChild(offhandItem);
-						break;
+		if (offhandItem != NULL) {//have a offhand item that isn't a key
+			if (offhandItem->isKey == false) {
+				offhandItem->initHeldItem();
+				heldItem = offhandItem;//replace held item with offhand item
+				offhandItem = NULL;
+				if (inventory.size() > 1) {//they have another item in their inventory
+					for (int i = 0; i < inventory.size(); i++) {
+						if (inventory[i] != heldItem) {
+							offhandItem = inventory[i];//set offhand item to new inventory item
+							offhandItem->initOffhand();
+							addChild(offhandItem);
+							break;
+						}
+					}
+				}
+			}
+			else {//they don't have an offhand item, or it's a key
+				if (inventory.size() > 1) {//they have another item in their inventory
+					for (int i = 0; i < inventory.size(); i++) {
+						if (inventory[i] != offhandItem) {//the item is not their current offhand item
+							heldItem = inventory[i];
+							heldItem->initHeldItem();//replace held item with inventory item
+							addChild(heldItem);
+							break;
+						}
 					}
 				}
 			}
@@ -1151,6 +1164,23 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 	if (item->didHitWall == false) {
 		stopAllActions();
+		auto emitter = ParticleFireworks::create();
+		emitter->setStartColor(Color4F(255, 0, 0, 1));
+		emitter->setEndColor(Color4F(200, 0, 0, 1));//red
+		emitter->setDuration(0.1f);
+		emitter->setStartSize(4.0f);
+		emitter->setStartSizeVar(1.0f);
+		emitter->setEndSize(0.5f);
+		emitter->setAngleVar(55);
+		emitter->setGravity(Vec2(0, -300));
+		emitter->setSpeed(75);
+		emitter->setSpeedVar(200.0f);
+		emitter->setLife(0.05f);
+		emitter->setLifeVar(1.5f);
+		emitter->setTextureWithRect(frameCache->getSpriteFrameByName("particles/pixel.png")->getTexture(), frameCache->getSpriteFrameByName("particles/pixel.png")->getRect());
+		emitter->setGlobalZOrder(30);
+		emitter->setPosition(getPosition() + getSize() / 2);
+		director->getRunningScene()->addChild(emitter);
 		if (item->getAttackType() != Item::SHOOT) {
 			item->used();
 		}
@@ -1165,25 +1195,6 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 		else {
 			hp -= item->dmg;//dealing damage to enemy
 		}
-		/*auto emitter = ParticleFireworks::create();
-		emitter->setStartColor(Color4F(255, 0, 0, 1));
-		emitter->setEndColor(Color4F(255, 100, 100, 1));//red
-		//emitter->setDuration(1.0f);
-		//emitter->setStartSize(3.0f);
-		//emitter->setStartSizeVar(1.0f);
-		//emitter->setEndSize(0.5f);
-		//emitter->setEndSizeVar(0.5f);
-		//emitter->setSpeed(1200.0f);
-		//emitter->setSpeedVar(0.0f);
-		//emitter->setEmitterMode(ParticleSystem::Mode::GRAVITY);
-		//emitter->setTotalParticles(150);
-		//emitter->setEmissionRate(1000000.0f);
-		//emitter->setLife(0.1f);
-		//emitter->setLifeVar(2.0f);
-		emitter->setTextureWithRect(frameCache->getSpriteFrameByName("particles/pixel.png")->getTexture(), frameCache->getSpriteFrameByName("particles/pixel.png")->getRect());
-		emitter->setGlobalZOrder(30);
-		//emitter->setPosition(getPosition());
-		addChild(emitter);*/
 		if (item->getEffect() == Item::NONE) {
 			wasInHitStun = true;
 			hitStunStart = time;
@@ -2548,7 +2559,7 @@ void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->isDead = true;
 	//create dead body here
 	DeadBody* newBody = DeadBody::createWithSpriteFrameName(enemy->deadBodyName);
-	newBody->initObject(enemy->getPosition());
+	newBody->initObject(enemy->getPosition() + Vec2(-enemy->getSize().width, 50));
 	mainLayer->addChild(newBody);
 	mainLayer->bodies.push_back(newBody);
 }

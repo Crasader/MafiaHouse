@@ -610,6 +610,23 @@ void Player::hearNoise(string name) {
 
 void Player::wasHit(Item* item, float time) {
 	if (item->didHitWall == false) {
+		auto emitter = ParticleFireworks::create();
+		emitter->setStartColor(Color4F(255, 0, 0, 1));
+		emitter->setEndColor(Color4F(200, 0, 0, 1));//red
+		emitter->setDuration(0.1f);
+		emitter->setStartSize(4.0f);
+		emitter->setStartSizeVar(1.0f);
+		emitter->setEndSize(0.5f);
+		emitter->setAngleVar(55);
+		emitter->setGravity(Vec2(0, -300));
+		emitter->setSpeed(75);
+		emitter->setSpeedVar(200.0f);
+		emitter->setLife(0.05f);
+		emitter->setLifeVar(1.5f);
+		emitter->setTextureWithRect(frameCache->getSpriteFrameByName("particles/pixel.png")->getTexture(), frameCache->getSpriteFrameByName("particles/pixel.png")->getRect());
+		emitter->setGlobalZOrder(30);
+		emitter->setPosition(getPosition() + getSize() / 2);
+		director->getRunningScene()->addChild(emitter);
 		stopAllActions();
 		wasInHitStun = true;
 		hitStunStart = time;
@@ -618,10 +635,10 @@ void Player::wasHit(Item* item, float time) {
 		isHit = true;
 		if (item->getAttackType() == Item::SHOOT) {
 			if (item->wasShot == true) {
-				hp -= 100;
+				hp -= 75;
 			}
 			else {
-				hp -= 50;
+				hp -= 25;
 			}
 		}
 		else {

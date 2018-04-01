@@ -172,7 +172,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -1526,6 +1526,12 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
 				static_cast<Player*>(a)->itemHitBy = (static_cast<Item*>(b));
 			}
+			else {
+				static_cast<Player*>(a)->itemBumpedBy = static_cast<Item*>(a);
+				static_cast<Player*>(a)->directionHitFrom = static_cast<Item*>(a)->getPhysicsBody()->getVelocity();
+				static_cast<Item*>(b)->stop();
+				static_cast<Item*>(b)->move(Vec2(-100, 0));
+			}
 			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Player*>(a)->thrownItem) {
 				static_cast<Item*>(b)->stop();
 			}
@@ -1539,6 +1545,12 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
 			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
 				static_cast<Player*>(b)->itemHitBy = (static_cast<Item*>(a));
+			}
+			else {
+				static_cast<Player*>(b)->itemBumpedBy = static_cast<Item*>(a);
+				static_cast<Player*>(b)->directionHitFrom = static_cast<Item*>(a)->getPhysicsBody()->getVelocity();
+				static_cast<Item*>(a)->stop();
+				static_cast<Item*>(a)->move(Vec2(-100, 0));
 			}
 			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Player*>(b)->thrownItem) {
 				static_cast<Item*>(a)->stop();
