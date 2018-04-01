@@ -109,7 +109,7 @@ class GameObject: public Sprite
 public:
 	GameObject();
 	~GameObject();
-	CREATE_SPRITE_FUNC(GameObject, "default.png");//must overload create function of Sprite to derive class properly
+	CREATE_EMPTY_SPRITE_FUNC(GameObject);//must overload create function of Sprite to derive class properly
 	CREATE_WITH_FRAME(GameObject);//this is just used by the below function
 	CREATE_WITH_FRAME_NAME(GameObject, "default.png");//use this function to create a sprite when using sprite sheet
 

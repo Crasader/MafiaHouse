@@ -81,7 +81,7 @@ public:
 	
 	//for keeping track of player that has been detected by the enemy:
 	Player* detectedPlayer = NULL;
-	Node* lastSeenLocation;
+	GameObject* lastSeenLocation;
 
 	Item* offhandItem = NULL;//item hanging off their belt the player can steal
 

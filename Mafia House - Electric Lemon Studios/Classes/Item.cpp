@@ -73,7 +73,7 @@ void Item::initPickedUpItem() {
 	getPhysicsBody()->setDynamic(false);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(42);
+	getPhysicsBody()->setCollisionBitmask(46);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	if (flippedX == true) {
@@ -203,7 +203,7 @@ void Item::initThrownItem() {
 	outline->setColor(ccc3(210, 0, 255));//purple
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(42);
+	getPhysicsBody()->setCollisionBitmask(46);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	getPhysicsBody()->setEnabled(true);
@@ -648,7 +648,7 @@ Knife::Knife(){
 	attackType = STAB;
 	startTime = 11 FRAMES;
 	attackTime = 8 FRAMES;
-	lagTime = 12 FRAMES;
+	lagTime = 13 FRAMES;
 	range = 34;
 	rangeRadius = 100;
 	powerLevel = 5;
@@ -669,9 +669,9 @@ Key::Key(){
 	doorDmg = 6;
 	effect = NONE;
 	attackType = STAB;
-	startTime = 3 FRAMES;
+	startTime = 6 FRAMES;
 	attackTime = 6 FRAMES;
-	lagTime = 4 FRAMES;
+	lagTime = 7 FRAMES;
 	range = 26;
 	rangeRadius = 90;
 	powerLevel = 0;

@@ -70,7 +70,7 @@ void Enemy::initObject(Vec2 startPos)
 	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
 		flipX();
 	}
-	lastSeenLocation = Node::create();
+	lastSeenLocation = GameObject::create();
 	addChild(lastSeenLocation);
 
 	//initializing knocked out physics body
@@ -1282,25 +1282,27 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 		invincible = false;
 	}
 	//checking if they've been hit
-	if (itemHitBy != NULL) {
-		if (invincible == false) {
-			if (itemHitBy->getState() == Item::THROWN || itemHitBy->getState() == Item::FALLING) {
-				if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
+	if (itemHitBy != NULL ) {
+		if (itemHitBy->isUnderObject == false) {
+			if (invincible == false) {
+				if (itemHitBy->getState() == Item::THROWN || itemHitBy->getState() == Item::FALLING) {
+					if (itemHitBy == thrownItem && (time - itemHitBy->thrownTime >= thrownItemDelay)) {
+						gotHit(itemHitBy, time, mainLayer);
+						hitTime = time;
+						invincible = true;
+						thrownItem = NULL;
+					}
+					else if (itemHitBy != thrownItem) {
+						gotHit(itemHitBy, time, mainLayer);
+						hitTime = time;
+						invincible = true;
+					}
+				}
+				else {
 					gotHit(itemHitBy, time, mainLayer);
 					hitTime = time;
 					invincible = true;
-					thrownItem = NULL;
 				}
-				else if (itemHitBy != thrownItem) {
-					gotHit(itemHitBy, time, mainLayer);
-					hitTime = time;
-					invincible = true;
-				}
-			}
-			else {
-				gotHit(itemHitBy, time, mainLayer);
-				hitTime = time;
-				invincible = true;
 			}
 		}
 		itemHitBy = NULL;
@@ -1721,8 +1723,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		//if the player wasn't seen going into hiding
 		if (enemy->detectedPlayer->wasSeen == false && enemy->lostPlayer == false) {
 			enemy->lostPlayer = true;
-			enemy->lastSeenLocation->setPositionX(enemy->detectedPlayer->getPositionX());
-			enemy->lastSeenLocation->setPositionY(enemy->detectedPlayer->currentFloor);//use y position for floor player was on
+			enemy->lastSeenLocation->currentFloor = enemy->detectedPlayer->currentFloor;
+			enemy->lastSeenLocation->currentRoom = enemy->detectedPlayer->currentRoom;
+			enemy->lastSeenLocation->setPosition(enemy->detectedPlayer->getPosition());
 		}
 	}
 
@@ -1806,7 +1809,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		//enemy didn't see player hide
 		else {
 			if (enemy->reachedLastSeen == false) {
-				enemy->reachedLastSeen = enemy->pathTo(mainLayer, enemy->lastSeenLocation->getPositionX(), enemy->lastSeenLocation->getPositionY(), enemy->lastSeenLocation->getPositionX(), time, checkForPath);
+				enemy->reachedLastSeen = enemy->pathTo(mainLayer, enemy->lastSeenLocation->getPositionX(), enemy->lastSeenLocation->currentFloor, enemy->lastSeenLocation->currentRoom, time, checkForPath);
 			}
 			else {//they have reached player's last seen location
 				enemy->walk(time);

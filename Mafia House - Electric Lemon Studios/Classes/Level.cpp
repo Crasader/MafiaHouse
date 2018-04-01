@@ -715,6 +715,10 @@ void Level::update(float deltaTime){
 
 	//must be called after checking all player actions
 	player->resetCollisionChecks(gameTime);
+	//reseting item collision check with hide radii
+	for (int i = 0; i < mainLayer->items.size(); i++) {
+		mainLayer->items[i]->isUnderObject = false;
+	}
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera follow player
@@ -858,6 +862,22 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			if (player->isCrouched == true) {
 				player->isHidingUnder = true;
 				//static_cast<Item*>(b->getParent())->playerRange = true;
+			}
+			return false;
+		}
+
+		//item and hide radius
+		if (a->getName() == "held_item" && b->getName() == "hide_radius")
+		{
+			if (static_cast<Item*>(a)->getAttackType() != Item::SHOOT) {
+				static_cast<Item*>(a)->isUnderObject = true;
+			}
+			return false;
+		}
+		else if (a->getName() == "hide_radius" && b->getName() == "held_item")
+		{
+			if (static_cast<Item*>(b)->getAttackType() != Item::SHOOT) {
+				static_cast<Item*>(b)->isUnderObject = true;
 			}
 			return false;
 		}
@@ -1326,6 +1346,21 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+	//item and hide radius
+	if (a->getName() == "held_item" && b->getName() == "hide_radius")
+	{
+		if (static_cast<Item*>(a)->getAttackType() != Item::SHOOT) {
+			static_cast<Item*>(a)->isUnderObject = true;
+		}
+		return false;
+	}
+	else if (a->getName() == "hide_radius" && b->getName() == "held_item")
+	{
+		if (static_cast<Item*>(b)->getAttackType() != Item::SHOOT) {
+			static_cast<Item*>(b)->isUnderObject = true;
+		}
+		return false;
+	}
 	//enemy and noises
 	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "noise")
 	{
@@ -1355,9 +1390,11 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
-				static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
-				if (static_cast<Enemy*>(a)->itemHitBy->getAttackType() == Item::SHOOT) {//guns lose health when thrown at enemies
-					static_cast<Enemy*>(a)->itemHitBy->used();
+				if (static_cast<Item*>(b)->isUnderObject == false) {
+					static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+					if (static_cast<Enemy*>(a)->itemHitBy->getAttackType() == Item::SHOOT) {//guns lose health when thrown at enemies
+						static_cast<Enemy*>(a)->itemHitBy->used();
+					}
 				}
 			}
 			else {
@@ -1379,9 +1416,11 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
-				static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
-				if (static_cast<Enemy*>(b)->itemHitBy->getAttackType() == Item::SHOOT) {
-					static_cast<Enemy*>(b)->itemHitBy->used();
+				if (static_cast<Item*>(a)->isUnderObject == false) {
+					static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+					if (static_cast<Enemy*>(b)->itemHitBy->getAttackType() == Item::SHOOT) {
+						static_cast<Enemy*>(b)->itemHitBy->used();
+					}
 				}
 			}
 			else {

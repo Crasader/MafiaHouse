@@ -118,6 +118,8 @@ public:
 
 	bool holderFlipped = false;
 
+	bool isUnderObject = false;
+
 	void initMissingItem();
 
 	MissingItem* missingItem = NULL;

@@ -73,7 +73,7 @@ void PhysObject::initHideBox() {
 	auto body = PhysicsBody::createBox(hideBoxSize);
 	body->setDynamic(false);
 	body->setCategoryBitmask(4);
-	body->setCollisionBitmask(1);
+	body->setCollisionBitmask(9);
 	body->setContactTestBitmask(0xFFFFFFFF);
 	hideBox->setPhysicsBody(body);
 	hideBox->setPosition(hideBoxPosition);
