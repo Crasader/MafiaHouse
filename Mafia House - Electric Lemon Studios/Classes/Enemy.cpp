@@ -2589,11 +2589,11 @@ Guard::Guard() {
 	minKnockOuttime = 6.0f;
 	deadBodyName = "enemy/guard/dead.png";
 	//initializing animations:
-	stand = GameAnimation(STAND, "enemy/guard/stand/%03d.png", 1, 10 FRAMES, true);
-	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 7, 10 FRAMES, true);
-	knockout = GameAnimation(KNOCKOUT, "enemy/guard/knockdown/%03d.png", 4, 20 FRAMES, false);
-	knockoutDeath = GameAnimation(DEATH, "enemy/guard/knockdown_die/%03d.png", 2, 20 FRAMES, false);
-	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 4, 20 FRAMES, false);
+	stand = GameAnimation(STAND, "enemy/guard/stand/%03d.png", 11, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 8, 9 FRAMES, true);
+	knockout = GameAnimation(KNOCKOUT, "enemy/guard/knockdown/%03d.png", 5, 15 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/guard/knockdown_die/%03d.png", 3, 15 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 5, 15 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/guard/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "enemy/guard/swing/%03d.png", 2, 10 FRAMES, false);
 }
@@ -2612,10 +2612,11 @@ Boss::Boss() {
 	deadBodyName = "enemy/boss/dead.png";
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/boss/stand/%03d.png", 1, 10 FRAMES, true);
-	walking = GameAnimation(WALK, "enemy/boss/walk/%03d.png", 7, 10 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/boss/walk/%03d.png", 12, 8 FRAMES, true);
 	knockout = GameAnimation(KNOCKOUT, "enemy/boss/knockdown/%03d.png", 4, 20 FRAMES, false);
-	knockoutDeath = GameAnimation(DEATH, "enemy/boss/knockdown_die/%03d.png", 2, 20 FRAMES, false);
+	knockoutDeath = GameAnimation(DEATH, "enemy/boss/knockdown_die/%03d.png", 1, 20 FRAMES, false);
 	dying = GameAnimation(DEATH, "enemy/boss/die/%03d.png", 4, 20 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/boss/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "enemy/boss/swing/%03d.png", 2, 10 FRAMES, false);
+	throwing = GameAnimation(THROW, "enemy/boss/throw/%03d.png", 6, 3 FRAMES, false);
 }
