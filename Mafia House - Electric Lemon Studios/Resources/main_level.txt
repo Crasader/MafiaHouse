@@ -1,0 +1,30 @@
+# this is an example level file
+# '#' defines a comment line
+# the format is as follows:
+#
+# FLOOR_HEIGHT - height of the floor is given as an integer value
+# ROOM1_WIDTH | ROOM_OBJECT1_TYPE, DATA_PIECE1 , ..., OBJECT_ROOM_COORDINATES | ROOM_OBJECT2_TYPE, ...etc - each object in a room is deliniated by the '|' symbol
+# ROOM2... - each line is a new room on the floor
+# ROOM3...
+# FLOOR_END - to indicate the end of a floor's data; this MUST BE at the END of EVERY FLOOR! (or it will crash the game)
+#
+# each object in a room is given as pieces of data separated by a ','
+# all coordinates are relative to the room's position; (0,0) is the bottom left corner of the room the object is in
+# doors/vents: door/vent, wall_door_is_on(right, left, top ,bot), position_of_door_on_wall(a single integer value, higher = to the right / to the top of wall)
+# stairs: stair, pair_number(an integer that indicates which other stairway it is linked to), type(A or B, each pair of stairs must have one A and one B), x_coordinate, y_coordinate
+# items/objects/enemies: item/object/enemy, type(what subclass it is), x_coordinate, y_coordinate
+# player: player, x_coordinate, y_coordinate
+#
+250
+700|bg,Hallway.png|exit,left|door,right,locked|vent,top,open,300|hide_object,plant,300,0|item,hammer,100,10|player,50,0|enemy,thug,450,0,STAND_SWITCH,key
+600|bg,Kitchen.png|exit,right|door,left|stair,1,A,550,0|item,knife,325,0|node,200,3,3.0,A|enemy,guard,200,0,NONE,gun|hide_object,Table,100,0
+FLOOR_END
+250
+500|bg,LivingRoom.png|door,right|vent,bot,open,300|phys_object,vent_cover,285,-2|stair,2,A,25,0|enemy,thug,400,0,LEFT|hide_object,couch,320,0
+400|bg,Bathroom.png|door,right|door,left|enemy,guard,300,0,NONE,gun|node,100,2,1.0,A|item,hammer,150,0|hide_object,bathtub,250,0
+400|bg,guestRoom.png|door,left|stair,1,B,300,0|item,key,100,0|hide_object,closet,250,0
+FLOOR_END
+250
+600|bg,MasterBedroom.png|door,right,locked|item,hammer,100,0|enemy,boss,100,0,STAND_SWITCH,key|item,gun,400,10|hide_object,closet,450,0
+700|bg,UpperHallway.png|door,left|stair,2,B,650,0|node,500,1,0.5,A|hide_object,dresser,500,0|hide_object,dresser,320,0|enemy,guard,100,0,STAND_RIGHT,gun|item,key,400,0|item,knife,500,0
+FLOOR_END

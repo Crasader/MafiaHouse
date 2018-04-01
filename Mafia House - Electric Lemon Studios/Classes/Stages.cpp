@@ -10,7 +10,7 @@ bool Stage1::init()
 	setBackground("backgrounds/back.png", 0.5f);
 	//create level
 	//initLevel("level_1_test.txt");
-	initLevel("level_1_test.txt");
+	initLevel("main_level.txt");
 	levelNum = 1;
 
 	return true;
