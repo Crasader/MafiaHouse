@@ -142,6 +142,7 @@ protected:
 	float lagTime;//enlag time of attack
 	int range;//range of the weapons attack, for enemy ai
 	float rangeRadius = 100;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
+	bool hitTarget = false;//for shooting guns
 };
 
 class Gun : public Item//enemy attacking barehand, actually an invisible item

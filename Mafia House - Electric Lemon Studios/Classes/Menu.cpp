@@ -32,7 +32,7 @@ bool LevelSelectMenu::init() {
 	addChild(label);
 
 	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen
-	selectionIndicator->setPosition(optionPosition + Vec2(-600, -50));
+	selectionIndicator->setPosition(optionPosition + Vec2(-550, -62));
 
 	initMenu("menu/levels.txt");
 	for (int i = 0; i < levels.size(); i++) {
@@ -108,7 +108,7 @@ void LevelSelectMenu::update(float deltaTime) {
 		if (selectedOptionNum >  0) {//number of selected option is greater than 0, first option in menu
 			selectedOptionNum--;//go up one option
 			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
-			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-600, -50));//setting position of seletion indicator
+			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
 
 			if (scrollNum >=  1) {
 				mainLayer->setPosition(mainLayer->getPosition() - Vec2(0, 185));
@@ -120,7 +120,7 @@ void LevelSelectMenu::update(float deltaTime) {
 		if (selectedOptionNum < levels.size() - 1) {//number of selected option is greater then last option in menu
 			selectedOptionNum++;//go down one option
 			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
-			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-600, -50));//setting position of seletion indicator
+			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
 
 			if (selectedOptionNum >=  2) {
 				mainLayer->setPosition(mainLayer->getPosition() + Vec2(0, 185));

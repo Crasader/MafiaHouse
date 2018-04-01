@@ -69,7 +69,6 @@ public:
 	void hitWall() { didHitWall = true; }
 
 	void gotHit(Item* item, float time, GameLayer* mainLayer);//function for when enemy is hit by player's attack
-	bool isReallyDead() { return isDead; }
 	bool checkKey() { return hasKey; }
 	void giveKey() { hasKey = true; }
 
@@ -254,7 +253,7 @@ protected:
 	bool reachedLocation = false;
 
 	//for being hit:
-	float invicibilityTime = 0.5f;
+	float invicibilityTime = 10 FRAMES;
 	float hitTime = -1;
 	bool invincible = false;
 

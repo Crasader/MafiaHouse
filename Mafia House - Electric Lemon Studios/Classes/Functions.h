@@ -35,6 +35,8 @@ public:
 	bool locked = false;//true, starts locked, enemies will lock it automatically
 
 	bool isExit = false;
+
+	int floorNum;
 };
 
 class RoomData {

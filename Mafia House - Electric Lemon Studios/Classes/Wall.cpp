@@ -63,6 +63,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				else {//on odd number iterations, make a door or vent
 					if (doorData[j].type == 1) {
 						d = Door::createWithSpriteFrameName();
+						d->startRoom.y = doorData[j].floorNum;
 						d->initObject(orientation, newPos);
 						d->leftRoomCoords = doorData[j].leftRoom;
 						d->rightRoomCoords = doorData[j].rightRoom;
@@ -118,6 +119,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 				else {//on odd number iterations, make a door or vent
 					if (doorData[j].type == 1) {
 						d = Door::createWithSpriteFrameName();
+						d->startRoom.y = doorData[j].floorNum;
 						d->initObject(orientation, newPos);
 						d->leftRoomCoords = doorData[j].leftRoom;
 						d->rightRoomCoords = doorData[j].rightRoom;

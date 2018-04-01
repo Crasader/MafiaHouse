@@ -63,6 +63,7 @@ public:
 	virtual void useDoor();
 	virtual void useStair(GameLayer* mainLayer);
 
+	bool isReallyDead() { return isDead; }
 	bool checkDead();
 
 	bool touchingWall = false;

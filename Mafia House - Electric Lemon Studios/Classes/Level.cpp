@@ -23,7 +23,9 @@ void Level::setup(){
 	addChild(hudLayer);
 
 	healthBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
+	healthBar->getTexture()->setTexParameters(texParams);
 	healthFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	healthFill->getTexture()->setTexParameters(texParams);
 	healthBar->setPosition(Vec2(-400, 250));
 	healthFill->setPosition(Vec2(-400, 250));
 	healthFill->setColor(ccc3(255, 0, 0));//red
@@ -34,12 +36,15 @@ void Level::setup(){
 	hudLayer->addChild(healthBar);
 	hudLayer->addChild(healthFill);
 	playerHead = Sprite::createWithSpriteFrameName("icons/playerHead.png");
+	playerHead->getTexture()->setTexParameters(texParams);
 	playerHead->setGlobalZOrder(20);
 	playerHead->setAnchorPoint(Vec2(0, 1));
 	playerHead->setPosition(Vec2(-50, 10) + Vec2(-400, 250));
 	hudLayer->addChild(playerHead);
 	itemBar = Sprite::createWithSpriteFrameName("icons/healthBar.png");
+	itemBar->getTexture()->setTexParameters(texParams);
 	itemFill = Sprite::createWithSpriteFrameName("icons/healthFill.png");
+	itemFill->getTexture()->setTexParameters(texParams);
 	itemFill->setColor(ccc3(0, 0, 255));//blue
 	itemBar->setGlobalZOrder(20);
 	itemBar->setScaleY(0.5);
@@ -54,17 +59,37 @@ void Level::setup(){
 	hudLayer->addChild(itemBar);
 	hudLayer->addChild(itemFill);
 	itemIcon = Sprite::create();
+	itemIcon->getTexture()->setTexParameters(texParams);
 	itemIcon->setGlobalZOrder(20);
 	itemIcon->setAnchorPoint(Vec2(1, 1));
 	itemIcon->setPosition(Vec2(2, -18) + Vec2(-400, 250));
 	itemIcon->setRotation(-90);
 	hudLayer->addChild(itemIcon);
 
+
+	//initializing pause screen
 	pauseLayer = Node::create();
 	addChild(pauseLayer);
 	pauseLayer->setVisible(false);
 	auto pauseLabel = Label::createWithTTF("PAUSED", "fonts/pixelFJ8pt1__.ttf", 40);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
 	pauseLabel->runAction(RepeatForever::create(Blink::create(2.5, 1)));
+	pauseLayer->addChild(pauseLabel);
+	pauseLabel = Label::createWithTTF("P: Unpause", "fonts/pixelFJ8pt1__.ttf", 18);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
+	pauseLabel->setPosition(Vec2(0, -180));
+	pauseLayer->addChild(pauseLabel);
+	pauseLabel = Label::createWithTTF("SHIFT + R: Restart", "fonts/pixelFJ8pt1__.ttf", 18);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
+	pauseLabel->setPosition(Vec2(-275, -239));
+	pauseLayer->addChild(pauseLabel);
+	pauseLabel = Label::createWithTTF("SHIFT + BACKSPACE: Quit", "fonts/pixelFJ8pt1__.ttf", 18);
+	pauseLabel->getFontAtlas()->setAliasTexParameters();
+	pauseLabel->setGlobalZOrder(20);
+	pauseLabel->setPosition(Vec2(275, -239));
 	pauseLayer->addChild(pauseLabel);
 
 	//Invisible Node for the camera to follow
@@ -228,6 +253,7 @@ void Level::getStats(float deltaTime) {
 	outFile.close();
 
 	completionScreen = Sprite::create("menu/completionLogo.png");
+	completionScreen->getTexture()->setTexParameters(texParams);
 	completionScreen->setGlobalZOrder(30);
 	completionScreen->setPosition(Vec2(0, 100));
 	completionScreen->runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
@@ -273,6 +299,7 @@ void Level::getStats(float deltaTime) {
 
 	if (fullAssassin == true) {
 		achievement1 = Sprite::create("menu/achievement1.png");
+		achievement1->getTexture()->setTexParameters(texParams);
 		achievement1->setGlobalZOrder(30);
 		achievement1->setPosition(Vec2(-300, -160));
 		achievement1->setVisible(false);
@@ -280,6 +307,7 @@ void Level::getStats(float deltaTime) {
 	}
 	if (silentSpectre == true) {
 		achievement2 = Sprite::create("menu/achievement2.png");
+		achievement2->getTexture()->setTexParameters(texParams);
 		achievement2->setGlobalZOrder(30);
 		achievement2->setPosition(Vec2(300, -160));
 		achievement2->setVisible(false);
@@ -344,7 +372,7 @@ void Level::onEnd(float deltaTime) {
 }
 
 void Level::pauseScreen(float deltaTime) {
-	if (INPUTS->getKeyPress(KeyCode::KEY_P)) {//finish the level
+	if (INPUTS->getKeyPress(KeyCode::KEY_P)) {//resume game
 		unschedule(schedule_selector(Level::pauseScreen));
 		getScene()->getPhysicsWorld()->setSpeed(1);
 		scheduleUpdate();
@@ -361,12 +389,64 @@ void Level::pauseScreen(float deltaTime) {
 	else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_R)) {//restart the level
 		resetLevel();
 	}
+	else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//quit to level select
+		director->replaceScene(LevelSelectMenu::createScene());
+	}
+	INPUTS->clearForNextFrame();
+}
+
+void Level::gameOver(float deltaTime) {
+	if (initGameOver == false) {
+		gameOverScreen = Sprite::create("menu/gameOver.png");
+		gameOverScreen->getTexture()->setTexParameters(texParams);
+		gameOverScreen->setGlobalZOrder(20);
+		gameOverScreen->setOpacity(0);
+		gameOverScreen->runAction(FadeIn::create(4.0f))->setTag(1);
+		hudLayer->addChild(gameOverScreen);
+		initGameOver = true;
+	}
+	if (gameOverScreen->getActionByTag(1) == NULL && initGameOverLabels == false) {
+		auto pauseLabel = Label::createWithTTF("SPACE: Retry Level", "fonts/pixelFJ8pt1__.ttf", 22);
+		pauseLabel->getFontAtlas()->setAliasTexParameters();
+		pauseLabel->setGlobalZOrder(20);
+		pauseLabel->setPosition(Vec2(0, -190));
+		hudLayer->addChild(pauseLabel);
+		pauseLabel = Label::createWithTTF("BACKSPACE: Quit", "fonts/pixelFJ8pt1__.ttf", 22);
+		pauseLabel->getFontAtlas()->setAliasTexParameters();
+		pauseLabel->setGlobalZOrder(20);
+		pauseLabel->setPosition(Vec2(0, -240));
+		hudLayer->addChild(pauseLabel);
+		initGameOverLabels = true;
+	}
+	if (initGameOverLabels == true) {
+		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//restart level
+			resetLevel();
+		}
+		else if (INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//quit to main menu
+			director->replaceScene(LevelSelectMenu::createScene());
+		}
+	}
 	INPUTS->clearForNextFrame();
 }
 
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
+
+	if (player->isReallyDead() == true) {//player died, gameover
+		unscheduleUpdate();
+		getScene()->getPhysicsWorld()->setSpeed(0);
+		schedule(schedule_selector(Level::pauseScreen));
+		camera->pause();
+		player->pause();
+		for (int i = 0; i < mainLayer->items.size(); i++) {
+			mainLayer->items[i]->pause();
+		}
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies[i]->pause();
+		}
+		schedule(schedule_selector(Level::gameOver));
+	}
 
 	if (levelComplete == true) {//finish level
 		unscheduleUpdate();
@@ -501,8 +581,8 @@ void Level::update(float deltaTime){
 		if (mainLayer->items[i]->getAttackType() == Item::SHOOT && mainLayer->items[i]->wasShot == true) {
 			mainLayer->items[i]->wasShot = false;
 			mainLayer->items[i]->shotTime = gameTime;
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 600, (mainLayer->items[i]->noiseLevel * 6) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 600, ((mainLayer->items[i]->noiseLevel * 6) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 800, (mainLayer->items[i]->noiseLevel * 5) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 800, ((mainLayer->items[i]->noiseLevel * 5) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
 		}
 		if (mainLayer->items[i]->shotTime != -1 && gameTime - mainLayer->items[i]->shotTime <= 0.5f) {//time to display gunshot for
 			gunShots->drawSegment(mainLayer->items[i]->startpoint, mainLayer->items[i]->endpoint, 1, Color4F(1, 1, 1, 1));
@@ -1707,6 +1787,7 @@ bool Level::initLevel(string filename){
 			else if (pieces[0] == "door") {
 				DoorData doorData;
 				doorData.type = 1;
+				doorData.floorNum = floorNum;
 				//set door as locked
 				if (pieces.size() > 2) {
 					if (pieces[2] == "locked") {
@@ -1970,6 +2051,7 @@ bool Level::initLevel(string filename){
 		doors[i]->setTag(doors[i]->getTag() + i);//giving a unique tag to each door
 		mainLayer->addChild(doors[i]);
 	}
+	mainLayer->doors = doors;
 	//stairways
 	for (int i = 0; i < mainLayer->stairs.size(); i++) {
 		mainLayer->addChild(mainLayer->stairs[i]);//Do Not give unique tag to each stairway, already done elsewhere

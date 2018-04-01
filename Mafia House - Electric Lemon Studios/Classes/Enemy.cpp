@@ -1149,7 +1149,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 }
 
 void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
-	if (item->didHitWall == false && item->hp > 0) {
+	if (item->didHitWall == false) {
 		stopAllActions();
 		if (item->getAttackType() != Item::SHOOT) {
 			item->used();
@@ -1756,29 +1756,50 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 				}
 				//check if enemy is in range to attack player
 				if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within horizontal range to attack player
-					Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);
-					//check vertical range
-					if (displacement.getLength() <= enemy->heldItem->getRangeRadius()) {//check for radial range
-						enemy->inAttackRange = true;
-						float angle = displacement.getAngle() * 180 / M_PI;
-						if ((angle > -22.5 && angle <= 22.5) || (angle > 157.5 || angle <= -157.5)) {
-							enemy->aimAngle = 0;
+					if (checkForPath(mainLayer, enemy->currentFloor, enemy->detectedPlayer->currentRoom, enemy->detectedPlayer->currentFloor, false) == true) {//enemy is in same room as player
+						Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);
+						bool doorInbetween = false;
+						for (int i = 0; i < mainLayer->doors.size(); i++) {//checking if door is inbetween enemy and player
+							if (mainLayer->doors[i]->getName() == "door" && mainLayer->doors[i]->checkOpen() == false && mainLayer->doors[i]->startRoom.y == enemy->currentFloor) {
+								if (displacement.x < 0) {//player is to the left
+									if (mainLayer->doors[i]->getPositionX() < enemy->getPositionX() && mainLayer->doors[i]->getPositionX() > enemy->detectedPlayer->getPositionX()) {//door is between enemy and player
+										doorInbetween = true;
+										break;
+									}
+								}
+								else {//player is to the right
+									if (mainLayer->doors[i]->getPositionX() > enemy->getPositionX() && mainLayer->doors[i]->getPositionX() < enemy->detectedPlayer->getPositionX()) {//door is between enemy and player
+										doorInbetween = true;
+										break;
+									}
+								}
+							}
 						}
-						else if ((angle > -67.5 && angle <= -22.5) || (angle > -157.5 && angle <= -112.5)) {
-							enemy->aimAngle = 45;
+						if (doorInbetween == false) {
+							//check vertical range
+							if (displacement.getLength() <= enemy->heldItem->getRangeRadius()) {//check for radial range
+								enemy->inAttackRange = true;
+								float angle = displacement.getAngle() * 180 / M_PI;
+								if ((angle > -22.5 && angle <= 22.5) || (angle > 157.5 || angle <= -157.5)) {
+									enemy->aimAngle = 0;
+								}
+								else if ((angle > -67.5 && angle <= -22.5) || (angle > -157.5 && angle <= -112.5)) {
+									enemy->aimAngle = 45;
+								}
+								else if ((angle > 22.5 && angle <= 67.5) || (angle > 112.5 && angle <= 157.5)) {
+									enemy->aimAngle = 315;
+								}
+								else if ((angle > 67.5 && angle <= 112.5)) {
+									enemy->aimAngle = 270;
+								}
+								else if ((angle > -112.5 && angle <= -67.5)) {
+									enemy->aimAngle = 90;
+								}
+							}
+							else {
+								inVerticalRange = false;
+							}
 						}
-						else if ((angle > 22.5 && angle <= 67.5) || (angle > 112.5 && angle <= 157.5)) {
-							enemy->aimAngle = 315;
-						}
-						else if ((angle > 67.5 && angle <= 112.5)) {
-							enemy->aimAngle = 270;
-						}
-						else if ((angle > -112.5 && angle <= -67.5)) {
-							enemy->aimAngle = 90;
-						}
-					}
-					else {
-						inVerticalRange = false;
 					}
 				}
 				if (enemy->inAttackRange == true) {
@@ -1888,6 +1909,9 @@ void Enemy::AttackState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->targetLocation = enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2;
 }
 Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
+	if (enemy->wasInHitStun == true) {
+		return enemy->prevState;
+	}
 	if (enemy->checkDead() == true) {
 		return new DeathState;
 	}
@@ -1918,6 +1942,9 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	return nullptr;
 }
 void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->attackPrepareTime = -1.0f;
+	enemy->attackStartTime = -1.0f;
+	enemy->attackEndTime = -1.0f;
 	enemy->heldItem->didHitWall = false;
 	//if (enemy->heldItem->hp <= 0) {enemy->breakItem(mainLayer);}//enemy items don't break
 	enemy->heldItem->initHeldItem();

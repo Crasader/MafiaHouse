@@ -459,7 +459,7 @@ Gun::Gun() {
 	maxHP = 3;
 	hp = maxHP;
 	dmg = 50;
-	hitstun = 20 FRAMES;
+	hitstun = 10 FRAMES;
 	doorDmg = 100;
 	canBreakDoor = true;
 	//tag = 10100;//10100 - 10199 for knives
@@ -495,6 +495,7 @@ void Item::enemyShoot(Vec2 target) {
 	effect = KILL;
 	wasShot = true;
 	endpoint = Vec2(0, 0);
+	hitTarget = false;
 	PhysicsRayCastCallbackFunc func = [this](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
 	{
 		string contactName = info.shape->getBody()->getNode()->getName();
@@ -505,12 +506,14 @@ void Item::enemyShoot(Vec2 target) {
 			return false;
 		}
 		else if (contactName == "door") {
+			hitTarget = true;
 			static_cast<Door*>(contact)->itemHit(this);
 			endpoint = info.contact;
 			return false;
 		}
 		else if (contactName == "door_radius") {//collides with a door radius
 			if (static_cast<Door*>(contact->getParent())->checkOpen() == false) {//the doors is closed
+				hitTarget = true;
 				static_cast<Door*>(contact->getParent())->itemHit(this);
 				if (holderFlipped == true) {
 					endpoint = info.contact - Vec2(12, 0);
@@ -522,6 +525,7 @@ void Item::enemyShoot(Vec2 target) {
 			}
 		}
 		else if (contactName == "player") {//hit the player
+			hitTarget = true;
 			static_cast<Player*>(contact)->itemHitBy = this;//set item they were hit by to this gun
 			endpoint = info.contact;
 			return false;
@@ -535,6 +539,12 @@ void Item::enemyShoot(Vec2 target) {
 		startpoint = getParent()->convertToWorldSpace(getPosition()) - Vec2(60, 0);
 	}
 	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//ray cast directly towards target
+	if (hitTarget == false) {
+		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//ray cast again
+	}
+	if (hitTarget == false) {
+		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//triple ray cast
+	}
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = target * 2;//for drawing bullet line
 	}
@@ -544,6 +554,7 @@ void Item::playerShoot(float angle) {
 	effect = KILL;
 	used();
 	wasShot = true;
+	hitTarget = false;
 	Vec2 direction = angleToDirection(angle);
 	if (holderFlipped == true) {
 		direction.x *= -1;
@@ -559,12 +570,14 @@ void Item::playerShoot(float angle) {
 			return false;
 		}
 		else if (contactName == "door") {
+			hitTarget = true;
 			static_cast<Door*>(contact)->itemHit(this);
 			endpoint = info.contact;
 			return false;
 		}
 		else if (contactName == "door_radius") {//collides with a door radius
 			if (static_cast<Door*>(contact->getParent())->checkOpen() == false) {//the doors is closed
+				hitTarget = true;
 				static_cast<Door*>(contact->getParent())->itemHit(this);
 				if (holderFlipped == true) {
 					endpoint = info.contact - Vec2(12, 0);
@@ -575,7 +588,8 @@ void Item::playerShoot(float angle) {
 				return false;
 			}
 		}
-		else if (contactName == "enemy" || contactName == "enemy_alert") {//hit an enemy
+		if (contactName == "enemy" || contactName == "enemy_alert") {//hit an enemy
+			hitTarget = true;
 			static_cast<Enemy*>(contact)->itemHitBy = this;//set item they were hit by to this gun
 			endpoint = info.contact;
 			return false;
@@ -584,6 +598,12 @@ void Item::playerShoot(float angle) {
 	};
 	startpoint = getParent()->convertToWorldSpace(getPosition()) + direction * 60;
 	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast in direction of aim
+	if (hitTarget == false){
+		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast again
+	}
+	if (hitTarget == false) {
+		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//triple cast just to be sure
+	}
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = startpoint + direction * 1000;//for drawing bullet line
 	}

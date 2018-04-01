@@ -58,7 +58,11 @@ public:
 
 	void onEnd(float deltaTime);
 
+	void gameOver(float deltaTime);
+
 protected:
+	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+
 	int levelNum;
 
 	float levelFinishTime = -1;
@@ -83,6 +87,10 @@ protected:
 
 	Sprite* achievement1;
 	Sprite* achievement2;
+
+	Sprite* gameOverScreen;
+	bool initGameOver = false;
+	bool initGameOverLabels = false;
 
 	float gameTime = 0.0f;
 
