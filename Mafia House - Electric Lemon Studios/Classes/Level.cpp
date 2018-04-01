@@ -172,7 +172,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -1618,14 +1618,14 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	}
 
 	//items and door
-	if (a->getName() == "held_item" && b->getName() == "door")
+	if (a->getName() == "held_item" && (b->getName() == "door" || b->getName() == "vent"))
 	{
 		static_cast<Item*>(a)->hitWall();
 		static_cast<Item*>(a)->makeNoise = true;
 		static_cast<Door*>(b)->itemHit(static_cast<Item*>(a));
 		return true;
 	}
-	else if (a->getName() == "door" && b->getName() == "held_item")
+	else if ((a->getName() == "door" || a->getName() == "vent") && b->getName() == "held_item")
 	{
 		static_cast<Item*>(b)->hitWall();
 		static_cast<Item*>(b)->makeNoise = true;

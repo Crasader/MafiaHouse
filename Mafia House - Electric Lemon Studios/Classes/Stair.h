@@ -115,6 +115,8 @@ public:
 
 	void itemHit(Item* item);
 
+	void updateColour();
+
 private:
 	Node* enemyWalkBody;
 };

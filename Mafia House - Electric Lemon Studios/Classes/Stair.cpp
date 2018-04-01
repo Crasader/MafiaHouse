@@ -101,7 +101,6 @@ void Door::initObject(Vec2 startPos) {
 	createOutline2(outline2Name);
 	outline2->setVisible(false);
 	outline2->setGlobalZOrder(2);
-	//outline2->setOpacity(100);
 }
 
 void Door::initObject(int orient, Vec2 startPos) {
@@ -190,7 +189,7 @@ void Door::breakDoor() {
 		//will probably change sprite
 		unlock();
 		broken = true;
-		setColor(ccc3(155, 0, 255));//purple
+		setColor(ccc3(155, 15, 225));//purple
 	}
 }
 
@@ -270,7 +269,8 @@ Vent::Vent() {
 	dynamic = false;
 	category = 0xFFFFFFFF;
 	collision = 0xFFFFFFFF;
-	opening = GameAnimation(OBJECT, "objects/vent/%03d.png", 1, 1 FRAMES, false);
+	opening = GameAnimation(OBJECT, "objects/vent/%03d.png", 5, 1 FRAMES, false);
+	closing = GameAnimation(OBJECT, "objects/vent/close/%03d.png", 5, 1 FRAMES, false);
 }
 Vent::~Vent() {
 }
@@ -278,8 +278,8 @@ Vent::~Vent() {
 void Vent::initObject(int orient, Vec2 startPos) {
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
-		outlineName = "objects/vent/outline_h.png";
-		outline2Name = "objects/vent/outline_h.png";
+		outlineName = "objects/vent/outline_h_closed.png";
+		outline2Name = "objects/vent/outline_h_opened.png";
 		useBox = Size(55 + radius / 2, radius + 10);
 	}
 	else if (orient == 1) {//vertical
@@ -292,13 +292,13 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	GameObject::initObject(startPos);
 
 	auto useRadius = Node::create();
-	useRadius->setPositionNormalized(Vec2(0.5, 0.5));
+	useRadius->setPosition(Vec2(25, 10));
 	useRadius->setName("vent_radius");
 
 	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(3);
+	radiusBody->setCollisionBitmask(1);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
 	radiusBody->setTag(10000);
 	radiusBody->setName("vent_radius");
@@ -308,6 +308,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	createOutline(outlineName);
 	createOutline2(outline2Name);
 	outline2->setVisible(false);
+	outline2->setGlobalZOrder(2);
 	//initializing physics body for enemies to walk on
 	auto body = PhysicsBody::createBox(size);//player is half height when crouching
 	body->setContactTestBitmask(0xFFFFFFFF);
@@ -315,7 +316,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	body->setCollisionBitmask(2);//only collide with enemies
 	body->setDynamic(false);
 	enemyWalkBody = Node::create();
-	enemyWalkBody->setPositionNormalized(Vec2(0.5, 0.5));
+	enemyWalkBody->setPosition((Vec2(25, 10)));
 	enemyWalkBody->setPhysicsBody(body);
 	addChild(enemyWalkBody);
 }
@@ -336,6 +337,20 @@ void Vent::itemHit(Item* item) {
 		}
 		if (hp <= 0) {
 			breakDoor();
+		}
+	}
+}
+
+void Vent::updateColour() {
+	if (broken == false) {
+		float percentage = hp / maxHP;
+		float inversePercentage = abs(percentage - 1);//inverts the percentage
+
+		if (locked == false) {
+			setColor(ccc3(255 * inversePercentage + 120, 210 * percentage, 90 * percentage));
+		}
+		else {
+			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
 		}
 	}
 }
