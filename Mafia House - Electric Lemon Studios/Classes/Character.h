@@ -81,6 +81,9 @@ public:
 
 	Item* thrownItem = NULL;
 
+	Item* itemBumpedBy = NULL;//an item that has hit the enemy, but not hard enough to kill them
+	Vec2 directionHitFrom;
+
 	std::vector<Item*> inventory;//items the character is carrying
 
 protected:

@@ -336,12 +336,12 @@ void Item::checkThrownSpeed() {
 	float speed = getPhysicsBody()->getVelocity().getLength();
 	if (prevState == HELD) {
 		if (attackType == STAB) {
-			if (speed <= 551) {//speed is less than 450
+			if (speed <= 500) {//speed is less than 450
 				initFallItem();
 			}
 		}
 		else if (attackType == SWING || attackType == SHOOT) {
-			if (speed <= 544) {//speed is less than 450
+			if (speed <= 492) {//speed is less than 450
 				initFallItem();
 			}
 		}
