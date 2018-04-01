@@ -3,7 +3,110 @@
 bool MainMenu::init() {
 	if (!Scene::init()) { return false; }
 
+	director = Director::getInstance();
+	visibleSize = director->getVisibleSize();
+	origin = director->getVisibleOrigin();
+	centre = Vec2(origin.x + visibleSize.x / 2, origin.y + visibleSize.y / 2);
+
+	mainLayer = Node::create();
+	addChild(mainLayer, 1);
+
+	background = Sprite::create("menu/MainMenu.png");
+	background->setScale(visibleSize.x / background->getContentSize().width, visibleSize.y / background->getContentSize().height);
+	background->setPosition(centre.x, centre.y);
+	addChild(background, 0);
+
+	selectionIndicator = Sprite::create("menu/MenuGun.png");
+	selectionIndicator->setScale(2.0f);
+	mainLayer->addChild(selectionIndicator, 2);
+
+	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen
+	selectionIndicator->setPosition(optionPosition + Vec2(-550, -62));
+
+	MenuOption* option = MenuOption::create();
+	option->initOption(0, "SELECT LEVEL");
+	options.push_back(option);
+	option = MenuOption::create();
+	option->initOption(1, "CONTROLS & TIPS");
+	options.push_back(option);
+	option = MenuOption::create();
+	option->initOption(2, "CREDITS");
+	options.push_back(option);
+	option = MenuOption::create();
+	option->initOption(3, "QUIT GAME");
+	options.push_back(option);
+	for (int i = 0; i < options.size(); i++) {
+		options[i]->setPosition(optionPosition);
+		mainLayer->addChild(options[i], 1);
+
+		optionPosition += Vec2(0, -175);//setting position for next option
+	}
+
+	selectedOption = options[0];
+	selectedOptionNum = 0;
+
+	schedule(schedule_selector(LevelSelectMenu::onStart));
+
 	return true;
+
+	return true;
+}
+
+void MainMenu::onStart(float deltaTime) {
+	unschedule(schedule_selector(LevelSelectMenu::onStart));
+	scheduleUpdate();
+}
+
+void MainMenu::update(float deltaTime) {
+	for (int i = 0; i < options.size(); i++) {//increaseing size of selected option
+		if (options[i] == selectedOption) {
+			options[i]->setScale(1.5);
+		}
+		else {
+			options[i]->setScale(1);
+		}
+	}
+
+	if (INPUTS->getKeyPress(KeyCode::KEY_W)) {//move seletor up
+		if (selectedOptionNum >  0) {//number of selected option is greater than 0, first option in menu
+			selectedOptionNum--;//go up one option
+			selectedOption = options[selectedOptionNum];//setting currently selected menu option
+			selectionIndicator->setPosition(selectedOption->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
+
+			if (scrollNum >= 1) {
+				mainLayer->setPosition(mainLayer->getPosition() - Vec2(0, 185));
+				scrollNum--;
+			}
+		}
+	}
+	else if (INPUTS->getKeyPress(KeyCode::KEY_S)) {//move selector down
+		if (selectedOptionNum < options.size() - 1) {//number of selected option is greater then last option in menu
+			selectedOptionNum++;//go down one option
+			selectedOption = options[selectedOptionNum];//setting currently selected menu option
+			selectionIndicator->setPosition(selectedOption->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
+
+			if (selectedOptionNum >= 2) {
+				mainLayer->setPosition(mainLayer->getPosition() + Vec2(0, 185));
+				scrollNum++;
+			}
+		}
+	}
+	else if (INPUTS->getKeyPress(KeyCode::KEY_SPACE) || INPUTS->getKeyPress(KeyCode::KEY_ENTER)) {//select currently selected level
+		if (selectedOption->optionNumber == 0) {
+			director->replaceScene(LevelSelectMenu::createScene());
+		}
+		else if (selectedOption->optionNumber == 1) {
+			//Display How To Play Screen
+		}
+		else if (selectedOption->optionNumber == 2) {
+			//Display Credits Screen
+		}
+		else if (selectedOption->optionNumber == 3) {
+			director->end();
+		}
+	}
+
+	INPUTS->clearForNextFrame();
 }
 
 bool LevelSelectMenu::init() {
@@ -45,7 +148,7 @@ bool LevelSelectMenu::init() {
 	selectedLevel = levels[0];
 	selectedOptionNum = 0;
 
-	schedule(schedule_selector(LevelSelectMenu::onStart));
+	schedule(schedule_selector(MainMenu::onStart));
 
 	return true;
 }
@@ -86,11 +189,6 @@ bool LevelSelectMenu::initMenu(string filename) {
 
 void LevelSelectMenu::onStart(float deltaTime) {
 	unschedule(schedule_selector(LevelSelectMenu::onStart));
-
-	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
-
-	getDefaultCamera()->setPosition(centre);
-
 	scheduleUpdate();
 }
 
@@ -128,7 +226,7 @@ void LevelSelectMenu::update(float deltaTime) {
 			}
 		}
 	}
-	else if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {//select currently selected level
+	else if (INPUTS->getKeyPress(KeyCode::KEY_SPACE) || INPUTS->getKeyPress(KeyCode::KEY_ENTER)) {//select currently selected level
 		if (selectedLevel->optionNumber == 0) {
 			director->replaceScene(Stage1::createScene());
 		}
@@ -140,7 +238,7 @@ void LevelSelectMenu::update(float deltaTime) {
 		}
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_BACKSPACE)) {//select currently selected level
-		//director->replaceScene(MainMenu::createScene());
+		director->replaceScene(MainMenu::createScene());
 	}
 
 	INPUTS->clearForNextFrame();

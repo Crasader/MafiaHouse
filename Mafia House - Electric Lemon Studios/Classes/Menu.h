@@ -38,8 +38,10 @@ public:
 
 	void initOption(int num, string labelText) {
 		optionNumber = num;
-		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 11);
+		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 22);
 		label->getFontAtlas()->setAliasTexParameters();
+		label->setPositionNormalized(Vec2(0.48, 0.49));
+		addChild(label);
 	}
 
 
@@ -108,7 +110,7 @@ public:
 
 
 class GameMenu : public Scene{
-public:
+protected:
 	vector<MenuOption*> options;
 
 	MenuOption* selectedOption;
@@ -120,6 +122,8 @@ public:
 	Node* mainLayer;
 
 	int scrollNum = 0;
+
+	int selectedOptionNum = 0;
 
 	Director* director;
 	Vec2 visibleSize;
@@ -135,6 +139,9 @@ public:
 
 	bool init();
 
+	void update(float deltaTime);
+
+	void onStart(float deltaTime);
 };
 
 class LevelSelectMenu : public GameMenu {
@@ -154,6 +161,4 @@ private:
 	vector<LevelMenuOption*> levels;
 
 	LevelMenuOption* selectedLevel;
-
-	int selectedOptionNum = 0;
 };
