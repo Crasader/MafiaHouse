@@ -19,19 +19,17 @@ Player::Player()
 	//max movement speed
 	baseSpeed = 70;
 	//initializing animations
-	stand = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES, true);
+	stand = GameAnimation(STAND, "player/stand/%03d.png", 24, 10.5 FRAMES, true);
 	moonwalk = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES, true);
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES, true);
-	throwing = GameAnimation(THROW, "player/throw/%03d.png", 2, 10 FRAMES, false);
+	throwing = GameAnimation(THROW, "player/throw/%03d.png", 3, 5 FRAMES, false);
 	stab = GameAnimation(STAB, "player/stab/%03d.png", 2, 10 FRAMES, false);
-	swing = GameAnimation(SWING, "player/swing/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "player/swing/%03d.png", 5, 5 FRAMES, false);
 	crouchstab = GameAnimation(STAB, "player/crouch_stab/%03d.png", 2, 10 FRAMES, false);
 	crouchswing = GameAnimation(SWING, "player/crouch_swing/%03d.png", 2, 10 FRAMES, false);
 	fallstab = GameAnimation(FALLATK, "player/fall_stab/%03d.png", 1, 10 FRAMES, false);
 	fallswing = GameAnimation(FALLATK, "player/fall_swing/%03d.png", 1, 10 FRAMES, false);
-	crouch = GameAnimation(CROUCH, "player/crouch/%03d.png", 5, 10 FRAMES, false);
-	standup = GameAnimation(STANDUP, "player/stand_up/%03d.png", 5, 10 FRAMES, false);
-	crouchwalk = GameAnimation(CROUCHWALK, "player/crouch_walk/%03d.png", 5, 10 FRAMES, true);
+	crouchwalk = GameAnimation(CROUCHWALK, "player/crouch_walk/%03d.png", 4, 14 FRAMES, true);
 	climbing = GameAnimation(CLIMB, "player/climb/%03d.png", 5, 10 FRAMES, false);
 	jumping = GameAnimation(JUMP, "player/jump/%03d.png", 2, 10 FRAMES, false);
 	falling = GameAnimation(FALL, "player/fall/%03d.png", 1, 10 FRAMES, true);
@@ -154,12 +152,14 @@ void Player::walk(Input input, float time) {
 				turned = true;
 				flipX();
 			}
+			stopAnimation(STAND);
 			stopAnimation(MOONWALK);
 			startAnimation(WALK, walking);
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 1) {
 			if (getActionByTag(MOONWALK) == NULL) {
+				stopAnimation(STAND);
 				startAnimation(WALK, walking);
 			}
 			walking.action->setSpeed(moveSpeed);
@@ -167,6 +167,7 @@ void Player::walk(Input input, float time) {
 			//run walking animation
 		}
 		else if (moveDirection == 2) {
+			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
 			setSpeed(moveSpeed * 1.4f);
@@ -186,12 +187,14 @@ void Player::walk(Input input, float time) {
 				turned = false;
 				flipX();
 			}
+			stopAnimation(STAND);
 			stopAnimation(MOONWALK);
 			startAnimation(WALK, walking);
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 2) {
 			if (getActionByTag(MOONWALK) == NULL) {
+				stopAnimation(STAND);
 				startAnimation(WALK, walking);
 			}
 			walking.action->setSpeed(moveSpeed);
@@ -199,6 +202,7 @@ void Player::walk(Input input, float time) {
 			//run walking animation
 		}
 		else if (moveDirection == 1) {
+			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
 			setSpeed(moveSpeed * 1.4f);
@@ -222,7 +226,7 @@ void Player::walk(Input input, float time) {
 		moveDirection = 0;
 		stopAnimation(WALK);
 		stopAnimation(MOONWALK);
-		setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+		startAnimation(STAND, stand);
 	}
 }
 
@@ -287,7 +291,7 @@ void Player::crouchWalk(Input input, float time) {
 		}
 		moveDirection = 0;
 		stopAnimation(CROUCHWALK);
-		setSpriteFrame(crouchwalk.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+		setSpriteFrame(frameCache->getSpriteFrameByName("player/crouch_walk/crouch.png"));
 	}
 }
 
@@ -731,6 +735,7 @@ void Player::State::exit(Player* player, GameLayer* mainLayer, float time) {}
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->isCrouched = false;
 	player->stopAllActions();
+	player->startAnimation(STAND, player->stand);
 	if (player->prevState->type != "attack" && player->prevState->type != "throw" && player->prevState->type != "hide") {
 		player->mainBody->setVelocity(player->getPhysicsBody()->getVelocity());
 		player->stop();
@@ -746,7 +751,6 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 		}
 		//player->startAnimation(STANDUP, player->standup);
 	}
-	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 1.0f;
 	player->setSpeed(player->moveSpeed);
 }
@@ -848,7 +852,7 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 		}
 		//player->startAnimation(CROUCH, player->crouch);
 	}
-	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
+	player->setSpriteFrame(player->frameCache->getSpriteFrameByName("player/crouch_walk/crouch.png"));
 	player->moveSpeed = 0.5f;
 	player->setSpeed(player->moveSpeed);
 }

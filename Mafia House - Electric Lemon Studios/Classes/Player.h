@@ -223,8 +223,6 @@ private:
 
 	//animations:
 	GameAnimation moonwalk;
-	GameAnimation crouch;
-	GameAnimation standup;
 	GameAnimation crouchwalk;
 	GameAnimation climbing;
 	GameAnimation jumping;
