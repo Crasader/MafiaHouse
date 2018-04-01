@@ -118,7 +118,9 @@ void GameObject::startAnimation(AnimationTag tag, GameAnimation animation) {
 }
 
 void GameObject::stopAnimation(AnimationTag tag) {
-	stopActionByTag(tag);
+	if (getActionByTag(tag) != NULL) {
+		stopActionByTag(tag);
+	}
 }
 
 void GameObject::createOutline(string name) {

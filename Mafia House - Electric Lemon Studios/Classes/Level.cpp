@@ -436,14 +436,13 @@ void Level::update(float deltaTime){
 	if (player->isReallyDead() == true) {//player died, gameover
 		unscheduleUpdate();
 		getScene()->getPhysicsWorld()->setSpeed(0);
-		schedule(schedule_selector(Level::pauseScreen));
 		camera->pause();
 		player->pause();
 		for (int i = 0; i < mainLayer->items.size(); i++) {
 			mainLayer->items[i]->pause();
 		}
 		for (int i = 0; i < enemies.size(); i++) {
-			enemies[i]->pause();
+			enemies[i]->pauseSchedulerAndActions();
 		}
 		schedule(schedule_selector(Level::gameOver));
 	}
@@ -1426,6 +1425,17 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	Node *a = contact.getShapeA()->getBody()->getNode();
 	Node *b = contact.getShapeB()->getBody()->getNode();
+	//player and noises
+	if (a->getName() == "player" && b->getName() == "noise")
+	{
+		player->hearNoise(static_cast<Noise*>(b)->name);
+		return false;
+	}
+	else if (a->getName() == "noise" && b->getName() == "player")
+	{
+		player->hearNoise(static_cast<Noise*>(a)->name);
+		return false;
+	}
 	//item and hide radius
 	if (a->getName() == "held_item" && b->getName() == "hide_radius")
 	{

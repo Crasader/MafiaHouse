@@ -605,7 +605,7 @@ void Player::hiding() {
 }
 
 void Player::hearNoise(string name) {
-	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(("Audio/" + name + ".wav").c_str());
+	//CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(("Audio/" + name + ".wav").c_str());
 }
 
 void Player::wasHit(Item* item, float time) {
@@ -629,6 +629,7 @@ void Player::wasHit(Item* item, float time) {
 		director->getRunningScene()->addChild(emitter);
 		stopAllActions();
 		wasInHitStun = true;
+		pauseSchedulerAndActions();
 		hitStunStart = time;
 		hitStunTime = item->hitstun;
 		//item->used();//enemy items don't break
@@ -702,6 +703,7 @@ void Player::update(GameLayer* mainLayer, float time) {
 //Input Handling:
 void Player::handleInput(GameLayer* mainLayer, float time, Input input) {
 	if (time - hitStunStart >= hitStunTime || hitStunStart == -1) {//only allow player input if hitstun is over, of if histun never began
+		resumeSchedulerAndActions();
 		hitStunStart = -1;
 		newState = state->handleInput(this, mainLayer, time, input);
 		if (newState != NULL)

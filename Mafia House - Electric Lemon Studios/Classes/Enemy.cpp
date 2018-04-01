@@ -270,6 +270,8 @@ void Enemy::closeDoor() {
 
 void Enemy::Pause(float time) {
 	if (startPauseTime == -1) {
+		stopAnimation(WALK);
+		startAnimation(STAND, stand);
 		stop();
 		startPauseTime = time;
 	}
@@ -298,6 +300,8 @@ void Enemy::Pause(float time) {
 }
 
 void Enemy::turnOnSpot(float time) {
+	stopAnimation(WALK);
+	startAnimation(STAND, stand);
 	if (previousTurnTime == -1) {
 		previousTurnTime = time;
 	}
@@ -333,7 +337,15 @@ void Enemy::walk(float time) {
 		previousTurnTime = time;
 		stopTime = -1;
 	}
+	else if (stopTime != -1) {
+		if (getPhysicsBody()->getVelocity().x < 15 && getPhysicsBody()->getVelocity().x > -15) {//enemy has stopped moving
+			stopAnimation(WALK);
+			startAnimation(STAND, stand);
+		}
+	}
 	else if (stopTime == -1){
+		stopAnimation(STAND);
+		startAnimation(WALK, walking);
 		move(Vec2(4.5f, 0) * moveSpeed);
 	}
 }
@@ -686,7 +698,8 @@ void Enemy::moveFrom(float positionX) {
 			flipX();
 		}
 	}
-
+	stopAnimation(STAND);
+	startAnimation(WALK, walking);
 	moveAbsolute(moveDirection * 4.5 * moveSpeed);
 }
 
@@ -706,7 +719,8 @@ void Enemy::moveTo(float positionX) {
 			flipX();
 		}
 	}
-
+	stopAnimation(STAND);
+	startAnimation(WALK, walking);
 	moveAbsolute(moveDirection * 4.5 * moveSpeed);
 }
 
@@ -859,6 +873,8 @@ void Enemy::runaway(GameLayer* mainlayer, float time) {
 						if (flippedX == false) { flipX(); }
 					}
 				}
+				stopAnimation(STAND);
+				startAnimation(WALK, walking);
 				moveAbsolute(furthestMoveDirection * 4.5 * moveSpeed);//move in direction in which you can move the furthest
 			}
 		}
@@ -1197,6 +1213,7 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 		}
 		if (item->getEffect() == Item::NONE) {
 			wasInHitStun = true;
+			pauseSchedulerAndActions();
 			hitStunStart = time;
 			hitStunTime = item->hitstun;
 			setSuspicion(maxSuspicion);
@@ -1217,6 +1234,7 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 					createNoise(130, 1.5, time, getPosition() + Vec2(getSize().width / 2, getSize().height), Vec2(currentRoom, currentFloor), "enemy_wail", &mainLayer->noises);
 					changeSuspicion(maxSuspicion);
 					wasInHitStun = true;
+					pauseSchedulerAndActions();
 					hitStunStart = time;
 					hitStunTime = item->hitstun;
 				}
@@ -1319,6 +1337,7 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 		itemHitBy = NULL;
 	}
 	if (time - hitStunStart >= hitStunTime || hitStunStart == -1) {//only update if hitstun is over, of if histun never began
+		resumeSchedulerAndActions();
 		hitStunStart = -1;
 		//updateFloor(mainLayer->floors);//checking if floor has changed
 		newState = state->update(this, mainLayer, time);
@@ -1910,6 +1929,7 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Attack State(using items):
 void Enemy::AttackState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->stopAllActions();
 	if (enemy->heldItem == NULL) {
 		enemy->heldItem = enemy->fist;//if not, give them a fist
 		enemy->addChild(enemy->fist);
@@ -2477,6 +2497,7 @@ void Enemy::SeenBodyState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 
 //Knock Out State:
 void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->stopAllActions();
 	enemy->inAttackRange = false;
 	if (enemy->heldItem != NULL) {
 		enemy->heldItem->initHeldItem();
@@ -2535,6 +2556,7 @@ void Enemy::KnockOutState::exit(Enemy* enemy, GameLayer* mainLayer, float time) 
 
 //Death State:
 void Enemy::DeathState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
+	enemy->stopAllActions();
 	enemy->visionEnabled = false;
 	enemy->dropInventory(mainLayer);
 	if (enemy->prevState->type == "knockout") {
@@ -2575,7 +2597,7 @@ Thug::Thug() {
 	maxSpeed = baseSpeed;
 	deadBodyName = "enemy/thug/dead.png";
 	//initializing animations:
-	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 1, 10 FRAMES, true);
+	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 15, 10 FRAMES, true);
 	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
 	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockdown/%03d.png", 4, 20 FRAMES, false);
 	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
@@ -2601,7 +2623,7 @@ Guard::Guard() {
 	deadBodyName = "enemy/guard/dead.png";
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/guard/stand/%03d.png", 11, 10 FRAMES, true);
-	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 8, 9 FRAMES, true);
+	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 8, 8 FRAMES, true);
 	knockout = GameAnimation(KNOCKOUT, "enemy/guard/knockdown/%03d.png", 5, 15 FRAMES, false);
 	knockoutDeath = GameAnimation(DEATH, "enemy/guard/knockdown_die/%03d.png", 3, 15 FRAMES, false);
 	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 5, 15 FRAMES, false);
@@ -2622,7 +2644,7 @@ Boss::Boss() {
 	maxSpeed = baseSpeed;
 	deadBodyName = "enemy/boss/dead.png";
 	//initializing animations:
-	stand = GameAnimation(STAND, "enemy/boss/stand/%03d.png", 1, 10 FRAMES, true);
+	stand = GameAnimation(STAND, "enemy/boss/stand/%03d.png", 19, 10 FRAMES, true);
 	walking = GameAnimation(WALK, "enemy/boss/walk/%03d.png", 12, 8 FRAMES, true);
 	knockout = GameAnimation(KNOCKOUT, "enemy/boss/knockdown/%03d.png", 4, 20 FRAMES, false);
 	knockoutDeath = GameAnimation(DEATH, "enemy/boss/knockdown_die/%03d.png", 1, 20 FRAMES, false);
