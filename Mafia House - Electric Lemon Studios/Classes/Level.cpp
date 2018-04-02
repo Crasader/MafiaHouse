@@ -92,6 +92,12 @@ void Level::setup(){
 	pauseLabel->setPosition(Vec2(275, -239));
 	pauseLayer->addChild(pauseLabel);
 
+	darkenScreen = Sprite::create("backgrounds/black.png");
+	darkenScreen->setContentSize(director->getVisibleSize());
+	darkenScreen->setOpacity(155);
+	darkenScreen->setGlobalZOrder(11);
+	pauseLayer->addChild(darkenScreen);
+
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
 	mainLayer->addChild(camPos);
@@ -168,6 +174,8 @@ void Level::onStart(float deltaTime){
 			mainLayer->addChild(mainLayer->items[i]->missingItem);
 		}
 	}
+
+	player->startAnimation(STAND, player->stand);
 
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
@@ -270,6 +278,15 @@ void Level::getStats(float deltaTime) {
 	completeTimeDisplay->setVisible(false);
 	hudLayer->addChild(completeTimeDisplay);
 
+	if (gotBestTime == true) {
+		bestTime = Sprite::create("menu/bestTime.png");
+		bestTime->getTexture()->setTexParameters(texParams);
+		bestTime->setGlobalZOrder(30);
+		bestTime->setPosition(Vec2(192, -70));
+		bestTime->setVisible(false);
+		hudLayer->addChild(bestTime);
+	}
+
 	numKilledDisplay = Label::createWithTTF("ENEMIES KILLED: " + std::to_string(numKilled), "fonts/pixelFJ8pt1__.ttf", 20);
 	numKilledDisplay->getFontAtlas()->setAliasTexParameters();
 	numKilledDisplay->setGlobalZOrder(30);
@@ -321,6 +338,12 @@ void Level::getStats(float deltaTime) {
 	continueLabel->setVisible(false);
 	hudLayer->addChild(continueLabel);
 
+	darkenScreen = Sprite::create("backgrounds/black.png");
+	darkenScreen->setContentSize(director->getVisibleSize());
+	darkenScreen->setOpacity(155);
+	darkenScreen->setGlobalZOrder(11);
+	hudLayer->addChild(darkenScreen);
+
 	runAction(MoveBy::create(1.0f, Vec2(0, 0)))->setTag(0);
 	runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
 	runAction(MoveBy::create(3.0f, Vec2(0, 0)))->setTag(2);
@@ -349,6 +372,9 @@ void Level::onEnd(float deltaTime) {
 		silentSpectreLabel->setVisible(true);
 	}
 	if (getActionByTag(4) == NULL) {
+		if (gotBestTime == true) {
+			bestTime->setVisible(true);
+		}
 		if (fullAssassin == true) {
 			achievement1->setVisible(true);
 		}
@@ -403,6 +429,11 @@ void Level::gameOver(float deltaTime) {
 		gameOverScreen->setOpacity(0);
 		gameOverScreen->runAction(FadeIn::create(4.0f))->setTag(1);
 		hudLayer->addChild(gameOverScreen);
+		darkenScreen = Sprite::create("backgrounds/black.png");
+		darkenScreen->setContentSize(director->getVisibleSize());
+		darkenScreen->setOpacity(155);
+		darkenScreen->setGlobalZOrder(11);
+		hudLayer->addChild(darkenScreen);
 		initGameOver = true;
 	}
 	if (gameOverScreen->getActionByTag(1) == NULL && initGameOverLabels == false) {
@@ -896,7 +927,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and physical object
 		if (a->getName() == "player" && b->getName() == "phys_object")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 4)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->surfaceHeight - 5)) {//only collide if player is above object
 				player->touchingFloor = true;
 				solve.setRestitution(0.0f);
 				return true;
@@ -908,7 +939,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "phys_object" && b->getName() == "player")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 4)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->surfaceHeight - 5)) {//only collide if player is above object
 				player->touchingFloor = true;
 				solve.setRestitution(0.0f);
 				return true;
@@ -1723,6 +1754,9 @@ void Level::createLevel(Vec2 position, float levelWidth)
 		int totalWidth = 0;
 		for (int j = 0; j < mainLayer->floors[i].rooms.size(); j++) {
 			totalWidth += mainLayer->floors[i].rooms[j]->width;
+			if (j != mainLayer->floors[i].rooms.size() - 1) {//not the last room on the floor
+				totalWidth += 20;//add thickness of walls
+			}
 		}
 		if (i == 0) {
 			firstFloorWidth = totalWidth;
@@ -1927,6 +1961,9 @@ bool Level::initLevel(string filename){
 				if (pieces[1] == "table") {
 					physObject = Table::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "wall_shelf") {
+					physObject = WallShelf::createWithSpriteFrameName();
+				}
 				else if (pieces[1] == "vent_cover") {
 					physObject = VentCover::createWithSpriteFrameName();
 				}
@@ -1977,25 +2014,27 @@ bool Level::initLevel(string filename){
 					enemy->setPathTag(pieces[4]);//"STAND_LEFT", "STAND_RIGHT", "STAND_SWITCH",  indicate the enemy will stand still facing that direction, switch turns in both direcitons
 				}
 				if (pieces.size() > 5) {
-					Item* item;
-					if (pieces[5] == "knife") {
-						item = Knife::createWithSpriteFrameName();
+					if (pieces[5] != "none") {
+						Item* item;
+						if (pieces[5] == "knife") {
+							item = Knife::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "key") {
+							item = Key::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "hammer") {
+							item = Hammer::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "gun") {
+							item = Gun::createWithSpriteFrameName();
+						}
+						item->initObject();
+						item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
+						item->startRoom = Vec2(roomNum, floorNum);
+						item->startHeld();
+						mainLayer->items.push_back(item);
+						enemy->itemToPickUp = item;
 					}
-					else if (pieces[5] == "key") {
-						item = Key::createWithSpriteFrameName();
-					}
-					else if (pieces[5] == "hammer") {
-						item = Hammer::createWithSpriteFrameName();
-					}
-					else if (pieces[5] == "gun") {
-						item = Gun::createWithSpriteFrameName();
-					}
-					item->initObject();
-					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
-					item->startRoom = Vec2(roomNum, floorNum);
-					item->startHeld();
-					mainLayer->items.push_back(item);
-					enemy->itemToPickUp = item;
 				}
 				if (pieces.size() > 6) {
 					Item* item;

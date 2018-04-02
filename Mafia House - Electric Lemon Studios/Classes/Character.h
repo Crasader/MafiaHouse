@@ -86,6 +86,9 @@ public:
 
 	std::vector<Item*> inventory;//items the character is carrying
 
+	//standing animation
+	GameAnimation stand;
+
 protected:
 	//VERY IMPORTANT: the number of px the actual character is from the very left side of their frames
 	float FRAME_OFFSET = 18;
@@ -118,7 +121,6 @@ protected:
 	float attackEndTime = -1.0f;//time attack ends and englag begins
 
 	//animations:
-	GameAnimation stand;
 	GameAnimation walking;
 	GameAnimation stab;
 	GameAnimation swing;

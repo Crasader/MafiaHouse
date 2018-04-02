@@ -87,10 +87,13 @@ protected:
 
 	Sprite* achievement1;
 	Sprite* achievement2;
+	Sprite* bestTime;
 
 	Sprite* gameOverScreen;
 	bool initGameOver = false;
 	bool initGameOverLabels = false;
+
+	Sprite* darkenScreen;
 
 	float gameTime = 0.0f;
 

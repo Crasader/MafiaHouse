@@ -198,6 +198,7 @@ protected:
 
 	//for creating dead body:
 	string deadBodyName;
+	string deadBodyOutlineName;
 
 	//for suspicion indicators
 	Sprite* qMark;

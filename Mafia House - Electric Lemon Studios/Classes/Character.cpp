@@ -29,7 +29,7 @@ void Character::flipX() {
 
 void Character::updateRoom(vector<RoomData*> rooms) {
 	for (int i = 0; i < rooms.size(); i++) {
-		if ((getPositionX() > rooms[i]->left) && (getPositionX() + getSize().width < rooms[i]->right)) {//player in on the floor, inbetween top and bottom
+		if ((getPositionX() > rooms[i]->left - 10) && (getPositionX() + getSize().width < rooms[i]->right + 10)) {//player in on the floor, inbetween top and bottom
 			currentRoom = i;
 			break;
 		}
@@ -94,6 +94,7 @@ void Character::throwItem(GameLayer* mainLayer, float time) {
 void Character::beginThrowItem() {
 	if (heldItem != NULL) {
 		heldItem->prepareThrow(aimAngle);
+
 	}
 }
 
@@ -133,14 +134,16 @@ void Character::beginUseItem(float angle) {
 
 void Character::useItem(float angle) {
 	if (heldItem != NULL) {
-		heldItem->getPhysicsBody()->setEnabled(true);
+		if (heldItem->getAttackType() != Item::SHOOT) {
+			heldItem->getPhysicsBody()->setEnabled(true);
+		}
 		if (heldItem->getAttackType() == Item::STAB) {
 			heldItem->stabSequence(angle, flippedX);
 			setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
 			heldItem->swingSequence(angle, flippedX);
-			setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+			startAnimation(SWING, swing);
 		}
 	}
 }
@@ -165,16 +168,29 @@ void Character::useDoor() {
 }
 
 void Character::useStair(GameLayer* mainLayer) {
-	/*auto callback = CallFunc::create([this, mainLayer]() {
-		if (stairToUse != NULL) {
-			stairToUse->use(this, mainLayer);
-		}
-	});
-	auto sequence = Sequence::create(Animate::create(stairuse.animation), callback, nullptr);//runs the stair use animation and then has character take the stairs
-	*/
 	if (stairToUse != NULL) {
-		stairToUse->use(this, mainLayer);
+		stop();
+		auto callback1 = CallFunc::create([this, mainLayer]() {
+			if (stairToUse != NULL) {
+				stairToUse->setSpriteFrame(frameCache->getSpriteFrameByName("objects/stairdoor_open.png"));
+				stairToUse->numLabel->setVisible(false);
+			}
+		});
+		auto callback2 = CallFunc::create([this, mainLayer]() {
+			if (stairToUse != NULL) {
+				stairToUse->use(this, mainLayer);
+			}
+		});
+		auto wait = MoveBy::create(0.2f, Vec2(0, 0));
+		auto sequence = Sequence::create(callback1, wait, callback2, nullptr);//runs the stair use animation and then has character take the stairs
+		if (getActionByTag(99) == NULL) {
+			runAction(sequence)->setTag(99);
+		}
 	}
+
+	/*if (stairToUse != NULL) {
+		stairToUse->use(this, mainLayer);
+	}*/
 }
 
 bool Character::checkDead() {

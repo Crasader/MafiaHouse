@@ -67,6 +67,7 @@ void Item::initPickedUpItem() {
 	prevState = state;
 	state = HELD;
 	initHeldItem();
+	setGlobalZOrder(5);
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	pickUpRadius->getPhysicsBody()->setRotationOffset(0);
@@ -199,6 +200,7 @@ void Item::initThrownItem() {
 	state = THROWN;
 	didHitWall = false;
 	enemyItem = false;
+	setGlobalZOrder(6);
 	outline->setVisible(true);
 	outline->setColor(ccc3(210, 0, 255));//purple
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
@@ -227,6 +229,7 @@ void Item::initGroundItem() {
 	state = GROUND;
 	didHitWall = false;
 	enemyItem = false;
+	setGlobalZOrder(6);
 	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
 	getPhysicsBody()->setCollisionBitmask(40);
@@ -250,7 +253,7 @@ bool Item::checkBroken() {
 
 void Item::breakItem() {
 	auto emitter = ParticleExplosion::create();
-	emitter->setStartColor(Color4F(50, 50, 255, 1));
+	emitter->setStartColor(Color4F(30, 30, 255, 1));
 	emitter->setEndColor(Color4F(0, 0, 255, 1));//blue
 	emitter->setStartSize(3.0f);
 	emitter->setStartSizeVar(1.0f);
@@ -439,13 +442,13 @@ void Item::swingSequence(float angle, bool flip) {
 void Item::fallAttack() {
 	getPhysicsBody()->setEnabled(true);
 	if (attackType == STAB) {
-		setPosition(Vec2(50, 20));
+		setPosition(Vec2(52, 35));
 		setRotation(90);
 		setAnchorPoint(Vec2(0, 0.5));
 	}
 	else if (attackType == SWING || attackType == SHOOT) {
-		setPosition(Vec2(60, 20));
-		setRotation(10);
+		setPosition(Vec2(60, 35));
+		setRotation(20);
 		setAnchorPoint(Vec2(0, 0.5));
 	}
 }
@@ -465,7 +468,7 @@ Gun::Gun() {
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KNOCKOUT;
 	attackType = SHOOT;
-	startTime = 30 FRAMES;
+	startTime = 45 FRAMES;
 	attackTime = 30 FRAMES;
 	lagTime = 30 FRAMES;
 	range = 300;
@@ -542,9 +545,6 @@ void Item::enemyShoot(Vec2 target) {
 	if (hitTarget == false) {
 		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//ray cast again
 	}
-	if (hitTarget == false) {
-		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//triple ray cast
-	}
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = target * 2;//for drawing bullet line
 	}
@@ -600,9 +600,6 @@ void Item::playerShoot(float angle) {
 	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast in direction of aim
 	if (hitTarget == false){
 		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast again
-	}
-	if (hitTarget == false) {
-		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//triple cast just to be sure
 	}
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = startpoint + direction * 1000;//for drawing bullet line

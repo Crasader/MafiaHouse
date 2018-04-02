@@ -18,7 +18,7 @@ public:
 	Stair();
 	~Stair();
 	CREATE_WITH_FRAME(Stair);
-	CREATE_WITH_FRAME_NAME(Stair, "objects/stair.png");
+	CREATE_WITH_FRAME_NAME(Stair, "objects/stairdoor.png");
 	void initObject();
 
 	void playerInRange();
@@ -33,6 +33,8 @@ public:
 	//for pathfinding:
 	float pathDistance = 0;//the total distance so far to the stair from the enemy
 	float foundDepth;//the depth the pathfinding function was at when it found the stair
+
+	Label * numLabel;
 };
 
 //Door Class
