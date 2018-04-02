@@ -420,7 +420,7 @@ void Item::stabSequence(float angle, bool flip) {
 void Item::swingSequence(float angle, bool flip) {
 	Vec2 direction = angleToDirection(angle);
 	if (direction == Vec2(1, -1) || direction == Vec2(1, 1)) {
-		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+		//if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
 	}
 
 	Vec2 movement = Vec2(6, -26);
@@ -498,7 +498,6 @@ void Item::enemyShoot(Vec2 target) {
 	effect = KILL;
 	wasShot = true;
 	endpoint = Vec2(0, 0);
-	hitTarget = false;
 	PhysicsRayCastCallbackFunc func = [this](PhysicsWorld& world, const PhysicsRayCastInfo& info, void* data)->bool
 	{
 		string contactName = info.shape->getBody()->getNode()->getName();
@@ -509,14 +508,12 @@ void Item::enemyShoot(Vec2 target) {
 			return false;
 		}
 		else if (contactName == "door") {
-			hitTarget = true;
 			static_cast<Door*>(contact)->itemHit(this);
 			endpoint = info.contact;
 			return false;
 		}
 		else if (contactName == "door_radius") {//collides with a door radius
 			if (static_cast<Door*>(contact->getParent())->checkOpen() == false) {//the doors is closed
-				hitTarget = true;
 				static_cast<Door*>(contact->getParent())->itemHit(this);
 				if (holderFlipped == true) {
 					endpoint = info.contact - Vec2(12, 0);
@@ -528,7 +525,6 @@ void Item::enemyShoot(Vec2 target) {
 			}
 		}
 		else if (contactName == "player") {//hit the player
-			hitTarget = true;
 			static_cast<Player*>(contact)->itemHitBy = this;//set item they were hit by to this gun
 			endpoint = info.contact;
 			return false;
@@ -542,9 +538,6 @@ void Item::enemyShoot(Vec2 target) {
 		startpoint = getParent()->convertToWorldSpace(getPosition()) - Vec2(60, 0);
 	}
 	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//ray cast directly towards target
-	if (hitTarget == false) {
-		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//ray cast again
-	}
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = target * 2;//for drawing bullet line
 	}
@@ -554,7 +547,6 @@ void Item::playerShoot(float angle) {
 	effect = KILL;
 	used();
 	wasShot = true;
-	hitTarget = false;
 	Vec2 direction = angleToDirection(angle);
 	if (holderFlipped == true) {
 		direction.x *= -1;
@@ -570,14 +562,12 @@ void Item::playerShoot(float angle) {
 			return false;
 		}
 		else if (contactName == "door") {
-			hitTarget = true;
 			static_cast<Door*>(contact)->itemHit(this);
 			endpoint = info.contact;
 			return false;
 		}
 		else if (contactName == "door_radius") {//collides with a door radius
 			if (static_cast<Door*>(contact->getParent())->checkOpen() == false) {//the doors is closed
-				hitTarget = true;
 				static_cast<Door*>(contact->getParent())->itemHit(this);
 				if (holderFlipped == true) {
 					endpoint = info.contact - Vec2(12, 0);
@@ -589,7 +579,6 @@ void Item::playerShoot(float angle) {
 			}
 		}
 		if (contactName == "enemy" || contactName == "enemy_alert") {//hit an enemy
-			hitTarget = true;
 			static_cast<Enemy*>(contact)->itemHitBy = this;//set item they were hit by to this gun
 			endpoint = info.contact;
 			return false;
@@ -597,10 +586,7 @@ void Item::playerShoot(float angle) {
 		return true;
 	};
 	startpoint = getParent()->convertToWorldSpace(getPosition()) + direction * 60;
-	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast in direction of aim
-	if (hitTarget == false){
-		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast again
-	}
+	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, (startpoint + direction * 1000) - Vec2(RandomHelper::random_int(-200, 200), RandomHelper::random_int(-200, 200)), nullptr);//ray cast in direction of aim
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = startpoint + direction * 1000;//for drawing bullet line
 	}
@@ -613,7 +599,7 @@ Fist::Fist(){
 	hp = 1;
 	dmg = 25;
 	knockback = Vec2(20, 0);
-	hitstun = 8 FRAMES;
+	hitstun = 7 FRAMES;
 	doorDmg = 7;
 	canBreakDoor = true;
 	effect = NONE;
@@ -658,7 +644,7 @@ Knife::Knife(){
 	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
-	hitstun = 10 FRAMES;
+	hitstun = 9 FRAMES;
 	doorDmg = 7;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
@@ -666,7 +652,7 @@ Knife::Knife(){
 	startTime = 11 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 13 FRAMES;
-	range = 33;
+	range = 35;
 	rangeRadius = 100;
 	powerLevel = 5;
 	noiseLevel = 0.45f;
@@ -689,7 +675,7 @@ Key::Key(){
 	startTime = 6 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 7 FRAMES;
-	range = 25;
+	range = 26;
 	rangeRadius = 80;
 	powerLevel = 0;
 	noiseLevel = 0.25f;
@@ -705,7 +691,7 @@ Hammer::Hammer(){
 	hp = maxHP;
 	dmg = 34;
 	knockback = Vec2(70, 0);
-	hitstun = 24 FRAMES;
+	hitstun = 20 FRAMES;
 	doorDmg = 34;
 	canBreakDoor = true;
 	effect = KNOCKOUT;
@@ -714,13 +700,14 @@ Hammer::Hammer(){
 	attackTime = 20 FRAMES;
 	lagTime = 20 FRAMES;
 	range = 44;
-	rangeRadius = 130;
+	rangeRadius = 125;
 	powerLevel = 10;
 	noiseLevel = 0.65f;
 }
 
 //Mug Class:
 Mug::Mug() {
+	scale = 1.5;
 	itemFile = "items/mug.png";
 	outlineName = "items/mug_outline.png";
 	Item::Item();
@@ -734,9 +721,9 @@ Mug::Mug() {
 	attackType = SWING;
 	startTime = 10 FRAMES;
 	attackTime = 10 FRAMES;
-	lagTime = 10 FRAMES;
-	range = 20;
-	rangeRadius = 70;
+	lagTime = 12 FRAMES;
+	range = 24;
+	rangeRadius = 60;
 	powerLevel = 1;
 	noiseLevel = 1.0f;
 }
@@ -751,16 +738,41 @@ Crowbar::Crowbar() {
 	hp = maxHP;
 	dmg = 50;
 	knockback = Vec2(100, 0);
-	hitstun = 24 FRAMES;
-	doorDmg = 34;
+	hitstun = 26 FRAMES;
+	doorDmg = 50;
+	canBreakDoor = true;
+	effect = KILL;
+	attackType = SWING;
+	startTime = 24 FRAMES;
+	attackTime = 27 FRAMES;
+	lagTime = 25 FRAMES;
+	range = 60;
+	rangeRadius = 140;
+	powerLevel = 15;
+	noiseLevel = 0.85f;
+}
+
+//Iron Bar Class:
+IronBar::IronBar() {
+	scale = 1.2;
+	itemFile = "items/ironbar.png";
+	outlineName = "items/ironbar_outline.png";
+	Item::Item();
+	priority = 4;
+	maxHP = 4;
+	hp = maxHP;
+	dmg = 25;
+	knockback = Vec2(35, 0);
+	hitstun = 10 FRAMES;
+	doorDmg = 25;
 	canBreakDoor = true;
 	effect = KNOCKOUT;
 	attackType = SWING;
-	startTime = 25 FRAMES;
-	attackTime = 27 FRAMES;
-	lagTime = 25 FRAMES;
-	range = 44;
-	rangeRadius = 130;
-	powerLevel = 10;
-	noiseLevel = 0.65f;
+	startTime = 12 FRAMES;
+	attackTime = 14 FRAMES;
+	lagTime = 18 FRAMES;
+	range = 34;
+	rangeRadius = 120;
+	powerLevel = 4;
+	noiseLevel = 0.55f;
 }

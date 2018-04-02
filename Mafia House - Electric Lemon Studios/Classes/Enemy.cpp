@@ -1806,6 +1806,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 				else if (enemy->flippedX == false) {
 					enemy->distanceToPlayer = abs(enemy->detectedPlayer->getPositionX() - (enemy->getPositionX() + enemy->getSize().width));
 				}
+				if (enemy->detectedPlayer->isCrouched == true) {
+					enemy->distanceToPlayer += 22;
+				}
 				//check if enemy is in range to attack player
 				if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within horizontal range to attack player
 					if (checkForPath(mainLayer, enemy->currentFloor, enemy->detectedPlayer->currentRoom, enemy->currentRoom, false) == true) {//enemy is in same room as player
@@ -1983,6 +1986,9 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	//}
 	if (enemy->attackPrepareTime != -1.0f && time - enemy->attackPrepareTime >= enemy->heldItem->getStartTime()) {
 		enemy->attackStartTime = time;
+		if (enemy->prevState->type != "use_door" && enemy->heldItem->getAttackType() == Item::SHOOT) {
+			enemy->targetLocation = enemy->detectedPlayer->getPosition() + (enemy->detectedPlayer->getSize() / 2);
+		}
 		enemy->useItem(enemy->aimAngle);
 		enemy->attackPrepareTime = -1.0f;
 	}
@@ -2218,12 +2224,6 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 				enemy->move(Vec2(4.5 * enemy->moveSpeed, 0));
 			}
 		}
-	}
-
-	//check if an enemy has become alerted
-	if (enemy->suspicionLevel >= enemy->maxSuspicion) {
-		enemy->toEnter = new AlertState;
-		return enemy->toEnter;
 	}
 	return nullptr;
 }

@@ -142,7 +142,6 @@ protected:
 	float lagTime;//enlag time of attack
 	int range;//range of the weapons attack, for enemy ai
 	float rangeRadius = 100;//for swinging weapons, possible for stabbing weapons once they have multi-directional attacks
-	bool hitTarget = false;//for shooting guns
 };
 
 class Gun : public Item//enemy attacking barehand, actually an invisible item
@@ -201,6 +200,7 @@ public:
 	CREATE_WITH_FRAME(Mug);
 	CREATE_WITH_FRAME_NAME(Mug, "items/mug.png");
 };
+
 class Crowbar : public Item
 {
 public:
@@ -208,4 +208,13 @@ public:
 	~Crowbar() {}
 	CREATE_WITH_FRAME(Crowbar);
 	CREATE_WITH_FRAME_NAME(Crowbar, "items/crowbar.png");
+};
+
+class IronBar : public Item
+{
+public:
+	IronBar();
+	~IronBar() {}
+	CREATE_WITH_FRAME(IronBar);
+	CREATE_WITH_FRAME_NAME(IronBar, "items/ironbar.png");
 };

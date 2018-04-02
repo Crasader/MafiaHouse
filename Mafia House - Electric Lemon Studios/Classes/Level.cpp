@@ -102,6 +102,8 @@ void Level::setup(){
 	camPos = Node::create();
 	mainLayer->addChild(camPos);
 
+	srand(time(NULL));
+
 	//necessary for collision detection
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(Level::onContactBegin, this);
@@ -182,8 +184,10 @@ void Level::onStart(float deltaTime){
 
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
+	getScene()->getPhysicsWorld()->setSubsteps(1);
+
 	//physics debug drawing:
-	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -614,8 +618,8 @@ void Level::update(float deltaTime){
 		if (mainLayer->items[i]->getAttackType() == Item::SHOOT && mainLayer->items[i]->wasShot == true) {
 			mainLayer->items[i]->wasShot = false;
 			mainLayer->items[i]->shotTime = gameTime;
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 800, (mainLayer->items[i]->noiseLevel * 5) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 800, ((mainLayer->items[i]->noiseLevel * 5) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 1000, (mainLayer->items[i]->noiseLevel * 5) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 1000, ((mainLayer->items[i]->noiseLevel * 5) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
 		}
 		if (mainLayer->items[i]->shotTime != -1 && gameTime - mainLayer->items[i]->shotTime <= 0.5f) {//time to display gunshot for
 			gunShots->drawSegment(mainLayer->items[i]->startpoint, mainLayer->items[i]->endpoint, 1, Color4F(1, 1, 1, 1));
@@ -1990,6 +1994,15 @@ bool Level::initLevel(string filename){
 				else if (pieces[1] == "gun") {
 					item = Gun::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "mug") {
+					item = Mug::createWithSpriteFrameName();
+				}
+				else if (pieces[1] == "crowbar") {
+					item = Crowbar::createWithSpriteFrameName();
+				}
+				else if (pieces[1] == "ironbar") {
+					item = IronBar::createWithSpriteFrameName();
+				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				item->startRoom = Vec2(roomNum, floorNum);
@@ -2031,6 +2044,15 @@ bool Level::initLevel(string filename){
 						else if (pieces[5] == "gun") {
 							item = Gun::createWithSpriteFrameName();
 						}
+						else if (pieces[5] == "mug") {
+							item = Mug::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "crowbar") {
+							item = Crowbar::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "ironbar") {
+							item = IronBar::createWithSpriteFrameName();
+						}
 						item->initObject();
 						item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 						item->startRoom = Vec2(roomNum, floorNum);
@@ -2052,6 +2074,15 @@ bool Level::initLevel(string filename){
 					}
 					else if (pieces[6] == "gun") {
 						item = Gun::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "mug") {
+						item = Mug::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "crowbar") {
+						item = Crowbar::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "ironbar") {
+						item = IronBar::createWithSpriteFrameName();
 					}
 					item->initObject();
 					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));

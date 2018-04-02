@@ -56,7 +56,7 @@ bool Stage3::init()
 	//initialize background
 	setBackground("backgrounds/back.png", 1.0f);
 	//create level
-	initLevel("stage2.txt");
+	initLevel("test_level.txt");
 	levelNum = 3;
 
 	return true;

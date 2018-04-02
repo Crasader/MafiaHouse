@@ -236,6 +236,9 @@ void LevelSelectMenu::update(float deltaTime) {
 		else if (selectedLevel->optionNumber == 2) {
 			director->replaceScene(Stage2::createScene());
 		}
+		else if (selectedLevel->optionNumber == 3) {
+			director->replaceScene(Stage3::createScene());
+		}
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_BACKSPACE)) {//select currently selected level
 		director->replaceScene(MainMenu::createScene());

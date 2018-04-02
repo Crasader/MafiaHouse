@@ -41,8 +41,8 @@ public:
 class Stage3 : public Level
 {
 public:
-	CREATE_SCENE_FUNC(Stage2);
-	CREATE_FUNC(Stage2);
+	CREATE_SCENE_FUNC(Stage3);
+	CREATE_FUNC(Stage3);
 
 	RESET_LEVEL;
 
