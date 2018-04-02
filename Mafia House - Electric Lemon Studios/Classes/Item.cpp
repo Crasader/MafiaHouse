@@ -459,7 +459,7 @@ Gun::Gun() {
 	outlineName = "items/gun_outline.png";
 	Item::Item();
 	priority = 20;
-	maxHP = 3;
+	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
 	hitstun = 10 FRAMES;
@@ -621,7 +621,7 @@ Fist::Fist(){
 	startTime = 6 FRAMES;
 	attackTime = 12 FRAMES;
 	lagTime = 14 FRAMES;
-	range = 26;
+	range = 25;
 	rangeRadius = 90;
 	powerLevel = 0;
 }
@@ -654,7 +654,7 @@ Knife::Knife(){
 	itemFile = "items/knife.png";
 	outlineName = "items/knife_outline.png";
 	Item::Item();
-	priority = 1;
+	priority = 4;
 	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
@@ -666,7 +666,7 @@ Knife::Knife(){
 	startTime = 11 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 13 FRAMES;
-	range = 34;
+	range = 33;
 	rangeRadius = 100;
 	powerLevel = 5;
 	noiseLevel = 0.45f;
@@ -689,8 +689,8 @@ Key::Key(){
 	startTime = 6 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 7 FRAMES;
-	range = 26;
-	rangeRadius = 90;
+	range = 25;
+	rangeRadius = 80;
 	powerLevel = 0;
 	noiseLevel = 0.25f;
 }
@@ -700,11 +700,11 @@ Hammer::Hammer(){
 	itemFile = "items/hammer.png";
 	outlineName = "items/hammer_outline.png";
 	Item::Item();
-	priority = 3;
+	priority = 5;
 	maxHP = 3;
 	hp = maxHP;
 	dmg = 34;
-	knockback = Vec2(80, 0);
+	knockback = Vec2(70, 0);
 	hitstun = 24 FRAMES;
 	doorDmg = 34;
 	canBreakDoor = true;
@@ -713,7 +713,53 @@ Hammer::Hammer(){
 	startTime = 16 FRAMES;
 	attackTime = 20 FRAMES;
 	lagTime = 20 FRAMES;
-	range = 45;
+	range = 44;
+	rangeRadius = 130;
+	powerLevel = 10;
+	noiseLevel = 0.65f;
+}
+
+//Mug Class:
+Mug::Mug() {
+	itemFile = "items/mug.png";
+	outlineName = "items/mug_outline.png";
+	Item::Item();
+	priority = 2;
+	maxHP = 1;
+	hp = maxHP;
+	dmg = 50;
+	knockback = Vec2(10, 0);
+	hitstun = 8 FRAMES;
+	effect = KNOCKOUT;
+	attackType = SWING;
+	startTime = 10 FRAMES;
+	attackTime = 10 FRAMES;
+	lagTime = 10 FRAMES;
+	range = 20;
+	rangeRadius = 70;
+	powerLevel = 1;
+	noiseLevel = 1.0f;
+}
+
+//Crowbar Class:
+Crowbar::Crowbar() {
+	itemFile = "items/crowbar.png";
+	outlineName = "items/crowbar_outline.png";
+	Item::Item();
+	priority = 8;
+	maxHP = 4;
+	hp = maxHP;
+	dmg = 50;
+	knockback = Vec2(100, 0);
+	hitstun = 24 FRAMES;
+	doorDmg = 34;
+	canBreakDoor = true;
+	effect = KNOCKOUT;
+	attackType = SWING;
+	startTime = 25 FRAMES;
+	attackTime = 27 FRAMES;
+	lagTime = 25 FRAMES;
+	range = 44;
 	rangeRadius = 130;
 	powerLevel = 10;
 	noiseLevel = 0.65f;

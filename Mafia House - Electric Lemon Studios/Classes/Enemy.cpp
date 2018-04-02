@@ -142,6 +142,9 @@ void Enemy::pickUpItem(GameLayer* mainLayer) {
 
 			addChild(heldItem);
 			heldItem->initPickedUpItem();
+			if (isBoss == true) {
+				heldItem->setPosition(Vec2(57, 36));
+			}
 			inventory.push_back(heldItem);
 
 			itemToPickUp = NULL;
@@ -170,6 +173,9 @@ void Enemy::pickUpItem(GameLayer* mainLayer) {
 				heldItem = itemToPickUp;
 				addChild(heldItem);
 				heldItem->initPickedUpItem();
+				if (isBoss == true) {
+					heldItem->setPosition(Vec2(57, 36));
+				}
 			}
 			inventory.push_back(itemToPickUp);
 
@@ -211,6 +217,9 @@ void Enemy::replaceThrownItem() {
 			if (offhandItem->isKey == false) {
 				offhandItem->initHeldItem();
 				heldItem = offhandItem;//replace held item with offhand item
+				if (isBoss == true) {
+					heldItem->setPosition(Vec2(57, 36));
+				}
 				offhandItem = NULL;
 				if (inventory.size() > 1) {//they have another item in their inventory
 					for (int i = 0; i < inventory.size(); i++) {
@@ -229,6 +238,9 @@ void Enemy::replaceThrownItem() {
 						if (inventory[i] != offhandItem) {//the item is not their current offhand item
 							heldItem = inventory[i];
 							heldItem->initHeldItem();//replace held item with inventory item
+							if (isBoss == true) {
+								heldItem->setPosition(Vec2(57, 36));
+							}
 							addChild(heldItem);
 							break;
 						}
@@ -242,6 +254,9 @@ void Enemy::replaceThrownItem() {
 					if (inventory[i] != offhandItem) {//the item is not their current offhand item
 						heldItem = inventory[i];
 						heldItem->initHeldItem();//replace held item with inventory item
+						if (isBoss == true) {
+							heldItem->setPosition(Vec2(57, 36));
+						}
 						addChild(heldItem);
 						break;
 					}
@@ -1209,7 +1224,7 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 				hp -= 100;
 			}
 			else {
-				hp -= 34;
+				hp -= 50;
 			}
 		}
 		else {
@@ -1650,6 +1665,9 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 					enemy->removeChild(enemy->heldItem, true);
 					enemy->heldItem = enemy->inventory[i];
 					enemy->heldItem->initHeldItem();
+					if (enemy->isBoss == true) {
+						enemy->heldItem->setPosition(Vec2(57, 36));
+					}
 					enemy->addChild(enemy->heldItem);
 					break;
 				}
@@ -1986,6 +2004,9 @@ void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->heldItem->didHitWall = false;
 	//if (enemy->heldItem->hp <= 0) {enemy->breakItem(mainLayer);}//enemy items don't break
 	enemy->heldItem->initHeldItem();
+	if (enemy->isBoss == true) {
+		enemy->heldItem->setPosition(Vec2(57, 36));
+	}
 	if (enemy->heldItem == enemy->fist) {
 		enemy->heldItem = NULL;
 		enemy->removeChild(enemy->fist, true);
@@ -2508,6 +2529,9 @@ void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 	enemy->inAttackRange = false;
 	if (enemy->heldItem != NULL) {
 		enemy->heldItem->initHeldItem();
+		if (enemy->isBoss == true) {
+			enemy->heldItem->setPosition(Vec2(57, 36));
+		}
 	}
 	enemy->dropInventory(mainLayer);
 	enemy->knockedOutBody->setVelocity(enemy->getPhysicsBody()->getVelocity());

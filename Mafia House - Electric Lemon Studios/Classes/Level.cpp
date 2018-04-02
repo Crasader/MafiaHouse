@@ -149,6 +149,9 @@ void Level::onStart(float deltaTime){
 			enemies[i]->itemToPickUp->removeFromParent();//removing from main layer
 			enemies[i]->heldItem = enemies[i]->itemToPickUp;
 			enemies[i]->heldItem->initPickedUpItem();
+			if (enemies[i]->checkBoss() == true) {
+				enemies[i]->heldItem->setPosition(Vec2(57, 36));
+			}
 			enemies[i]->addChild(enemies[i]->heldItem);
 			enemies[i]->inventory.push_back(enemies[i]->heldItem);
 

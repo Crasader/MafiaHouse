@@ -192,3 +192,20 @@ public:
 	CREATE_WITH_FRAME(Hammer);
 	CREATE_WITH_FRAME_NAME(Hammer, "items/hammer.png");
 };
+
+class Mug : public Item
+{
+public:
+	Mug();
+	~Mug() {}
+	CREATE_WITH_FRAME(Mug);
+	CREATE_WITH_FRAME_NAME(Mug, "items/mug.png");
+};
+class Crowbar : public Item
+{
+public:
+	Crowbar();
+	~Crowbar() {}
+	CREATE_WITH_FRAME(Crowbar);
+	CREATE_WITH_FRAME_NAME(Crowbar, "items/crowbar.png");
+};
