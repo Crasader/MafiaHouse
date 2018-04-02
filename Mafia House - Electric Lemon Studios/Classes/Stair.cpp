@@ -276,24 +276,40 @@ Vent::~Vent() {
 }
 
 void Vent::initObject(int orient, Vec2 startPos) {
+	auto useRadius = Node::create();
+	useRadius->setName("vent_radius");
+
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
 		outlineName = "objects/vent/outline_h_closed.png";
 		outline2Name = "objects/vent/outline_h_opened.png";
+		opening = GameAnimation(OBJECT, "objects/vent/%03d.png", 5, 1 FRAMES, false);
+		closing = GameAnimation(OBJECT, "objects/vent/close/%03d.png", 5, 1 FRAMES, false);
 		useBox = Size(55 + radius / 2, radius + 10);
+		useRadius->setPosition(Vec2(25, 10));
+		//initializing physics body for enemies to walk on
+		auto body = PhysicsBody::createBox(size);//player is half height when crouching
+		body->setContactTestBitmask(0xFFFFFFFF);
+		body->setCategoryBitmask(1);
+		body->setCollisionBitmask(2);//only collide with enemies
+		body->setDynamic(false);
+		enemyWalkBody = Node::create();
+		enemyWalkBody->setPosition((Vec2(25, 10)));
+		enemyWalkBody->setPhysicsBody(body);
+		addChild(enemyWalkBody);
 	}
 	else if (orient == 1) {//vertical
 		size = Size(20, 50);
-		outlineName = "objects/vent/outline_v.png";
-		outline2Name = "objects/vent/outline_v.png";
+		outlineName = "objects/vent/outline_v_closed.png";
+		outline2Name = "objects/vent/outline_v_opened.png";
+		opening = GameAnimation(OBJECT, "objects/vent/vertical/%03d.png", 5, 1 FRAMES, false);
+		closing = GameAnimation(OBJECT, "objects/vent/vertical/close/%03d.png", 5, 1 FRAMES, false);
 		useBox = Size(radius, 55 + radius / 2);
+		useRadius->setPosition(Vec2(10, 25));
 	}
 	setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
-
-	auto useRadius = Node::create();
-	useRadius->setPosition(Vec2(25, 10));
-	useRadius->setName("vent_radius");
+	
 
 	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
@@ -309,16 +325,6 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	createOutline2(outline2Name);
 	outline2->setVisible(false);
 	outline2->setGlobalZOrder(2);
-	//initializing physics body for enemies to walk on
-	auto body = PhysicsBody::createBox(size);//player is half height when crouching
-	body->setContactTestBitmask(0xFFFFFFFF);
-	body->setCategoryBitmask(1);
-	body->setCollisionBitmask(2);//only collide with enemies
-	body->setDynamic(false);
-	enemyWalkBody = Node::create();
-	enemyWalkBody->setPosition((Vec2(25, 10)));
-	enemyWalkBody->setPhysicsBody(body);
-	addChild(enemyWalkBody);
 }
 
 void Vent::itemHit(Item* item) {

@@ -115,6 +115,7 @@ private:
 	};
 	class FallState : public State {
 	public:
+		FallState() { type = "fall"; }
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
@@ -223,8 +224,6 @@ private:
 
 	//animations:
 	GameAnimation moonwalk;
-	GameAnimation crouch;
-	GameAnimation standup;
 	GameAnimation crouchwalk;
 	GameAnimation climbing;
 	GameAnimation jumping;

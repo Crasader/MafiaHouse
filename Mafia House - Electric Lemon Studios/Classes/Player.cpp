@@ -19,24 +19,22 @@ Player::Player()
 	//max movement speed
 	baseSpeed = 70;
 	//initializing animations
-	stand = GameAnimation(STAND, "player/stand/%03d.png", 11, 10 FRAMES, true);
+	stand = GameAnimation(STAND, "player/stand/%03d.png", 24, 10.5 FRAMES, true);
 	moonwalk = GameAnimation(MOONWALK, "player/walk_moon/%03d.png", 7, 8 FRAMES, true);
 	walking = GameAnimation(WALK, "player/walk/%03d.png", 6, 10 FRAMES, true);
-	throwing = GameAnimation(THROW, "player/throw/%03d.png", 2, 10 FRAMES, false);
+	throwing = GameAnimation(THROW, "player/throw/%03d.png", 3, 5 FRAMES, false);
 	stab = GameAnimation(STAB, "player/stab/%03d.png", 2, 10 FRAMES, false);
-	swing = GameAnimation(SWING, "player/swing/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "player/swing/%03d.png", 4, 2 FRAMES, false);
 	crouchstab = GameAnimation(STAB, "player/crouch_stab/%03d.png", 2, 10 FRAMES, false);
-	crouchswing = GameAnimation(SWING, "player/crouch_swing/%03d.png", 2, 10 FRAMES, false);
+	crouchswing = GameAnimation(SWING, "player/crouch_swing/%03d.png", 2, 6 FRAMES, false);
 	fallstab = GameAnimation(FALLATK, "player/fall_stab/%03d.png", 1, 10 FRAMES, false);
 	fallswing = GameAnimation(FALLATK, "player/fall_swing/%03d.png", 1, 10 FRAMES, false);
-	crouch = GameAnimation(CROUCH, "player/crouch/%03d.png", 5, 10 FRAMES, false);
-	standup = GameAnimation(STANDUP, "player/stand_up/%03d.png", 5, 10 FRAMES, false);
-	crouchwalk = GameAnimation(CROUCHWALK, "player/crouch_walk/%03d.png", 5, 10 FRAMES, true);
+	crouchwalk = GameAnimation(CROUCHWALK, "player/crouch_walk/%03d.png", 4, 14 FRAMES, true);
 	climbing = GameAnimation(CLIMB, "player/climb/%03d.png", 5, 10 FRAMES, false);
 	jumping = GameAnimation(JUMP, "player/jump/%03d.png", 2, 10 FRAMES, false);
 	falling = GameAnimation(FALL, "player/fall/%03d.png", 1, 10 FRAMES, true);
-	rolling = GameAnimation(ROLL, "player/roll/%03d.png", 6, 6 FRAMES, false);
-	dying = GameAnimation(DEATH, "player/roll/%03d.png", 6, 6 FRAMES, false);
+	rolling = GameAnimation(ROLL, "player/roll/%03d.png", 5, 6 FRAMES, false);
+	dying = GameAnimation(DEATH, "player/roll/%03d.png", 5, 6 FRAMES, false);
 }
 Player::~Player(){}
 
@@ -154,12 +152,14 @@ void Player::walk(Input input, float time) {
 				turned = true;
 				flipX();
 			}
+			stopAnimation(STAND);
 			stopAnimation(MOONWALK);
 			startAnimation(WALK, walking);
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 1) {
 			if (getActionByTag(MOONWALK) == NULL) {
+				stopAnimation(STAND);
 				startAnimation(WALK, walking);
 			}
 			walking.action->setSpeed(moveSpeed);
@@ -167,6 +167,7 @@ void Player::walk(Input input, float time) {
 			//run walking animation
 		}
 		else if (moveDirection == 2) {
+			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
 			setSpeed(moveSpeed * 1.4f);
@@ -186,12 +187,14 @@ void Player::walk(Input input, float time) {
 				turned = false;
 				flipX();
 			}
+			stopAnimation(STAND);
 			stopAnimation(MOONWALK);
 			startAnimation(WALK, walking);
 			setSpeed(moveSpeed);
 		}
 		if (moveDirection == 2) {
 			if (getActionByTag(MOONWALK) == NULL) {
+				stopAnimation(STAND);
 				startAnimation(WALK, walking);
 			}
 			walking.action->setSpeed(moveSpeed);
@@ -199,6 +202,7 @@ void Player::walk(Input input, float time) {
 			//run walking animation
 		}
 		else if (moveDirection == 1) {
+			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
 			setSpeed(moveSpeed * 1.4f);
@@ -222,7 +226,7 @@ void Player::walk(Input input, float time) {
 		moveDirection = 0;
 		stopAnimation(WALK);
 		stopAnimation(MOONWALK);
-		setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+		startAnimation(STAND, stand);
 	}
 }
 
@@ -287,7 +291,7 @@ void Player::crouchWalk(Input input, float time) {
 		}
 		moveDirection = 0;
 		stopAnimation(CROUCHWALK);
-		setSpriteFrame(crouchwalk.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
+		setSpriteFrame(frameCache->getSpriteFrameByName("player/crouch_walk/crouch.png"));
 	}
 }
 
@@ -397,9 +401,11 @@ void Player::beginThrowItem(float time) {
 	if (heldItem != NULL) {
 		if (isCrouched == false) {
 			heldItem->prepareThrow(aimAngle);
+			setSpriteFrame(frameCache->getSpriteFrameByName("player/throw/start.png"));
 		}
 		else {
 			heldItem->prepareCrouchThrow(aimAngle);
+			setSpriteFrame(frameCache->getSpriteFrameByName("player/crouch_swing/start.png"));
 		}
 		aimMarker->setVisible(true);
 		float percentage = (time - attackPrepareTime) / (heldItem->getStartTime() * 2);
@@ -412,6 +418,12 @@ void Player::beginThrowItem(float time) {
 void Player::throwItem(GameLayer* mainLayer, float time) {
 	Character::throwItem(mainLayer, time);
 	aimMarker->setVisible(false);
+	if (isCrouched == false){
+		startAnimation(THROW, throwing);
+	}
+	else {
+		startAnimation(SWING, crouchswing);
+	}
 }
 
 void Player::beginUseItem(float angle) {
@@ -423,7 +435,7 @@ void Player::beginUseItem(float angle) {
 			}
 			else if (heldItem->getAttackType() == Item::SWING) {
 				heldItem->prepareSwing(angle);
-				setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+				setSpriteFrame(frameCache->getSpriteFrameByName("player/swing/start.png"));
 			}
 			else if (heldItem->getAttackType() == Item::SHOOT) {
 				heldItem->prepareShoot(angle);
@@ -437,7 +449,7 @@ void Player::beginUseItem(float angle) {
 			}
 			else if (heldItem->getAttackType() == Item::SWING) {
 				heldItem->prepareCrouchSwing(angle);
-				setSpriteFrame(crouchswing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+				setSpriteFrame(frameCache->getSpriteFrameByName("player/crouch_swing/start.png"));
 			}
 			else if (heldItem->getAttackType() == Item::SHOOT) {
 				heldItem->prepareCrouchShoot(angle);
@@ -457,7 +469,7 @@ void Player::useItem(float angle) {
 			}
 			else if (heldItem->getAttackType() == Item::SWING) {
 				heldItem->swingSequence(angle, flippedX);
-				setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+				startAnimation(SWING, swing);
 			}
 			else if (heldItem->getAttackType() == Item::SHOOT) {
 				heldItem->playerShoot(angle);
@@ -471,7 +483,7 @@ void Player::useItem(float angle) {
 			}
 			else if (heldItem->getAttackType() == Item::SWING) {
 				heldItem->swingSequence(angle, flippedX);
-				setSpriteFrame(crouchswing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+				startAnimation(SWING, crouchswing);
 			}
 			else if (heldItem->getAttackType() == Item::SHOOT) {
 				heldItem->playerShoot(angle);
@@ -486,7 +498,7 @@ void Player::finishUseItem() {
 			setSpriteFrame(stab.animation->getFrames().at(0)->getSpriteFrame());
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
-			setSpriteFrame(swing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+			setSpriteFrame(frameCache->getSpriteFrameByName("player/swing/end.png"));
 		}
 	}
 	else {
@@ -494,7 +506,7 @@ void Player::finishUseItem() {
 			setSpriteFrame(crouchstab.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
-			setSpriteFrame(crouchswing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
+			//setSpriteFrame(crouchswing.animation->getFrames().at(0)->getSpriteFrame());//first frame of the swing animation
 		}
 	}
 	heldItem->getPhysicsBody()->setEnabled(false);
@@ -646,7 +658,7 @@ void Player::wasHit(Item* item, float time) {
 			hp -= item->dmg;//taking damage from attack
 		}
 		hp = hp < 0 ? 0 : hp;
-		if (touchingWall == false) {
+		if (touchingWall == false && touchingFloor == true) {
 			stop();
 			moveAbsoluteNoLimit(item->knockback);
 		}
@@ -731,6 +743,7 @@ void Player::State::exit(Player* player, GameLayer* mainLayer, float time) {}
 void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float time) {
 	player->isCrouched = false;
 	player->stopAllActions();
+	player->startAnimation(STAND, player->stand);
 	if (player->prevState->type != "attack" && player->prevState->type != "throw" && player->prevState->type != "hide") {
 		player->mainBody->setVelocity(player->getPhysicsBody()->getVelocity());
 		player->stop();
@@ -746,7 +759,6 @@ void Player::NeutralState::enter(Player* player, GameLayer* mainLayer, float tim
 		}
 		//player->startAnimation(STANDUP, player->standup);
 	}
-	player->setSpriteFrame(player->stand.animation->getFrames().at(0)->getSpriteFrame());
 	player->moveSpeed = 1.0f;
 	player->setSpeed(player->moveSpeed);
 }
@@ -797,7 +809,8 @@ Player::State* Player::NeutralState::handleInput(Player* player, GameLayer* main
 	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
 		if (player->wasFalling == true) {
 			player->wasFalling = false;
-			player->walk(STOP, time);
+			player->stop();
+			player->moveDirection = 0;
 		}
 		player->walk(input, time);
 	}
@@ -838,7 +851,12 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 		player->stop();
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
-		player->getPhysicsBody()->setPositionOffset(Vec2(0, -27.5));
+		if (player->prevState->type == "fall") {
+			player->getPhysicsBody()->setPositionOffset(Vec2(0, -35));
+		}
+		else {
+			player->getPhysicsBody()->setPositionOffset(Vec2(0, -27.5));
+		}
 		player->pickUpRadius->setPosition(Vec2(35, 15));
 		if (player->heldItem != NULL) {
 			player->heldItem->initCrouchHeldItem();
@@ -848,7 +866,7 @@ void Player::CrouchState::enter(Player* player, GameLayer* mainLayer, float time
 		}
 		//player->startAnimation(CROUCH, player->crouch);
 	}
-	player->setSpriteFrame(player->crouchwalk.animation->getFrames().at(0)->getSpriteFrame());
+	player->setSpriteFrame(player->frameCache->getSpriteFrameByName("player/crouch_walk/crouch.png"));
 	player->moveSpeed = 0.5f;
 	player->setSpeed(player->moveSpeed);
 }
@@ -897,9 +915,15 @@ Player::State* Player::CrouchState::handleInput(Player* player, GameLayer* mainL
 		return new HideState;
 	}
 	if (input == MOVE_LEFT || input == MOVE_RIGHT || input == STOP) {
+		if (player->wasFalling == true) {
+			player->wasFalling = false;
+			player->stop();
+			player->moveDirection = 0;
+		}
 		if (player->wasClimbing == true) {
 			player->wasClimbing = false;
-			player->crouchWalk(STOP, time);
+			player->stop();
+			player->moveDirection = 0;
 		}
 		player->crouchWalk(input, time);
 	}
@@ -991,7 +1015,9 @@ Player::State* Player::FallState::handleInput(Player* player, GameLayer* mainLay
 		player->dropItem(mainLayer);
 	}
 	if (input == USE_ITEM) {
-		return new AttackState;
+		if (player->getPhysicsBody()->getVelocity().y < -49) {
+			return new AttackState;
+		}
 	}
 	if (input == PICKUP) {
 		if (player->heldBody == NULL) {
@@ -1035,7 +1061,7 @@ void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time)
 Player::State* Player::ClimbState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->checkDead() == true) { return new DeathState; }
 	if (time - player->startClimbTime <= player->startClimbDelay) {
-		if (player->getPositionY() + player->getSize().height < player->climbObject->getPositionY() + player->climbObject->getContentSize().height / 2) {
+		if (player->getPositionY() + player->getSize().height < (player->climbObject->getPositionY() + player->climbObject->getContentSize().height / 2) + 1) {
 			player->move(Vec2(0, 200));
 		}
 		else {
@@ -1235,6 +1261,7 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 		//player->moveAbsolute(-player->heldItem->knockback / 5);
 	}
 	if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -50) {//player is falling
+		player->wasFalling = true;
 		player->inFallingAttack = true;
 		player->attackRelease = true;
 		player->fallAttack();
@@ -1287,7 +1314,8 @@ Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainL
 	//input for releasing attack
 	if (input == USE_RELEASE) {
 		player->attackRelease = true;
-		player->walkPrepareAttack(STOP, time);
+		//player->walkPrepareAttack(STOP, time);
+		player->stop();
 	}
 	//only register inputs if player is still preparing attack
 	if (player->attackRelease == false) {

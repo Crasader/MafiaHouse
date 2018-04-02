@@ -169,6 +169,8 @@ void Level::onStart(float deltaTime){
 		}
 	}
 
+	player->startAnimation(STAND, player->stand);
+
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
 
 	//physics debug drawing:
@@ -896,7 +898,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and physical object
 		if (a->getName() == "player" && b->getName() == "phys_object")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 4)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 6)) {//only collide if player is above object
 				player->touchingFloor = true;
 				solve.setRestitution(0.0f);
 				return true;
@@ -908,7 +910,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "phys_object" && b->getName() == "player")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 4)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 6)) {//only collide if player is above object
 				player->touchingFloor = true;
 				solve.setRestitution(0.0f);
 				return true;

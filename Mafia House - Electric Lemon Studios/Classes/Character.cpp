@@ -94,6 +94,7 @@ void Character::throwItem(GameLayer* mainLayer, float time) {
 void Character::beginThrowItem() {
 	if (heldItem != NULL) {
 		heldItem->prepareThrow(aimAngle);
+
 	}
 }
 
@@ -140,7 +141,7 @@ void Character::useItem(float angle) {
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
 			heldItem->swingSequence(angle, flippedX);
-			setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//run animation here rather than setting frame if there's more than 2 frames for swinging
+			startAnimation(SWING, swing);
 		}
 	}
 }

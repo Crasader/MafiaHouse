@@ -16,7 +16,7 @@
 # player: player, x_coordinate, y_coordinate
 #
 175
-700|bg,Hallway.png|exit,left|door,right|vent,top,open,300|phys_object,table,250,20|hide_object,plant,100,0|item,hammer,100,10|item,key,600,60|player,50,0|enemy,thug,200,0,NONE
+700|bg,Hallway.png|exit,left|door,right|vent,top,open,300|phys_object,table,250,20|hide_object,plant,100,0|item,hammer,100,10|item,key,600,60|player,50,0
 600|bg,Kitchen.png|exit,right|door,left|stair,1,A,550,0|phys_object,table,300,0|item,knife,325,50|node,200,3,3.0,A|enemy,guard,200,0,NONE,gun
 FLOOR_END
 200

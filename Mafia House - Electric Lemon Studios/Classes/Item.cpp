@@ -439,13 +439,13 @@ void Item::swingSequence(float angle, bool flip) {
 void Item::fallAttack() {
 	getPhysicsBody()->setEnabled(true);
 	if (attackType == STAB) {
-		setPosition(Vec2(50, 20));
+		setPosition(Vec2(52, 35));
 		setRotation(90);
 		setAnchorPoint(Vec2(0, 0.5));
 	}
 	else if (attackType == SWING || attackType == SHOOT) {
-		setPosition(Vec2(60, 20));
-		setRotation(10);
+		setPosition(Vec2(60, 35));
+		setRotation(20);
 		setAnchorPoint(Vec2(0, 0.5));
 	}
 }
