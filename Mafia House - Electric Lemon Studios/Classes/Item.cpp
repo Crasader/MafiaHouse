@@ -67,6 +67,7 @@ void Item::initPickedUpItem() {
 	prevState = state;
 	state = HELD;
 	initHeldItem();
+	setGlobalZOrder(5);
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	pickUpRadius->getPhysicsBody()->setRotationOffset(0);
@@ -199,6 +200,7 @@ void Item::initThrownItem() {
 	state = THROWN;
 	didHitWall = false;
 	enemyItem = false;
+	setGlobalZOrder(6);
 	outline->setVisible(true);
 	outline->setColor(ccc3(210, 0, 255));//purple
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
@@ -227,6 +229,7 @@ void Item::initGroundItem() {
 	state = GROUND;
 	didHitWall = false;
 	enemyItem = false;
+	setGlobalZOrder(6);
 	outline->setVisible(true);
 	getPhysicsBody()->setCategoryBitmask(32);
 	getPhysicsBody()->setCollisionBitmask(40);

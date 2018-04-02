@@ -898,7 +898,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//player and physical object
 		if (a->getName() == "player" && b->getName() == "phys_object")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->getContentSize().height - 6)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(b)->getPositionY() + static_cast<PhysObject*>(b)->surfaceHeight - 5)) {//only collide if player is above object
 				player->touchingFloor = true;
 				solve.setRestitution(0.0f);
 				return true;
@@ -910,7 +910,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "phys_object" && b->getName() == "player")
 		{
-			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->getContentSize().height - 6)) {//only collide if player is above object
+			if (player->getPositionY() >= (static_cast<PhysObject*>(a)->getPositionY() + static_cast<PhysObject*>(a)->surfaceHeight - 5)) {//only collide if player is above object
 				player->touchingFloor = true;
 				solve.setRestitution(0.0f);
 				return true;
@@ -1725,6 +1725,9 @@ void Level::createLevel(Vec2 position, float levelWidth)
 		int totalWidth = 0;
 		for (int j = 0; j < mainLayer->floors[i].rooms.size(); j++) {
 			totalWidth += mainLayer->floors[i].rooms[j]->width;
+			if (j != mainLayer->floors[i].rooms.size() - 1) {//not the last room on the floor
+				totalWidth += 20;//add thickness of walls
+			}
 		}
 		if (i == 0) {
 			firstFloorWidth = totalWidth;
@@ -1929,6 +1932,9 @@ bool Level::initLevel(string filename){
 				if (pieces[1] == "table") {
 					physObject = Table::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "wall_shelf") {
+					physObject = WallShelf::createWithSpriteFrameName();
+				}
 				else if (pieces[1] == "vent_cover") {
 					physObject = VentCover::createWithSpriteFrameName();
 				}
@@ -1979,25 +1985,27 @@ bool Level::initLevel(string filename){
 					enemy->setPathTag(pieces[4]);//"STAND_LEFT", "STAND_RIGHT", "STAND_SWITCH",  indicate the enemy will stand still facing that direction, switch turns in both direcitons
 				}
 				if (pieces.size() > 5) {
-					Item* item;
-					if (pieces[5] == "knife") {
-						item = Knife::createWithSpriteFrameName();
+					if (pieces[5] != "none") {
+						Item* item;
+						if (pieces[5] == "knife") {
+							item = Knife::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "key") {
+							item = Key::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "hammer") {
+							item = Hammer::createWithSpriteFrameName();
+						}
+						else if (pieces[5] == "gun") {
+							item = Gun::createWithSpriteFrameName();
+						}
+						item->initObject();
+						item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
+						item->startRoom = Vec2(roomNum, floorNum);
+						item->startHeld();
+						mainLayer->items.push_back(item);
+						enemy->itemToPickUp = item;
 					}
-					else if (pieces[5] == "key") {
-						item = Key::createWithSpriteFrameName();
-					}
-					else if (pieces[5] == "hammer") {
-						item = Hammer::createWithSpriteFrameName();
-					}
-					else if (pieces[5] == "gun") {
-						item = Gun::createWithSpriteFrameName();
-					}
-					item->initObject();
-					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
-					item->startRoom = Vec2(roomNum, floorNum);
-					item->startHeld();
-					mainLayer->items.push_back(item);
-					enemy->itemToPickUp = item;
 				}
 				if (pieces.size() > 6) {
 					Item* item;

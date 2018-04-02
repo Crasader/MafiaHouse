@@ -431,6 +431,10 @@ void Enemy::followPath(GameLayer* mainLayer, float time) {
 		}
 	}
 	else if (reachedNode == true){//reached node == true
+		if (getPhysicsBody()->getVelocity().x < 15 && getPhysicsBody()->getVelocity().x > -15) {//enemy has stopped moving
+			stopAnimation(WALK);
+			startAnimation(STAND, stand);
+		}
 		if (((time - reachedNodeTime) >= (pathNodes.at(pathNum)->waitTime)) && (pathNum < (pathNodes.size() - 1)) && (pathNum > 0)) {//if this is not the last node in the list
 			pathNum+= pathIterator;
 			reachedNode = false;
@@ -2584,7 +2588,7 @@ void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->isDead = true;
 	//create dead body here
 	DeadBody* newBody = DeadBody::createWithSpriteFrameName(enemy->deadBodyName);
-	newBody->initObject(enemy->getPosition(), enemy->deadBodyOutlineName);
+	newBody->initObject(enemy->getPosition() + Vec2(-enemy->getSize().width / 2, 0), enemy->deadBodyOutlineName);
 	mainLayer->addChild(newBody);
 	mainLayer->bodies.push_back(newBody);
 }

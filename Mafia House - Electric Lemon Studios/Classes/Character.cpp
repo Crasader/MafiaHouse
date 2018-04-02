@@ -168,16 +168,29 @@ void Character::useDoor() {
 }
 
 void Character::useStair(GameLayer* mainLayer) {
-	/*auto callback = CallFunc::create([this, mainLayer]() {
-		if (stairToUse != NULL) {
-			stairToUse->use(this, mainLayer);
-		}
-	});
-	auto sequence = Sequence::create(Animate::create(stairuse.animation), callback, nullptr);//runs the stair use animation and then has character take the stairs
-	*/
 	if (stairToUse != NULL) {
-		stairToUse->use(this, mainLayer);
+		stop();
+		auto callback1 = CallFunc::create([this, mainLayer]() {
+			if (stairToUse != NULL) {
+				stairToUse->setSpriteFrame(frameCache->getSpriteFrameByName("objects/stairdoor_open.png"));
+				stairToUse->numLabel->setVisible(false);
+			}
+		});
+		auto callback2 = CallFunc::create([this, mainLayer]() {
+			if (stairToUse != NULL) {
+				stairToUse->use(this, mainLayer);
+			}
+		});
+		auto wait = MoveBy::create(0.2f, Vec2(0, 0));
+		auto sequence = Sequence::create(callback1, wait, callback2, nullptr);//runs the stair use animation and then has character take the stairs
+		if (getActionByTag(99) == NULL) {
+			runAction(sequence)->setTag(99);
+		}
 	}
+
+	/*if (stairToUse != NULL) {
+		stairToUse->use(this, mainLayer);
+	}*/
 }
 
 bool Character::checkDead() {

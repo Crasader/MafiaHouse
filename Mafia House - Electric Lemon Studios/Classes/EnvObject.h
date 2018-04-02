@@ -26,6 +26,8 @@ public:
 
 	void initHideBox();
 
+	float surfaceHeight;
+
 protected:
 	Size surfaceSize;
 	Vec2 surfaceOffset;
@@ -40,9 +42,16 @@ public:
 	~Table() {}
 	CREATE_WITH_FRAME(Table);
 	CREATE_WITH_FRAME_NAME(Table, "objects/fancy_table.png");
-
-	void initObject();
 };
+
+class WallShelf : public PhysObject {
+public:
+	WallShelf();
+	~WallShelf() {}
+	CREATE_WITH_FRAME(WallShelf);
+	CREATE_WITH_FRAME_NAME(WallShelf, "objects/wall_shelf.png");
+};
+
 
 class VentCover : public PhysObject {
 public:
@@ -50,6 +59,4 @@ public:
 	~VentCover() {}
 	CREATE_WITH_FRAME(VentCover);
 	CREATE_WITH_FRAME_NAME(VentCover, "objects/vent_cover.png");
-
-	void initObject();
 };

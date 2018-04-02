@@ -228,13 +228,13 @@ void LevelSelectMenu::update(float deltaTime) {
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_SPACE) || INPUTS->getKeyPress(KeyCode::KEY_ENTER)) {//select currently selected level
 		if (selectedLevel->optionNumber == 0) {
-			director->replaceScene(Stage1::createScene());
+			director->replaceScene(Tutorial1::createScene());
 		}
 		else if (selectedLevel->optionNumber == 1) {
-			director->replaceScene(Stage2::createScene());
+			director->replaceScene(Stage1::createScene());
 		}
 		else if (selectedLevel->optionNumber == 2) {
-			director->replaceScene(Stage3::createScene());
+			director->replaceScene(Stage2::createScene());
 		}
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_BACKSPACE)) {//select currently selected level

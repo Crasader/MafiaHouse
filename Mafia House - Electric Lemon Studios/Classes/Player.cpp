@@ -299,7 +299,7 @@ void Player::jump() {
 	if (touchingFloor == true) {
 		auto callback = CallFunc::create([this]() {
 			hasJumped = true;
-			move(Vec2(0, 110));//apply force straight up
+			move(Vec2(0, 120));//apply force straight up
 		});
 		auto wait = MoveBy::create(10 FRAMES, Vec2(0, 0));
 		auto sequence = Sequence::create(wait, callback, nullptr);//runs the stair use animation and then has character take the stairs
@@ -540,6 +540,7 @@ void Player::hide() {
 			wasSeen = true;
 		}
 		hidden = true;
+		setOpacity(200);
 		setTag(getTag() + 10);//for enemy vision rays
 		setGlobalZOrder(2);
 		if (heldItem != NULL) {
@@ -557,6 +558,7 @@ void Player::hide() {
 	else {
 		hidden = false;
 		wasSeen = false;
+		setOpacity(255);
 		setTag(getTag() - 10);//for enemy vision rays
 		setGlobalZOrder(5);
 		if (heldItem != NULL) {
@@ -1002,7 +1004,7 @@ Player::State* Player::FallState::update(Player* player, GameLayer* mainLayer, f
 		player->setPhysicsBody(player->crouchBody);
 		player->bodySize = player->crouchSize;
 		player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
-		player->createNoise(25, 0.6, time, player->getPosition() + Vec2(player->getSize().width / 2, 0), Vec2(player->currentFloor, player->currentRoom), "player_land", &mainLayer->noises);
+		player->createNoise(25, 0.5, time, player->getPosition() + Vec2(player->getSize().width / 2, 0), Vec2(player->currentFloor, player->currentRoom), "player_land", &mainLayer->noises);
 		return new CrouchState;
 	}
 	//if (player->touchingFloor == true && player->getActionByTag(LAND) == NULL) {//player's landing animation has finished
@@ -1047,7 +1049,7 @@ void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time)
 	player->stopX();
 	player->getPhysicsBody()->setGravityEnable(false);
 	player->bodySize = player->crouchSize;
-	player->getPhysicsBody()->setPositionOffset(Vec2(0, -28));
+	player->getPhysicsBody()->setPositionOffset(Vec2(0, 0));
 	player->maxSpeedY = 100;
 	player->startClimbTime = time;
 	player->startAnimation(CLIMB, player->climbing);
@@ -1061,7 +1063,7 @@ void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time)
 Player::State* Player::ClimbState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->checkDead() == true) { return new DeathState; }
 	if (time - player->startClimbTime <= player->startClimbDelay) {
-		if (player->getPositionY() + player->getSize().height < (player->climbObject->getPositionY() + player->climbObject->getContentSize().height / 2) + 1) {
+		if (player->getPositionY() + player->getSize().height < player->climbObject->getPositionY() + player->climbObject->surfaceHeight / 2) {
 			player->move(Vec2(0, 200));
 		}
 		else {
@@ -1070,7 +1072,7 @@ Player::State* Player::ClimbState::update(Player* player, GameLayer* mainLayer, 
 	}
 	else{
 		player->maxSpeedY = 80;
-		if (player->getPositionY() < player->climbObject->getPositionY() + player->climbObject->getContentSize().height) {
+		if (player->getPositionY() < player->climbObject->getPositionY() + player->climbObject->surfaceHeight) {
 			player->move(Vec2(0, 100));
 		}
 		else {

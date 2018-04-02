@@ -87,10 +87,17 @@ Table::Table(){
 	surfaceOffset = Vec2(0, 24);
 	hideBoxSize = Size(92, 50);
 	hideBoxPosition = Vec2(70, 25);
+	surfaceHeight = 55;
 }
 
-void Table::initObject() {
-	PhysObject::initObject();
+//Wall Shelf:
+WallShelf::WallShelf() {
+	PhysObject::PhysObject();
+	surfaceSize = Size(120, 15);
+	surfaceOffset = Vec2(0, -5);
+	hideBoxSize = Size(80, 5);
+	hideBoxPosition = Vec2(60, 20);
+	surfaceHeight = 10;
 }
 
 //Vent Cover:
@@ -100,8 +107,5 @@ VentCover::VentCover() {
 	surfaceOffset = Vec2(0, 0);
 	hideBoxSize = Size(50, 5);
 	hideBoxPosition = Vec2(30, -3);
-}
-
-void VentCover::initObject() {
-	PhysObject::initObject();
+	surfaceHeight = 5;
 }

@@ -54,7 +54,7 @@ public:
 	bool hasRightDoor = false;
 	bool leftLocked = false;
 
-	string bgName = "guestRoom.png";
+	string bgName = "blank.png";
 
 	vector<DoorData> rightDoors;//the locations of the vents and doors on the right wall
 	vector<DoorData> leftDoors;//the locations of the vents and doors on the left wall

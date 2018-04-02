@@ -48,3 +48,14 @@ public:
 
 	bool init();
 };
+
+class Stage4 : public Level
+{
+public:
+	CREATE_SCENE_FUNC(Stage4);
+	CREATE_FUNC(Stage4);
+
+	RESET_LEVEL;
+
+	bool init();
+};

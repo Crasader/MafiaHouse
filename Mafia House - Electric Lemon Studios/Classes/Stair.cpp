@@ -12,13 +12,13 @@ Stair::Stair() {
 	category = 16;
 	collision = 3;
 
-	outlineName = "objects/stair_outline.png";
+	outlineName = "objects/stairdoor_outline.png";
 }
 Stair::~Stair() {
 }
 
 void Stair::initObject() {
-	setContentSize(stairSize);//won't be needed once we have a proper sprite
+	//setContentSize(stairSize);//won't be needed once we have a proper sprite
 
 	GameObject::initObject();
 	//use type to set tag of the stairway
@@ -32,6 +32,12 @@ void Stair::initObject() {
 	createOutline(outlineName);
 	outline->setColor(ccc3(255, 235, 50));//yellow
 	outline->setVisible(false);
+
+	numLabel = Label::createWithTTF(std::to_string(pairNum), "fonts/pixelFJ8pt1__.ttf", 30);
+	numLabel->getFontAtlas()->setAliasTexParameters();
+	numLabel->setPositionNormalized(Vec2(0.5, 0.5));
+	numLabel->setGlobalZOrder(2);
+	addChild(numLabel);
 }
 
 void Stair::playerInRange() {
@@ -47,6 +53,8 @@ void Stair::playerInRange() {
 }
 
 void Stair::use(GameObject* user, Node* mainLayer) {
+	setSpriteFrame(frameCache->getSpriteFrameByName("objects/stairdoor.png"));
+	numLabel->setVisible(true);
 	user->stop();
 	if (type == 1) {
 		user->setPosition(mainLayer->getChildByTag(getTag() + 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 0));
@@ -285,7 +293,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		outline2Name = "objects/vent/outline_h_opened.png";
 		opening = GameAnimation(OBJECT, "objects/vent/%03d.png", 5, 1 FRAMES, false);
 		closing = GameAnimation(OBJECT, "objects/vent/close/%03d.png", 5, 1 FRAMES, false);
-		useBox = Size(55 + radius / 2, radius + 10);
+		useBox = Size(55 + radius / 2, radius + 20);
 		useRadius->setPosition(Vec2(25, 10));
 		//initializing physics body for enemies to walk on
 		auto body = PhysicsBody::createBox(size);//player is half height when crouching
@@ -353,7 +361,7 @@ void Vent::updateColour() {
 		float inversePercentage = abs(percentage - 1);//inverts the percentage
 
 		if (locked == false) {
-			setColor(ccc3(255 * inversePercentage + 120, 210 * percentage, 90 * percentage));
+			setColor(ccc3(225 * percentage, 225 * percentage, 225 * percentage));
 		}
 		else {
 			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));

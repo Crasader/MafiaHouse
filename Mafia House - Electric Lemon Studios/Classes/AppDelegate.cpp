@@ -75,12 +75,13 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
 	//for testing, go straight into level
 	auto level1 = Stage1::createScene();
-	director->runWithScene(level1);
+	auto tutorial1 = Tutorial1::createScene();
+	//director->runWithScene(tutorial1);
 
 	//testing the level select screen
 	auto mainMenu = MainMenu::createScene();
 	auto levelSelect = LevelSelectMenu::createScene();
-	//director->runWithScene(mainMenu);
+	director->runWithScene(mainMenu);
 
 	//Set up the input handler
 	INPUTS->init();

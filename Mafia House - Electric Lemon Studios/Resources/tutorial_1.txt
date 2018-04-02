@@ -1,0 +1,11 @@
+240
+200|door,right|player,0,0
+600|door,left|door,right,locked|phys_object,table,50,0|item,knife,75,50|item,hammer,125,0|enemy,thug,250,0,STAND_RIGHT|enemy,thug,400,0,STAND_RIGHT|item,key,550,0
+900|door,left|door,right,locked|hide_object,hedge,75,0|enemy,thug,275,0,STAND_LEFT,none,key|phys_object,table,600,0|enemy,thug,800,0,A,hammer|node,500,1,4.0,A|node,800,2,4.0,A
+300|door,left|vent,top,open,150|phys_object,wall_shelf,60,120
+350|stair,1,A,40,0|item,knife,60,0|enemy,boss,250,0,STAND_LEFT|exit,right
+FLOOR_END
+200
+1740|bg,black.png
+670|stair,1,B,525,0|vent,bot,open,150|phys_object,vent_cover,135,-1
+FLOOR_END
