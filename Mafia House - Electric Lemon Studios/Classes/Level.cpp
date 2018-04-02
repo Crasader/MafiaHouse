@@ -92,6 +92,12 @@ void Level::setup(){
 	pauseLabel->setPosition(Vec2(275, -239));
 	pauseLayer->addChild(pauseLabel);
 
+	darkenScreen = Sprite::create("backgrounds/black.png");
+	darkenScreen->setContentSize(director->getVisibleSize());
+	darkenScreen->setOpacity(155);
+	darkenScreen->setGlobalZOrder(11);
+	pauseLayer->addChild(darkenScreen);
+
 	//Invisible Node for the camera to follow
 	camPos = Node::create();
 	mainLayer->addChild(camPos);
@@ -272,6 +278,15 @@ void Level::getStats(float deltaTime) {
 	completeTimeDisplay->setVisible(false);
 	hudLayer->addChild(completeTimeDisplay);
 
+	if (gotBestTime == true) {
+		bestTime = Sprite::create("menu/bestTime.png");
+		bestTime->getTexture()->setTexParameters(texParams);
+		bestTime->setGlobalZOrder(30);
+		bestTime->setPosition(Vec2(192, -70));
+		bestTime->setVisible(false);
+		hudLayer->addChild(bestTime);
+	}
+
 	numKilledDisplay = Label::createWithTTF("ENEMIES KILLED: " + std::to_string(numKilled), "fonts/pixelFJ8pt1__.ttf", 20);
 	numKilledDisplay->getFontAtlas()->setAliasTexParameters();
 	numKilledDisplay->setGlobalZOrder(30);
@@ -323,6 +338,12 @@ void Level::getStats(float deltaTime) {
 	continueLabel->setVisible(false);
 	hudLayer->addChild(continueLabel);
 
+	darkenScreen = Sprite::create("backgrounds/black.png");
+	darkenScreen->setContentSize(director->getVisibleSize());
+	darkenScreen->setOpacity(155);
+	darkenScreen->setGlobalZOrder(11);
+	hudLayer->addChild(darkenScreen);
+
 	runAction(MoveBy::create(1.0f, Vec2(0, 0)))->setTag(0);
 	runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
 	runAction(MoveBy::create(3.0f, Vec2(0, 0)))->setTag(2);
@@ -351,6 +372,9 @@ void Level::onEnd(float deltaTime) {
 		silentSpectreLabel->setVisible(true);
 	}
 	if (getActionByTag(4) == NULL) {
+		if (gotBestTime == true) {
+			bestTime->setVisible(true);
+		}
 		if (fullAssassin == true) {
 			achievement1->setVisible(true);
 		}
@@ -405,6 +429,11 @@ void Level::gameOver(float deltaTime) {
 		gameOverScreen->setOpacity(0);
 		gameOverScreen->runAction(FadeIn::create(4.0f))->setTag(1);
 		hudLayer->addChild(gameOverScreen);
+		darkenScreen = Sprite::create("backgrounds/black.png");
+		darkenScreen->setContentSize(director->getVisibleSize());
+		darkenScreen->setOpacity(155);
+		darkenScreen->setGlobalZOrder(11);
+		hudLayer->addChild(darkenScreen);
 		initGameOver = true;
 	}
 	if (gameOverScreen->getActionByTag(1) == NULL && initGameOverLabels == false) {

@@ -154,11 +154,12 @@ void Door::itemHit(Item* item) {
 		if (item->isKey == true) {//item is a key
 			if (locked == true) {
 				unlock();
+				item->hp -= 4;//keys can only be used once to unlock a door
 			}
 			else {
 				lock();//keys can lock doors
+				item->hp -= 2;//keys can only be used twice to unlock a door
 			}
-			item->hp -= 2;//keys can only be used twice
 			item->didHitWall = false;
 		}
 		else if (item->canBreakDoor == true || item->enemyItem == true) {//all enemy items will break down doors
@@ -453,14 +454,16 @@ void Exit::updateColour() {
 
 bool Exit::use() {
 	if (canOpen == true) {
-		exitBox->getPhysicsBody()->setEnabled(true);
-		isOpen = true;
-		getPhysicsBody()->setEnabled(false);
-		setGlobalZOrder(2);
-		setOpacity(100);
-		outline->setGlobalZOrder(2);
-		outline->setOpacity(100);
-		return true;
+		if (isOpen == false) {
+			exitBox->getPhysicsBody()->setEnabled(true);
+			isOpen = true;
+			getPhysicsBody()->setEnabled(false);
+			setGlobalZOrder(2);
+			setOpacity(100);
+			outline->setVisible(false);
+			startAnimation(OBJECT, opening);
+			return true;
+		}
 	}
 	return false;
 }
