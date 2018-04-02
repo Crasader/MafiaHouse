@@ -8,7 +8,7 @@ public:
 	CREATE_WITH_FRAME(DeadBody);
 	CREATE_WITH_FRAME_NAME(DeadBody, "enemy/thug/dead.png");
 
-	void initObject(Vec2 startPos = Vec2(0, 0));
+	void initObject(Vec2 startPos = Vec2(0, 0), string bodyOutlineName = "enemy/thug/dead_outline.png");
 	void initRadius();
 
 	void playerInRange(Node* player);

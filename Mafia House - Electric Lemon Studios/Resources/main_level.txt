@@ -17,7 +17,7 @@
 #
 250
 700|bg,Hallway.png|exit,left|door,right,locked|vent,top,open,300|hide_object,plant,300,0|item,hammer,100,10|player,50,0|enemy,thug,450,0,STAND_SWITCH,key
-600|bg,Kitchen.png|exit,right|door,left|stair,1,A,550,0|item,knife,325,0|node,200,3,3.0,A|enemy,guard,200,0,NONE,gun|hide_object,Table,100,0
+600|bg,Kitchen.png|exit,right|door,left|stair,1,A,550,0|item,knife,325,0|node,200,3,3.0,A|enemy,guard,200,0,NONE,gun|hide_object,table,100,0
 FLOOR_END
 250
 500|bg,LivingRoom.png|door,right|vent,bot,open,300|phys_object,vent_cover,285,-2|stair,2,A,25,0|enemy,thug,400,0,LEFT|hide_object,couch,320,0

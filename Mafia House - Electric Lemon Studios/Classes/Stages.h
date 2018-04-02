@@ -5,6 +5,17 @@
 #include "Level.h"
 USING_NS_CC;
 
+class Tutorial1 : public Level
+{
+public:
+	CREATE_SCENE_FUNC(Stage1);
+	CREATE_FUNC(Stage1);
+
+	RESET_LEVEL;
+
+	bool init();
+};
+
 class Stage1 : public Level
 {
 public:

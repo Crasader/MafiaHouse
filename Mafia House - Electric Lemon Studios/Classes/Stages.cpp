@@ -1,5 +1,21 @@
 #include "Stages.h"
 
+bool Tutorial1::init()
+{
+	if (!Scene::initWithPhysics()) { return false; }
+
+	//initlializes stuff that is the same for all levels
+	setup();
+	//initialize background
+	setBackground("backgrounds/back.png", 0.5f);
+	//create level
+	//initLevel("level_1_test.txt");
+	initLevel("tutorial_1.txt");
+	levelNum = 0;
+
+	return true;
+}
+
 bool Stage1::init()
 {
 	if (!Scene::initWithPhysics()) { return false; }

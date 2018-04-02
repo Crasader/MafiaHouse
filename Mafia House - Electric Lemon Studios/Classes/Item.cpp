@@ -250,7 +250,7 @@ bool Item::checkBroken() {
 
 void Item::breakItem() {
 	auto emitter = ParticleExplosion::create();
-	emitter->setStartColor(Color4F(50, 50, 255, 1));
+	emitter->setStartColor(Color4F(30, 30, 255, 1));
 	emitter->setEndColor(Color4F(0, 0, 255, 1));//blue
 	emitter->setStartSize(3.0f);
 	emitter->setStartSizeVar(1.0f);
@@ -465,7 +465,7 @@ Gun::Gun() {
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KNOCKOUT;
 	attackType = SHOOT;
-	startTime = 30 FRAMES;
+	startTime = 45 FRAMES;
 	attackTime = 30 FRAMES;
 	lagTime = 30 FRAMES;
 	range = 300;
@@ -542,9 +542,6 @@ void Item::enemyShoot(Vec2 target) {
 	if (hitTarget == false) {
 		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//ray cast again
 	}
-	if (hitTarget == false) {
-		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, target, nullptr);//triple ray cast
-	}
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = target * 2;//for drawing bullet line
 	}
@@ -600,9 +597,6 @@ void Item::playerShoot(float angle) {
 	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast in direction of aim
 	if (hitTarget == false){
 		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//ray cast again
-	}
-	if (hitTarget == false) {
-		director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, startpoint + direction * 1000, nullptr);//triple cast just to be sure
 	}
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = startpoint + direction * 1000;//for drawing bullet line

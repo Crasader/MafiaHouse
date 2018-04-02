@@ -29,7 +29,7 @@ void Character::flipX() {
 
 void Character::updateRoom(vector<RoomData*> rooms) {
 	for (int i = 0; i < rooms.size(); i++) {
-		if ((getPositionX() > rooms[i]->left) && (getPositionX() + getSize().width < rooms[i]->right)) {//player in on the floor, inbetween top and bottom
+		if ((getPositionX() > rooms[i]->left - 10) && (getPositionX() + getSize().width < rooms[i]->right + 10)) {//player in on the floor, inbetween top and bottom
 			currentRoom = i;
 			break;
 		}
@@ -134,7 +134,9 @@ void Character::beginUseItem(float angle) {
 
 void Character::useItem(float angle) {
 	if (heldItem != NULL) {
-		heldItem->getPhysicsBody()->setEnabled(true);
+		if (heldItem->getAttackType() != Item::SHOOT) {
+			heldItem->getPhysicsBody()->setEnabled(true);
+		}
 		if (heldItem->getAttackType() == Item::STAB) {
 			heldItem->stabSequence(angle, flippedX);
 			setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());

@@ -11,7 +11,6 @@ DeadBody::DeadBody()
 	tag = 70000;//each item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
 	rotate = false;
-	outlineName = "enemy/thug/dead_outline.png";
 	startTime = 0.4f;
 	effect = NONE;
 	dmg = 0;
@@ -20,14 +19,14 @@ DeadBody::DeadBody()
 	state = GROUND;
 }
 
-void DeadBody::initObject(Vec2 startPos)
+void DeadBody::initObject(Vec2 startPos, string bodyOutlineName)
 {
 	GameObject::initObject(startPos);
 	getPhysicsBody()->setLinearDamping(1.0f);
 	getPhysicsBody()->setRotationEnable(false);
 	retain();
 	initRadius();
-	createOutline(outlineName);
+	createOutline(bodyOutlineName);
 }
 
 //initializing pickup radius:

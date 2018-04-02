@@ -1070,7 +1070,7 @@ void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
 			Node* visionContact = info.shape->getBody()->getNode();
 
 			//enemy vision is blocked by walls, doors, physical objects
-			if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "ceiling" || visionContactName == "door" || visionContactName == "phys_object" || visionContactName == "hide_radius") {
+			if (visionContactName == "wall" || visionContactName == "floor" || visionContactName == "ceiling" || visionContactName == "door" || visionContactName == "phys_object" || visionContactName == "hide_radius" || visionContactName == "vent" || visionContactName == "exit_door") {
 				points->push_back(info.contact + offsetAdjust);
 				didRun = true;
 				return false;
@@ -1786,7 +1786,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 				}
 				//check if enemy is in range to attack player
 				if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within horizontal range to attack player
-					if (checkForPath(mainLayer, enemy->currentFloor, enemy->detectedPlayer->currentRoom, enemy->detectedPlayer->currentFloor, false) == true) {//enemy is in same room as player
+					if (checkForPath(mainLayer, enemy->currentFloor, enemy->detectedPlayer->currentRoom, enemy->currentRoom, false) == true) {//enemy is in same room as player
 						Vec2 displacement = (enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2) - (enemy->getPosition() + enemy->getSize() / 2);
 						bool doorInbetween = false;
 						for (int i = 0; i < mainLayer->doors.size(); i++) {//checking if door is inbetween enemy and player
@@ -1833,6 +1833,9 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 					}
 				}
 				if (enemy->inAttackRange == true) {
+					if (enemy->heldItem->getAttackType() == Item::SHOOT) {
+						enemy->targetLocation = enemy->detectedPlayer->getPosition() + (enemy->detectedPlayer->getSize() / 2);
+					}
 					return new AttackState;
 				}
 				else {//in range == false
@@ -1903,6 +1906,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 						return new ThrowState;
 					}
 					else {//enemy has a gun
+						enemy->targetLocation = enemy->detectedPlayer->getPosition() + (enemy->detectedPlayer->getSize() / 2);
 						return new AttackState;
 					}
 				}
@@ -1936,8 +1940,7 @@ void Enemy::AttackState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	}
 	enemy->stop();
 	enemy->attackPrepareTime = time;
-	enemy->beginUseItem(enemy->aimAngle);
-	enemy->targetLocation = enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2;
+	enemy->beginUseItem(enemy->aimAngle);;
 }
 Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->wasInHitStun == true) {
@@ -1983,7 +1986,6 @@ void Enemy::AttackState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 		enemy->heldItem = NULL;
 		enemy->removeChild(enemy->fist, true);
 	}
-	enemy->targetLocation = enemy->detectedPlayer->getPosition() + enemy->detectedPlayer->getSize() / 2;
 }
 
 //Throw State:
@@ -2157,6 +2159,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 					}
 					//check if enemy is in range to attack door
 					if (enemy->distanceToDoor <= enemy->heldItem->getRange()) {//enemy is within range to attack door
+						enemy->targetLocation = enemy->doorToUse->getPosition() + enemy->doorToUse->getContentSize() / 2;
 						enemy->toEnter = new AttackState;
 						return enemy->toEnter;
 					}
@@ -2456,7 +2459,7 @@ Enemy::State* Enemy::SeenBodyState::update(Enemy* enemy, GameLayer* mainLayer, f
 		}
 		else {//they have reached location
 			enemy->turnOnSpot(time);//stay where body is and look around
-			enemy->changeSuspicion(enemy->maxSuspicion / (20 SECONDS));//suspicion will steadily increase until they become alerted
+			enemy->changeSuspicion(enemy->maxSuspicion / (25 SECONDS));//suspicion will steadily increase until they become alerted
 		}
 	}
 	else {
@@ -2513,7 +2516,7 @@ void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 	enemy->paused = false;
 	enemy->exMark->setVisible(false);
 	enemy->qMark->setVisible(false);
-	enemy->changeSuspicion(enemy->maxSuspicion * 0.75);//getting knocked out increases suspicion to 3/4
+	enemy->changeSuspicion(enemy->maxSuspicion * 0.25);//getting knocked out increases suspicion by 1/4
 }
 Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -2581,7 +2584,7 @@ void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->isDead = true;
 	//create dead body here
 	DeadBody* newBody = DeadBody::createWithSpriteFrameName(enemy->deadBodyName);
-	newBody->initObject(enemy->getPosition() + Vec2(-enemy->getSize().width, 50));
+	newBody->initObject(enemy->getPosition(), enemy->deadBodyOutlineName);
 	mainLayer->addChild(newBody);
 	mainLayer->bodies.push_back(newBody);
 }
@@ -2596,6 +2599,7 @@ Thug::Thug() {
 	baseSpeed = 50;
 	maxSpeed = baseSpeed;
 	deadBodyName = "enemy/thug/dead.png";
+	deadBodyOutlineName = "enemy/thug/dead_outline.png";
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/thug/stand/%03d.png", 15, 10 FRAMES, true);
 	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
@@ -2603,7 +2607,8 @@ Thug::Thug() {
 	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
 	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 20 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
-	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 8 FRAMES, false);
+	throwing = GameAnimation(THROW, "enemy/thug/throw/%03d.png", 2, 6 FRAMES, false);
 }
 
 Guard::Guard() {
@@ -2612,15 +2617,16 @@ Guard::Guard() {
 	eyeHeight = 84;
 	defaultDegrees = 60;
 	visionDegrees = defaultDegrees;//width of angle of vision
-	defaultRadius = 185;
+	defaultRadius = 190;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 60;
+	baseSpeed = 55;
 	maxSpeed = baseSpeed;
-	defaultTurnTime = 3.0f;
-	defaultWalkTime = 4.0f;
+	defaultTurnTime = 3.5f;
+	defaultWalkTime = 4.5f;
 	baseKnockOutTime = 0.8f;
 	minKnockOuttime = 6.0f;
 	deadBodyName = "enemy/guard/dead.png";
+	deadBodyOutlineName = "enemy/guard/dead_outline.png";
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/guard/stand/%03d.png", 11, 10 FRAMES, true);
 	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 8, 8 FRAMES, true);
@@ -2628,21 +2634,23 @@ Guard::Guard() {
 	knockoutDeath = GameAnimation(DEATH, "enemy/guard/knockdown_die/%03d.png", 3, 15 FRAMES, false);
 	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 5, 15 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/guard/stab/%03d.png", 2, 10 FRAMES, false);
-	swing = GameAnimation(SWING, "enemy/guard/swing/%03d.png", 2, 10 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/guard/swing/%03d.png", 2, 8 FRAMES, false);
+	throwing = GameAnimation(THROW, "enemy/guard/throw/%03d.png", 2, 6 FRAMES, false);
 }
 
 Boss::Boss() {
 	//proeprties
 	isBoss = true;
 	runningAway = true;//the boss will always run away from you
-	eyeHeight = 80;
-	defaultDegrees = 60;
+	eyeHeight = 75;
+	defaultDegrees = 65;
 	visionDegrees = defaultDegrees;//width of angle of vision
 	defaultRadius = 180;
 	visionRadius = defaultRadius;//how far vision reaches
 	baseSpeed = 40;
 	maxSpeed = baseSpeed;
 	deadBodyName = "enemy/boss/dead.png";
+	deadBodyOutlineName = "enemy/boss/dead_outline.png";
 	//initializing animations:
 	stand = GameAnimation(STAND, "enemy/boss/stand/%03d.png", 19, 10 FRAMES, true);
 	walking = GameAnimation(WALK, "enemy/boss/walk/%03d.png", 12, 8 FRAMES, true);
@@ -2650,6 +2658,6 @@ Boss::Boss() {
 	knockoutDeath = GameAnimation(DEATH, "enemy/boss/knockdown_die/%03d.png", 1, 20 FRAMES, false);
 	dying = GameAnimation(DEATH, "enemy/boss/die/%03d.png", 4, 20 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/boss/stab/%03d.png", 2, 10 FRAMES, false);
-	swing = GameAnimation(SWING, "enemy/boss/swing/%03d.png", 2, 10 FRAMES, false);
-	throwing = GameAnimation(THROW, "enemy/boss/throw/%03d.png", 6, 3 FRAMES, false);
+	swing = GameAnimation(SWING, "enemy/boss/swing/%03d.png", 2, 8 FRAMES, false);
+	throwing = GameAnimation(THROW, "enemy/boss/throw/%03d.png", 2, 6 FRAMES, false);
 }
