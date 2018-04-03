@@ -5,6 +5,7 @@
 #include "HelloWorldScene.h"
 #include "Stages.h"
 #include "Tutorial.h"
+#include "Menu.h"
 #include <iostream> 
 
 
@@ -47,7 +48,9 @@ bool MenuScreen::init()
 	// start playing background music 
 	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
 	audio->preloadBackgroundMusic("Audio/menu.wav");
-	audio->playBackgroundMusic("Audio/menu.wav");
+	if (audio->isBackgroundMusicPlaying() == false) {
+		audio->playBackgroundMusic("Audio/menu.wav");
+	}
 
 	//initialize(preload) sound effects here 
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/boom.wav");
@@ -171,7 +174,7 @@ void MenuScreen::update(float deltaTime)
 		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		// blink the sign
-		exit->runAction(Blink::create(0.1f, 1));
+		//exit->runAction(Blink::create(0.1f, 1));
 		// set the gun to new position
 		gunSign->setPosition(positionExit);
 		// scale all menu sign to right size
@@ -186,7 +189,7 @@ void MenuScreen::update(float deltaTime)
 		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		// blink the sign
-		options->runAction(Blink::create(0.1f, 1));
+		//options->runAction(Blink::create(0.1f, 1));
 		// set the gun to new position
 		gunSign->setPosition(positionOption);
 		// scale all menu sign to right size
@@ -201,7 +204,7 @@ void MenuScreen::update(float deltaTime)
 		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		// blink the sign
-		selectLevel->runAction(Blink::create(0.1f, 1));
+		//selectLevel->runAction(Blink::create(0.1f, 1));
 		// set the gun to new position
 		gunSign->setPosition(positionSelect);
 		// scale all menu sign to right size
@@ -218,7 +221,7 @@ void MenuScreen::update(float deltaTime)
 		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		// blink the sign
-		startGame->runAction(Blink::create(0.1f, 1));
+		//startGame->runAction(Blink::create(0.1f, 1));
 		// set the gun to new position
 		gunSign->setPosition(positionStart);
 		// scale all menu sign to right size
@@ -233,7 +236,7 @@ void MenuScreen::update(float deltaTime)
 		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		// blink the sign
-		selectLevel->runAction(Blink::create(0.1f, 1));
+		//selectLevel->runAction(Blink::create(0.1f, 1));
 		// set the gun to new position
 		gunSign->setPosition(positionSelect);
 		// scale all menu sign to right size
@@ -248,7 +251,7 @@ void MenuScreen::update(float deltaTime)
 		// play the music of loadbullet
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 		// blink the sign
-		options->runAction(Blink::create(0.1f, 1));
+		//options->runAction(Blink::create(0.1f, 1));
 		// set the gun to new position
 		gunSign->setPosition(positionOption);
 		// scale all menu sign to right size
@@ -261,27 +264,27 @@ void MenuScreen::update(float deltaTime)
 	//////////////////////////////////////////////////
 	// Press Enter for go to different section
 	// Start Game
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionStart))
+	if ((INPUTS->getKeyPress(KeyCode::KEY_ENTER) || INPUTS->getKeyPress(KeyCode::KEY_SPACE)) && (gunSign->getPosition() == positionStart))
 	{
 		//will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 		// switch to tutorial scene
-		director->replaceScene(Stage1::createScene());
+		director->replaceScene(LevelSelectMenu::createScene());
 	}
 	// Select Level
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionSelect))
+	if ((INPUTS->getKeyPress(KeyCode::KEY_ENTER) || INPUTS->getKeyPress(KeyCode::KEY_SPACE)) && (gunSign->getPosition() == positionSelect))
 	{
 		//will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 	}
 	// Options
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionOption))
+	if ((INPUTS->getKeyPress(KeyCode::KEY_ENTER) || INPUTS->getKeyPress(KeyCode::KEY_SPACE)) && (gunSign->getPosition() == positionOption))
 	{
 		//will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 	}
 	// Exit
-	if (INPUTS->getKeyPress(KeyCode::KEY_ENTER) && (gunSign->getPosition() == positionExit))
+	if ((INPUTS->getKeyPress(KeyCode::KEY_ENTER) || INPUTS->getKeyPress(KeyCode::KEY_SPACE)) && (gunSign->getPosition() == positionExit))
 	{
 		// will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
