@@ -57,6 +57,20 @@ bool Tutorial2::init()
 	initLevel("levels/tutorial_2.txt");
 	levelNum = 0;
 
+	auto buttonDisplay = Sprite::createWithSpriteFrameName("icons/crouchButton.png");
+	buttonDisplay->setPosition(Vec2(-1670, 110));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/interactButton.png");
+	buttonDisplay->setPosition(Vec2(-1325, 120));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/interactButton.png");
+	buttonDisplay->setPosition(Vec2(-840, 240));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/throwButton.png");
+	buttonDisplay->setScale(1.25);
+	buttonDisplay->setPosition(Vec2(-770, 145));
+	mainLayer->addChild(buttonDisplay);
+
 	return true;
 }
 

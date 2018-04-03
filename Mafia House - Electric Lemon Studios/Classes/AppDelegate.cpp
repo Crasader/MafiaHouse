@@ -75,8 +75,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
 	//for testing, go straight into level
 	//auto level1 = Stage1::createScene();
-	auto tutorial1 = Tutorial1::createScene();
-	director->runWithScene(tutorial1);
+	auto tutorial = Tutorial2::createScene();
+	director->runWithScene(tutorial);
 
 	//testing the level select screen
 	//auto mainMenu = MainMenu::createScene();
