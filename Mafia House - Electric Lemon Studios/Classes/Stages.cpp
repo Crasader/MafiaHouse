@@ -40,9 +40,9 @@ bool Stage2::init()
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
-	setBackground("background2.png", 1.0f);
+	setBackground("backgrounds/back.png", 1.0f);
 	//create level
-	initLevel("stage2.txt");
+	initLevel("level_1_test.txt");
 	levelNum = 2;
 
 	return true;
@@ -55,9 +55,9 @@ bool Stage3::init()
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
-	setBackground("background2.png", 1.0f);
+	setBackground("backgrounds/back.png", 1.0f);
 	//create level
-	initLevel("stage2.txt");
+	initLevel("test_level.txt");
 	levelNum = 3;
 
 	return true;
@@ -70,7 +70,7 @@ bool Stage4::init()
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
-	setBackground("background2.png", 1.0f);
+	setBackground("backgrounds/back.png", 1.0f);
 	//create level
 	initLevel("stage2.txt");
 	levelNum = 4;

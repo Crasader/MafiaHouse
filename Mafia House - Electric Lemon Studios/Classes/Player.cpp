@@ -6,7 +6,7 @@ Player::Player()
 	FRAME_OFFSET = 22;
 	bodySize = Size(26, 90);
 	standSize = bodySize;
-	crouchSize = Size(standSize.width, 35);
+	crouchSize = Size(30, 35);
 	//sprite properties
 	zOrder = 5;
 	scale = 1.0f;
@@ -103,10 +103,10 @@ void Player::walkPrepareAttack(Input input, float time) {
 			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 			moveDirection = 1;
 			if (isCrouched == false) {
-				startAnimation(WALK, walking);
+				//startAnimation(WALK, walking);
 			}
 			else {
-				startAnimation(CROUCHWALK, crouchwalk);
+				//startAnimation(CROUCHWALK, crouchwalk);
 			}
 			setSpeed(moveSpeed);
 		}
@@ -118,10 +118,10 @@ void Player::walkPrepareAttack(Input input, float time) {
 			walkingSound = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/walk.wav", true);
 			moveDirection = 2;
 			if (isCrouched == false) {
-				startAnimation(WALK, walking);
+				//startAnimation(WALK, walking);
 			}
 			else {
-				startAnimation(CROUCHWALK, crouchwalk);
+				//startAnimation(CROUCHWALK, crouchwalk);
 			}
 			setSpeed(moveSpeed);
 		}
@@ -132,8 +132,8 @@ void Player::walkPrepareAttack(Input input, float time) {
 		stopX();
 		CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(walkingSound);
 		moveDirection = 0;
-		stopAnimation(WALK);
-		stopAnimation(CROUCHWALK);
+		//stopAnimation(WALK);
+		//stopAnimation(CROUCHWALK);
 		if (isCrouched == false) {
 			setSpriteFrame(stand.animation->getFrames().at(0)->getSpriteFrame());//run standing animation here
 		}
@@ -1299,7 +1299,7 @@ Player::State* Player::AttackState::update(Player* player, GameLayer* mainLayer,
 Player::State* Player::AttackState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (player->wasInHitStun == true) {//player is in hitstun
 		player->attackRelease = true;//forced to release attack
-		player->walk(STOP, time);
+		player->walkPrepareAttack(STOP, time);
 		//return player->prevState;
 	}
 	if (input == THROW_ITEM) {//cancel your attack

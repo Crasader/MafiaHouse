@@ -16,13 +16,13 @@
 # player: player, x_coordinate, y_coordinate
 #
 300
-700|bg,Hallway.png|door,right,locked|player,0,0|item,key,100,0|enemy,guard,400,0,STAND_LEFT|hide_object,plant,100,0
-600|bg,Kitchen.png|door,left|item,knife,400,0|node,500,1,1.0,A|stair,1,A,550,0|enemy,guard,200,0,A|node,300,3,2.0,B|hide_object,Table,70,0
+700|bg,Hallway.png|door,right,locked|player,0,0|item,gun,100,0|enemy,guard,400,0,STAND_LEFT,gun|hide_object,plant,100,0
+600|bg,Kitchen.png|door,left|item,knife,400,0|node,500,1,1.0,A|stair,1,A,550,0|enemy,guard,200,0,A|node,300,3,2.0,B|hide_object,table,70,0
 FLOOR_END
 300
 500|bg,LivingRoom.png|door,right|stair,2,A,25,0|item,hammer,650,0|node,200,2,1.0,A|hide_object,couch,320,0
 400|bg,Bathroom.png|door,right,locked|door,left|item,knife,650,0|enemy,guard,200,0|hide_object,bathtub,250,0
-400|bg,guestRoom.png|door,left|stair,1,B,350,0|node,200,2,2.0,B|item,key,100,0|hide_object,closet,250,0
+400|bg,guestRoom.png|door,left|stair,1,B,350,0|node,200,2,2.0,B|item,key,100,0|hide_object,closet,250,0|item,crowbar,200,0
 FLOOR_END
 300
 600|bg,MasterBedroom.png|door,right,locked|enemy,guard,300,0,B|node,300,2,1.0,A|item,hammer,100,0|hide_object,closet,450,0

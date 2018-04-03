@@ -143,7 +143,8 @@ void Character::useItem(float angle) {
 		}
 		else if (heldItem->getAttackType() == Item::SWING) {
 			heldItem->swingSequence(angle, flippedX);
-			startAnimation(SWING, swing);
+			//startAnimation(SWING, swing);
+			setSpriteFrame(swing.animation->getFrames().at(1)->getSpriteFrame());//first frame of the swing animation
 		}
 	}
 }

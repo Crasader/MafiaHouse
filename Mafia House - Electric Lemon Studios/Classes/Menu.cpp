@@ -1,4 +1,5 @@
 #include "Menu.h"
+#include "MenuScreen.h"
 
 bool MainMenu::init() {
 	if (!Scene::init()) { return false; }
@@ -17,7 +18,7 @@ bool MainMenu::init() {
 	addChild(background, 0);
 
 	selectionIndicator = Sprite::create("menu/MenuGun.png");
-	selectionIndicator->setScale(2.0f);
+	//selectionIndicator->setScale(2.0f);
 	mainLayer->addChild(selectionIndicator, 2);
 
 	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen
@@ -37,6 +38,7 @@ bool MainMenu::init() {
 	options.push_back(option);
 	for (int i = 0; i < options.size(); i++) {
 		options[i]->setPosition(optionPosition);
+		options[i]->setScale(0.75f);
 		mainLayer->addChild(options[i], 1);
 
 		optionPosition += Vec2(0, -175);//setting position for next option
@@ -60,10 +62,10 @@ void MainMenu::onStart(float deltaTime) {
 void MainMenu::update(float deltaTime) {
 	for (int i = 0; i < options.size(); i++) {//increaseing size of selected option
 		if (options[i] == selectedOption) {
-			options[i]->setScale(1.5);
+			options[i]->setScale(1.25);
 		}
 		else {
-			options[i]->setScale(1);
+			options[i]->setScale(0.85);
 		}
 	}
 
@@ -195,15 +197,16 @@ void LevelSelectMenu::onStart(float deltaTime) {
 void LevelSelectMenu::update(float deltaTime) {
 	for (int i = 0; i < levels.size(); i++) {//increaseing size of selected option
 		if (levels[i] == selectedLevel) {
-			levels[i]->setScale(1.5);
+			levels[i]->setScale(1.25);
 		}
 		else {
-			levels[i]->setScale(1);
+			levels[i]->setScale(0.85);
 		}
 	}
 
 	if (INPUTS->getKeyPress(KeyCode::KEY_W)) {//move seletor up
 		if (selectedOptionNum >  0) {//number of selected option is greater than 0, first option in menu
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 			selectedOptionNum--;//go up one option
 			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
 			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
@@ -216,6 +219,7 @@ void LevelSelectMenu::update(float deltaTime) {
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_S)) {//move selector down
 		if (selectedOptionNum < levels.size() - 1) {//number of selected option is greater then last option in menu
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 			selectedOptionNum++;//go down one option
 			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
 			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
@@ -228,17 +232,24 @@ void LevelSelectMenu::update(float deltaTime) {
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_SPACE) || INPUTS->getKeyPress(KeyCode::KEY_ENTER)) {//select currently selected level
 		if (selectedLevel->optionNumber == 0) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 			director->replaceScene(Tutorial1::createScene());
 		}
 		else if (selectedLevel->optionNumber == 1) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 			director->replaceScene(Stage1::createScene());
 		}
 		else if (selectedLevel->optionNumber == 2) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 			director->replaceScene(Stage2::createScene());
+		}
+		else if (selectedLevel->optionNumber == 3) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+			director->replaceScene(Stage3::createScene());
 		}
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_BACKSPACE)) {//select currently selected level
-		director->replaceScene(MainMenu::createScene());
+		director->replaceScene(MenuScreen::createScene());
 	}
 
 	INPUTS->clearForNextFrame();
