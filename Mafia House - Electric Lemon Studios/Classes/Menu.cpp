@@ -142,6 +142,7 @@ bool LevelSelectMenu::init() {
 	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen
 	selectionIndicator->setPosition(optionPosition + Vec2(-550, -62));
 
+	levels.clear();
 	initMenu("menu/levels.txt");
 	for (int i = 0; i < levels.size(); i++) {
 		levels[i]->setPosition(optionPosition);
@@ -181,7 +182,7 @@ bool LevelSelectMenu::initMenu(string filename) {
 
 		LevelMenuOption* option = LevelMenuOption::create();
 		//option number, level name, is level complete, is first achievement complete, is second achievement complete, best time
-		option->initLevelOption(i, pieces[0], atoi(pieces[1].c_str()), atoi(pieces[2].c_str()), atoi(pieces[2].c_str()), pieces[4]);
+		option->initLevelOption(i, pieces[0], atoi(pieces[1].c_str()), atoi(pieces[2].c_str()), atoi(pieces[3].c_str()), pieces[4]);
 
 		levels.push_back(option);
 
@@ -240,15 +241,27 @@ void LevelSelectMenu::update(float deltaTime) {
 		}
 		else if (selectedLevel->optionNumber == 1) {
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
-			director->replaceScene(Stage1::createScene());
+			director->replaceScene(Tutorial2::createScene());
 		}
 		else if (selectedLevel->optionNumber == 2) {
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
-			director->replaceScene(Stage2::createScene());
+			director->replaceScene(Tutorial3::createScene());
 		}
 		else if (selectedLevel->optionNumber == 3) {
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+			director->replaceScene(Stage1::createScene());
+		}
+		else if (selectedLevel->optionNumber == 4) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+			director->replaceScene(Stage2::createScene());
+		}
+		else if (selectedLevel->optionNumber == 5) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 			director->replaceScene(Stage3::createScene());
+		}
+		else if (selectedLevel->optionNumber == 6) {
+			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+			director->replaceScene(Stage4::createScene());
 		}
 	}
 	else if (INPUTS->getKeyPress(KeyCode::KEY_BACKSPACE)) {//select currently selected level

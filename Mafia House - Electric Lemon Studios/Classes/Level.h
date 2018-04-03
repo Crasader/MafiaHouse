@@ -40,7 +40,9 @@ void resetLevel() \
 class Level: public Scene
 {
 public:
-	virtual void resetLevel() = 0;
+	virtual void resetLevel() {};
+
+	virtual void startNextLevel() {};
 
 	void setup();//call in init(), initializes stuff that is the same for each level
 
@@ -141,7 +143,7 @@ protected:
 	//for doulbe tap inputs:
 	float prevLeftPressTime = -1;
 	float prevRightPressTime = -1;
-	float doublePressTime = 12 FRAMES;//amount of time for a doulbe press to register
+	float doublePressTime = 13 FRAMES;//amount of time for a doulbe press to register
 
 	bool onContactBegin(PhysicsContact &contact);
 

@@ -90,6 +90,16 @@ Table::Table(){
 	surfaceHeight = 55;
 }
 
+//Fountain:
+Fountain::Fountain() {
+	PhysObject::PhysObject();
+	surfaceSize = Size(140, 10);
+	surfaceOffset = Vec2(0, 24);
+	hideBoxSize = Size(92, 50);
+	hideBoxPosition = Vec2(70, 25);
+	surfaceHeight = 55;
+}
+
 //Wall Shelf:
 WallShelf::WallShelf() {
 	PhysObject::PhysObject();

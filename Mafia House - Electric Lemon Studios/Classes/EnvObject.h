@@ -44,6 +44,15 @@ public:
 	CREATE_WITH_FRAME_NAME(Table, "objects/fancy_table.png");
 };
 
+class Fountain : public PhysObject {
+public:
+	Fountain();
+	~Fountain() {}
+	CREATE_WITH_FRAME(Fountain);
+	CREATE_WITH_FRAME_NAME(Fountain, "objects/fountain.png");
+};
+
+
 class WallShelf : public PhysObject {
 public:
 	WallShelf();

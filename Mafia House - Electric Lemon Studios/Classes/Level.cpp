@@ -138,6 +138,7 @@ void Level::onStart(float deltaTime){
 
 	//initializing enemy offhand items
 	for (int i = 0; i < enemies.size(); i++) {
+		enemies[i]->startAnimation(STAND, enemies[i]->stand);
 		if (enemies[i]->offhandItem != NULL) {
 			enemies[i]->offhandItem->removeFromParent();//removing from main layer
 			enemies[i]->offhandItem->initPickedUpItem();
@@ -196,7 +197,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setSubsteps(1);
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
@@ -407,6 +408,12 @@ void Level::onEnd(float deltaTime) {
 
 	if (gameTime - levelFinishTime >= completeScreenDisplayTime) {
 		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//finish the level
+			startNextLevel();
+		}
+		else if ((INPUTS->getKey(KeyCode::KEY_SHIFT)) && (INPUTS->getKey(KeyCode::KEY_R))) {//redo level
+			resetLevel();
+		}
+		else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//redo level
 			director->replaceScene(LevelSelectMenu::createScene());
 		}
 	}
@@ -1976,6 +1983,9 @@ bool Level::initLevel(string filename){
 				PhysObject* physObject;
 				if (pieces[1] == "table") {
 					physObject = Table::createWithSpriteFrameName();
+				}
+				else if (pieces[1] == "fountain") {
+					physObject = Fountain::createWithSpriteFrameName();
 				}
 				else if (pieces[1] == "wall_shelf") {
 					physObject = WallShelf::createWithSpriteFrameName();

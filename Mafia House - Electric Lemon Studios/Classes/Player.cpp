@@ -1429,7 +1429,7 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	if (player->heldBody != NULL) {
 		player->dropBody(mainLayer);
 	}
-	player->createNoise(35, 0.4, time, player->getPosition() + Vec2(player->getSize().width, 0), Vec2(player->currentFloor, player->currentRoom), "player_roll", &mainLayer->noises);
+	//player->createNoise(35, 0.4, time, player->getPosition() + Vec2(player->getSize().width, 0), Vec2(player->currentFloor, player->currentRoom), "player_roll", &mainLayer->noises);
 }
 Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->checkDead() == true) { return new DeathState; }
@@ -1624,7 +1624,8 @@ void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time
 	player->getPhysicsBody()->setCollisionBitmask(0);
 	player->moveSpeed = 4;
 	player->setSpeed(player->moveSpeed);
-	//player->hidden = true;
+	player->hidden = true;
+	player->setTag(10);
 }
 Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
@@ -1660,5 +1661,6 @@ void Player::NoClipState::exit(Player* player, GameLayer* mainLayer, float time)
 	player->getPhysicsBody()->setCollisionBitmask(30);
 	player->moveSpeed = 1;
 	player->setSpeed(player->moveSpeed);
-	//player->hidden = false;
+	player->hidden = false;
+	player->setTag(1);
 }

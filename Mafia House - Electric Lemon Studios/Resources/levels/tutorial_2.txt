@@ -1,0 +1,10 @@
+200
+600|bg,Kitchen.png|player,0,0|phys_object,table,330,0|enemy,thug,520,0,LEFT,knife|door,right
+500|bg,UpperHallway.png|door,left|stair,1,A,75,0|enemy,guard,430,0,STAND_LEFT,gun|enemy,guard,340,0,STAND_LEFT,gun|door,right,locked
+400|bg,MasterBedroom.png|door,left|item,knife,105,0|vent,top,open,55|enemy,boss,300,0,STAND_LEFT,gun|exit,right
+FLOOR_END
+200
+200|bg,Bathroom.png|item,knife,50,0|item,key,150,0|door,right,locked
+600|bg,guestRoom.png|door,left|item,hammer,525,0|stair,1,B,400,0|door,right,locked
+700|bg,Hallway.png|door,left|hide_object,couch,160,0|vent,bot,open,355|enemy,thug,520,0,LEFT,knife
+FLOOR_END

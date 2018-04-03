@@ -101,6 +101,13 @@ public:
 
 	virtual void update(GameLayer* mainLayer, float time);
 
+	//for turning on spot
+	float defaultTurnTime = 5.0f;
+	float turnTime = defaultTurnTime;
+	//for vision
+	int defaultRadius = 180;
+	int visionRadius = defaultRadius;//how far vision reaches
+
 protected:
 	class State {
 	public:
@@ -277,8 +284,7 @@ protected:
 	float eyeHeight = 87;
 	int defaultDegrees = 60;
 	int visionDegrees = defaultDegrees;//width of angle of vision
-	int defaultRadius = 180;
-	int visionRadius = defaultRadius;//how far vision reaches
+	
 
 	//for keepign track of if enemy spotted player:
 	bool playerInVision = false;
@@ -295,9 +301,6 @@ protected:
 	float waitTime = defaultWaitTime;
 	float previousTurnTime = -1;
 	float stopTime = -1;
-	//for turning on spot
-	float defaultTurnTime = 5.0f;
-	float turnTime = defaultTurnTime;
 
 	//for pausing temporaroly
 	bool paused = false;
