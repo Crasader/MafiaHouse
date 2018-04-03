@@ -714,7 +714,7 @@ Mug::Mug() {
 	priority = 2;
 	maxHP = 1;
 	hp = maxHP;
-	dmg = 50;
+	dmg = 33;
 	knockback = Vec2(10, 0);
 	hitstun = 8 FRAMES;
 	effect = KNOCKOUT;

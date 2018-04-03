@@ -308,6 +308,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		addChild(enemyWalkBody);
 	}
 	else if (orient == 1) {//vertical
+		setSpriteFrame(frameCache->getSpriteFrameByName("objects/vent/vertical/001.png"));
 		size = Size(20, 50);
 		outlineName = "objects/vent/outline_v_closed.png";
 		outline2Name = "objects/vent/outline_v_opened.png";

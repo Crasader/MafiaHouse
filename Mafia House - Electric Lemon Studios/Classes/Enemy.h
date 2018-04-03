@@ -269,7 +269,7 @@ protected:
 	bool visionEnabled = true;
 	float startKockOutTime = -1.0f;
 	float baseKnockOutTime = 1.0f;
-	float minKnockOuttime = 8.0f;
+	float minKnockOuttime = 10.0f;
 	float knockOutTime;
 
 	//to check if enemy has been touched by player

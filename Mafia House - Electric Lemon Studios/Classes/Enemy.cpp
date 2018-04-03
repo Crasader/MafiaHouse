@@ -1450,7 +1450,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->timeToPauseFor = 7.0f;
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
-		enemy->changeSuspicion(enemy->maxSuspicion / 2);
+		enemy->changeSuspicion(enemy->maxSuspicion / 3);
 		enemy->itemBumpedBy = NULL;
 	}
 	if (enemy->noiseLocation != Vec2(0, 0)) {
@@ -1589,7 +1589,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->timeToPauseFor = 7.0f;
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
-		enemy->changeSuspicion(enemy->maxSuspicion / 2);
+		enemy->changeSuspicion(enemy->maxSuspicion / 3);
 		enemy->itemBumpedBy = NULL;
 	}
 	//check if enemy has heard a noise
@@ -2550,7 +2550,7 @@ void Enemy::KnockOutState::enter(Enemy* enemy, GameLayer* mainLayer, float time)
 	enemy->paused = false;
 	enemy->exMark->setVisible(false);
 	enemy->qMark->setVisible(false);
-	enemy->changeSuspicion(enemy->maxSuspicion * 0.25);//getting knocked out increases suspicion by 1/4
+	//enemy->changeSuspicion(enemy->maxSuspicion * 0.25);//getting knocked out increases suspicion by 1/4
 }
 Enemy::State* Enemy::KnockOutState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -2657,8 +2657,8 @@ Guard::Guard() {
 	maxSpeed = baseSpeed;
 	defaultTurnTime = 3.5f;
 	defaultWalkTime = 4.5f;
-	baseKnockOutTime = 0.8f;
-	minKnockOuttime = 6.0f;
+	baseKnockOutTime = 1.0f;
+	minKnockOuttime = 10.0f;
 	deadBodyName = "enemy/guard/dead.png";
 	deadBodyOutlineName = "enemy/guard/dead_outline.png";
 	//initializing animations:
