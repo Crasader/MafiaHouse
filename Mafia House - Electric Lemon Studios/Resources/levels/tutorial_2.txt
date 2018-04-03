@@ -1,0 +1,4 @@
+400
+1000|bg,TutorialLevel.png|player,50,0|phys_object,fountain,150,0|item,ironbar,190,0|item,knife,220,50|hide_object,hedge,400,0|enemy,guard,550,0,STAND_LEFT|door,right,locked
+300|bg,entranceway.png|door,left|exit,right
+FLOOR_END

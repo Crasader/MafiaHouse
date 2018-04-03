@@ -2669,7 +2669,7 @@ Guard::Guard() {
 Boss::Boss() {
 	//proeprties
 	isBoss = true;
-	runningAway = true;//the boss will always run away from you
+	//runningAway = true;//the boss will always run away from you, not anymore he don't
 	eyeHeight = 75;
 	defaultDegrees = 65;
 	visionDegrees = defaultDegrees;//width of angle of vision

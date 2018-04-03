@@ -423,7 +423,7 @@ void Item::swingSequence(float angle, bool flip) {
 		//if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
 	}
 
-	Vec2 movement = Vec2(6, -26);
+	Vec2 movement = Vec2(6, -33);
 	movement = movement.rotate(direction);
 
 	auto move = MoveBy::create(attackTime * 0.3, movement);
@@ -734,7 +734,7 @@ Crowbar::Crowbar() {
 	outlineName = "items/crowbar_outline.png";
 	Item::Item();
 	priority = 8;
-	maxHP = 4;
+	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
 	knockback = Vec2(100, 0);

@@ -398,6 +398,12 @@ void Level::onEnd(float deltaTime) {
 
 	if (gameTime - levelFinishTime >= completeScreenDisplayTime) {
 		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//finish the level
+			startNextLevel();
+		}
+		else if ((INPUTS->getKey(KeyCode::KEY_SHIFT)) && (INPUTS->getKey(KeyCode::KEY_R))) {//redo level
+			resetLevel();
+		}
+		else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//redo level
 			director->replaceScene(LevelSelectMenu::createScene());
 		}
 	}
@@ -1967,6 +1973,9 @@ bool Level::initLevel(string filename){
 				PhysObject* physObject;
 				if (pieces[1] == "table") {
 					physObject = Table::createWithSpriteFrameName();
+				}
+				else if (pieces[1] == "fountain") {
+					physObject = Fountain::createWithSpriteFrameName();
 				}
 				else if (pieces[1] == "wall_shelf") {
 					physObject = WallShelf::createWithSpriteFrameName();

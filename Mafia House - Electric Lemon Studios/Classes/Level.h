@@ -37,10 +37,19 @@ void resetLevel() \
 	director->replaceScene(restartLevel); \
 }
 
+#define NEXT_LEVEL(_TYPE_) \
+void startNextLevel() \
+{ \
+	Scene* _TYPE_ = createScene(); \
+	director->replaceScene(_TYPE_); \
+}
+
 class Level: public Scene
 {
 public:
 	virtual void resetLevel() = 0;
+
+	virtual void startNextLevel() = 0;
 
 	void setup();//call in init(), initializes stuff that is the same for each level
 
