@@ -12,6 +12,15 @@ void Level::setup(){
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/openDoor.wav");
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/stairs.wav");
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/hide.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/gun_shoot.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/stab.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/swing.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/throw.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/levelcomplete.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/grabbody.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/dropbody.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/jump.wav");
+
 
 	//node everything in level is attached to
 	mainLayer = GameLayer::create();

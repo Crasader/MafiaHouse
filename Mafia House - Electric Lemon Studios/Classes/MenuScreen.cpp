@@ -269,13 +269,15 @@ void MenuScreen::update(float deltaTime)
 		//will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
 		// switch to tutorial scene
-		director->replaceScene(LevelSelectMenu::createScene());
+		director->replaceScene(Tutorial1::createScene());
 	}
 	// Select Level
 	if ((INPUTS->getKeyPress(KeyCode::KEY_ENTER) || INPUTS->getKeyPress(KeyCode::KEY_SPACE)) && (gunSign->getPosition() == positionSelect))
 	{
 		//will make a gun shooting noise 
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/boom.wav");
+		// switch to level select
+		director->replaceScene(LevelSelectMenu::createScene());
 	}
 	// Options
 	if ((INPUTS->getKeyPress(KeyCode::KEY_ENTER) || INPUTS->getKeyPress(KeyCode::KEY_SPACE)) && (gunSign->getPosition() == positionOption))

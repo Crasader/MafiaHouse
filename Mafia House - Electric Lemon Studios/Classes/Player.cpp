@@ -296,6 +296,7 @@ void Player::crouchWalk(Input input, float time) {
 }
 
 void Player::jump() {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/jump.wav");
 	if (touchingFloor == true) {
 		auto callback = CallFunc::create([this]() {
 			hasJumped = true;
@@ -309,6 +310,7 @@ void Player::jump() {
 }
 
 void Player::pickUpBody(GameLayer* mainLayer) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/grabbody.wav");
 	if (bodyToPickUp != NULL) {
 		if (heldItem != NULL) {
 			heldItem->setVisible(false);
@@ -332,6 +334,7 @@ void Player::pickUpBody(GameLayer* mainLayer) {
 }
 
 void Player::dropBody(GameLayer* mainLayer) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/dropbody.wav");
 	if (heldBody != NULL) {
 		if (heldItem != NULL) {
 			heldItem->setVisible(true);
@@ -362,6 +365,7 @@ void Player::beginThrowBody(float time) {
 }
 
 void Player::throwBody(GameLayer* mainLayer, float time) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/throw.wav");
 	if (heldBody != NULL) {
 		heldBody->thrownTime = time;
 		heldBody->throwItem(aimAngle, convertToWorldSpace(heldBody->getPosition()), flippedX);
@@ -416,6 +420,7 @@ void Player::beginThrowItem(float time) {
 }
 
 void Player::throwItem(GameLayer* mainLayer, float time) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/throw.wav");
 	Character::throwItem(mainLayer, time);
 	aimMarker->setVisible(false);
 	if (isCrouched == false){
@@ -464,28 +469,34 @@ void Player::useItem(float angle) {
 		if (isCrouched == false) {
 			heldItem->getPhysicsBody()->setEnabled(true);
 			if (heldItem->getAttackType() == Item::STAB) {
+				CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stab.wav");
 				heldItem->stabSequence(angle, flippedX);
 				setSpriteFrame(stab.animation->getFrames().at(1)->getSpriteFrame());
 			}
 			else if (heldItem->getAttackType() == Item::SWING) {
+				CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/swing.wav");
 				heldItem->swingSequence(angle, flippedX);
 				startAnimation(SWING, swing);
 			}
 			else if (heldItem->getAttackType() == Item::SHOOT) {
+				CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/gun_shoot.wav");
 				heldItem->playerShoot(angle);
 			}
 		}
 		else {
 			heldItem->getPhysicsBody()->setEnabled(true);
 			if (heldItem->getAttackType() == Item::STAB) {
+				CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stab.wav");
 				heldItem->stabSequence(angle, flippedX);
 				setSpriteFrame(crouchstab.animation->getFrames().at(1)->getSpriteFrame());
 			}
 			else if (heldItem->getAttackType() == Item::SWING) {
+				CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/swing.wav");
 				heldItem->swingSequence(angle, flippedX);
 				startAnimation(SWING, crouchswing);
 			}
 			else if (heldItem->getAttackType() == Item::SHOOT) {
+				CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/gun_shoot.wav");
 				heldItem->playerShoot(angle);
 			}
 		}
@@ -515,9 +526,11 @@ void Player::finishUseItem() {
 void Player::fallAttack() {
 	heldItem->fallAttack();
 	if (heldItem->getAttackType() == Item::STAB) {
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/stab.wav");
 		setSpriteFrame(fallstab.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
 	}
 	else if (heldItem->getAttackType() == Item::SWING) {
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/swing.wav");
 		setSpriteFrame(fallswing.animation->getFrames().at(0)->getSpriteFrame());//setting player sprite to first frame of stab animation
 	}
 }
