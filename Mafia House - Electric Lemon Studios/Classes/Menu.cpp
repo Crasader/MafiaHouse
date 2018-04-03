@@ -114,6 +114,9 @@ void MainMenu::update(float deltaTime) {
 bool LevelSelectMenu::init() {
 	if (!Scene::init()) { return false; }
 
+	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+	audio->playBackgroundMusic("Audio/menu.wav");
+
 	director = Director::getInstance();
 	visibleSize = director->getVisibleSize();
 	origin = director->getVisibleOrigin();
@@ -131,7 +134,7 @@ bool LevelSelectMenu::init() {
 	selectionIndicator->setScale(2.0f);
 	mainLayer->addChild(selectionIndicator, 2);
 
-	auto label = Label::createWithTTF("Backspace:\nReturn to Main Menu", "fonts/pixelFJ8pt1__.ttf", 22);
+	auto label = Label::createWithTTF("Backspace <---\nReturn to Main Menu", "fonts/Nexa_Bold.otf", 22);
 	label->getFontAtlas()->setAliasTexParameters();
 	label->setPositionNormalized(Vec2(0.105, 0.94));
 	addChild(label);

@@ -38,7 +38,7 @@ public:
 
 	void initOption(int num, string labelText) {
 		optionNumber = num;
-		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 22);
+		label = Label::createWithTTF(labelText, "fonts/Nexa_Bold.otf", 22);
 		label->getFontAtlas()->setAliasTexParameters();
 		label->setPositionNormalized(Vec2(0.48, 0.49));
 		addChild(label);
@@ -66,7 +66,7 @@ public:
 	void initLevelOption(int num, string labelText, bool checkComplete, bool checkAchievement1, bool checkAchievement2, string recordedTime) {
 		optionNumber = num;
 
-		label = Label::createWithTTF(labelText, "fonts/pixelFJ8pt1__.ttf", 31);
+		label = Label::createWithTTF(labelText, "fonts/Nexa_Bold.otf", 31);
 		label->getFontAtlas()->setAliasTexParameters();
 		label->setPositionNormalized(Vec2(0.48, 0.5));
 		addChild(label);
@@ -90,7 +90,7 @@ public:
 		}
 
 		if (recordedTime != "0.000") {
-			bestTime = Label::createWithTTF("Best Time: " + recordedTime, "fonts/pixelFJ8pt1__.ttf", 24);
+			bestTime = Label::createWithTTF("Best Time: " + recordedTime, "fonts/Nexa_Bold.otf", 24);
 			bestTime->getFontAtlas()->setAliasTexParameters();
 			bestTime->setPositionNormalized(Vec2(1.4,0.5));
 			bestTime->setGlobalZOrder(10);

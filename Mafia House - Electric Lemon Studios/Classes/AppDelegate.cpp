@@ -74,13 +74,13 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	director->replaceScene(transitions);
 
 	//for testing, go straight into level
-	auto level1 = Stage1::createScene();
-	auto tutorial1 = Tutorial1::createScene();
+	/*auto level1 = Stage1::createScene();
+	auto tutorial1 = Tutorial1::createScene();*/
 	//director->runWithScene(tutorial1);
 
 	//testing the level select screen
-	auto mainMenu = MainMenu::createScene();
-	auto levelSelect = LevelSelectMenu::createScene();
+	/*auto mainMenu = MainMenu::createScene();
+	auto levelSelect = LevelSelectMenu::createScene();*/
 	//director->runWithScene(menuScreen);
 
 	//Set up the input handler

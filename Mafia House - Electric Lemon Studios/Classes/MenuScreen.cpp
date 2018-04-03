@@ -48,9 +48,7 @@ bool MenuScreen::init()
 	// start playing background music 
 	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
 	audio->preloadBackgroundMusic("Audio/menu.wav");
-	if (audio->isBackgroundMusicPlaying() == false) {
-		audio->playBackgroundMusic("Audio/menu.wav");
-	}
+	audio->playBackgroundMusic("Audio/menu.wav");
 
 	//initialize(preload) sound effects here 
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/boom.wav");
