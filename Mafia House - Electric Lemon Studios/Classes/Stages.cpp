@@ -19,7 +19,7 @@ bool Tutorial1::init()
 	levelNum = 0;
 
 	auto buttonDisplay = Sprite::createWithSpriteFrameName("icons/walkButtons.png");
-	buttonDisplay->setPosition(Vec2(-2105, 125));
+	buttonDisplay->setPosition(Vec2(-2115, 125));
 	mainLayer->addChild(buttonDisplay);
 	buttonDisplay = Sprite::createWithSpriteFrameName("icons/pickupButton.png");
 	buttonDisplay->setPosition(Vec2(-1955, 100));
@@ -69,6 +69,9 @@ bool Tutorial2::init()
 	mainLayer->addChild(buttonDisplay);
 	buttonDisplay = Sprite::createWithSpriteFrameName("icons/interactButton.png");
 	buttonDisplay->setPosition(Vec2(-1325, 120));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/useButton.png");
+	buttonDisplay->setPosition(Vec2(-1250, 330));
 	mainLayer->addChild(buttonDisplay);
 	buttonDisplay = Sprite::createWithSpriteFrameName("icons/interactButton.png");
 	buttonDisplay->setPosition(Vec2(-840, 240));

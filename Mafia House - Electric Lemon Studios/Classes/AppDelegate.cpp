@@ -79,7 +79,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	//director->runWithScene(tutorial);
 
 	//testing the level select screen
-	auto levelSelect = LevelSelectMenu::createScene();
+	//auto levelSelect = LevelSelectMenu::createScene();
 	//director->runWithScene(levelSelect);
 
 	//Set up the input handler
