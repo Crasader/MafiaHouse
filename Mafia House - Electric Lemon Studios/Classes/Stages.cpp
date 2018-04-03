@@ -54,6 +54,10 @@ bool Tutorial2::init()
 {
 	if (!Scene::initWithPhysics()) { return false; }
 
+	// start playing background music 
+	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+	audio->playBackgroundMusic("Audio/beastly.wav");
+
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
@@ -92,6 +96,10 @@ void Tutorial2::startNextLevel() {
 bool Tutorial3::init()
 {
 	if (!Scene::initWithPhysics()) { return false; }
+
+	// start playing background music 
+	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+	audio->playBackgroundMusic("Audio/beastly.wav");
 
 	//initlializes stuff that is the same for all levels
 	setup();
@@ -169,6 +177,10 @@ bool Stage2::init()
 {
 	if (!Scene::initWithPhysics()) { return false; }
 
+	// start playing background music 
+	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+	audio->playBackgroundMusic("Audio/rainy.wav");
+
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
@@ -188,6 +200,10 @@ bool Stage3::init()
 {
 	if (!Scene::initWithPhysics()) { return false; }
 
+	// start playing background music 
+	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+	audio->playBackgroundMusic("Audio/rainy.wav");
+
 	//initlializes stuff that is the same for all levels
 	setup();
 	//initialize background
@@ -206,6 +222,10 @@ void Stage3::startNextLevel() {
 bool Stage4::init()
 {
 	if (!Scene::initWithPhysics()) { return false; }
+
+	// start playing background music 
+	auto audio = CocosDenshion::SimpleAudioEngine::getInstance();
+	audio->playBackgroundMusic("Audio/rainy.wav");
 
 	//initlializes stuff that is the same for all levels
 	setup();
