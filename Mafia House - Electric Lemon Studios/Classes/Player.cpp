@@ -1611,7 +1611,8 @@ void Player::NoClipState::enter(Player* player, GameLayer* mainLayer, float time
 	player->getPhysicsBody()->setCollisionBitmask(0);
 	player->moveSpeed = 4;
 	player->setSpeed(player->moveSpeed);
-	//player->hidden = true;
+	player->hidden = true;
+	player->setTag(10);
 }
 Player::State* Player::NoClipState::handleInput(Player* player, GameLayer* mainLayer, float time, Input input) {
 	if (input == USE_DOOR) {
@@ -1647,5 +1648,6 @@ void Player::NoClipState::exit(Player* player, GameLayer* mainLayer, float time)
 	player->getPhysicsBody()->setCollisionBitmask(30);
 	player->moveSpeed = 1;
 	player->setSpeed(player->moveSpeed);
-	//player->hidden = false;
+	player->hidden = false;
+	player->setTag(1);
 }

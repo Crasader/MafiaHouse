@@ -14,6 +14,32 @@ bool Tutorial1::init()
 	initLevel("levels/tutorial_1.txt");
 	levelNum = 0;
 
+	auto buttonDisplay = Sprite::createWithSpriteFrameName("icons/walkButtons.png");
+	buttonDisplay->setPosition(Vec2(-2105, 125));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/pickupButton.png");
+	buttonDisplay->setPosition(Vec2(-1955, 100));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/useButton.png");
+	buttonDisplay->setPosition(Vec2(-1755, 110));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/interactButton.png");
+	buttonDisplay->setPosition(Vec2(-1250, 100));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/upDownButtons.png");
+	buttonDisplay->setPosition(Vec2(-930, 80));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/interactButton.png");
+	buttonDisplay->setPosition(Vec2(-820, 100));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/crouchPickupButtons.png");
+	buttonDisplay->setPosition(Vec2(-690, 120));
+	mainLayer->addChild(buttonDisplay);
+	buttonDisplay = Sprite::createWithSpriteFrameName("icons/useButton.png");
+	buttonDisplay->setPosition(Vec2(-600, 110));
+	mainLayer->addChild(buttonDisplay);
+	
+
 	return true;
 }
 

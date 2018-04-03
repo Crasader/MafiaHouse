@@ -129,6 +129,7 @@ void Level::onStart(float deltaTime){
 
 	//initializing enemy offhand items
 	for (int i = 0; i < enemies.size(); i++) {
+		enemies[i]->startAnimation(STAND, enemies[i]->stand);
 		if (enemies[i]->offhandItem != NULL) {
 			enemies[i]->offhandItem->removeFromParent();//removing from main layer
 			enemies[i]->offhandItem->initPickedUpItem();
@@ -187,7 +188,7 @@ void Level::onStart(float deltaTime){
 	getScene()->getPhysicsWorld()->setSubsteps(1);
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//deleting layer's default camera, or else there will be a double scene drawn
 	getScene()->getDefaultCamera()->removeFromParentAndCleanup(true);
