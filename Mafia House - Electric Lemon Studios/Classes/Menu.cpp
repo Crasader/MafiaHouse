@@ -125,7 +125,7 @@ bool LevelSelectMenu::init() {
 	mainLayer = Node::create();
 	addChild(mainLayer,1);
 
-	background = Sprite::create("menu/MainMenu.png");
+	background = Sprite::create("menu/SelectLevelMenu.png");
 	background->setScale(visibleSize.x / background->getContentSize().width, visibleSize.y / background->getContentSize().height);
 	background->setPosition(centre.x, centre.y);
 	addChild(background, 0);

@@ -20,6 +20,8 @@ void Level::setup(){
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/grabbody.wav");
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/dropbody.wav");
 	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/jump.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("Audio/gameover.wav");
+
 
 
 	//node everything in level is attached to
@@ -488,6 +490,7 @@ void Level::update(float deltaTime){
 	gameTime += deltaTime;
 
 	if (player->isReallyDead() == true) {//player died, gameover
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/gameover.wav");
 		unscheduleUpdate();
 		getScene()->getPhysicsWorld()->setSpeed(0);
 		camera->pause();
@@ -502,6 +505,7 @@ void Level::update(float deltaTime){
 	}
 
 	if (levelComplete == true) {//finish level
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/levelcomplete.wav");
 		unscheduleUpdate();
 		getScene()->getPhysicsWorld()->setSpeed(0);
 		schedule(schedule_selector(Level::pauseScreen));
