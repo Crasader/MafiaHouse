@@ -10,7 +10,8 @@ bool Tutorial1::init()
 	setBackground("backgrounds/back.png", 0.5f);
 	//create level
 	//initLevel("level_1_test.txt");
-	initLevel("tutorial_1.txt");
+	//initLevel("tutorial_1.txt");
+	initLevel("tutorial_new.txt");
 	levelNum = 0;
 
 	return true;
