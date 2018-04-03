@@ -163,9 +163,9 @@ bool Stage1::init()
 	setBackground("backgrounds/back.png", 0.5f);
 	//create level
 	//initLevel("level_1_test.txt");
-	initLevel("levels/stage_3.txt");
+	initLevel("main_level.txt");
 	levelNum = 3;
-
+	
 	return true;
 }
 void Stage1::startNextLevel() {
@@ -186,7 +186,7 @@ bool Stage2::init()
 	//initialize background
 	setBackground("backgrounds/back.png", 1.0f);
 	//create level
-	initLevel("levels/stage_4.txt");
+	initLevel("levels/stage_3.txt");
 	levelNum = 4;
 	return true;
 }
@@ -208,7 +208,7 @@ bool Stage3::init()
 	//initialize background
 	setBackground("backgrounds/back.png", 1.0f);
 	//create level
-	initLevel("main_level.txt");
+	initLevel("levels/stage_4.txt");
 	levelNum = 5;
 	return true;
 }
