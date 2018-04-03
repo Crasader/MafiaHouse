@@ -1416,7 +1416,7 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	if (player->heldBody != NULL) {
 		player->dropBody(mainLayer);
 	}
-	player->createNoise(35, 0.4, time, player->getPosition() + Vec2(player->getSize().width, 0), Vec2(player->currentFloor, player->currentRoom), "player_roll", &mainLayer->noises);
+	//player->createNoise(35, 0.4, time, player->getPosition() + Vec2(player->getSize().width, 0), Vec2(player->currentFloor, player->currentRoom), "player_roll", &mainLayer->noises);
 }
 Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
 	if (player->checkDead() == true) { return new DeathState; }

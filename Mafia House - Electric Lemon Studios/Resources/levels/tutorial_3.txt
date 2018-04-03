@@ -1,0 +1,7 @@
+280
+400|bg,LivingRoom.png|player,300,0|vent,top,open,50|phys_object,table,50,0|phys_object,wall_shelf,40,165|door,right,locked
+500|bg,MasterBedroom.png|door,left|hide_object,dresser,190,0|item,hammer,100,0|enemy,boss,200,0,NONE,gun|exit,right
+FLOOR_END
+200
+920|bg,UpperHallway.png|vent,bot,open,50|phys_object,vent_cover,35,-1|phys_object,table,270,0|enemy,guard,310,0,STAND_SWITCH_LEFT,ironbar|phys_object,table,480,0|enemy,guard,515,0,STAND_SWITCH,knife|enemy,thug,840,0,STAND_RIGHT,mug,key
+FLOOR_END

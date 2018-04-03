@@ -67,7 +67,7 @@ void Enemy::initObject(Vec2 startPos)
 	ZZZ->setVisible(false);
 	addChild(ZZZ);
 
-	if (pathTag == "STAND_LEFT" || pathTag == "LEFT") {
+	if (pathTag == "STAND_LEFT" || pathTag == "LEFT" || pathTag == "STAND_SWITCH_LEFT") {
 		flipX();
 	}
 	lastSeenLocation = GameObject::create();
@@ -1279,19 +1279,17 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 void Enemy::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);
 	updateRoom(mainLayer->floors[currentFloor].rooms);
-	if (offhandItem != NULL) {
-		if (flippedX == true) {
-			offhandItem->rotatePickUpRadius(-90);
-		}
-		else {
-			offhandItem->rotatePickUpRadius(0);
-		}
-	}
 	//checking if enemy still has a key, also removing stolen items
 	if (inventory.size() > 0) {
 		hasKey = false;
 		for (int i = 0; i < inventory.size(); i++) {
 			if (inventory[i]->enemyItem == false) {//item has been stolen
+				if (inventory[i] == offhandItem) {
+					offhandItem = NULL;
+				}
+				if (inventory[i] == heldItem) {
+					heldItem = NULL;
+				}
 				inventory.erase(inventory.begin() + i);//remove it from their inventory
 				i--;
 				continue;
@@ -1299,6 +1297,14 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 			if (inventory[i]->isKey == true) {//if the item is a key
 				hasKey = true;
 			}
+		}
+	}
+	if (offhandItem != NULL) {
+		if (flippedX == true) {
+			offhandItem->rotatePickUpRadius(-90);
+		}
+		else {
+			offhandItem->rotatePickUpRadius(0);
 		}
 	}
 	//forgetting what missing items they have seen
@@ -1497,7 +1503,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			}
 		}
 		//enemy does not move
-		else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
+		else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH" || enemy->pathTag == "STAND_SWITCH_LEFT") {
 			if (enemy->returning == true) {
 				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y, enemy->startRoom.x, time, checkForPath) == true) {
 					enemy->returning = false;
@@ -1511,7 +1517,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 				}
 			}
 			else {//not returning
-				if (enemy->pathTag == "STAND_SWITCH") {
+				if (enemy->pathTag == "STAND_SWITCH" || enemy->pathTag == "STAND_SWITCH_LEFT") {
 					enemy->turnOnSpot(time);
 				}
 			}
@@ -1633,8 +1639,8 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			enemy->walk(time);
 		}
 		//enemy does not move
-		else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
-			if (enemy->pathTag == "STAND_SWITCH") {
+		else if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH" || enemy->pathTag == "STAND_SWITCH_LEFT") {
+			if (enemy->pathTag == "STAND_SWITCH" || enemy->pathTag == "STAND_SWITCH_LEFT") {
 				enemy->turnOnSpot(time);
 			}
 		}

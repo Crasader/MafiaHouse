@@ -72,20 +72,23 @@ public:
 		addChild(label);
 
 		/*if (checkComplete == true) {
+			complete = Sprite::create("menu/complete.png");
 			complete->setPositionNormalized(Vec2(2.0, 0.5));
 			complete->setGlobalZOrder(10);
 			addChild(complete);
 		}*/
 
 		if (checkAchievement1 == true) {
+			achievement1 = Sprite::create("menu/achievement1.png");
 			achievement1->setPositionNormalized(Vec2(0.17, 0.5));
-			achievement1->setGlobalZOrder(10);
+			achievement1->setGlobalZOrder(20);
 			addChild(achievement1);
 		}
 
 		if (checkAchievement2 == true) {
-			achievement2->setPositionNormalized(Vec2(0.80, 0.5));
-			achievement2->setGlobalZOrder(10);
+			achievement2 = Sprite::create("menu/achievement2.png");
+			achievement2->setPositionNormalized(Vec2(0.8, 0.5));
+			achievement2->setGlobalZOrder(20);
 			addChild(achievement2);
 		}
 
@@ -93,14 +96,14 @@ public:
 			bestTime = Label::createWithTTF("Best Time: " + recordedTime, "fonts/pixelFJ8pt1__.ttf", 24);
 			bestTime->getFontAtlas()->setAliasTexParameters();
 			bestTime->setPositionNormalized(Vec2(1.4,0.5));
-			bestTime->setGlobalZOrder(10);
+			bestTime->setGlobalZOrder(20);
 			addChild(bestTime);
 		}
 	}
 
-	Sprite* achievement1 = Sprite::create("menu/achievement1.png");
-	Sprite* achievement2 = Sprite::create("menu/achievement2.png");
-	Sprite* complete = Sprite::create("menu/complete.png");
+	Sprite* achievement1;
+	Sprite* achievement2;
+	Sprite* complete;
 	Label* bestTime;
 
 	bool didBeat = false;

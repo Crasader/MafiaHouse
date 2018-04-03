@@ -13,7 +13,8 @@ public:
 	CREATE_FUNC(Tutorial1);
 
 	RESET_LEVEL;
-	NEXT_LEVEL(Tutorial2);
+
+	void startNextLevel();
 
 	bool init();
 };
@@ -25,7 +26,7 @@ public:
 	CREATE_FUNC(Tutorial2);
 
 	RESET_LEVEL;
-	NEXT_LEVEL(Tutorial3);
+	void startNextLevel();
 
 	bool init();
 };
@@ -37,7 +38,7 @@ public:
 	CREATE_FUNC(Tutorial3);
 
 	RESET_LEVEL;
-	NEXT_LEVEL(Stage1);
+	void startNextLevel();
 
 	bool init();
 };
@@ -49,7 +50,7 @@ public:
 	CREATE_FUNC(Stage1);
 
 	RESET_LEVEL;
-	NEXT_LEVEL(Stage2);
+	void startNextLevel();
 
 	bool init();
 };
@@ -61,7 +62,7 @@ public:
 	CREATE_FUNC(Stage2);
 
 	RESET_LEVEL;
-	NEXT_LEVEL(Stage3);
+	void startNextLevel();
 
 	bool init();
 };
@@ -73,7 +74,7 @@ public:
 	CREATE_FUNC(Stage3);
 
 	RESET_LEVEL;
-	NEXT_LEVEL(Stage4);
+	void startNextLevel();
 
 	bool init();
 };
@@ -85,7 +86,7 @@ public:
 	CREATE_FUNC(Stage4);
 
 	RESET_LEVEL;
-	NEXT_LEVEL(LevelSelectMenu);
+	void startNextLevel();
 
 	bool init();
 };
