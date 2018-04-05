@@ -112,7 +112,7 @@ protected:
 	bool wasInHitStun = false;
 
 	//for combat
-	const float maxHP = 100;
+	float maxHP = 100;
 	float hp = maxHP;
 
 	//variables used for the timing of attacking/using items:

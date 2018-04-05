@@ -214,7 +214,7 @@ protected:
 	GameAnimation ZZZAnimation;
 
 	//for not being alert forever
-	float alertCooldown = 90.0f;
+	float alertCooldown = 100.0f;
 	float alertEndTime = -1;
 
 	//for pathfinding:

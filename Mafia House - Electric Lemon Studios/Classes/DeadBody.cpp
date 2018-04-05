@@ -11,11 +11,11 @@ DeadBody::DeadBody()
 	tag = 70000;//each item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
 	rotate = false;
-	startTime = 0.4f;
+	startTime = 0.5f;
 	effect = NONE;
-	dmg = 0;
+	dmg = 25;
 	knockback = Vec2(200, 0);
-	noiseLevel = 1.0f;
+	noiseLevel = 1.3f;
 	state = GROUND;
 }
 
@@ -149,7 +149,7 @@ void DeadBody::throwItem(float angle, Vec2 pos, bool flip) {
 		setAnchorPoint(Vec2(0, 0));
 		setRotation(-getRotation());
 	}
-	moveNoLimit(direction * 160);
+	moveNoLimit(direction * 170);
 }
 
 void DeadBody::initThrownItem() {

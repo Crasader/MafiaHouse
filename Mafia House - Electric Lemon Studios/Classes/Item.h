@@ -174,6 +174,15 @@ public:
 	CREATE_WITH_FRAME_NAME(Knife, "items/knife.png");
 };
 
+class Screwdriver : public Item
+{
+public:
+	Screwdriver();
+	~Screwdriver() {}
+	CREATE_WITH_FRAME(Screwdriver);
+	CREATE_WITH_FRAME_NAME(Screwdriver, "items/screwdriver.png");
+};
+
 class Key : public Item
 {
 public:

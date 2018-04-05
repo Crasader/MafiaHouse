@@ -101,22 +101,42 @@ void Enemy::setSuspicion(float num) {
 }
 
 void Enemy::dropInventory(GameLayer* mainLayer) {
-	int a = 1;
-	for (int i = 0; i < inventory.size(); i++) {
-		inventory.at(i)->setRotation(randNum(0,360));
-		inventory.at(i)->getPhysicsBody()->applyImpulse(Vec2(randNum(50, 100), randNum(50, 100)));
-		inventory.at(i)->initDroppedItem(getPosition() + Vec2(a * 20, 60), flippedX);//drop all items at enemy position
-		if (inventory.at(i)->isKey == true) {
-			hasKey = false;//if they drop a key, they don't have a key anymore
+	if (inventory.size() > 0) {
+		for (int i = 0; i < inventory.size(); i++) {
+			if (inventory[i]->enemyItem == false) {//item has been stolen
+				if (inventory[i] == offhandItem) {
+					offhandItem = NULL;
+				}
+				if (inventory[i] == heldItem) {
+					heldItem = NULL;
+				}
+				inventory.erase(inventory.begin() + i);//remove it from their inventory
+				i--;
+				continue;
+			}
 		}
-		inventory.at(i)->stopAllActions();
-		removeChild(inventory.at(i), true);
-		mainLayer->addChild(inventory.at(i));
-		inventory.erase(inventory.begin() + i);
-		i--;
-		a++;
+		int a = 1;
+		for (int i = 0; i < inventory.size(); i++) {
+			inventory.at(i)->setRotation(randNum(0,360));
+			inventory.at(i)->getPhysicsBody()->applyImpulse(Vec2(randNum(50, 100), randNum(50, 100)));
+			inventory.at(i)->initDroppedItem(getPosition() + Vec2(a * 20, 60), flippedX);//drop all items at enemy position
+			if (inventory.at(i) == heldItem){
+				heldItem = NULL;
+			}
+			if (inventory.at(i) == offhandItem){
+				offhandItem = NULL;
+			}
+			if (inventory.at(i)->isKey == true) {
+				hasKey = false;//if they drop a key, they don't have a key anymore
+			}
+			inventory.at(i)->stopAllActions();
+			removeChild(inventory.at(i), true);
+			mainLayer->addChild(inventory.at(i));
+			inventory.erase(inventory.begin() + i);
+			i--;
+			a++;
+		}
 	}
-	heldItem = NULL;
 }
 void Enemy::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp->getState() == Item::HELD) {
@@ -1052,7 +1072,7 @@ void Enemy::noticeItem(Item* item, float time) {
 	}
 	if (noticeItem == true) {
 		qMark->setVisible(true);
-		changeSuspicion(maxSuspicion / 3);//seeing an item increases their suspicion by a third
+		changeSuspicion(maxSuspicion / 4);//seeing an item increases their suspicion by a quarter
 		seenItems.push_back(item);
 		seenTimes.push_back(time);
 	}
@@ -1070,13 +1090,13 @@ void Enemy::noticeMissingItem(MissingItem* item, float time) {
 	}
 	if (noticeItem == true) {
 		qMark->setVisible(true);
-		changeSuspicion(maxSuspicion / 5);//seeing an item increases their suspicion by a fifth
+		changeSuspicion(maxSuspicion / 6);//seeing an item increases their suspicion by a sixth
 		seenMissingItems.push_back(item);
 		seenMissingTimes.push_back(time);
 	}
 }
 
-void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time){
+void Enemy::visionRays(vector<Vec2> *points, Vec2* start, float time) {
 	playerInVision = false;
 	didRun = false;
 	Vec2 offsetAdjust;
@@ -1476,7 +1496,7 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->timeToPauseFor = 4.0f;
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
-		enemy->setSuspicion(enemy->maxSuspicion / 1.75f);
+		enemy->changeSuspicion(enemy->maxSuspicion / 3);
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
@@ -1507,6 +1527,8 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			if (enemy->returning == true) {
 				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y, enemy->startRoom.x, time, checkForPath) == true) {
 					enemy->returning = false;
+					enemy->stopAllActions();
+					enemy->startAnimation(STAND,enemy->stand);
 					enemy->slowStop();
 					if (enemy->pathTag == "STAND_LEFT") {
 						if (enemy->flippedX == false) { enemy->flipX(); }
@@ -1609,7 +1631,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.8f SECONDS));
 	}
 	else {
-		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (15 SECONDS));
+		enemy->changeSuspicion(-1 * enemy->maxSuspicion / (12 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -1617,7 +1639,7 @@ Enemy::State* Enemy::SuspectState::update(Enemy* enemy, GameLayer* mainLayer, fl
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
-		enemy->changeSuspicion(enemy->maxSuspicion / (22 SECONDS));
+		enemy->changeSuspicion(enemy->maxSuspicion / 3);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
 	}
@@ -1752,7 +1774,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	}
 
 	//check if an enemy has become unalerted
-	if (enemy->suspicionLevel < (enemy->maxSuspicion * 0.4)) {
+	if (enemy->suspicionLevel <= (enemy->maxSuspicion / 2)) {
 		return new SuspectState;
 	}
 	//checking if enemy spotted player
@@ -1762,7 +1784,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->reachedLastSeen = false;
 	}
 	else {
-		enemy->changeSuspicion(-enemy->maxSuspicion / (35 SECONDS));
+		enemy->changeSuspicion(-enemy->maxSuspicion / (12 SECONDS));
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -1770,10 +1792,6 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->isTouched = false;
 		enemy->lostPlayer = false;
 		enemy->reachedLastSeen = false;
-	}
-	//enemy has somehow dropped straight to 0 supicion
-	if (enemy->suspicionLevel <= 0) {
-		return new DefaultState;
 	}
 
 	//check if the player is hidden
@@ -1956,6 +1974,7 @@ void Enemy::AlertState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->lostPlayer = false;
 	enemy->reachedLastSeen = false;
 	enemy->bodySeen = NULL;
+	enemy->noiseLocation = Vec2(0, 0);
 	if (enemy->heldItem == enemy->fist) {//if not in range, discard fist item
 		enemy->heldItem = NULL;
 		enemy->removeChild(enemy->fist, true);
@@ -2311,6 +2330,8 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			return enemy->prevState;
 		}
 		if (enemy->moveToObject(enemy->itemToPickUp) == true) {
+			enemy->stopAllActions();
+			enemy->startAnimation(STAND, enemy->stand);
 			enemy->pickUpItem(mainLayer);
 			if (enemy->prevState->type == "use_door") {//if they are coming from a use door state
 				if (enemy->getName() != "enemy_alert") {
@@ -2330,11 +2351,6 @@ Enemy::State* Enemy::GetItemState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
 		enemy->changeSuspicion(enemy->maxSuspicion / (0.6f SECONDS));//increases 1/45th of max every frame, takes 45 frames to alert guard
-	}
-	else {
-		if (enemy->getName() != "enemy_alert") {//only if they're not coming from an alert state
-			enemy->changeSuspicion(-enemy->maxSuspicion / (60 SECONDS));//takes 30 seconds to drop from half to 0
-		}
 	}
 	if (enemy->getName() != "enemy_alert") {//only if they're not coming from an alert state
 	//check if player bumped enemy
@@ -2377,7 +2393,7 @@ void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->startPauseTime = -1;
 	enemy->qMark->setVisible(true);
 	if (enemy->prevState->type != "use_door") {
-		enemy->changeSuspicion(enemy->maxSuspicion / 4);//hearing a noise increases suspicion by quarter instantly, more later
+		enemy->changeSuspicion(enemy->maxSuspicion / 5);//hearing a noise increases suspicion by fifth instantly, more later
 	}
 	enemy->moveSpeed = 1.65f;
 	enemy->setSpeed(enemy->moveSpeed);
@@ -2421,7 +2437,7 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 
 	//checking if enemy spotted player
 	if (enemy->seeingPlayer() == true) {
-		enemy->changeSuspicion(enemy->maxSuspicion / (0.5f SECONDS));//takes half a secobnd to reach max suspicion from 0
+		enemy->changeSuspicion(enemy->maxSuspicion / (0.5f SECONDS));//takes half a second to reach max suspicion from 0
 	}
 	//check if player bumped enemy
 	if (enemy->isTouched == true) {
@@ -2430,7 +2446,7 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 		enemy->paused = true;
 		enemy->wasFlipped = enemy->flippedX;
 		enemy->pathTo(mainLayer, enemy->detectedPlayer->getPositionX(), enemy->detectedPlayer->currentFloor, enemy->detectedPlayer->currentRoom, time, checkForPath);
-		enemy->changeSuspicion(enemy->maxSuspicion / 5);
+		enemy->changeSuspicion(enemy->maxSuspicion / 4);
 		enemy->isTouched = false;
 		enemy->detectedPlayer = NULL;
 	}
@@ -2605,7 +2621,7 @@ void Enemy::DeathState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 		}
 		enemy->startAnimation(DEATH, enemy->dying);
 	}
-	enemy->getPhysicsBody()->setDynamic(false);
+	enemy->getPhysicsBody()->setEnabled(false);
 	enemy->stop();
 }
 Enemy::State* Enemy::DeathState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
@@ -2626,12 +2642,14 @@ void Enemy::DeathState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 Thug::Thug() {
 	//proeprties
 	eyeHeight = 88;
-	defaultDegrees = 60;
+	defaultDegrees = 80;
 	visionDegrees = defaultDegrees;//width of angle of vision
 	defaultRadius = 180;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 50;
+	baseSpeed = 60;
 	maxSpeed = baseSpeed;
+	defaultTurnTime = 4.5f;
+	defaultWalkTime = 4.5f;
 	deadBodyName = "enemy/thug/dead.png";
 	deadBodyOutlineName = "enemy/thug/dead_outline.png";
 	//initializing animations:
@@ -2649,14 +2667,14 @@ Guard::Guard() {
 	//proeprties
 	isGuard = true;
 	eyeHeight = 84;
-	defaultDegrees = 60;
+	defaultDegrees = 80;
 	visionDegrees = defaultDegrees;//width of angle of vision
 	defaultRadius = 190;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 55;
+	baseSpeed = 66;
 	maxSpeed = baseSpeed;
-	defaultTurnTime = 3.5f;
-	defaultWalkTime = 4.5f;
+	defaultTurnTime = 3.25f;
+	defaultWalkTime = 4.0f;
 	baseKnockOutTime = 1.0f;
 	minKnockOuttime = 10.0f;
 	deadBodyName = "enemy/guard/dead.png";
@@ -2677,11 +2695,11 @@ Boss::Boss() {
 	isBoss = true;
 	//runningAway = true;//the boss will always run away from you, not anymore he don't
 	eyeHeight = 75;
-	defaultDegrees = 65;
+	defaultDegrees = 90;
 	visionDegrees = defaultDegrees;//width of angle of vision
 	defaultRadius = 180;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 40;
+	baseSpeed = 54;
 	maxSpeed = baseSpeed;
 	deadBodyName = "enemy/boss/dead.png";
 	deadBodyOutlineName = "enemy/boss/dead_outline.png";

@@ -125,8 +125,14 @@ void Door::initObject(int orient, Vec2 startPos) {
 
 void Door::playerInRange() {
 	if (playerRange == true) {
-		outline->setColor(ccc3(255, 235, 50));//yellow
-		outline2->setColor(ccc3(255, 235, 50));//yellow
+		if (locked == false) {
+			outline->setColor(ccc3(255, 245, 0));//yellow
+			outline2->setColor(ccc3(255, 245, 0));//yellow
+		}
+		else {
+			outline->setColor(ccc3(115, 50, 255));//purple
+			outline2->setColor(ccc3(115, 50, 255));//purple
+		}
 	}
 	else {
 		outline->setColor(ccc3(155, 155, 155));//grey
@@ -141,10 +147,10 @@ void Door::updateColour() {
 		float inversePercentage = abs(percentage - 1);//inverts the percentage
 
 		if (locked == false) {
-			setColor(ccc3(255 * percentage, 100 * percentage, 255 * inversePercentage));
+			setColor(ccc3(255 * percentage, 120 * percentage, 255 * inversePercentage));
 		}
 		else {
-			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
+			setColor(ccc3(255 * percentage, 25, 255 * inversePercentage));
 		}
 	}
 }
@@ -198,7 +204,7 @@ void Door::breakDoor() {
 		//will probably change sprite
 		unlock();
 		broken = true;
-		setColor(ccc3(155, 15, 225));//purple
+		setColor(ccc3(25, 25, 255));//blue
 	}
 }
 
@@ -246,7 +252,6 @@ void Door::unlock() {
 			if (leftRoom != NULL) {
 				leftRoom->rightLocked = false;
 			}
-			//setColor(ccc3(255, 155, 0));//orange
 		}
 	}
 }
@@ -363,10 +368,10 @@ void Vent::updateColour() {
 		float inversePercentage = abs(percentage - 1);//inverts the percentage
 
 		if (locked == false) {
-			setColor(ccc3(225 * percentage, 225 * percentage, 225 * percentage));
+			setColor(ccc3(225 * percentage, 225 * percentage, 225));
 		}
 		else {
-			setColor(ccc3(255 * percentage, 255 * inversePercentage, 255 * inversePercentage));
+			setColor(ccc3(255 * percentage, 25, 255 * inversePercentage));
 		}
 	}
 }
@@ -374,7 +379,8 @@ void Vent::updateColour() {
 //Exit Class
 Exit::Exit() {
 	isExit = true;
-	radius = 40.0f;
+	locked = true;
+	radius = 54.0f;
 	name = "exit_door";
 	tag = 70000;
 	//sprite properties
@@ -446,10 +452,10 @@ void Exit::initExit() {
 
 void Exit::updateColour() {
 	if (canOpen == true) {//you can exit the level
-		setColor(ccc3(55, 255, 55));//green
+		setColor(ccc3(50, 255, 50));//green
 	}
 	else {//you can't exit the level yet
-		setColor(ccc3(55, 55, 255));//blue
+		setColor(ccc3(0, 90, 0));//blue
 	}
 }
 

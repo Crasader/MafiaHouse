@@ -1,4 +1,4 @@
-Tutorial 1,0,0,0,0.000
+Tutorial 1,1,0,1,8.453
 Tutorial 2,0,0,0,0.000
 Tutorial 3,0,0,0,0.000
 Stage 1,0,0,0,0.000

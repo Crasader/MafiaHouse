@@ -167,6 +167,7 @@ private:
 	};
 	class NoClipState : public State {
 	public:
+		NoClipState() { type = "noclip"; }
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* handleInput(Player* player, GameLayer* MainLayer, float time, Input input);
 		void exit(Player* player, GameLayer* mainLayer, float time);

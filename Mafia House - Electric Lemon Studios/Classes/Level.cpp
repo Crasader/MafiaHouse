@@ -97,7 +97,7 @@ void Level::setup(){
 	pauseLabel->setGlobalZOrder(20);
 	pauseLabel->setPosition(Vec2(-275, -239));
 	pauseLayer->addChild(pauseLabel);
-	pauseLabel = Label::createWithTTF("SHIFT + BACKSPACE: Quit", "fonts/pixelFJ8pt1__.ttf", 18);
+	pauseLabel = Label::createWithTTF("BACKSPACE: Quit", "fonts/pixelFJ8pt1__.ttf", 18);
 	pauseLabel->getFontAtlas()->setAliasTexParameters();
 	pauseLabel->setGlobalZOrder(20);
 	pauseLabel->setPosition(Vec2(275, -239));
@@ -194,9 +194,9 @@ void Level::onStart(float deltaTime){
 
 	player->startAnimation(STAND, player->stand);
 
-	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -200));
+	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -240));
 
-	getScene()->getPhysicsWorld()->setSubsteps(1);
+	getScene()->getPhysicsWorld()->setSubsteps(4);
 
 	//physics debug drawing:
 	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
@@ -363,12 +363,12 @@ void Level::getStats(float deltaTime) {
 	darkenScreen->setGlobalZOrder(11);
 	hudLayer->addChild(darkenScreen);
 
-	runAction(MoveBy::create(1.0f, Vec2(0, 0)))->setTag(0);
-	runAction(MoveBy::create(2.0f,Vec2(0, 0)))->setTag(1);
-	runAction(MoveBy::create(3.0f, Vec2(0, 0)))->setTag(2);
-	runAction(MoveBy::create(4.0f, Vec2(0, 0)))->setTag(3);
-	runAction(MoveBy::create(5.0f, Vec2(0, 0)))->setTag(4);
-	runAction(MoveBy::create(4.5f, Vec2(0, 0)))->setTag(5);
+	runAction(MoveBy::create(0.5f, Vec2(0, 0)))->setTag(0);
+	runAction(MoveBy::create(1.0f,Vec2(0, 0)))->setTag(1);
+	runAction(MoveBy::create(1.5f, Vec2(0, 0)))->setTag(2);
+	runAction(MoveBy::create(2.0f, Vec2(0, 0)))->setTag(3);
+	runAction(MoveBy::create(2.5f, Vec2(0, 0)))->setTag(4);
+	runAction(MoveBy::create(2.0f, Vec2(0, 0)))->setTag(5);
 
 	schedule(schedule_selector(Level::onEnd));
 }
@@ -403,10 +403,13 @@ void Level::onEnd(float deltaTime) {
 	}
 	if (getActionByTag(5) == NULL) {
 		if (continueLabel->getActionByTag(10) == NULL) {
-			continueLabel->runAction(RepeatForever::create(Blink::create(3.0, 1)))->setTag(10);
+			continueLabel->runAction(RepeatForever::create(Blink::create(2.0, 1)))->setTag(10);
 		}
 	}
-
+	if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//skip stats showing up individually
+		stopAllActions();
+		levelFinishTime = -2;
+	}
 
 	if (gameTime - levelFinishTime >= completeScreenDisplayTime) {
 		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//finish the level
@@ -415,7 +418,7 @@ void Level::onEnd(float deltaTime) {
 		else if ((INPUTS->getKey(KeyCode::KEY_SHIFT)) && (INPUTS->getKey(KeyCode::KEY_R))) {//redo level
 			resetLevel();
 		}
-		else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//redo level
+		else if (INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//redo level
 			director->replaceScene(LevelSelectMenu::createScene());
 		}
 	}
@@ -440,7 +443,7 @@ void Level::pauseScreen(float deltaTime) {
 	else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_R)) {//restart the level
 		resetLevel();
 	}
-	else if (INPUTS->getKey(KeyCode::KEY_SHIFT) && INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//quit to level select
+	else if (INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//quit to level select
 		director->replaceScene(LevelSelectMenu::createScene());
 	}
 	INPUTS->clearForNextFrame();
@@ -576,6 +579,7 @@ void Level::update(float deltaTime){
 		if (doors[i]->checkExit() == true) {
 			if (numBosses <= 0) {//all bosses have been killed
 				static_cast<Exit*>(doors[i])->canOpen = true;//activate level exits
+				static_cast<Exit*>(doors[i])->unlock();
 			}
 		}
 	}
@@ -638,8 +642,8 @@ void Level::update(float deltaTime){
 		if (mainLayer->items[i]->getAttackType() == Item::SHOOT && mainLayer->items[i]->wasShot == true) {
 			mainLayer->items[i]->wasShot = false;
 			mainLayer->items[i]->shotTime = gameTime;
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 1000, (mainLayer->items[i]->noiseLevel * 5) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
-			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 1000, ((mainLayer->items[i]->noiseLevel * 5) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 900, (mainLayer->items[i]->noiseLevel * 5) - 1, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
+			mainLayer->items[i]->createNoise(mainLayer->items[i]->noiseLevel * 900, ((mainLayer->items[i]->noiseLevel * 5) - 1) / 2, gameTime, mainLayer->items[i]->startpoint, Vec2(mainLayer->items[i]->currentRoom, mainLayer->items[i]->currentFloor), "gunshot", &mainLayer->noises);
 		}
 		if (mainLayer->items[i]->shotTime != -1 && gameTime - mainLayer->items[i]->shotTime <= 0.5f) {//time to display gunshot for
 			gunShots->drawSegment(mainLayer->items[i]->startpoint, mainLayer->items[i]->endpoint, 1, Color4F(1, 1, 1, 1));
@@ -652,7 +656,12 @@ void Level::update(float deltaTime){
 		mainLayer->bodies[i]->updateFloor(mainLayer->floors);
 		mainLayer->bodies[i]->updateRoom(mainLayer->floors[mainLayer->bodies[i]->currentFloor].rooms);
 		if (mainLayer->bodies[i]->makeNoise == true) {
-			mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() + Vec2(mainLayer->bodies[i]->getContentSize() / 2), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
+			if (mainLayer->bodies[i]->getFlippedX() == false) {
+				mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() + Vec2(mainLayer->bodies[i]->getContentSize() / 2), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
+			}
+			else {
+				mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() - Vec2(mainLayer->bodies[i]->getContentSize() / 2), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
+			}
 			mainLayer->bodies[i]->makeNoise = false;
 		}
 		if (mainLayer->bodies[i]->getState() == Item::GROUND) {
@@ -728,23 +737,26 @@ void Level::update(float deltaTime){
 	//player update:
 	player->update(mainLayer, gameTime);
 
-	//check if player is going to interact with door/stairway
-	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
-		if (player->doorToUse != NULL) {
-			player->handleInput(mainLayer, gameTime, USE_DOOR);
+	//check if player is going to interact with door/stairway, pick up item, hide behind object
+	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
+		if ((player->itemToPickUp != NULL && player->heldItem == NULL) || player->bodyToPickUp != NULL) {
+			player->handleInput(mainLayer, gameTime, PICKUP);
 		}
-		else if (player->stairToUse != NULL) {
-			player->handleInput(mainLayer, gameTime, USE_STAIR);
-		}
-	}
-	//check if player is dropping item
-	if (INPUTS->getKeyPress(KeyCode::KEY_F)) {
-		if (player->heldItem != NULL || player->heldBody != NULL) {
-			player->handleInput(mainLayer, gameTime, DROP);
+		else {
+			if (player->doorToUse != NULL) {
+				player->handleInput(mainLayer, gameTime, USE_DOOR);
+			}
+			else if (player->stairToUse != NULL) {
+				player->handleInput(mainLayer, gameTime, USE_STAIR);
+			}
+			else if(player->objectToHideBehind != NULL) {
+				player->handleInput(mainLayer, gameTime, HIDE);
+			}
 		}
 	}
 	//check if player is using item
 	if (INPUTS->getKeyPress(KeyCode::KEY_SPACE)) {
+		startPressTime = -1;
 		if (player->heldItem != NULL) {
 			player->handleInput(mainLayer, gameTime, USE_ITEM);
 		}
@@ -756,26 +768,27 @@ void Level::update(float deltaTime){
 	}
 	//check if player is throwing item
 	if (INPUTS->getKeyPress(KeyCode::KEY_SHIFT)) {
+		if (startPressTime == -1) {
+			startPressTime = gameTime;
+		}
+	}
+	if (INPUTS->getKey(KeyCode::KEY_SHIFT)) {
 		if (player->heldItem != NULL || player->heldBody != NULL) {
-			player->handleInput(mainLayer, gameTime, THROW_ITEM);
+			if (startPressTime != -1 && gameTime - startPressTime >= holdTime) {//button has been held for a certain amount of time
+				player->handleInput(mainLayer, gameTime, THROW_ITEM);
+			}
 		}
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_SHIFT)) {
 		if (player->heldItem != NULL || player->heldBody != NULL) {
-			player->handleInput(mainLayer, gameTime, THROW_RELEASE);
+			if (gameTime - startPressTime >= holdTime) {//button was been held for a certain amount of time
+				player->handleInput(mainLayer, gameTime, THROW_RELEASE);
+			}
+			else {
+				player->handleInput(mainLayer, gameTime, DROP);//button was not held for minimum hold time
+			}
 		}
-	}
-	//checking to see if player is picking up an item
-	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
-		if ((player->itemToPickUp != NULL && player->heldItem == NULL) || player->bodyToPickUp != NULL) {
-			player->handleInput(mainLayer, gameTime, PICKUP);
-		}
-	}
-	//check if player is going to hide behind object
-	if (INPUTS->getKeyPress(KeyCode::KEY_Q)) {
-		if (player->objectToHideBehind != NULL) {
-			player->handleInput(mainLayer, gameTime, HIDE);
-		}
+		startPressTime = -1;
 	}
 
 	//player movement input checking:
@@ -1549,7 +1562,8 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Enemy*>(a)->itemBumpedBy = static_cast<Item*>(b);
 				static_cast<Enemy*>(a)->directionHitFrom = static_cast<Item*>(b)->getPhysicsBody()->getVelocity();
 				static_cast<Item*>(b)->stop();
-				static_cast<Item*>(b)->move(Vec2(-100,0));
+				static_cast<Item*>(b)->setRotation(0);
+				static_cast<Item*>(b)->move(Vec2(-120,0));
 			}
 			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Enemy*>(a)->thrownItem) {
 				static_cast<Item*>(b)->stop();
@@ -1575,7 +1589,8 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Enemy*>(b)->itemBumpedBy = static_cast<Item*>(a);
 				static_cast<Enemy*>(b)->directionHitFrom = static_cast<Item*>(a)->getPhysicsBody()->getVelocity();
 				static_cast<Item*>(a)->stop();
-				static_cast<Item*>(a)->move(Vec2(-100, 0));
+				static_cast<Item*>(a)->setRotation(0);
+				static_cast<Item*>(a)->move(Vec2(-120, 0));
 			}
 			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Enemy*>(b)->thrownItem) {
 				static_cast<Item*>(a)->stop();
@@ -1598,6 +1613,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Player*>(a)->itemBumpedBy = static_cast<Item*>(a);
 				static_cast<Player*>(a)->directionHitFrom = static_cast<Item*>(a)->getPhysicsBody()->getVelocity();
 				static_cast<Item*>(b)->stop();
+				static_cast<Item*>(b)->setRotation(0);
 				static_cast<Item*>(b)->move(Vec2(-100, 0));
 			}
 			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Player*>(a)->thrownItem) {
@@ -1618,6 +1634,7 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 				static_cast<Player*>(b)->itemBumpedBy = static_cast<Item*>(a);
 				static_cast<Player*>(b)->directionHitFrom = static_cast<Item*>(a)->getPhysicsBody()->getVelocity();
 				static_cast<Item*>(a)->stop();
+				static_cast<Item*>(a)->setRotation(0);
 				static_cast<Item*>(a)->move(Vec2(-100, 0));
 			}
 			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Player*>(b)->thrownItem) {
@@ -2026,6 +2043,9 @@ bool Level::initLevel(string filename){
 				else if (pieces[1] == "ironbar") {
 					item = IronBar::createWithSpriteFrameName();
 				}
+				else if (pieces[1] == "screwdriver") {
+					item = Screwdriver::createWithSpriteFrameName();
+				}
 				item->initObject();
 				item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 				item->startRoom = Vec2(roomNum, floorNum);
@@ -2076,6 +2096,9 @@ bool Level::initLevel(string filename){
 						else if (pieces[5] == "ironbar") {
 							item = IronBar::createWithSpriteFrameName();
 						}
+						else if (pieces[5] == "screwdriver") {
+							item = Screwdriver::createWithSpriteFrameName();
+						}
 						item->initObject();
 						item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 						item->startRoom = Vec2(roomNum, floorNum);
@@ -2106,6 +2129,9 @@ bool Level::initLevel(string filename){
 					}
 					else if (pieces[6] == "ironbar") {
 						item = IronBar::createWithSpriteFrameName();
+					}
+					else if (pieces[6] == "screwdriver") {
+						item = Screwdriver::createWithSpriteFrameName();
 					}
 					item->initObject();
 					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));

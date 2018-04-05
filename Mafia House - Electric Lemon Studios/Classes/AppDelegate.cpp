@@ -59,7 +59,7 @@ static int register_all_packages()
 bool AppDelegate::applicationDidFinishLaunching() {
 
 	// create and setup the window
-	DISPLAY->init(1920, 1080, "Mafia House", true, 1.0f);
+	DISPLAY->init(1920, 1080, "Mafia House", false, 1.0f);
 
     // initialize director
     auto director = Director::getInstance();
@@ -70,17 +70,17 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto scene = CocoLogo::createScene();
 
     // run scene
-	auto transitions = TransitionFade::create(2.0f, scene);
-	director->replaceScene(transitions);
+	//auto transitions = TransitionFade::create(2.0f, scene);
+	//director->replaceScene(transitions);
 
 	//for testing, go straight into level
 	//auto level1 = Stage1::createScene();
-	//auto tutorial = Stage4::createScene();
+	//auto tutorial = Tutorial1::createScene();
 	//director->runWithScene(tutorial);
 
 	//testing the level select screen
-	//auto levelSelect = LevelSelectMenu::createScene();
-	//director->runWithScene(levelSelect);
+	auto levelSelect = LevelSelectMenu::createScene();
+	director->runWithScene(levelSelect);
 
 	//Set up the input handler
 	INPUTS->init();

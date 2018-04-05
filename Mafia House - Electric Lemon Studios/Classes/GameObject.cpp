@@ -208,7 +208,7 @@ void GameObject::stop() {
 void GameObject::slowStop() {
 	getPhysicsBody()->resetForces();
 	Vec2 force = getPhysicsBody()->getMass() * getPhysicsBody()->getVelocity();
-	getPhysicsBody()->applyForce(-force);
+	getPhysicsBody()->applyForce(-force * 2.0);
 }
 
 void GameObject::moveNoLimit(Vec2 velocity) {//doesn't check for object's speed limit

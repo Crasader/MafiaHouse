@@ -54,9 +54,11 @@ void Item::initMissingItem() {
 	body->setCollisionBitmask(0);
 	body->setContactTestBitmask(0xFFFFFFFF);
 	body->setEnabled(false);
+	missingItem->setAnchorPoint(Vec2(0, 0));
 	missingItem->setPhysicsBody(body);
 	missingItem->setName("missing_item");
-	missingItem->setOpacity(155);
+	missingItem->setOpacity(110);
+	missingItem->setGlobalZOrder(6);
 	missingItem->setVisible(false);
 	missingItem->setPosition(getPosition());
 	missingItem->owner = this;
@@ -81,12 +83,16 @@ void Item::initPickedUpItem() {
 		flipX();
 	}
 	knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
+	if (missingItem != NULL) {
+		missingItem->setVisible(true);
+		missingItem->getPhysicsBody()->setEnabled(true);
+	}
 }
 
 void Item::initHeldItem() {
 	didHitWall = false;
 	setAnchorPoint(Vec2(0, 0));
-	setPosition(Vec2(54, 33));
+	setPosition(Vec2(50, 33));
 	setRotation(-45.0f);
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
@@ -149,7 +155,7 @@ void Item::prepareThrow(float angle) {
 
 void Item::prepareCrouchThrow(float angle) {
 	setAnchorPoint(Vec2(0, 0.5));
-	setPosition(Vec2(26, 40));
+	setPosition(Vec2(26, 32));
 	setRotation(angle);
 }
 
@@ -216,6 +222,8 @@ void Item::initThrownItem() {
 void Item::initFallItem() {
 	prevState = state;
 	state = FALLING;
+	setRotation(0);
+	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);
@@ -462,7 +470,7 @@ Gun::Gun() {
 	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
-	hitstun = 10 FRAMES;
+	hitstun = 8 FRAMES;
 	doorDmg = 100;
 	canBreakDoor = true;
 	//tag = 10100;//10100 - 10199 for knives
@@ -586,7 +594,7 @@ void Item::playerShoot(float angle) {
 		return true;
 	};
 	startpoint = getParent()->convertToWorldSpace(getPosition()) + direction * 60;
-	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, (startpoint + direction * 1000) - Vec2(RandomHelper::random_int(-200, 200), RandomHelper::random_int(-200, 200)), nullptr);//ray cast in direction of aim
+	director->getRunningScene()->getPhysicsWorld()->rayCast(func, startpoint, (startpoint + direction * 1000) - Vec2(RandomHelper::random_int(-90, 90), RandomHelper::random_int(-90, 90)), nullptr);//ray cast in direction of aim
 	if (endpoint == Vec2(0, 0)) {//nothing was hit
 		endpoint = startpoint + direction * 1000;//for drawing bullet line
 	}
@@ -599,14 +607,14 @@ Fist::Fist(){
 	hp = 1;
 	dmg = 25;
 	knockback = Vec2(20, 0);
-	hitstun = 7 FRAMES;
-	doorDmg = 7;
+	hitstun = 5 FRAMES;
+	doorDmg = 8;
 	canBreakDoor = true;
 	effect = NONE;
 	attackType = STAB;
-	startTime = 6 FRAMES;
-	attackTime = 12 FRAMES;
-	lagTime = 14 FRAMES;
+	startTime = 10 FRAMES;
+	attackTime = 10 FRAMES;
+	lagTime = 16 FRAMES;
 	range = 25;
 	rangeRadius = 90;
 	powerLevel = 0;
@@ -644,16 +652,39 @@ Knife::Knife(){
 	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
-	hitstun = 9 FRAMES;
-	doorDmg = 7;
+	hitstun = 8 FRAMES;
+	doorDmg = 8;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
-	startTime = 11 FRAMES;
-	attackTime = 8 FRAMES;
-	lagTime = 13 FRAMES;
+	startTime = 12 FRAMES;
+	attackTime = 9 FRAMES;
+	lagTime = 17 FRAMES;
 	range = 35;
 	rangeRadius = 100;
+	powerLevel = 5;
+	noiseLevel = 0.45f;
+}
+
+//Screwdriver Class:
+Screwdriver::Screwdriver() {
+	itemFile = "items/screwdriver.png";
+	outlineName = "items/screwdriver_outline.png";
+	Item::Item();
+	priority = 3;
+	maxHP = 3;
+	hp = maxHP;
+	dmg = 34;
+	hitstun = 5 FRAMES;
+	doorDmg = 50;
+	//tag = 10100;//10100 - 10199 for knives
+	effect = KNOCKOUT;
+	attackType = STAB;
+	startTime = 9 FRAMES;
+	attackTime = 7 FRAMES;
+	lagTime = 14 FRAMES;
+	range = 28;
+	rangeRadius = 85;
 	powerLevel = 5;
 	noiseLevel = 0.45f;
 }
@@ -668,14 +699,14 @@ Key::Key(){
 	maxHP = 4;
 	hp = maxHP;
 	dmg = 25;
-	hitstun = 4 FRAMES;
-	doorDmg = 6;
+	hitstun = 2 FRAMES;
+	doorDmg = 8;
 	effect = NONE;
 	attackType = STAB;
-	startTime = 6 FRAMES;
+	startTime = 7 FRAMES;
 	attackTime = 6 FRAMES;
-	lagTime = 7 FRAMES;
-	range = 26;
+	lagTime = 12 FRAMES;
+	range = 25;
 	rangeRadius = 80;
 	powerLevel = 0;
 	noiseLevel = 0.25f;
@@ -691,14 +722,14 @@ Hammer::Hammer(){
 	hp = maxHP;
 	dmg = 34;
 	knockback = Vec2(70, 0);
-	hitstun = 20 FRAMES;
+	hitstun = 14 FRAMES;
 	doorDmg = 34;
 	canBreakDoor = true;
 	effect = KNOCKOUT;
 	attackType = SWING;
-	startTime = 16 FRAMES;
+	startTime = 15 FRAMES;
 	attackTime = 20 FRAMES;
-	lagTime = 20 FRAMES;
+	lagTime = 24 FRAMES;
 	range = 44;
 	rangeRadius = 125;
 	powerLevel = 10;
@@ -716,12 +747,12 @@ Mug::Mug() {
 	hp = maxHP;
 	dmg = 33;
 	knockback = Vec2(10, 0);
-	hitstun = 8 FRAMES;
+	hitstun = 6 FRAMES;
 	effect = KNOCKOUT;
 	attackType = SWING;
 	startTime = 10 FRAMES;
 	attackTime = 10 FRAMES;
-	lagTime = 12 FRAMES;
+	lagTime = 14 FRAMES;
 	range = 24;
 	rangeRadius = 60;
 	powerLevel = 1;
@@ -738,14 +769,14 @@ Crowbar::Crowbar() {
 	hp = maxHP;
 	dmg = 50;
 	knockback = Vec2(100, 0);
-	hitstun = 26 FRAMES;
+	hitstun = 20 FRAMES;
 	doorDmg = 50;
 	canBreakDoor = true;
 	effect = KILL;
 	attackType = SWING;
-	startTime = 24 FRAMES;
+	startTime = 20 FRAMES;
 	attackTime = 27 FRAMES;
-	lagTime = 25 FRAMES;
+	lagTime = 28 FRAMES;
 	range = 60;
 	rangeRadius = 140;
 	powerLevel = 15;
@@ -770,7 +801,7 @@ IronBar::IronBar() {
 	attackType = SWING;
 	startTime = 12 FRAMES;
 	attackTime = 14 FRAMES;
-	lagTime = 18 FRAMES;
+	lagTime = 20 FRAMES;
 	range = 34;
 	rangeRadius = 120;
 	powerLevel = 4;

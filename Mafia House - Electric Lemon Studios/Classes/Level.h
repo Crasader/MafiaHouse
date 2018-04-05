@@ -68,7 +68,7 @@ protected:
 	int levelNum;
 
 	float levelFinishTime = -1;
-	float completeScreenDisplayTime = 6.0f;//minimum time the completion screen will display for
+	float completeScreenDisplayTime = 2.0f;//minimum time the completion screen will display for
 
 	bool gotBestTime = false;
 	bool fullAssassin = false;//kill all enemies without being detected
@@ -144,6 +144,10 @@ protected:
 	float prevLeftPressTime = -1;
 	float prevRightPressTime = -1;
 	float doublePressTime = 13 FRAMES;//amount of time for a doulbe press to register
+
+	//for hold inputs
+	float startPressTime = -1;
+	float holdTime = 11 FRAMES;
 
 	bool onContactBegin(PhysicsContact &contact);
 
