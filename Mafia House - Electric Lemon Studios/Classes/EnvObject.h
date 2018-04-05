@@ -25,15 +25,18 @@ public:
 	virtual void initObject();
 
 	void initHideBox();
+	void initHideBox2();
 
 	float surfaceHeight;
 
 protected:
+	bool hasHideBox = true;
 	Size surfaceSize;
 	Vec2 surfaceOffset;
 	Size hideBoxSize;
 	Vec2 hideBoxPosition;
 	Node* hideBox;
+	Node* hideBox2;
 };
 
 class Table : public PhysObject{
@@ -42,6 +45,14 @@ public:
 	~Table() {}
 	CREATE_WITH_FRAME(Table);
 	CREATE_WITH_FRAME_NAME(Table, "objects/fancy_table.png");
+};
+
+class KitchenTable : public PhysObject {
+public:
+	KitchenTable();
+	~KitchenTable() {}
+	CREATE_WITH_FRAME(KitchenTable);
+	CREATE_WITH_FRAME_NAME(KitchenTable, "objects/kitchen_table.png");
 };
 
 class Fountain : public PhysObject {

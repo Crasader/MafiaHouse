@@ -1,5 +1,5 @@
 250
-600|bg,Kitchen.png|player,0,-10|phys_object,table,330,0|enemy,thug,230,0,NONE,knife|door,right
+600|bg,Kitchen.png|player,0,-10|phys_object,kitch_table,320,0|enemy,thug,230,0,NONE,knife|door,right
 500|bg,UpperHallway.png|door,left|stair,1,A,75,0|enemy,guard,430,0,STAND_LEFT,gun|enemy,guard,340,0,STAND_LEFT,gun|door,right,locked
 400|bg,MasterBedroom.png|door,left|item,knife,105,0|vent,top,open,55|enemy,boss,300,0,STAND_LEFT,gun|exit,right
 FLOOR_END

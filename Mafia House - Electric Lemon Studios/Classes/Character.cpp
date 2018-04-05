@@ -13,10 +13,15 @@ Vec2 Character::getPosition() {
 }
 
 void Character::setPosition(Vec2 pos) {
-	Node::setPosition(pos + Vec2(FRAME_OFFSET, 0));
+	Node::setPosition(pos - Vec2(FRAME_OFFSET, 0));
 }
 void Character::setPositionX(float posX) {
-	Node::setPositionX(posX + FRAME_OFFSET);
+	Node::setPositionX(posX - FRAME_OFFSET);
+}
+
+void Character::setRoomPosition(Vec2 roomPos, Vec2 position) {
+	setPosition(roomPos + position);
+	initialPos = getPosition();
 }
 
 void Character::flipX() {
@@ -170,16 +175,18 @@ void Character::useDoor() {
 
 void Character::useStair(GameLayer* mainLayer) {
 	if (stairToUse != NULL) {
+		usedStair = stairToUse;
 		stop();
 		auto callback1 = CallFunc::create([this, mainLayer]() {
-			if (stairToUse != NULL) {
-				stairToUse->setSpriteFrame(frameCache->getSpriteFrameByName("objects/stairdoor_open.png"));
-				stairToUse->numLabel->setVisible(false);
+			if (usedStair != NULL) {
+				usedStair->setSpriteFrame(frameCache->getSpriteFrameByName("objects/stairdoor_open.png"));
+				usedStair->numLabel->setVisible(false);
 			}
 		});
 		auto callback2 = CallFunc::create([this, mainLayer]() {
-			if (stairToUse != NULL) {
-				stairToUse->use(this, mainLayer);
+			if (usedStair != NULL) {
+				usedStair->use(this, mainLayer);
+				usedStair = NULL;
 			}
 		});
 		auto wait = MoveBy::create(0.2f, Vec2(0, 0));

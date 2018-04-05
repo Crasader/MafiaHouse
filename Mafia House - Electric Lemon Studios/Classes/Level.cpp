@@ -196,7 +196,7 @@ void Level::onStart(float deltaTime){
 
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -240));
 
-	getScene()->getPhysicsWorld()->setSubsteps(4);
+	getScene()->getPhysicsWorld()->setAutoStep(false);
 
 	//physics debug drawing:
 	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
@@ -363,12 +363,12 @@ void Level::getStats(float deltaTime) {
 	darkenScreen->setGlobalZOrder(11);
 	hudLayer->addChild(darkenScreen);
 
-	runAction(MoveBy::create(0.5f, Vec2(0, 0)))->setTag(0);
-	runAction(MoveBy::create(1.0f,Vec2(0, 0)))->setTag(1);
-	runAction(MoveBy::create(1.5f, Vec2(0, 0)))->setTag(2);
-	runAction(MoveBy::create(2.0f, Vec2(0, 0)))->setTag(3);
-	runAction(MoveBy::create(2.5f, Vec2(0, 0)))->setTag(4);
-	runAction(MoveBy::create(2.0f, Vec2(0, 0)))->setTag(5);
+	runAction(MoveBy::create(0.6f, Vec2(0, 0)))->setTag(0);
+	runAction(MoveBy::create(1.2f,Vec2(0, 0)))->setTag(1);
+	runAction(MoveBy::create(1.8f, Vec2(0, 0)))->setTag(2);
+	runAction(MoveBy::create(2.4f, Vec2(0, 0)))->setTag(3);
+	runAction(MoveBy::create(3.0f, Vec2(0, 0)))->setTag(4);
+	runAction(MoveBy::create(2.4f, Vec2(0, 0)))->setTag(5);
 
 	schedule(schedule_selector(Level::onEnd));
 }
@@ -403,7 +403,7 @@ void Level::onEnd(float deltaTime) {
 	}
 	if (getActionByTag(5) == NULL) {
 		if (continueLabel->getActionByTag(10) == NULL) {
-			continueLabel->runAction(RepeatForever::create(Blink::create(2.0, 1)))->setTag(10);
+			continueLabel->runAction(RepeatForever::create(Blink::create(2.2, 1)))->setTag(10);
 		}
 	}
 	if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//skip stats showing up individually
@@ -453,7 +453,7 @@ void Level::gameOver(float deltaTime) {
 	if (initGameOver == false) {
 		gameOverScreen = Sprite::create("menu/gameOver.png");
 		gameOverScreen->getTexture()->setTexParameters(texParams);
-		gameOverScreen->setGlobalZOrder(20);
+		gameOverScreen->setGlobalZOrder(12);
 		gameOverScreen->setOpacity(0);
 		gameOverScreen->runAction(FadeIn::create(4.0f))->setTag(1);
 		hudLayer->addChild(gameOverScreen);
@@ -491,6 +491,7 @@ void Level::gameOver(float deltaTime) {
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
+	getScene()->getPhysicsWorld()->step(deltaTime);
 
 	if (player->isReallyDead() == true) {//player died, gameover
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/gameover.wav");
@@ -502,7 +503,7 @@ void Level::update(float deltaTime){
 			mainLayer->items[i]->pause();
 		}
 		for (int i = 0; i < enemies.size(); i++) {
-			enemies[i]->pauseSchedulerAndActions();
+			enemies[i]->pause();
 		}
 		schedule(schedule_selector(Level::gameOver));
 	}
@@ -540,7 +541,7 @@ void Level::update(float deltaTime){
 		removeChild(noiseCircles, true);
 	}
 	noiseCircles = DrawNode::create();
-	noiseCircles->setGlobalZOrder(12);
+	noiseCircles->setGlobalZOrder(9);
 	//noise update
 	for (int i = 0; i < mainLayer->noises.size(); i++) {
 		if (gameTime - mainLayer->noises[i]->startTime >= mainLayer->noises[i]->duration) {//noise has expired
@@ -589,7 +590,7 @@ void Level::update(float deltaTime){
 		removeChild(gunShots, true);
 	}
 	gunShots = DrawNode::create();
-	gunShots->setGlobalZOrder(9);
+	gunShots->setGlobalZOrder(7);
 	//items update
 	for (int i = 0; i < mainLayer->items.size(); i++) {
 		if (mainLayer->items[i]->getState() != Item::HELD) {
@@ -621,23 +622,6 @@ void Level::update(float deltaTime){
 			}
 			mainLayer->items[i]->makeNoise = false;
 		}
-		if (mainLayer->items[i]->getState() == Item::GROUND) {
-			mainLayer->items[i]->hasMoved();
-			mainLayer->items[i]->playerInRange(player);
-			mainLayer->items[i]->checkGroundSpeed();
-		}
-		else if (mainLayer->items[i]->getState() == Item::HELD) {
-			mainLayer->items[i]->stealRange(player);
-		}
-		else if (mainLayer->items[i]->getState() == Item::THROWN) {
-			mainLayer->items[i]->checkThrownSpeed();
-			if (mainLayer->items[i]->getAttackType() == Item::SWING || mainLayer->items[i]->getAttackType() == Item::SHOOT) {
-				mainLayer->items[i]->spin();
-			}
-		}
-		else if (mainLayer->items[i]->getState() == Item::FALLING) {
-			mainLayer->items[i]->checkFallingSpeed();
-		}
 		//for guns being shot
 		if (mainLayer->items[i]->getAttackType() == Item::SHOOT && mainLayer->items[i]->wasShot == true) {
 			mainLayer->items[i]->wasShot = false;
@@ -657,19 +641,12 @@ void Level::update(float deltaTime){
 		mainLayer->bodies[i]->updateRoom(mainLayer->floors[mainLayer->bodies[i]->currentFloor].rooms);
 		if (mainLayer->bodies[i]->makeNoise == true) {
 			if (mainLayer->bodies[i]->getFlippedX() == false) {
-				mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() + Vec2(mainLayer->bodies[i]->getContentSize() / 2), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
+				mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() + Vec2(mainLayer->bodies[i]->getContentSize().width, 0), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
 			}
 			else {
-				mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() - Vec2(mainLayer->bodies[i]->getContentSize() / 2), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
+				mainLayer->bodies[i]->createNoise(mainLayer->bodies[i]->noiseLevel * mainLayer->bodies[i]->getPhysicsBody()->getVelocity().getLength(), mainLayer->bodies[i]->noiseLevel, gameTime, mainLayer->bodies[i]->getPosition() - Vec2(mainLayer->bodies[i]->getContentSize().width, 0), Vec2(mainLayer->bodies[i]->currentRoom, mainLayer->bodies[i]->currentFloor), "body_hitting_wall", &mainLayer->noises);
 			}
 			mainLayer->bodies[i]->makeNoise = false;
-		}
-		if (mainLayer->bodies[i]->getState() == Item::GROUND) {
-			mainLayer->bodies[i]->playerInRange(player);
-			mainLayer->bodies[i]->checkGroundSpeed();
-		}
-		if (mainLayer->bodies[i]->getState() == Item::THROWN) {
-			mainLayer->bodies[i]->checkThrownSpeed();
 		}
 	}
 
@@ -678,28 +655,27 @@ void Level::update(float deltaTime){
 		removeChild(visionRays, true);
 	}
 	visionRays = DrawNode::create();
-	visionRays->setGlobalZOrder(10);
+	visionRays->setGlobalZOrder(8);
 	//enemy update
 	vector<Vec2> points;
 	Vec2 start;
+	//removing dead enemies
 	for (int i = 0; i < enemies.size(); i++) {
-		//remove dead enemies from scene, will be replaced with a dead body
-		//this will be done in Death State exit function
 		if (enemies.at(i)->isReallyDead() == true) {
 			if (enemies[i]->checkBoss() == true) {
 				numBosses--;//you killed a boss
 				Label* bossKillLabel;
-				if (numBosses <= 0){
+				if (numBosses <= 0) {
 					bossKillLabel = Label::createWithTTF("MISSION COMPLETE. RETURN TO EXIT.", "fonts/pixelFJ8pt1__.ttf", 10);
 				}
 				else {
-					bossKillLabel = Label::createWithTTF("BOSS KILLED. " + std::to_string(numBosses) + " LEFT TO KILL." , "fonts/pixelFJ8pt1__.ttf", 10);
+					bossKillLabel = Label::createWithTTF("BOSS KILLED. " + std::to_string(numBosses) + " LEFT TO KILL.", "fonts/pixelFJ8pt1__.ttf", 10);
 				}
 				bossKillLabel->getFontAtlas()->setAliasTexParameters();
 				bossKillLabel->setGlobalZOrder(20);
 				addChild(bossKillLabel);
 				bossKillLabel->setOpacity(0);
-				bossKillLabel->setPosition(player->getPosition() + Vec2(0,90));
+				bossKillLabel->setPosition(player->getPosition() + Vec2(0, 90));
 				auto fadeIn = FadeIn::create(0.5);
 				auto moveUp = MoveBy::create(5.0, Vec2(0, 35));
 				auto wait = MoveBy::create(2.5, Vec2(0, 0));
@@ -718,7 +694,8 @@ void Level::update(float deltaTime){
 			i--;
 			continue;
 		}
-
+	}
+	for (int i = 0; i < enemies.size(); i++) {
 		enemies[i]->enemies = enemies;//giving each enemy the current list of enemies in level
 
 		enemies[i]->update(mainLayer, gameTime);
@@ -728,7 +705,7 @@ void Level::update(float deltaTime){
 		//drawing vision rays
 		for (int j = 0; j < points.size(); j++) {
 			//visionRays->drawDot(points[j], 1, Color4F::WHITE);
-			visionRays->drawSegment(start, points[j], 2, Color4F(1, 0.9, 0.1, 0.2));
+			visionRays->drawSegment(start, points[j], 2.2, Color4F(1, 0.9, 0.1, 0.2));
 		}
 		points.clear();
 	}
@@ -739,18 +716,28 @@ void Level::update(float deltaTime){
 
 	//check if player is going to interact with door/stairway, pick up item, hide behind object
 	if (INPUTS->getKeyPress(KeyCode::KEY_E)) {
-		if ((player->itemToPickUp != NULL && player->heldItem == NULL) || player->bodyToPickUp != NULL) {
-			player->handleInput(mainLayer, gameTime, PICKUP);
+		if (player->isHidden() == false) {
+			if ((player->itemToPickUp != NULL && player->heldItem == NULL) || player->bodyToPickUp != NULL) {
+				player->handleInput(mainLayer, gameTime, PICKUP);
+			}
+			else {
+				if (player->doorToUse != NULL) {
+					player->handleInput(mainLayer, gameTime, USE_DOOR);
+				}
+				else if (player->stairToUse != NULL) {
+					player->handleInput(mainLayer, gameTime, USE_STAIR);
+				}
+				else if (player->objectToHideBehind != NULL) {
+					player->handleInput(mainLayer, gameTime, HIDE);
+				}
+			}
 		}
-		else {
-			if (player->doorToUse != NULL) {
-				player->handleInput(mainLayer, gameTime, USE_DOOR);
-			}
-			else if (player->stairToUse != NULL) {
-				player->handleInput(mainLayer, gameTime, USE_STAIR);
-			}
-			else if(player->objectToHideBehind != NULL) {
+		else {//player is hidden
+			if (player->objectToHideBehind != NULL) {
 				player->handleInput(mainLayer, gameTime, HIDE);
+			}
+			else if ((player->itemToPickUp != NULL && player->heldItem == NULL) || player->bodyToPickUp != NULL) {
+				player->handleInput(mainLayer, gameTime, PICKUP);
 			}
 		}
 	}
@@ -868,6 +855,34 @@ void Level::update(float deltaTime){
 	//reseting item collision check with hide radii
 	for (int i = 0; i < mainLayer->items.size(); i++) {
 		mainLayer->items[i]->isUnderObject = false;
+		mainLayer->items[i]->didHitWall = false;
+		if (mainLayer->items[i]->getState() == Item::GROUND) {
+			mainLayer->items[i]->hasMoved();
+			mainLayer->items[i]->playerInRange(player);
+			mainLayer->items[i]->checkGroundSpeed();
+		}
+		else if (mainLayer->items[i]->getState() == Item::HELD) {
+			mainLayer->items[i]->stealRange(player);
+		}
+		else if (mainLayer->items[i]->getState() == Item::THROWN) {
+			mainLayer->items[i]->checkThrownSpeed();
+			if (mainLayer->items[i]->getAttackType() == Item::SWING || mainLayer->items[i]->getAttackType() == Item::SHOOT) {
+				mainLayer->items[i]->spin();
+			}
+		}
+		else if (mainLayer->items[i]->getState() == Item::FALLING) {
+			mainLayer->items[i]->checkFallingSpeed();
+		}
+	}
+	//dead bodies update
+	for (int i = 0; i < mainLayer->bodies.size(); i++) {
+		if (mainLayer->bodies[i]->getState() == Item::GROUND) {
+			mainLayer->bodies[i]->playerInRange(player);
+			mainLayer->bodies[i]->checkGroundSpeed();
+		}
+		if (mainLayer->bodies[i]->getState() == Item::THROWN) {
+			mainLayer->bodies[i]->checkThrownSpeed();
+		}
 	}
 
 	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
@@ -896,7 +911,6 @@ void Level::update(float deltaTime){
 	if (INPUTS->getKeyPress(KeyCode::KEY_P)) {
 		unscheduleUpdate();
 		getScene()->getPhysicsWorld()->setSpeed(0);
-		schedule(schedule_selector(Level::pauseScreen));
 		pauseLayer->setPositionZ(camera->getPositionZ() - 459.42983);
 		pauseLayer->setPosition(camera->getPosition());
 		pauseLayer->setVisible(true);
@@ -908,6 +922,7 @@ void Level::update(float deltaTime){
 		for (int i = 0; i < enemies.size(); i++) {
 			enemies[i]->pause();
 		}
+		schedule(schedule_selector(Level::pauseScreen));
 	}
 
 	//update the keyboard each frame
@@ -1033,7 +1048,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 
 		// check if item has collided with celing
-		if (a->getName() == "held_item" && b->getName() == "ceiling")
+		if (a->getName() == "held_item" && (b->getName() == "ceiling" || b->getName() == "vent"))
 		{
 			if (static_cast<Item*>(a)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
 				//solve.setFriction(0);
@@ -1045,7 +1060,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				return true;
 			}
 		}
-		else if (a->getName() == "ceiling" && b->getName() == "held_item") {
+		else if ((a->getName() == "ceiling" || a->getName() == "vent") && b->getName() == "held_item") {
 
 			if (static_cast<Item*>(b)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
 				//solve.setFriction(0);
@@ -1087,7 +1102,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 		}
 		// check if item has collided with wall
-		if (a->getName() == "held_item" && b->getName() == "wall")
+		if (a->getName() == "held_item" && (b->getName() == "wall" || b->getName() == "door" || b->getName() == "exit_door"))
 		{
 			if (static_cast<Item*>(a)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
 				//solve.setSurfaceVelocity(Vec2(-100, 0));
@@ -1099,7 +1114,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 				return true;
 			}
 		}
-		else if (a->getName() == "wall" && b->getName() == "held_item") {
+		else if ((a->getName() == "wall" || a->getName() == "door"  || a->getName() == "exit_door") && b->getName() == "held_item") {
 			if (static_cast<Item*>(b)->getState() == Item::THROWN || static_cast<Item*>(a)->getState() == Item::FALLING) {
 				//solve.setSurfaceVelocity(Vec2(-100, 0));
 				//static_cast<Item*>(b)->move(Vec2(-150, 0));
@@ -1325,14 +1340,18 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//check if player can pick up item
 		if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 		{
-			player->itemToPickUp = static_cast<Item*>(b->getParent());
-			static_cast<Item*>(b->getParent())->playerRange = true;
+			if (player->behindObject == false) {
+				player->itemToPickUp = static_cast<Item*>(b->getParent());
+				static_cast<Item*>(b->getParent())->playerRange = true;
+			}
 			return false;
 		}
 		else if (a->getName() == "item_radius" && b->getName() == "player_pickup")
 		{
-			player->itemToPickUp = static_cast<Item*>(a->getParent());
-			static_cast<Item*>(a->getParent())->playerRange = true;
+			if (player->behindObject == false) {
+				player->itemToPickUp = static_cast<Item*>(a->getParent());
+				static_cast<Item*>(a->getParent())->playerRange = true;
+			}
 			return false;
 		}
 
@@ -1702,6 +1721,18 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 		return true;
 	}
 
+	//items and bodies
+	if (a->getName() == "held_item" && b->getName() == "dead_body")
+	{
+		static_cast<DeadBody*>(b)->itemHit();
+		return true;
+	}
+	else if (a->getName() == "dead_body"&& b->getName() == "held_item")
+	{
+		static_cast<DeadBody*>(a)->itemHit();
+		return true;
+	}
+
 	//items and door
 	if (a->getName() == "held_item" && (b->getName() == "door" || b->getName() == "vent"))
 	{
@@ -2004,6 +2035,9 @@ bool Level::initLevel(string filename){
 				PhysObject* physObject;
 				if (pieces[1] == "table") {
 					physObject = Table::createWithSpriteFrameName();
+				}
+				else if (pieces[1] == "kitch_table") {
+					physObject = KitchenTable::createWithSpriteFrameName();
 				}
 				else if (pieces[1] == "fountain") {
 					physObject = Fountain::createWithSpriteFrameName();

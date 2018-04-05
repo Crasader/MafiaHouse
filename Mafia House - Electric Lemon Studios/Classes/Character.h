@@ -44,6 +44,7 @@ public:
 	Vec2 getPosition();
 	void setPosition(Vec2 pos);
 	void setPositionX(float posX);
+	void setRoomPosition(Vec2 roomPos, Vec2 position);//set the objects position relative to the room it is generated inside
 
 	void updateRoom(vector<RoomData*> rooms);
 
@@ -71,6 +72,8 @@ public:
 	//for Interacting with objects:
 	Door* doorToUse = NULL;//the tag of the door the player can open/close
 	Stair* stairToUse = NULL;//the tag of the stairway the player can use
+
+	Stair* usedStair = NULL;
 
 	//for Picking Up items:
 	Item* itemToPickUp = NULL;//the the item the player can pick up
@@ -101,7 +104,7 @@ protected:
 	//for aiming
 	float aimAngle = 0;//-90 is up, +90 is down
 	//for throwing items
-	float thrownItemDelay = 10 FRAMES;//the time after you throw an item during which you cannot be hit by it
+	float thrownItemDelay = 60 FRAMES;//the time after you throw an item during which you cannot be hit by it
 
 	//for movement:
 	float moveSpeed = 1.0f;
@@ -110,6 +113,9 @@ protected:
 	float hitStunStart = -1.;
 	float hitStunTime = 0.0f;
 	bool wasInHitStun = false;
+
+	//for hitting walls/doors
+	bool hitWallWithItem = false;
 
 	//for combat
 	float maxHP = 100;

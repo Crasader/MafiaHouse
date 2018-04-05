@@ -54,6 +54,7 @@ public:
 	bool moveToDoor(Node* target);
 	Vec2 furthestDirection();//finds the direciton in which the enemy can move furthest on current floor
 	void runaway(GameLayer* mainlayer, float time);
+	Item* findClosestKey(GameLayer* mainLayer);
 	Item* findClosestItem(GameLayer* mainLayer);
 	Item* findBetterItem(GameLayer* mainLayer);
 	Item* findMoreRange(GameLayer* mainLayer);
@@ -233,6 +234,7 @@ protected:
 	float furthestDistance = 0;
 
 	//for going to items while alerted:
+	bool goingToKey = false;
 	bool goingToFirstItem = false;
 	bool goingToBetterItem = false;
 	bool goingToMoreRange = false;
@@ -242,7 +244,7 @@ protected:
 	vector<MissingItem*> seenMissingItems;
 	vector<float> seenMissingTimes;
 	vector<float> seenTimes;
-	float memoryTime = 45.0f;//number of seconds they remember seeing an item for
+	float memoryTime = 90.0f;//number of seconds they remember seeing an item for
 
 	//for locking/unlocking doors
 	bool hasKey = false;

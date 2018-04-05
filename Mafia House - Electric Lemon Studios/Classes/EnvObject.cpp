@@ -64,7 +64,10 @@ void PhysObject::initObject(){
 	initObjectNoPhysics();
 	initBoxBody(surfaceSize);
 	getPhysicsBody()->setPositionOffset(surfaceOffset);
-	initHideBox();
+	if (hasHideBox == true) {
+		initHideBox();
+		initHideBox2();
+	}
 }
 
 void PhysObject::initHideBox() {
@@ -80,13 +83,35 @@ void PhysObject::initHideBox() {
 	addChild(hideBox);
 }
 
+void PhysObject::initHideBox2() {
+	hideBox2 = Node::create();
+	hideBox2->setName("hide_radius");
+	auto body = PhysicsBody::createBox(hideBoxSize);
+	body->setDynamic(false);
+	body->setCategoryBitmask(4);
+	body->setCollisionBitmask(9);
+	body->setContactTestBitmask(0xFFFFFFFF);
+	hideBox2->setPhysicsBody(body);
+	hideBox2->setPosition(hideBoxPosition);
+	addChild(hideBox2);
+}
+
 //Table:
 Table::Table(){
 	PhysObject::PhysObject();
 	surfaceSize = Size(140, 10);
 	surfaceOffset = Vec2(0, 24);
-	hideBoxSize = Size(92, 50);
+	hideBoxSize = Size(85, 63);
 	hideBoxPosition = Vec2(70, 25);
+	surfaceHeight = 55;
+}
+//Kitchen Table:
+KitchenTable::KitchenTable() {
+	PhysObject::PhysObject();
+	surfaceSize = Size(144, 10);
+	surfaceOffset = Vec2(0, 10);
+	hideBoxSize = Size(120, 65);
+	hideBoxPosition = Vec2(92.5, 25);
 	surfaceHeight = 55;
 }
 
@@ -95,7 +120,7 @@ Fountain::Fountain() {
 	PhysObject::PhysObject();
 	surfaceSize = Size(140, 10);
 	surfaceOffset = Vec2(0, 24);
-	hideBoxSize = Size(92, 50);
+	hideBoxSize = Size(85, 63);
 	hideBoxPosition = Vec2(70, 25);
 	surfaceHeight = 55;
 }
@@ -105,17 +130,16 @@ WallShelf::WallShelf() {
 	PhysObject::PhysObject();
 	surfaceSize = Size(120, 15);
 	surfaceOffset = Vec2(0, -5);
-	hideBoxSize = Size(80, 5);
-	hideBoxPosition = Vec2(60, 20);
+	hideBoxSize = Size(70, 20);
+	hideBoxPosition = Vec2(60, 18);
 	surfaceHeight = 10;
 }
 
 //Vent Cover:
 VentCover::VentCover() {
 	PhysObject::PhysObject();
+	hasHideBox = false;
 	surfaceSize = Size(40, 5);
 	surfaceOffset = Vec2(0, 0);
-	hideBoxSize = Size(50, 5);
-	hideBoxPosition = Vec2(30, -3);
 	surfaceHeight = 5;
 }

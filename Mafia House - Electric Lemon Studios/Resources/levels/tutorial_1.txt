@@ -1,5 +1,5 @@
 400
-1400|bg,TutorialLevel.png|player,50,0|phys_object,fountain,150,0|item,ironbar,200,0|item,knife,230,50|enemy,thug,450,0,STAND_RIGHT|enemy,thug,700,0,STAND_RIGHT|hide_object,hedge,915,0|enemy,guard,1125,0,STAND_LEFT|door,right
+1400|bg,TutorialLevel.png|player,50,0|phys_object,fountain,150,0|item,ironbar,200,0|item,knife,230,50|enemy,thug,450,0,STAND_RIGHT,ironbar|enemy,thug,700,0,STAND_RIGHT|hide_object,hedge,915,0|enemy,guard,1125,0,STAND_LEFT|door,right
 200|bg,entranceway.png|door,left|item,key,80,0|door,right,locked
 200|bg,entranceway.png|door,left|exit,right
 FLOOR_END

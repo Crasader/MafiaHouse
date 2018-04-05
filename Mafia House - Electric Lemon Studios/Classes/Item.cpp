@@ -30,7 +30,7 @@ void Item::initObject(Vec2 startPos)
 }
 //initializing pickup radius:
 void Item::initRadius() {
-	Size pickUpBox = getContentSize() * 1.7;
+	Size pickUpBox = getContentSize() * 1.3;
 	pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("item_radius");
@@ -57,10 +57,11 @@ void Item::initMissingItem() {
 	missingItem->setAnchorPoint(Vec2(0, 0));
 	missingItem->setPhysicsBody(body);
 	missingItem->setName("missing_item");
-	missingItem->setOpacity(110);
+	missingItem->setOpacity(90);
 	missingItem->setGlobalZOrder(6);
 	missingItem->setVisible(false);
 	missingItem->setPosition(getPosition());
+	missingItem->setScale(scale);
 	missingItem->owner = this;
 }
 
@@ -118,7 +119,7 @@ void Item::initOffhand() {
 	outline->setColor(ccc3(255, 100, 100));//red
 	outline->setVisible(true);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
-	pickUpRadius->setPositionNormalized(Vec2(0.25, 0.75));
+	pickUpRadius->setPositionNormalized(Vec2(0.55, 0.45));
 }
 
 void Item::rotatePickUpRadius(float degrees) {
@@ -304,22 +305,18 @@ void Item::hitWall() {
 }
 
 void Item::stealRange(Node* player) {
-	if (player->getTag() >= 1 && player->getTag() <= 9) {
-		if (playerRange == true) {
-			outline->setColor(ccc3(100, 255, 100));//green
-		}
-		else {
-			outline->setColor(ccc3(255, 100, 100));//red
-		}
+	if (playerRange == true) {
+		outline->setColor(ccc3(100, 255, 100));//green
+	}
+	else {
+		outline->setColor(ccc3(255, 100, 100));//red
 	}
 	playerRange = false;
 }
 
 void Item::playerInRange(Node* player) {
-	if (player->getTag() >= 1 && player->getTag() <= 9) {
-		if (playerRange == true) {
-			outline->setColor(ccc3(100, 255, 100));//green
-		}
+	if (playerRange == true) {
+		outline->setColor(ccc3(100, 255, 100));//green
 	}
 	playerRange = false;
 }
@@ -612,12 +609,13 @@ Fist::Fist(){
 	canBreakDoor = true;
 	effect = NONE;
 	attackType = STAB;
-	startTime = 10 FRAMES;
+	startTime = 9 FRAMES;
 	attackTime = 10 FRAMES;
-	lagTime = 16 FRAMES;
+	lagTime = 14 FRAMES;
 	range = 25;
 	rangeRadius = 90;
 	powerLevel = 0;
+	enemyItem = true;
 }
 void Fist::initObject(Vec2 startPos){
 	GameObject::initObject(startPos);
@@ -626,6 +624,7 @@ void Fist::initObject(Vec2 startPos){
 	setVisible(false);
 }
 void Fist::initHeldItem() {
+	enemyItem = true;
 	prevState = state;
 	state = HELD;
 	getPhysicsBody()->setEnabled(false);
@@ -657,9 +656,9 @@ Knife::Knife(){
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
-	startTime = 12 FRAMES;
-	attackTime = 9 FRAMES;
-	lagTime = 17 FRAMES;
+	startTime = 13 FRAMES;
+	attackTime = 8 FRAMES;
+	lagTime = 16 FRAMES;
 	range = 35;
 	rangeRadius = 100;
 	powerLevel = 5;
@@ -675,18 +674,18 @@ Screwdriver::Screwdriver() {
 	maxHP = 3;
 	hp = maxHP;
 	dmg = 34;
-	hitstun = 5 FRAMES;
+	hitstun = 3 FRAMES;
 	doorDmg = 50;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KNOCKOUT;
 	attackType = STAB;
 	startTime = 9 FRAMES;
 	attackTime = 7 FRAMES;
-	lagTime = 14 FRAMES;
+	lagTime = 13 FRAMES;
 	range = 28;
 	rangeRadius = 85;
 	powerLevel = 5;
-	noiseLevel = 0.45f;
+	noiseLevel = 0.35f;
 }
 
 //Key Class:
@@ -699,17 +698,17 @@ Key::Key(){
 	maxHP = 4;
 	hp = maxHP;
 	dmg = 25;
-	hitstun = 2 FRAMES;
+	hitstun = 0 FRAMES;
 	doorDmg = 8;
 	effect = NONE;
 	attackType = STAB;
 	startTime = 7 FRAMES;
 	attackTime = 6 FRAMES;
-	lagTime = 12 FRAMES;
+	lagTime = 10 FRAMES;
 	range = 25;
 	rangeRadius = 80;
 	powerLevel = 0;
-	noiseLevel = 0.25f;
+	noiseLevel = 0.2f;
 }
 
 //Hammer Class:
@@ -728,39 +727,41 @@ Hammer::Hammer(){
 	effect = KNOCKOUT;
 	attackType = SWING;
 	startTime = 15 FRAMES;
-	attackTime = 20 FRAMES;
+	attackTime = 18 FRAMES;
 	lagTime = 24 FRAMES;
-	range = 44;
-	rangeRadius = 125;
+	range = 43;
+	rangeRadius = 120;
 	powerLevel = 10;
-	noiseLevel = 0.65f;
+	noiseLevel = 0.60f;
 }
 
 //Mug Class:
 Mug::Mug() {
-	scale = 1.5;
+	scale = 1.4;
 	itemFile = "items/mug.png";
 	outlineName = "items/mug_outline.png";
 	Item::Item();
 	priority = 2;
 	maxHP = 1;
 	hp = maxHP;
-	dmg = 33;
+	dmg = 34;
+	doorDmg = 8;
 	knockback = Vec2(10, 0);
 	hitstun = 6 FRAMES;
 	effect = KNOCKOUT;
 	attackType = SWING;
 	startTime = 10 FRAMES;
-	attackTime = 10 FRAMES;
-	lagTime = 14 FRAMES;
-	range = 24;
-	rangeRadius = 60;
+	attackTime = 11 FRAMES;
+	lagTime = 12 FRAMES;
+	range = 22;
+	rangeRadius = 55;
 	powerLevel = 1;
-	noiseLevel = 1.0f;
+	noiseLevel = 0.75f;
 }
 
 //Crowbar Class:
 Crowbar::Crowbar() {
+	scale = 1.1;
 	itemFile = "items/crowbar.png";
 	outlineName = "items/crowbar_outline.png";
 	Item::Item();
@@ -774,18 +775,17 @@ Crowbar::Crowbar() {
 	canBreakDoor = true;
 	effect = KILL;
 	attackType = SWING;
-	startTime = 20 FRAMES;
-	attackTime = 27 FRAMES;
+	startTime = 18 FRAMES;
+	attackTime = 24 FRAMES;
 	lagTime = 28 FRAMES;
-	range = 60;
+	range = 70;
 	rangeRadius = 140;
 	powerLevel = 15;
-	noiseLevel = 0.85f;
+	noiseLevel = 0.70f;
 }
 
 //Iron Bar Class:
 IronBar::IronBar() {
-	scale = 1.2;
 	itemFile = "items/ironbar.png";
 	outlineName = "items/ironbar_outline.png";
 	Item::Item();
@@ -799,11 +799,11 @@ IronBar::IronBar() {
 	canBreakDoor = true;
 	effect = KNOCKOUT;
 	attackType = SWING;
-	startTime = 12 FRAMES;
-	attackTime = 14 FRAMES;
+	startTime = 13 FRAMES;
+	attackTime = 15 FRAMES;
 	lagTime = 20 FRAMES;
 	range = 34;
 	rangeRadius = 120;
 	powerLevel = 4;
-	noiseLevel = 0.55f;
+	noiseLevel = 0.50f;
 }

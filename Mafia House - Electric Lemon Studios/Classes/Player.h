@@ -76,6 +76,8 @@ public:
 	bool wasClimbing = false;
 	bool hasJumped = false;
 
+	bool behindObject = false;
+
 	//for standing on physical objects
 	//Node* feet;
 	//PhysicsBody* feetBody;
@@ -123,6 +125,7 @@ private:
 	};
 	class ClimbState : public State {
 	public:
+		ClimbState() { type = "climb"; }
 		void enter(Player* player, GameLayer* mainLayer, float time);
 		State* update(Player* player, GameLayer* mainLayer, float time);
 		void exit(Player* player, GameLayer* mainLayer, float time);
@@ -190,6 +193,9 @@ private:
 	float startClimbTime = -1;
 	float startClimbDelay = 0.5f;
 
+	//for rolling lah
+	float rollEndTime = -1;
+	float rollLagTime = 33 FRAMES;
 
 	//for jumping
 	float startJumpTime = -1;
@@ -201,7 +207,7 @@ private:
 	//for moonwalking
 	bool moonwalking = false;
 	float prevStopTime = -1;
-	float stopDelay = 4 FRAMES;//preventing stop inputs from being registered 5 frames from eachother, give moonwalk sliding a 5 frame window to perform
+	float stopDelay = 5 FRAMES;//preventing stop inputs from being registered 5 frames from eachother, give moonwalk sliding a 5 frame window to perform
 
 	//for the timing of attacks/using items:
 	bool attackRelease = false;

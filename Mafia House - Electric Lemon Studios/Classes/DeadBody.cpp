@@ -14,8 +14,8 @@ DeadBody::DeadBody()
 	startTime = 0.5f;
 	effect = NONE;
 	dmg = 25;
-	knockback = Vec2(200, 0);
-	noiseLevel = 1.3f;
+	knockback = Vec2(180, 0);
+	noiseLevel = 1.1f;
 	state = GROUND;
 }
 
@@ -31,7 +31,7 @@ void DeadBody::initObject(Vec2 startPos, string bodyOutlineName)
 
 //initializing pickup radius:
 void DeadBody::initRadius() {
-	Size pickUpBox = Size(getContentSize().width * 1.2, getContentSize().height / 2);
+	Size pickUpBox = Size(getContentSize().width * 1.1, getContentSize().height / 2);
 	pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("body_radius");
@@ -44,6 +44,31 @@ void DeadBody::initRadius() {
 	pickUpRadiusBody->setName("body_radius");
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 	addChild(pickUpRadius);
+}
+
+void DeadBody::itemHit() {
+	auto emitter = ParticleFireworks::create();
+	emitter->setStartColor(Color4F(255, 0, 0, 1));
+	emitter->setEndColor(Color4F(200, 0, 0, 1));//red
+	emitter->setDuration(0.1f);
+	emitter->setStartSize(4.0f);
+	emitter->setStartSizeVar(1.0f);
+	emitter->setEndSize(0.5f);
+	emitter->setAngleVar(55);
+	emitter->setGravity(Vec2(0, -300));
+	emitter->setSpeed(75);
+	emitter->setSpeedVar(200.0f);
+	emitter->setLife(0.05f);
+	emitter->setLifeVar(1.5f);
+	emitter->setTextureWithRect(frameCache->getSpriteFrameByName("particles/pixel.png")->getTexture(), frameCache->getSpriteFrameByName("particles/pixel.png")->getRect());
+	emitter->setGlobalZOrder(30);
+	if (flippedX == false) {
+		emitter->setPosition(getPosition() + getContentSize() / 2);
+	}
+	else {
+		emitter->setPosition(getPosition() + Vec2(-getContentSize().width / 2, getContentSize().height / 2));
+	}
+	director->getRunningScene()->addChild(emitter);
 }
 
 void DeadBody::playerInRange(Node* player) {
@@ -118,6 +143,9 @@ void  DeadBody::initDroppedBody(Vec2 pos, bool flip) {
 		setGlobalZOrder(6);
 		outline->setGlobalZOrder(6);
 	}
+	else {
+		pickUpRadius->getPhysicsBody()->setEnabled(false);
+	}
 	setPosition(pos);
 	if (flip == true) {
 		flipX();
@@ -128,12 +156,12 @@ void  DeadBody::initDroppedBody(Vec2 pos, bool flip) {
 
 void DeadBody::prepareThrow() {
 	setRotation(0);
-	setPosition(Vec2(24, 70));
+	setPosition(Vec2(10, 70));
 }
 
 void DeadBody::prepareCrouchThrow() {
 	setRotation(0);
-	setPosition(Vec2(24, 40));
+	setPosition(Vec2(10, 40));
 }
 
 void DeadBody::throwItem(float angle, Vec2 pos, bool flip) {
@@ -179,7 +207,7 @@ void DeadBody::initGroundItem() {
 
 void DeadBody::checkThrownSpeed() {
 	float speed = getPhysicsBody()->getVelocity().getLength();
-	if (speed <= 20){
+	if (speed <= 10){
 		initGroundItem();
 	}
 }

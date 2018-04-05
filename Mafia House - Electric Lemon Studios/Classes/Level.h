@@ -147,7 +147,7 @@ protected:
 
 	//for hold inputs
 	float startPressTime = -1;
-	float holdTime = 11 FRAMES;
+	float holdTime = 12 FRAMES;
 
 	bool onContactBegin(PhysicsContact &contact);
 

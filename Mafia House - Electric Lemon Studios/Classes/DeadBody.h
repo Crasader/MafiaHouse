@@ -22,6 +22,8 @@ public:
 	void initThrownItem();
 	void initGroundItem();
 
+	void itemHit();
+
 	void checkThrownSpeed();
 	void checkGroundSpeed();
 

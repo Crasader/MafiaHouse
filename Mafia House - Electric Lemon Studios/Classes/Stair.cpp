@@ -57,11 +57,11 @@ void Stair::use(GameObject* user, Node* mainLayer) {
 	numLabel->setVisible(true);
 	user->stop();
 	if (type == 1) {
-		user->setPosition(mainLayer->getChildByTag(getTag() + 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 0));
+		user->setPosition(mainLayer->getChildByTag(getTag() + 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 2));
 		user->currentFloor = static_cast<Stair*>(mainLayer->getChildByTag(getTag() + 1000))->startRoom.y;//setting user's current floor to the floor the stair is on
 	}
 	else if (type == 2) {
-		user->setPosition(mainLayer->getChildByTag(getTag() - 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 0));
+		user->setPosition(mainLayer->getChildByTag(getTag() - 1000)->getPosition() + Vec2(getContentSize().width / 2, 0) - Vec2(user->getContentSize().width / 2, 2));
 		user->currentFloor = static_cast<Stair*>(mainLayer->getChildByTag(getTag() - 1000))->startRoom.y;//setting user's current floor to the floor the stair is on
 	}
 }
@@ -100,10 +100,20 @@ void Door::initObject(Vec2 startPos) {
 	radiusBody->setCategoryBitmask(4);
 	radiusBody->setCollisionBitmask(3);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
-	radiusBody->setTag(10000);
 	radiusBody->setName("door_radius");
 	useRadius->setPhysicsBody(radiusBody);
 	addChild(useRadius);
+	auto useRadius2 = Node::create();
+	useRadius2->setPosition(Vec2(10, 55));
+	useRadius2->setName("door_radius");
+	radiusBody = PhysicsBody::createBox(useBox);
+	radiusBody->setDynamic(false);
+	radiusBody->setCategoryBitmask(4);
+	radiusBody->setCollisionBitmask(3);
+	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setName("door_radius");
+	useRadius2->setPhysicsBody(radiusBody);
+	addChild(useRadius2);
 
 	createOutline(outlineName);
 	createOutline2(outline2Name);
@@ -292,6 +302,8 @@ Vent::~Vent() {
 void Vent::initObject(int orient, Vec2 startPos) {
 	auto useRadius = Node::create();
 	useRadius->setName("vent_radius");
+	auto useRadius2 = Node::create();
+	useRadius2->setName("vent_radius");
 
 	if (orient == 2) {//horizontal
 		size = Size(50, 20);
@@ -301,6 +313,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		closing = GameAnimation(OBJECT, "objects/vent/close/%03d.png", 5, 1 FRAMES, false);
 		useBox = Size(55 + radius / 2, radius + 20);
 		useRadius->setPosition(Vec2(25, 10));
+		useRadius2->setPosition(Vec2(25, 10));
 		//initializing physics body for enemies to walk on
 		auto body = PhysicsBody::createBox(size);//player is half height when crouching
 		body->setContactTestBitmask(0xFFFFFFFF);
@@ -321,6 +334,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		closing = GameAnimation(OBJECT, "objects/vent/vertical/close/%03d.png", 5, 1 FRAMES, false);
 		useBox = Size(radius, 55 + radius / 2);
 		useRadius->setPosition(Vec2(10, 25));
+		useRadius2->setPosition(Vec2(10, 25));
 	}
 	setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
@@ -331,10 +345,17 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	radiusBody->setCategoryBitmask(4);
 	radiusBody->setCollisionBitmask(1);
 	radiusBody->setContactTestBitmask(0xFFFFFFFF);
-	radiusBody->setTag(10000);
 	radiusBody->setName("vent_radius");
 	useRadius->setPhysicsBody(radiusBody);
 	addChild(useRadius);
+	radiusBody = PhysicsBody::createBox(useBox);
+	radiusBody->setDynamic(false);
+	radiusBody->setCategoryBitmask(4);
+	radiusBody->setCollisionBitmask(3);
+	radiusBody->setContactTestBitmask(0xFFFFFFFF);
+	radiusBody->setName("door_radius");
+	useRadius2->setPhysicsBody(radiusBody);
+	addChild(useRadius2);
 
 	createOutline(outlineName);
 	createOutline2(outline2Name);

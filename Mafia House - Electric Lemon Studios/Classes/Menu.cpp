@@ -134,9 +134,13 @@ bool LevelSelectMenu::init() {
 	selectionIndicator->setScale(2.0f);
 	mainLayer->addChild(selectionIndicator, 2);
 
-	auto label = Label::createWithTTF("Backspace <---\nReturn to Main Menu", "fonts/Nexa_Bold.otf", 22);
+	auto label = Label::createWithTTF("Backspace <---\nReturn to Main Menu", "fonts/Nexa_Bold.otf", 24);
 	label->getFontAtlas()->setAliasTexParameters();
-	label->setPositionNormalized(Vec2(0.105, 0.94));
+	label->setPositionNormalized(Vec2(0.105, 0.945));
+	addChild(label);
+	label = Label::createWithTTF("WASD <---\nSelect Option", "fonts/Nexa_Bold.otf", 24);
+	label->getFontAtlas()->setAliasTexParameters();
+	label->setPositionNormalized(Vec2(0.94, 0.945));
 	addChild(label);
 
 	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen

@@ -112,8 +112,8 @@ bool Tutorial3::init()
 	levelNum = 2;
 
 	for (int i = 0; i < enemies.size(); i++) {
-		enemies[i]->turnTime = 2.2f;
-		enemies[i]->visionRadius = 160;
+		enemies[i]->turnTime = 2.0f;
+		enemies[i]->visionRadius = 170;
 	}
 
 	auto buttonDisplay = Sprite::createWithSpriteFrameName("icons/climbButton.png");
@@ -163,7 +163,7 @@ bool Stage1::init()
 	setBackground("backgrounds/back.png", 0.5f);
 	//create level
 	//initLevel("level_1_test.txt");
-	initLevel("main_level.txt");
+	initLevel("levels/stage_1.txt");
 	levelNum = 3;
 	
 	return true;
