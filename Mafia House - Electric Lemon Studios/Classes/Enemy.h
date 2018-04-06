@@ -299,7 +299,7 @@ protected:
 	//stuff for walking:
 	float defaultWalkTime = 5.0f;
 	float walkTime = defaultWalkTime;
-	float defaultWaitTime = 2.0f;
+	float defaultWaitTime = 3.4f;
 	float waitTime = defaultWaitTime;
 	float previousTurnTime = -1;
 	float stopTime = -1;

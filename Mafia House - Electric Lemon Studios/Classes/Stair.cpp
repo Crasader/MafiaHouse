@@ -157,7 +157,7 @@ void Door::updateColour() {
 		float inversePercentage = abs(percentage - 1);//inverts the percentage
 
 		if (locked == false) {
-			setColor(ccc3(255 * percentage, 120 * percentage, 255 * inversePercentage));
+			setColor(ccc3(255 * percentage, 65 * percentage + 55, 255 * inversePercentage));
 		}
 		else {
 			setColor(ccc3(255 * percentage, 25, 255 * inversePercentage));
@@ -191,7 +191,7 @@ void Door::itemHit(Item* item) {
 				}
 			}
 			else {//item is not a gun
-				noiseLevel = item->doorDmg * 5;
+				noiseLevel = item->noiseLevel * 325;
 				hp -= item->doorDmg;//item deals dmg to the door
 				item->hp--;
 			}

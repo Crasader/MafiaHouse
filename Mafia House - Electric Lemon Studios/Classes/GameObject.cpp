@@ -206,9 +206,15 @@ void GameObject::stop() {
 }
 
 void GameObject::slowStop() {
-	getPhysicsBody()->resetForces();
+	//getPhysicsBody()->resetForces();
 	Vec2 force = getPhysicsBody()->getMass() * getPhysicsBody()->getVelocity();
-	getPhysicsBody()->applyForce(-force * 2.0);
+	getPhysicsBody()->applyForce(-force * 4.0);
+}
+
+void GameObject::slowStopX() {
+	//getPhysicsBody()->resetForces();
+	Vec2 force = Vec2(getPhysicsBody()->getMass() * getPhysicsBody()->getVelocity().x, 0);
+	getPhysicsBody()->applyForce(-force * 5.5);
 }
 
 void GameObject::moveNoLimit(Vec2 velocity) {//doesn't check for object's speed limit

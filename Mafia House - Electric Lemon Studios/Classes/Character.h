@@ -16,7 +16,8 @@ enum Input {
 	USE_STAIR,
 	USE_DOOR,
 	HIDE,
-	ROLL,
+	ROLL_LEFT,
+	ROLL_RIGHT,
 	MOVE_LEFT,
 	MOVE_RIGHT,
 	MOVE_UP,
@@ -52,7 +53,7 @@ public:
 
 	//functions for character actions:
 	virtual void pickUpItem(GameLayer* mainLayer);
-	virtual void dropItem(GameLayer* mainLayer);
+	virtual void dropItem(GameLayer* mainLayer, float time);
 	virtual void throwItem(GameLayer* mainLayer, float time);
 	virtual void breakItem(GameLayer* mainLayer);
 

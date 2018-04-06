@@ -1,4 +1,5 @@
 #include "DeadBody.h"
+#include "Player.h"
 
 DeadBody::DeadBody()
 {
@@ -12,6 +13,7 @@ DeadBody::DeadBody()
 	dynamic = true;
 	rotate = false;
 	startTime = 0.5f;
+	lagTime = 0.2f;
 	effect = NONE;
 	dmg = 25;
 	knockback = Vec2(180, 0);
@@ -31,7 +33,7 @@ void DeadBody::initObject(Vec2 startPos, string bodyOutlineName)
 
 //initializing pickup radius:
 void DeadBody::initRadius() {
-	Size pickUpBox = Size(getContentSize().width * 1.1, getContentSize().height / 2);
+	Size pickUpBox = Size(getContentSize().width, getContentSize().height / 2);
 	pickUpRadius = Node::create();
 	pickUpRadius->setPositionNormalized(Vec2(0.5, 0.5));
 	pickUpRadius->setName("body_radius");
@@ -72,7 +74,7 @@ void DeadBody::itemHit() {
 }
 
 void DeadBody::playerInRange(Node* player) {
-	if (isHidden == false && (player->getTag() >= 1 && player->getTag() <= 9)) {//body is not hidden and player is not hidden
+	if (isHidden == false) {//body is not hidden and player is not hidden
 		if (playerRange == true) {
 			outline->setColor(ccc3(100, 255, 115));//green
 		}
@@ -80,16 +82,13 @@ void DeadBody::playerInRange(Node* player) {
 			outline->setColor(ccc3(255, 100, 100));//red
 		}
 	}
-	else if (isHidden == true && player->getTag() >= 10){
+	else if (isHidden == true){
 		if (playerRange == true) {
 			outline->setColor(ccc3(100, 255, 115));//green
 		}
 		else {
 			outline->setColor(ccc3(100, 100, 100));//grey
 		}
-	}
-	else {
-		outline->setColor(ccc3(100, 100, 100));//grey
 	}
 	playerRange = false;
 }
@@ -98,8 +97,7 @@ void DeadBody::initPickedUpBody() {
 	state = HELD;
 	setGlobalZOrder(5);
 	outline->setGlobalZOrder(5);
-	setPosition(Vec2(5, 38));
-	setRotation(0);
+	initHeldBody();
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setDynamic(false);
@@ -112,15 +110,14 @@ void DeadBody::initPickedUpBody() {
 
 void DeadBody::initHeldBody() {
 	setRotation(0);
-	setPosition(Vec2(5, 38));
+	setPosition(Vec2(14, 40));
 }
 
 void DeadBody::initCrouchPickedUpBody() {
 	state = HELD;
 	setGlobalZOrder(5);
 	outline->setGlobalZOrder(5);
-	setPosition(Vec2(5, 8));
-	setRotation(0);
+	initCrouchHeldBody();
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setDynamic(false);
@@ -133,18 +130,19 @@ void DeadBody::initCrouchPickedUpBody() {
 
 void DeadBody::initCrouchHeldBody() {
 	setRotation(0);
-	setPosition(Vec2(5, 8));
+	setPosition(Vec2(14, 8));
 }
 
 void  DeadBody::initDroppedBody(Vec2 pos, bool flip) {
 	getPhysicsBody()->setDynamic(true);
 	initGroundItem();
-	if (isHidden == false) {
+	if (behindObject == false) {
 		setGlobalZOrder(6);
 		outline->setGlobalZOrder(6);
 	}
 	else {
-		pickUpRadius->getPhysicsBody()->setEnabled(false);
+		setGlobalZOrder(2);
+		outline->setGlobalZOrder(2);
 	}
 	setPosition(pos);
 	if (flip == true) {
@@ -161,7 +159,7 @@ void DeadBody::prepareThrow() {
 
 void DeadBody::prepareCrouchThrow() {
 	setRotation(0);
-	setPosition(Vec2(10, 40));
+	setPosition(Vec2(10, 25));
 }
 
 void DeadBody::throwItem(float angle, Vec2 pos, bool flip) {
@@ -197,8 +195,10 @@ void DeadBody::initGroundItem() {
 	state = GROUND;
 	//knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
 	outline->setVisible(true);
-	getPhysicsBody()->setCategoryBitmask(32);
-	getPhysicsBody()->setCollisionBitmask(42);
+	if (behindObject == false) {
+		getPhysicsBody()->setCategoryBitmask(32);
+		getPhysicsBody()->setCollisionBitmask(42);
+	}
 	//getPhysicsBody()->setLinearDamping(0.0f);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	setName("dead_body");
@@ -207,7 +207,7 @@ void DeadBody::initGroundItem() {
 
 void DeadBody::checkThrownSpeed() {
 	float speed = getPhysicsBody()->getVelocity().getLength();
-	if (speed <= 10){
+	if (speed <= 40){
 		initGroundItem();
 	}
 }

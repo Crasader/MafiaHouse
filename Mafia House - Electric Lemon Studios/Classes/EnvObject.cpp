@@ -108,7 +108,7 @@ Table::Table(){
 //Kitchen Table:
 KitchenTable::KitchenTable() {
 	PhysObject::PhysObject();
-	surfaceSize = Size(144, 10);
+	surfaceSize = Size(143, 10);
 	surfaceOffset = Vec2(0, 10);
 	hideBoxSize = Size(120, 65);
 	hideBoxPosition = Vec2(92.5, 25);

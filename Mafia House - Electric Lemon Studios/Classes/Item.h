@@ -86,7 +86,10 @@ public:
 	virtual void checkFallingSpeed();
 	virtual void checkGroundSpeed();
 
-	void startHeld() { state = HELD; }
+	void startHeld() { 
+		state = HELD;
+		startedHeld = true;
+	}
 
 	void rotatePickUpRadius(float degrees);
 
@@ -119,6 +122,8 @@ public:
 	bool holderFlipped = false;
 
 	bool isUnderObject = false;
+
+	bool startedHeld = false;
 
 	void initMissingItem();
 

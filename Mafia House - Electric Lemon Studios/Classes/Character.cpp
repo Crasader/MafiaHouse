@@ -60,7 +60,7 @@ void Character::pickUpItem(GameLayer* mainLayer) {
 	}
 }
 
-void Character::dropItem(GameLayer* mainLayer) {
+void Character::dropItem(GameLayer* mainLayer, float time) {
 	if (heldItem != NULL) {
 		heldItem->setVisible(true);
 		//removing dropped item from inventory
@@ -69,6 +69,10 @@ void Character::dropItem(GameLayer* mainLayer) {
 				inventory.erase(inventory.begin() + i);
 				break;
 			}
+		}
+		if (thrownItem == NULL) {
+			thrownItem = heldItem;
+			thrownItem->thrownTime = time;
 		}
 		heldItem->initDroppedItem(convertToWorldSpace(heldItem->getPosition()), flippedX);
 

@@ -75,6 +75,7 @@ enum AnimationTag {
 	ROLLING,
 	HIDDEN,
 	FALL,
+	ROLL,
 	KNOCKOUT,
 	DEATH,
 	SLEEP,
@@ -139,6 +140,7 @@ public:
 	void stopX();
 	void stop();
 	void slowStop();
+	void slowStopX();
 
 	void moveNoLimit(Vec2 velocity);//doesn't check for object's speed limit
 	void moveAbsoluteNoLimit(Vec2 velocity);//doesn't check for object's speed limit

@@ -196,7 +196,9 @@ void Level::onStart(float deltaTime){
 
 	getScene()->getPhysicsWorld()->setGravity(Vec2(0, -240));
 
-	getScene()->getPhysicsWorld()->setAutoStep(false);
+	//getScene()->getPhysicsWorld()->setAutoStep(false);
+
+	getScene()->getPhysicsWorld()->setSubsteps(3);
 
 	//physics debug drawing:
 	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
@@ -406,11 +408,6 @@ void Level::onEnd(float deltaTime) {
 			continueLabel->runAction(RepeatForever::create(Blink::create(2.2, 1)))->setTag(10);
 		}
 	}
-	if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//skip stats showing up individually
-		stopAllActions();
-		levelFinishTime = -2;
-	}
-
 	if (gameTime - levelFinishTime >= completeScreenDisplayTime) {
 		if (INPUTS->getKey(KeyCode::KEY_SPACE)) {//finish the level
 			startNextLevel();
@@ -420,6 +417,12 @@ void Level::onEnd(float deltaTime) {
 		}
 		else if (INPUTS->getKey(KeyCode::KEY_BACKSPACE)) {//redo level
 			director->replaceScene(LevelSelectMenu::createScene());
+		}
+	}
+	else {
+		if (INPUTS->getKey(KeyCode::KEY_E)) {//skip stats showing up individually
+			stopAllActions();
+			levelFinishTime = -2;
 		}
 	}
 	INPUTS->clearForNextFrame();
@@ -491,7 +494,7 @@ void Level::gameOver(float deltaTime) {
 void Level::update(float deltaTime){
 	//updating time
 	gameTime += deltaTime;
-	getScene()->getPhysicsWorld()->step(deltaTime);
+	//getScene()->getPhysicsWorld()->step(deltaTime);
 
 	if (player->isReallyDead() == true) {//player died, gameover
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/gameover.wav");
@@ -772,12 +775,34 @@ void Level::update(float deltaTime){
 				player->handleInput(mainLayer, gameTime, THROW_RELEASE);
 			}
 			else {
-				player->handleInput(mainLayer, gameTime, DROP);//button was not held for minimum hold time
+				if (player->behindObject == true) {
+					if (player->heldBody != NULL) {
+						player->handleInput(mainLayer, gameTime, DROP);//button was not held for minimum hold time
+					}
+					else {
+						player->handleInput(mainLayer, gameTime, PICKUP);
+					}
+				}
+				else {
+					player->handleInput(mainLayer, gameTime, DROP);//button was not held for minimum hold time
+				}
 			}
 		}
 		startPressTime = -1;
 	}
-
+	//player roll input checking:
+	if (INPUTS->getKeyPress(KeyCode::KEY_D)) {
+		if (gameTime - prevLeftPressTime <= doublePressTime) {//pressed key again with time limit
+			player->handleInput(mainLayer, gameTime, ROLL_RIGHT);
+		}
+		prevLeftPressTime = gameTime;
+	}
+	if (INPUTS->getKeyPress(KeyCode::KEY_A)) {
+		if (gameTime - prevRightPressTime <= doublePressTime) {//pressed key again with time limit
+			player->handleInput(mainLayer, gameTime, ROLL_LEFT);
+		}
+		prevRightPressTime = gameTime;
+	}
 	//player movement input checking:
 	if (INPUTS->getKey(KeyCode::KEY_D)) {
 		player->handleInput(mainLayer, gameTime, MOVE_RIGHT);
@@ -787,19 +812,6 @@ void Level::update(float deltaTime){
 	}
 	if (INPUTS->getKeyRelease(KeyCode::KEY_D) || INPUTS->getKeyRelease(KeyCode::KEY_A)) {
 		player->handleInput(mainLayer, gameTime, STOP);
-	}
-	//player roll input checking:
-	if (INPUTS->getKeyPress(KeyCode::KEY_D)) {
-		if (gameTime - prevLeftPressTime <= doublePressTime) {//pressed key again with time limit
-			player->handleInput(mainLayer, gameTime, ROLL);
-		}
-		prevLeftPressTime = gameTime;
-	}
-	if (INPUTS->getKeyPress(KeyCode::KEY_A)) {
-		if (gameTime - prevRightPressTime <= doublePressTime) {//pressed key again with time limit
-			player->handleInput(mainLayer, gameTime, ROLL);
-		}
-		prevRightPressTime = gameTime;
 	}
 
 	//player aiming input checking:
@@ -885,16 +897,18 @@ void Level::update(float deltaTime){
 		}
 	}
 
-	//camOffset = Vec2(0, 150 / camZoom);//adjusting camera offset with zoom level?
 	//having camera follow player
 	followBox(camPos, player, camBoundingBox, camOffset);
 	camera->setPosition(camPos->getPosition());
+
+	//HUD
 	hudLayer->setPosition(camera->getPosition());//make it so hud stays in same location on screen
 	hudLayer->setPositionZ(camera->getPositionZ() - 459.42983);
 	float percentage = player->getHP() / player->getMaxHP();
 	healthFill->setScaleX(percentage);
 	if (player->heldItem != NULL) {
 		itemIcon->setSpriteFrame(player->heldItem->getSpriteFrame());
+		itemIcon->setScale(player->heldItem->getScale());
 		itemBar->setVisible(true);
 		itemFill->setVisible(true);
 		itemIcon->setVisible(true);
@@ -1046,6 +1060,17 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 			}
 			return false;
 		}
+		//dead body and hide radius
+		if (a->getName() == "dead_body" && b->getName() == "hide_radius")
+		{
+			static_cast<DeadBody*>(a)->isUnderObject = true;
+			return false;
+		}
+		else if (a->getName() == "hide_radius" && b->getName() == "dead_body")
+		{
+			static_cast<DeadBody*>(b)->isUnderObject = true;
+			return false;
+		}
 
 		// check if item has collided with celing
 		if (a->getName() == "held_item" && (b->getName() == "ceiling" || b->getName() == "vent"))
@@ -1164,77 +1189,66 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		if (a->getName() == "player" && b->getName() == "enemy")
 		{
 			if (player->isHidden() != true) {
-				//CCLOG("YOU TOUCHED AN ENEMY");
 				static_cast<Enemy*>(b)->playerTouch();
 				static_cast<Enemy*>(b)->detectedPlayer = player;
 				if (player->getPositionY() < (static_cast<Enemy*>(b)->getPositionY() + static_cast<Enemy*>(b)->getSize().height / 2)) {//only collide if player is below top of enemy
-					static_cast<Player*>(a)->stop();
+					static_cast<Player*>(a)->stopX();
 					float displacement = a->getPositionX() - b->getPositionX();
 					if (displacement <= 0) {
-						static_cast<Enemy*>(b)->moveAbsolute(Vec2(20, 0));
+						static_cast<Enemy*>(b)->moveAbsolute(Vec2(200, 0));
 						static_cast<Player*>(a)->moveAbsolute(Vec2(-200, 0));
 					}
 					else {
-						static_cast<Enemy*>(b)->moveAbsolute(Vec2(-20, 0));
+						static_cast<Enemy*>(b)->moveAbsolute(Vec2(-200, 0));
 						static_cast<Player*>(a)->moveAbsolute(Vec2(200, 0));
 					}
-					//solve.setRestitution(5.0f);
+					solve.setRestitution(1.0f);
 					return true;
 				}
-				else {
-					return false;
-				}
 			}
-			else {
-				//CCLOG("YOU AVOIDED DETECTION");
-				return false;
-			}
+			return false;
 		}
 		else if ((a->getName() == "enemy" && b->getName() == "player")) {
 			if (player->isHidden() != true) {
-				//CCLOG("YOU TOUCHED AN ENEMY");
 				static_cast<Enemy*>(a)->playerTouch();
 				static_cast<Enemy*>(a)->detectedPlayer = player;
 				if (player->getPositionY() < (static_cast<Enemy*>(a)->getPositionY() + static_cast<Enemy*>(a)->getSize().height / 2)) {//only collide if player is below top of enemy
-					static_cast<Player*>(b)->stop();
+					static_cast<Player*>(b)->stopX();
 					float displacement = b->getPositionX() - a->getPositionX();
 					if (displacement <= 0) {
-						static_cast<Enemy*>(a)->moveAbsolute(Vec2(20, 0));
+						static_cast<Enemy*>(a)->moveAbsolute(Vec2(200, 0));
 						static_cast<Player*>(b)->moveAbsolute(Vec2(-200, 0));
 					}
 					else {
-						static_cast<Enemy*>(a)->moveAbsolute(Vec2(-20, 0));
+						static_cast<Enemy*>(a)->moveAbsolute(Vec2(-200, 0));
 						static_cast<Player*>(b)->moveAbsolute(Vec2(200, 0));
 					}
-					//solve.setRestitution(5.0f);
+					solve.setRestitution(1.0f);
 					return true;
 				}
 			}
-			else {
-				//CCLOG("YOU AVOIDED DETECTION");
-				return false;
-			}
+			return false;
 		}
 
 		// check if player has collided with an alerted enemy
 		if ((a->getName() == "player" && b->getName() == "enemy_alert"))
 		{
 			if (player->isHidden() != true) {
-				static_cast<Enemy*>(b)->playerTouch();
-				return true;
+				if (player->getPositionY() < (static_cast<Enemy*>(b)->getPositionY() + static_cast<Enemy*>(b)->getSize().height / 2)) {//only collide if player is below top of enemy
+					static_cast<Enemy*>(b)->playerTouch();
+					return true;
+				}
 			}
-			else {
-				return false;
-			}
+			return false;
 		}
 		else if ((a->getName() == "enemy_alert" && b->getName() == "player")) {
 			if (player->isHidden() != true) {
-				static_cast<Enemy*>(a)->playerTouch();
-				return true;
+				if (player->getPositionY() < (static_cast<Enemy*>(a)->getPositionY() + static_cast<Enemy*>(a)->getSize().height / 2)) {//only collide if player is below top of enemy
+					static_cast<Enemy*>(a)->playerTouch();
+					return true;
+				}
 			}
-			else {
-				return false;
-			}
+			return false;
 		}
 
 		//check if enemy has been hit by player's attack
@@ -1322,7 +1336,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		//check if player can pick up body
 		if (a->getName() == "player_pickup" && b->getName() == "body_radius")
 		{
-			if ((player->getTag() >= 10 && static_cast<DeadBody*>(b->getParent())->isHidden == true) || (player->getTag() < 10 && static_cast<DeadBody*>(b->getParent())->isHidden == false)) {
+			if ((player->behindObject == true && static_cast<DeadBody*>(b->getParent())->behindObject == true) || (player->behindObject == false && static_cast<DeadBody*>(b->getParent())->behindObject == false)) {
 				player->bodyToPickUp = static_cast<DeadBody*>(b->getParent());
 				static_cast<DeadBody*>(b->getParent())->playerRange = true;
 			}
@@ -1330,7 +1344,7 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 		}
 		else if (a->getName() == "body_radius" && b->getName() == "player_pickup")
 		{
-			if ((player->getTag() >= 10 && static_cast<DeadBody*>(a->getParent())->isHidden == true) || (player->getTag() < 10 && static_cast<DeadBody*>(a->getParent())->isHidden == false)) {
+			if ((player->behindObject == true && static_cast<DeadBody*>(a->getParent())->isHidden == true) || (player->behindObject == false && static_cast<DeadBody*>(a->getParent())->behindObject == false)) {
 				player->bodyToPickUp = static_cast<DeadBody*>(a->getParent());
 				static_cast<DeadBody*>(a->getParent())->playerRange = true;
 			}
@@ -1570,18 +1584,16 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(b) != static_cast<Enemy*>(a)->heldItem && static_cast<Item*>(b)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(b)->getState() != Item::FALLING) {
-				if (static_cast<Item*>(b)->isUnderObject == false) {
-					static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
-					if (static_cast<Enemy*>(a)->itemHitBy->getAttackType() == Item::SHOOT) {//guns lose health when thrown at enemies
-						static_cast<Enemy*>(a)->itemHitBy->used();
-					}
+				static_cast<Enemy*>(a)->itemHitBy = static_cast<Item*>(b);
+				if (static_cast<Enemy*>(a)->itemHitBy->getAttackType() == Item::SHOOT) {//guns lose health when thrown at enemies
+					static_cast<Enemy*>(a)->itemHitBy->used();
 				}
 			}
 			else {
 				static_cast<Enemy*>(a)->itemBumpedBy = static_cast<Item*>(b);
 				static_cast<Enemy*>(a)->directionHitFrom = static_cast<Item*>(b)->getPhysicsBody()->getVelocity();
-				static_cast<Item*>(b)->stop();
 				static_cast<Item*>(b)->setRotation(0);
+				static_cast<Item*>(b)->stop();
 				static_cast<Item*>(b)->move(Vec2(-120,0));
 			}
 			if (static_cast<Item*>(b)->getState() == Item::THROWN && static_cast<Item*>(b) != static_cast<Enemy*>(a)->thrownItem) {
@@ -1597,18 +1609,16 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	{
 		if (static_cast<Item*>(a) != static_cast<Enemy*>(b)->heldItem && static_cast<Item*>(a)->enemyItem == false) {//only get hit by non-enemy attacks
 			if (static_cast<Item*>(a)->getState() != Item::FALLING) {
-				if (static_cast<Item*>(a)->isUnderObject == false) {
-					static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
-					if (static_cast<Enemy*>(b)->itemHitBy->getAttackType() == Item::SHOOT) {
-						static_cast<Enemy*>(b)->itemHitBy->used();
-					}
+				static_cast<Enemy*>(b)->itemHitBy = static_cast<Item*>(a);
+				if (static_cast<Enemy*>(b)->itemHitBy->getAttackType() == Item::SHOOT) {
+					static_cast<Enemy*>(b)->itemHitBy->used();
 				}
 			}
 			else {
 				static_cast<Enemy*>(b)->itemBumpedBy = static_cast<Item*>(a);
 				static_cast<Enemy*>(b)->directionHitFrom = static_cast<Item*>(a)->getPhysicsBody()->getVelocity();
-				static_cast<Item*>(a)->stop();
 				static_cast<Item*>(a)->setRotation(0);
+				static_cast<Item*>(a)->stop();
 				static_cast<Item*>(a)->move(Vec2(-120, 0));
 			}
 			if (static_cast<Item*>(a)->getState() == Item::THROWN && static_cast<Item*>(a) != static_cast<Enemy*>(b)->thrownItem) {
@@ -2134,9 +2144,9 @@ bool Level::initLevel(string filename){
 							item = Screwdriver::createWithSpriteFrameName();
 						}
 						item->initObject();
+						item->startHeld();
 						item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 						item->startRoom = Vec2(roomNum, floorNum);
-						item->startHeld();
 						mainLayer->items.push_back(item);
 						enemy->itemToPickUp = item;
 					}
@@ -2168,6 +2178,7 @@ bool Level::initLevel(string filename){
 						item = Screwdriver::createWithSpriteFrameName();
 					}
 					item->initObject();
+					item->startHeld();
 					item->roomStartPos = Vec2(atof(pieces[2].c_str()), atof(pieces[3].c_str()));
 					item->startRoom = Vec2(roomNum, floorNum);
 					mainLayer->items.push_back(item);

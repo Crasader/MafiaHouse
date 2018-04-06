@@ -339,7 +339,7 @@ void Enemy::turnOnSpot(float time) {
 	if (previousTurnTime == -1) {
 		previousTurnTime = time;
 	}
-	if (time - previousTurnTime >= turnTime) {
+	else if (time - previousTurnTime >= turnTime) {
 		flipX();
 		previousTurnTime = time;
 	}
@@ -361,8 +361,7 @@ void Enemy::walk(float time) {
 	if (previousTurnTime == -1) {
 		previousTurnTime = time;
 	}
-
-	if (time - previousTurnTime >= walkTime && stopTime == -1) {
+	else if (time - previousTurnTime >= walkTime && stopTime == -1) {
 		slowStop();
 		stopTime = time;
 	}
@@ -380,7 +379,7 @@ void Enemy::walk(float time) {
 	else if (stopTime == -1){
 		stopAnimation(STAND);
 		startAnimation(WALK, walking);
-		move(Vec2(4.5f, 0) * moveSpeed);
+		move(Vec2(5.5f, 0) * moveSpeed);
 	}
 }
 
@@ -738,7 +737,7 @@ void Enemy::moveFrom(float positionX) {
 	}
 	stopAnimation(STAND);
 	startAnimation(WALK, walking);
-	moveAbsolute(moveDirection * 4.5 * moveSpeed);
+	moveAbsolute(moveDirection * 7.5f * moveSpeed);
 }
 
 void Enemy::moveTo(float positionX) {
@@ -759,7 +758,7 @@ void Enemy::moveTo(float positionX) {
 	}
 	stopAnimation(STAND);
 	startAnimation(WALK, walking);
-	moveAbsolute(moveDirection * 4.5 * moveSpeed);
+	moveAbsolute(moveDirection * 9.0f * moveSpeed);
 }
 
 bool Enemy::moveToObject(Node* target) {
@@ -1446,7 +1445,7 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	}
 	//checking if they've been hit
 	if (itemHitBy != NULL ) {
-		if (itemHitBy->isUnderObject == false) {
+		if (itemHitBy->isUnderObject == false || knockedOut == true) {
 			if (invincible == false) {
 				if (itemHitBy->getState() != Item::GROUND) {
 					if (itemHitBy->getState() == Item::THROWN || itemHitBy->getState() == Item::FALLING) {
@@ -1610,6 +1609,14 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 			else {
 				if (enemy->pathTo(mainLayer, enemy->initialPos.x, enemy->startRoom.y, enemy->startRoom.x, time, checkForPath) == true) {
 					enemy->returning = false;
+					enemy->previousTurnTime = -1;
+					enemy->waitTime = -1;
+					if (enemy->pathTag == "LEFT") {
+						if (enemy->flippedX == false) { enemy->flipX(); }
+					}
+					else if (enemy->pathTag == "NONE") {
+						if (enemy->flippedX == true) { enemy->flipX(); }
+					}
 				}
 			}
 		}
@@ -1623,10 +1630,11 @@ Enemy::State* Enemy::DefaultState::update(Enemy* enemy, GameLayer* mainLayer, fl
 					enemy->slowStop();
 					enemy->paused = false;
 					enemy->previousTurnTime = time;
-					if (enemy->pathTag == "STAND_LEFT") {
+					enemy->waitTime = -1;
+					if (enemy->pathTag == "STAND_LEFT" || enemy->pathTag == "STAND_SWITCH_LEFT") {
 						if (enemy->flippedX == false) { enemy->flipX(); }
 					}
-					else if (enemy->pathTag == "STAND_RIGHT") {
+					else if (enemy->pathTag == "STAND_RIGHT" || enemy->pathTag == "STAND_SWITCH") {
 						if (enemy->flippedX == true) { enemy->flipX(); }
 					}
 				}
@@ -1656,13 +1664,13 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->prevPauseTime = time;
 	enemy->exMark->setVisible(false);
 	enemy->qMark->setVisible(true);
-	enemy->moveSpeed = 1.6f;
+	enemy->moveSpeed = 1.3f;
 	enemy->setSpeed(enemy->moveSpeed);
-	enemy->walkTime = enemy->defaultWalkTime * 0.6f;
-	enemy->waitTime = enemy->defaultWaitTime * 0.6f;
+	enemy->walkTime = enemy->defaultWalkTime * 0.75f;
+	enemy->waitTime = enemy->defaultWaitTime * 0.75f;
 	enemy->setName("enemy");
 	enemy->getPhysicsBody()->setCollisionBitmask(13);
-	enemy->turnTime = enemy->defaultTurnTime * 0.6f;
+	enemy->turnTime = enemy->defaultTurnTime * 0.75f;
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.3;
 	if (enemy->prevState->type == "alert") {
@@ -1804,10 +1812,10 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	enemy->qMark->setVisible(false);
 	enemy->exMark->setVisible(true);
 	if (enemy->runningAway == false) {
-		enemy->setSpeed(2.09f);
+		enemy->setSpeed(2.22f);
 	}
 	else {
-		enemy->setSpeed(1.68f);
+		enemy->setSpeed(1.65f);
 	}
 	enemy->setName("enemy_alert");
 	enemy->getPhysicsBody()->setCollisionBitmask(29);
@@ -1824,7 +1832,7 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 	if (enemy->hp <= enemy->maxHP / 2) {
 		if (enemy->detectedPlayer->heldItem != NULL) {
 			enemy->runningAway = true;
-			enemy->setSpeed(1.68f);
+			enemy->setSpeed(1.65f);
 		}
 		else {
 			enemy->runningAway = false;
@@ -1936,9 +1944,6 @@ Enemy::State* Enemy::AlertState::update(Enemy* enemy, GameLayer* mainLayer, floa
 				}
 				else if (enemy->flippedX == false) {
 					enemy->distanceToPlayer = abs(enemy->detectedPlayer->getPositionX() - (enemy->getPositionX() + enemy->getSize().width));
-				}
-				if (enemy->detectedPlayer->isCrouched == true) {
-					enemy->distanceToPlayer += 22;
 				}
 				//check if enemy is in range to attack player
 				if (enemy->distanceToPlayer <= enemy->heldItem->getRange() && enemy->currentFloor == enemy->detectedPlayer->currentFloor) {//enemy is within horizontal range to attack player
@@ -2306,6 +2311,7 @@ Enemy::State* Enemy::UseDoorState::update(Enemy* enemy, GameLayer* mainLayer, fl
 	else if (enemy->prevState->type == "alert" || enemy->prevState->type == "attack"){//enemy was in alert state, just open door and run, or they were attacking
 		if (enemy->doorToUse->checkLock() == true && enemy->openedDoor == false) {//they didn't actually open the door
 			if (enemy->runningAway == false || enemy->canRunAway == false) {//they have more than half hp
+				enemy->itemToPickUp = NULL;
 				enemy->itemToPickUp = enemy->findClosestKey(mainLayer);
 				if (enemy->itemToPickUp == NULL) {//couldn't find a key
 					//break it down
@@ -2518,10 +2524,10 @@ void Enemy::SearchState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->prevState->type != "use_door") {
 		enemy->changeSuspicion(enemy->maxSuspicion / 5);//hearing a noise increases suspicion by fifth instantly, more later
 	}
-	enemy->moveSpeed = 1.65f;
+	enemy->moveSpeed = 1.15f;
 	enemy->setSpeed(enemy->moveSpeed);
-	enemy->walkTime = enemy->defaultWalkTime * 0.65f;
-	enemy->waitTime = enemy->defaultWaitTime * 0.65f;
+	enemy->walkTime = enemy->defaultWalkTime;
+	enemy->waitTime = enemy->defaultWaitTime;
 }
 Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->checkDead() == true) {
@@ -2543,11 +2549,14 @@ Enemy::State* Enemy::SearchState::update(Enemy* enemy, GameLayer* mainLayer, flo
 				enemy->reachedLocation = true;
 				enemy->noiseLocation = Vec2(0, 0);
 				enemy->noiseRoom = Vec2(0, 0);
+				enemy->previousTurnTime = -1;
+				enemy->stopTime = -1;
+				//enemy->walkTime = 5.0f;
 			}
 		}
 		else {//they have reached location
 			enemy->walk(time);//start patrolling the area
-			enemy->changeSuspicion(-1 * enemy->maxSuspicion / (40 SECONDS));
+			enemy->changeSuspicion(-1 * enemy->maxSuspicion / (30 SECONDS));
 		}
 		//check if enemy is walking into a door
 		if (enemy->doorToUse != NULL) {
@@ -2764,10 +2773,11 @@ Thug::Thug() {
 	visionDegrees = defaultDegrees;//width of angle of vision
 	defaultRadius = 180;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 64;
+	baseSpeed = 61;
 	maxSpeed = baseSpeed;
 	defaultTurnTime = 5.0f;
 	defaultWalkTime = 5.0f;
+	defaultWaitTime = 3.4f;
 	deadBodyName = "enemy/thug/dead.png";
 	deadBodyOutlineName = "enemy/thug/dead_outline.png";
 	//initializing animations:
@@ -2789,10 +2799,11 @@ Guard::Guard() {
 	visionDegrees = defaultDegrees;//width of angle of vision
 	defaultRadius = 190;
 	visionRadius = defaultRadius;//how far vision reaches
-	baseSpeed = 72;
+	baseSpeed = 66;
 	maxSpeed = baseSpeed;
 	defaultTurnTime = 3.5f;
 	defaultWalkTime = 4.5f;
+	defaultWaitTime = 3.0f;
 	baseKnockOutTime = 1.0f;
 	minKnockOuttime = 10.0f;
 	deadBodyName = "enemy/guard/dead.png";

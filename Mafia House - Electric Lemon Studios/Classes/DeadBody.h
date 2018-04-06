@@ -31,4 +31,5 @@ public:
 	void prepareCrouchThrow();
 
 	bool isHidden = false;
+	bool behindObject = false;
 };

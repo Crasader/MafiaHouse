@@ -24,10 +24,10 @@ public:
 	void fallAttack();
 
 	void pickUpItem(GameLayer* mainLayer);
-	void dropItem(GameLayer* mainLayer);
+	void dropItem(GameLayer* mainLayer, float time);
 
 	void pickUpBody(GameLayer* mainLayer);
-	void dropBody(GameLayer* mainLayer);
+	void dropBody(GameLayer* mainLayer, float time);
 	void beginThrowBody(float time);
 	void throwBody(GameLayer* mainLayer, float time);
 
@@ -192,10 +192,11 @@ private:
 	//for climbing
 	float startClimbTime = -1;
 	float startClimbDelay = 0.5f;
+	float prevMoveDirection;
 
-	//for rolling lah
+	//for rolling
 	float rollEndTime = -1;
-	float rollLagTime = 33 FRAMES;
+	float rollLagTime = 30 FRAMES;
 
 	//for jumping
 	float startJumpTime = -1;
@@ -220,7 +221,6 @@ private:
 	float visionResetTime = 1.0f;//time it takes for inVision to reset to false
 
 	//for walking:
-	bool turned = false;
 	int moveDirection = 0;
 
 	//for playing audio:

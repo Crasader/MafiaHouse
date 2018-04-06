@@ -171,6 +171,7 @@ void Item::spin() {
 
 void Item::throwItem(float angle, Vec2 pos, bool flip) {
 	initThrownItem();
+	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setLinearDamping(1.0f);
 	setAnchorPoint(Vec2(0, 0));
 	Vec2 direction = angleToDirection(angle);
@@ -217,13 +218,14 @@ void Item::initThrownItem() {
 	getPhysicsBody()->setName("held_item");
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setDynamic(true);
-	getPhysicsBody()->setGravityEnable(false);
 }
 
 void Item::initFallItem() {
 	prevState = state;
 	state = FALLING;
-	setRotation(0);
+	if (attackType == SWING || attackType == SHOOT) {
+		setRotation(0);
+	}
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
@@ -322,7 +324,7 @@ void Item::playerInRange(Node* player) {
 }
 
 void Item::hasMoved() {
-	if (abs((getPosition() - initialPos).getLengthSq()) > 50 * 50) {//if item is not within a 50 px radius of it's starting position
+	if ((abs((getPosition() - initialPos).getLengthSq()) > 50 * 50) || startedHeld == true) {//if item is not within a 50 px radius of it's starting position, or it started as held by an enemy
 		enemyCanUse = true;
 		outline->setColor(ccc3(255,100,100));//red
 		if (missingItem != NULL) {
@@ -345,29 +347,45 @@ void Item::checkThrownSpeed() {
 	if (prevState == HELD) {
 		if (attackType == STAB) {
 			if (speed <= 500) {//speed is less than 450
-				initFallItem();
+				if (state != FALLING) {
+					initFallItem();
+				}
 			}
 		}
 		else if (attackType == SWING || attackType == SHOOT) {
 			if (speed <= 492) {//speed is less than 450
-				initFallItem();
+				if (state != FALLING) {
+					initFallItem();
+				}
 			}
 		}
 	}
 	else if (prevState == FALLING) {
-		if (speed < 100) {//speed is less than 450
-			initFallItem();
+		if (speed <= 200) {//speed is less than 450
+			if (state != FALLING) {
+				initFallItem();
+			}
 		}
 	}
 }
 
 void Item::checkFallingSpeed() {
 	float speed = getPhysicsBody()->getVelocity().getLength();
+	float speedY = abs(getPhysicsBody()->getVelocity().y);
 	if (speed <= 50) {//speed is less than 50
-		initGroundItem();
+		if (state != GROUND) {
+			initGroundItem();
+		}
 	}
 	if (prevState == GROUND) {
-		if (speed >= 150) {//speed is greater than 150
+		if (speed >= 250) {//speed is greater than 150
+			if (state != THROWN) {
+				initThrownItem();
+			}
+		}
+	}
+	if (speedY >= 250) {
+		if (state != THROWN) {
 			initThrownItem();
 		}
 	}
@@ -375,8 +393,10 @@ void Item::checkFallingSpeed() {
 
 void Item::checkGroundSpeed() {
 	float speed = getPhysicsBody()->getVelocity().getLength();
-	 if (speed > 50) {//speed becomes greater than 50
-		initFallItem();
+	 if (speed >= 50) {//speed becomes greater than 50
+		 if (state != FALLING) {
+			 initFallItem();
+		 }
 	}
 }
 
@@ -428,7 +448,7 @@ void Item::swingSequence(float angle, bool flip) {
 		//if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
 	}
 
-	Vec2 movement = Vec2(6, -33);
+	Vec2 movement = Vec2(6, -35);
 	movement = movement.rotate(direction);
 
 	auto move = MoveBy::create(attackTime * 0.3, movement);
@@ -467,7 +487,7 @@ Gun::Gun() {
 	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
-	hitstun = 8 FRAMES;
+	hitstun = 0 FRAMES;
 	doorDmg = 100;
 	canBreakDoor = true;
 	//tag = 10100;//10100 - 10199 for knives
@@ -604,7 +624,7 @@ Fist::Fist(){
 	hp = 1;
 	dmg = 25;
 	knockback = Vec2(20, 0);
-	hitstun = 5 FRAMES;
+	hitstun = 4 FRAMES;
 	doorDmg = 8;
 	canBreakDoor = true;
 	effect = NONE;
@@ -651,15 +671,15 @@ Knife::Knife(){
 	maxHP = 2;
 	hp = maxHP;
 	dmg = 50;
-	hitstun = 8 FRAMES;
+	hitstun = 6 FRAMES;
 	doorDmg = 8;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KILL;
 	attackType = STAB;
-	startTime = 13 FRAMES;
+	startTime = 14 FRAMES;
 	attackTime = 8 FRAMES;
 	lagTime = 16 FRAMES;
-	range = 35;
+	range = 32;
 	rangeRadius = 100;
 	powerLevel = 5;
 	noiseLevel = 0.45f;
@@ -674,15 +694,16 @@ Screwdriver::Screwdriver() {
 	maxHP = 3;
 	hp = maxHP;
 	dmg = 34;
-	hitstun = 3 FRAMES;
+	hitstun = 2 FRAMES;
+	canBreakDoor = true;
 	doorDmg = 50;
 	//tag = 10100;//10100 - 10199 for knives
 	effect = KNOCKOUT;
 	attackType = STAB;
-	startTime = 9 FRAMES;
-	attackTime = 7 FRAMES;
+	startTime = 10 FRAMES;
+	attackTime = 8 FRAMES;
 	lagTime = 13 FRAMES;
-	range = 28;
+	range = 26;
 	rangeRadius = 85;
 	powerLevel = 5;
 	noiseLevel = 0.35f;
@@ -705,7 +726,7 @@ Key::Key(){
 	startTime = 7 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 10 FRAMES;
-	range = 25;
+	range = 23;
 	rangeRadius = 80;
 	powerLevel = 0;
 	noiseLevel = 0.2f;
@@ -726,10 +747,10 @@ Hammer::Hammer(){
 	canBreakDoor = true;
 	effect = KNOCKOUT;
 	attackType = SWING;
-	startTime = 15 FRAMES;
-	attackTime = 18 FRAMES;
-	lagTime = 24 FRAMES;
-	range = 43;
+	startTime = 14 FRAMES;
+	attackTime = 14 FRAMES;
+	lagTime = 22 FRAMES;
+	range = 36;
 	rangeRadius = 120;
 	powerLevel = 10;
 	noiseLevel = 0.60f;
@@ -747,13 +768,13 @@ Mug::Mug() {
 	dmg = 34;
 	doorDmg = 8;
 	knockback = Vec2(10, 0);
-	hitstun = 6 FRAMES;
+	hitstun = 5 FRAMES;
 	effect = KNOCKOUT;
 	attackType = SWING;
-	startTime = 10 FRAMES;
-	attackTime = 11 FRAMES;
-	lagTime = 12 FRAMES;
-	range = 22;
+	startTime = 9 FRAMES;
+	attackTime = 10 FRAMES;
+	lagTime = 11 FRAMES;
+	range = 20;
 	rangeRadius = 55;
 	powerLevel = 1;
 	noiseLevel = 0.75f;
@@ -775,10 +796,10 @@ Crowbar::Crowbar() {
 	canBreakDoor = true;
 	effect = KILL;
 	attackType = SWING;
-	startTime = 18 FRAMES;
-	attackTime = 24 FRAMES;
-	lagTime = 28 FRAMES;
-	range = 70;
+	startTime = 17 FRAMES;
+	attackTime = 20 FRAMES;
+	lagTime = 26 FRAMES;
+	range = 60;
 	rangeRadius = 140;
 	powerLevel = 15;
 	noiseLevel = 0.70f;
@@ -799,10 +820,10 @@ IronBar::IronBar() {
 	canBreakDoor = true;
 	effect = KNOCKOUT;
 	attackType = SWING;
-	startTime = 13 FRAMES;
-	attackTime = 15 FRAMES;
-	lagTime = 20 FRAMES;
-	range = 34;
+	startTime = 12 FRAMES;
+	attackTime = 12 FRAMES;
+	lagTime = 18 FRAMES;
+	range = 30;
 	rangeRadius = 120;
 	powerLevel = 4;
 	noiseLevel = 0.50f;
