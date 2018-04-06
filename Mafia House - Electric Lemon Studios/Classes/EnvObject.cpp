@@ -101,8 +101,8 @@ Table::Table(){
 	PhysObject::PhysObject();
 	surfaceSize = Size(140, 10);
 	surfaceOffset = Vec2(0, 24);
-	hideBoxSize = Size(85, 63);
-	hideBoxPosition = Vec2(70, 25);
+	hideBoxSize = Size(86, 38);
+	hideBoxPosition = Vec2(70, 20);
 	surfaceHeight = 55;
 }
 //Kitchen Table:
@@ -110,8 +110,8 @@ KitchenTable::KitchenTable() {
 	PhysObject::PhysObject();
 	surfaceSize = Size(143, 10);
 	surfaceOffset = Vec2(0, 10);
-	hideBoxSize = Size(120, 65);
-	hideBoxPosition = Vec2(92.5, 25);
+	hideBoxSize = Size(120, 38);
+	hideBoxPosition = Vec2(92.5, 20);
 	surfaceHeight = 55;
 }
 
@@ -120,8 +120,8 @@ Fountain::Fountain() {
 	PhysObject::PhysObject();
 	surfaceSize = Size(140, 10);
 	surfaceOffset = Vec2(0, 24);
-	hideBoxSize = Size(85, 63);
-	hideBoxPosition = Vec2(70, 25);
+	hideBoxSize = Size(86, 38);
+	hideBoxPosition = Vec2(70, 20);
 	surfaceHeight = 55;
 }
 

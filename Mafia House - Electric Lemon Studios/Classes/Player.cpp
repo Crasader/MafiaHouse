@@ -1125,7 +1125,7 @@ void Player::ClimbState::enter(Player* player, GameLayer* mainLayer, float time)
 	player->stopY();
 	player->getPhysicsBody()->setGravityEnable(false);
 	player->bodySize = Size(player->crouchSize.width, player->crouchSize.height + 20);
-	player->getPhysicsBody()->setPositionOffset(Vec2(0, 0));
+	player->getPhysicsBody()->setPositionOffset(Vec2(0, -20));
 	player->maxSpeedY = 190;
 	player->startClimbTime = time;
 	player->startAnimation(CLIMB, player->climbing);
@@ -1535,7 +1535,7 @@ Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, f
 	if (player->rollEndTime != -1 && time - player->rollEndTime >= player->rollLagTime) {
 		return new CrouchState;
 	}
-	if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -50) {
+	if (player->touchingFloor == false && player->getPhysicsBody()->getVelocity().y < -65) {
 		return new FallState;
 	}
 	return nullptr;

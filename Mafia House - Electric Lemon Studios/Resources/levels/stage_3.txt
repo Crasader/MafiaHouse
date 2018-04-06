@@ -8,5 +8,5 @@ FLOOR_END
 250|bg,entranceway.png|door,left|stair,1,B,80,0|exit,right
 FLOOR_END
 250
-1160|bg,UpperHallway.png|vent,bot,open,230|item,crowbar,50,0|node,100,1,3.0,A|node,890,2,3.0,A|enemy,guard,100,0,A,knife,key|enemy,thug,520,0,STAND_SWITCH_LEFT,ironbar|enemy,thug,700,0,STAND_SWITCH,hammer|item,mug,1050,50|phys_object,table,980,0|phys_object,wall_shelf,850,125|phys_object,wall_shelf,625,117.5|phys_object,wall_shelf,400,113.5|stair,2,B,1100,0
+1160|bg,UpperHallway.png|vent,bot,open,230|item,crowbar,50,0|node,100,1,3.0,A|node,890,2,3.0,A|enemy,guard,100,0,A,knife,key|enemy,thug,520,0,STAND_SWITCH_LEFT,ironbar|enemy,thug,700,0,STAND_SWITCH,hammer|item,mug,1050,50|phys_object,table,980,0|phys_object,wall_shelf,850,175|phys_object,wall_shelf,580,157.5|phys_object,wall_shelf,310,143.5|stair,2,B,1100,0
 FLOOR_END

@@ -62,6 +62,21 @@ public:
 
 	void gameOver(float deltaTime);
 
+	void stopGame();
+
+	void drawNoises(float gameTime);
+	void updateDoors(float gameTime);
+	void updateItems(float gameTime);
+	void updateBodies(float gameTime);
+	void updateEnemies(float gameTime);
+	void handleInput(float gameTime);
+	void updateHUD(float gameTime);
+
+	bool playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve);
+	bool enemyPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve);
+	bool playerContactBegin(Node* a, Node* b);
+	bool enemyContactBegin(Node* a, Node* b);
+
 protected:
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 

@@ -401,7 +401,7 @@ void Item::checkGroundSpeed() {
 }
 
 void Item::prepareStab(float angle) {
-	setPosition(Vec2(30, 56));
+	setPosition(Vec2(30, 57));
 	setRotation(0 + angle);
 	setAnchorPoint(Vec2(0, 0.5));
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
@@ -632,9 +632,10 @@ Fist::Fist(){
 	startTime = 9 FRAMES;
 	attackTime = 10 FRAMES;
 	lagTime = 14 FRAMES;
-	range = 25;
+	range = 22;
 	rangeRadius = 90;
 	powerLevel = 0;
+	noiseLevel = 0.4f;
 	enemyItem = true;
 }
 void Fist::initObject(Vec2 startPos){
@@ -651,7 +652,7 @@ void Fist::initHeldItem() {
 	getPhysicsBody()->setDynamic(true);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(42);
+	getPhysicsBody()->setCollisionBitmask(46);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	setPosition(Vec2(50, 32));
