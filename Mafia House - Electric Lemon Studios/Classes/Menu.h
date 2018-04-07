@@ -132,6 +132,7 @@ protected:
 	Vec2 visibleSize;
 	Vec2 origin;
 	Vec2 centre;
+	Vec2 windowScale;
 };
 
 

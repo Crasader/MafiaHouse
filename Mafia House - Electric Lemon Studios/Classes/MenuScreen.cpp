@@ -150,6 +150,7 @@ bool MenuScreen::init()
 	this->addChild(gunSign, 1);
 
 	auto label = Label::createWithTTF("WASD <---\nSelect Option", "fonts/Nexa_Bold.otf", 24);
+	label->setScale(scale1.x, scale1.y);
 	label->getFontAtlas()->setAliasTexParameters();
 	label->setPositionNormalized(Vec2(0.94, 0.945));
 	addChild(label);

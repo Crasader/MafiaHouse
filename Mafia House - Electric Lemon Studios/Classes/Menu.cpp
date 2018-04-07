@@ -126,25 +126,30 @@ bool LevelSelectMenu::init() {
 	addChild(mainLayer,1);
 
 	background = Sprite::create("menu/SelectLevelMenu.png");
-	background->setScale(visibleSize.x / background->getContentSize().width, visibleSize.y / background->getContentSize().height);
+
+	windowScale = Vec2(visibleSize.x / background->getContentSize().width, visibleSize.y / background->getContentSize().height);
+
+	background->setScale(windowScale.x, windowScale.y);
 	background->setPosition(centre.x, centre.y);
 	addChild(background, 0);
 
 	selectionIndicator = Sprite::create("menu/MenuGun.png");
-	selectionIndicator->setScale(2.0f);
+	selectionIndicator->setScale(windowScale.x * 2, windowScale.y * 2);
 	mainLayer->addChild(selectionIndicator, 2);
 
 	auto label = Label::createWithTTF("Backspace <---\nReturn to Main Menu", "fonts/Nexa_Bold.otf", 24);
+	label->setScale(windowScale.x, windowScale.y);
 	label->getFontAtlas()->setAliasTexParameters();
 	label->setPositionNormalized(Vec2(0.105, 0.945));
 	addChild(label);
 	label = Label::createWithTTF("WASD <---\nSelect Option", "fonts/Nexa_Bold.otf", 24);
+	label->setScale(windowScale.x, windowScale.y);
 	label->getFontAtlas()->setAliasTexParameters();
 	label->setPositionNormalized(Vec2(0.94, 0.945));
 	addChild(label);
 
-	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - 600);//horizontal centre, at top of screen
-	selectionIndicator->setPosition(optionPosition + Vec2(-550, -62));
+	Vec2 optionPosition = Vec2(centre.x, origin.y + visibleSize.y - (windowScale.y * 600));//horizontal centre, at top of screen
+	selectionIndicator->setPosition(optionPosition + Vec2(windowScale.x * -550, windowScale.y  * -62));
 
 	levels.clear();
 	initMenu("menu/levels.txt");
@@ -152,7 +157,7 @@ bool LevelSelectMenu::init() {
 		levels[i]->setPosition(optionPosition);
 		mainLayer->addChild(levels[i], 1);
 
-		optionPosition += Vec2(0, -175);//setting position for next option
+		optionPosition += Vec2(0, windowScale.y  * -175);//setting position for next option
 	}
 
 	selectedLevel = levels[0];
@@ -205,10 +210,10 @@ void LevelSelectMenu::onStart(float deltaTime) {
 void LevelSelectMenu::update(float deltaTime) {
 	for (int i = 0; i < levels.size(); i++) {//increaseing size of selected option
 		if (levels[i] == selectedLevel) {
-			levels[i]->setScale(1.25);
+			levels[i]->setScale(windowScale.x  * 1.25, windowScale.y  * 1.25);
 		}
 		else {
-			levels[i]->setScale(0.85);
+			levels[i]->setScale(windowScale.x  * 0.85, windowScale.y  * 0.85);
 		}
 	}
 
@@ -217,10 +222,10 @@ void LevelSelectMenu::update(float deltaTime) {
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 			selectedOptionNum--;//go up one option
 			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
-			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
+			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(windowScale.x  * -550, windowScale.y  * -62));//setting position of seletion indicator
 
 			if (scrollNum >=  1) {
-				mainLayer->setPosition(mainLayer->getPosition() - Vec2(0, 185));
+				mainLayer->setPosition(mainLayer->getPosition() - Vec2(0, windowScale.y * 185));
 				scrollNum--;
 			}
 		}
@@ -230,10 +235,10 @@ void LevelSelectMenu::update(float deltaTime) {
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/LoadBullet.wav");
 			selectedOptionNum++;//go down one option
 			selectedLevel = levels[selectedOptionNum];//setting currently selected menu option
-			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(-550, -62));//setting position of seletion indicator
+			selectionIndicator->setPosition(selectedLevel->getPosition() + Vec2(windowScale.x  * -550, windowScale.y  * -62));//setting position of seletion indicator
 
 			if (selectedOptionNum >=  2) {
-				mainLayer->setPosition(mainLayer->getPosition() + Vec2(0, 185));
+				mainLayer->setPosition(mainLayer->getPosition() + Vec2(0, windowScale.y * 185));
 				scrollNum++;
 			}
 		}
