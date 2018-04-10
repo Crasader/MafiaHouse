@@ -1005,6 +1005,13 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	return true;
 }
 bool Level::playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve) {
+	//player and door
+	if (a->getName() == "player" && (b->getName() == "door_radius" || b->getName() == "vent_radius" || b->getName() == "exit_radius")) {
+		return false;
+	}
+	else if ((a->getName() == "door_radius" || a->getName() == "vent_radius" || a->getName() == "exit_radius") && b->getName() == "player") {
+		return false;
+	}
 	// check if player is touching floor
 	if ((a->getName() == "player" && (b->getName() == "floor" || b->getName() == "vent")) || ((a->getName() == "floor" || a->getName() == "vent") && b->getName() == "player"))
 	{
@@ -1142,6 +1149,24 @@ bool Level::playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve) {
 	return true;
 }
 bool Level::enemyPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve) {
+	//enemy and door radius
+	if (a->getName() == "enemy" && b->getName() == "door_radius") {
+		//static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
+		return false;
+	}
+	else if (a->getName() == "door_radius" && b->getName() == "enemy") {
+		//static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
+		return false;
+	}
+	//alert enemy and door radius
+	if (a->getName() == "enemy_alert" && b->getName() == "door_radius") {
+		//static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
+		return false;
+	}
+	else if (a->getName() == "door_radius" && b->getName() == "enemy_alert") {
+		//static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
+		return false;
+	}
 	return true;
 }
 bool Level::itemPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve) {
@@ -1238,12 +1263,12 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	if (a->getName() == "dead_body" && b->getName() == "hide_radius")
 	{
 		static_cast<DeadBody*>(a)->isUnderObject = true;
-		return false;
+		return true;
 	}
 	else if (a->getName() == "hide_radius" && b->getName() == "dead_body")
 	{
 		static_cast<DeadBody*>(b)->isUnderObject = true;
-		return false;
+		return true;
 	}
 
 	//falling items and walls
@@ -1273,7 +1298,7 @@ if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 				static_cast<Item*>(b->getParent())->playerRange = true;
 			}
 		}
-		return false;
+		return true;
 	}
 	else if (a->getName() == "item_radius" && b->getName() == "player_pickup")
 	{
@@ -1283,7 +1308,7 @@ if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 				static_cast<Item*>(a->getParent())->playerRange = true;
 			}
 		}
-		return false;
+		return true;
 	}
 	//check if player can pick up body
 	if (a->getName() == "player_pickup" && b->getName() == "body_radius")
@@ -1294,7 +1319,7 @@ if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 				static_cast<DeadBody*>(b->getParent())->playerRange = true;
 			}
 		}
-		return false;
+		return true;
 	}
 	else if (a->getName() == "body_radius" && b->getName() == "player_pickup")
 	{
@@ -1304,7 +1329,7 @@ if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 				static_cast<DeadBody*>(a->getParent())->playerRange = true;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	// check if player has collided with a wall
@@ -1333,7 +1358,7 @@ if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 			}
 			return true;
 		}
-		return false;
+		return true;
 	}
 	else if (a->getName() == "held_item" && b->getName() == "player") {
 		if (static_cast<Item*>(a) != static_cast<Player*>(b)->heldItem) {//so player doesn't get hit by their own weapon
@@ -1349,66 +1374,66 @@ if (a->getName() == "player_pickup" && b->getName() == "item_radius")
 			}
 			return true;
 		}
-		return false;
+		return true;
 	}
 	//check if player is hiding under a physical object
 	if ((a->getName() == "player_pickup" && b->getName() == "hide_radius") || (a->getName() == "hide_radius" && b->getName() == "player_pickup")) {
 		player->isHidingUnder = true;
-		return false;
+		return true;
 	}
 	//player and door
-	if (a->getName() == "player_pickup" && (b->getName() == "door_radius" || b->getName() == "vent_radius" || b->getName() == "exit_radius")){
+	if (a->getName() == "player" && (b->getName() == "door_radius" || b->getName() == "vent_radius" || b->getName() == "exit_radius")){
 		player->doorToUse = static_cast<Door*>(b->getParent());
 		static_cast<Door*>(b->getParent())->playerRange = true;
-		return false;
+		return true;
 	}
-	else if ((a->getName() == "door_radius" || a->getName() == "vent_radius" || a->getName() == "exit_radius") && b->getName() == "player_pickup"){
+	else if ((a->getName() == "door_radius" || a->getName() == "vent_radius" || a->getName() == "exit_radius") && b->getName() == "player"){
 		player->doorToUse = static_cast<Door*>(a->getParent());
 		static_cast<Door*>(a->getParent())->playerRange = true;
-		return false;
+		return true;
 	}
 	//player and hide object
 	if (a->getName() == "player" && b->getName() == "hide_object")
 	{
 		player->objectToHideBehind = static_cast<HideObject*>(b);
 		static_cast<HideObject*>(b)->playerRange = true;
-		return false;
+		return true;
 	}
 	else if (a->getName() == "hide_object" && b->getName() == "player")
 	{
 		player->objectToHideBehind = static_cast<HideObject*>(a);
 		static_cast<HideObject*>(a)->playerRange = true;
-		return false;
+		return true;
 	}
 	//player and stairway
 	if (a->getName() == "player" && b->getName() == "stair")
 	{
 		player->stairToUse = static_cast<Stair*>(b);
 		static_cast<Stair*>(b)->playerRange = true;
-		return false;
+		return true;
 	}
 	else if (a->getName() == "stair" && b->getName() == "player")
 	{
 		player->stairToUse = static_cast<Stair*>(a);
 		static_cast<Stair*>(a)->playerRange = true;
-		return false;
+		return true;
 	}
 	//player and noises
 	if (a->getName() == "player_pickup" && b->getName() == "noise")
 	{
 		player->hearNoise(static_cast<Noise*>(b)->name);
-		return false;
+		return true;
 	}
 	else if (a->getName() == "noise" && b->getName() == "player_pickup")
 	{
 		player->hearNoise(static_cast<Noise*>(a)->name);
-		return false;
+		return true;
 	}
 	//player and exit hitbox
 	if ((a->getName() == "player" && b->getName() == "level_exit") || (a->getName() == "level_exit" && b->getName() == "player"))
 	{
 		levelComplete = true;
-		return false;
+		return true;
 	}
 	return true;
 }
@@ -1447,7 +1472,7 @@ bool Level::enemyContactBegin(Node* a, Node* b) {
 				static_cast<Enemy*>(a)->fallenItem = static_cast<Item*>(b->getParent());
 			}
 		}
-		return false;
+		return true;
 	}
 	else if (a->getName() == "item_radius" && b->getName() == "enemy")
 	{
@@ -1456,7 +1481,7 @@ bool Level::enemyContactBegin(Node* a, Node* b) {
 				static_cast<Enemy*>(b)->fallenItem = static_cast<Item*>(a->getParent());
 			}
 		}
-		return false;
+		return true;
 	}
 	//alert enemy and item radius
 	if (a->getName() == "enemy_alert" && b->getName() == "item_radius")
@@ -1511,13 +1536,13 @@ bool Level::enemyContactBegin(Node* a, Node* b) {
 	{
 		static_cast<Enemy*>(a)->noiseLocation = b->getPosition();
 		static_cast<Enemy*>(a)->noiseRoom = static_cast<Noise*>(b)->room;
-		return false;
+		return true;
 	}
 	else if (a->getName() == "noise" && (b->getName() == "enemy" || b->getName() == "enemy_alert"))
 	{
 		static_cast<Enemy*>(b)->noiseLocation = a->getPosition();
 		static_cast<Enemy*>(b)->noiseRoom = static_cast<Noise*>(a)->room;
-		return false;
+		return true;
 	}
 	//check if enemy has been hit by player's attack
 	if ((a->getName() == "enemy" || a->getName() == "enemy_alert") && b->getName() == "held_item")
@@ -1577,20 +1602,20 @@ bool Level::enemyContactBegin(Node* a, Node* b) {
 	//enemy and door radius
 	if (a->getName() == "enemy" && b->getName() == "door_radius"){
 		static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
-		return false;
+		return true;
 	}
 	else if (a->getName() == "door_radius" && b->getName() == "enemy"){
 		static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
-		return false;
+		return true;
 	}
 	//alert enemy and door radius
 	if (a->getName() == "enemy_alert" && b->getName() == "door_radius"){
 		static_cast<Enemy*>(a)->doorToUse = static_cast<Door*>(b->getParent());
-		return false;
+		return true;
 	}
 	else if (a->getName() == "door_radius" && b->getName() == "enemy_alert"){
 		static_cast<Enemy*>(b)->doorToUse = static_cast<Door*>(a->getParent());
-		return false;
+		return true;
 	}
 	//alert enemy and stairway
 	if (a->getName() == "enemy_alert" && b->getName() == "stair") {
@@ -1618,14 +1643,14 @@ bool Level::itemContactBegin(Node* a, Node* b) {
 		if (static_cast<Item*>(a)->getAttackType() != Item::SHOOT) {
 			static_cast<Item*>(a)->isUnderObject = true;
 		}
-		return false;
+		return true;
 	}
 	else if (a->getName() == "hide_radius" && b->getName() == "held_item")
 	{
 		if (static_cast<Item*>(b)->getAttackType() != Item::SHOOT) {
 			static_cast<Item*>(b)->isUnderObject = true;
 		}
-		return false;
+		return true;
 	}
 
 	//two held items
@@ -1636,7 +1661,7 @@ bool Level::itemContactBegin(Node* a, Node* b) {
 		else if (static_cast<Item*>(b)->priority > static_cast<Item*>(a)->priority) {//if b's is higher than a's
 			static_cast<Item*>(a)->hitWall();
 		}
-		return false;
+		return true;
 	}
 
 	//items and bodies
@@ -1673,7 +1698,7 @@ bool Level::itemContactBegin(Node* a, Node* b) {
 		static_cast<Item*>(a)->makeNoise = true;
 		if (static_cast<Item*>(a)->getState() == Item::HELD) {
 			static_cast<Item*>(a)->hitWall();
-			return false;
+			return true;
 		}
 		return true;
 	}
@@ -1682,7 +1707,7 @@ bool Level::itemContactBegin(Node* a, Node* b) {
 		static_cast<Item*>(b)->makeNoise = true;
 		if (static_cast<Item*>(b)->getState() == Item::HELD) {
 			static_cast<Item*>(b)->hitWall();
-			return false;
+			return true;
 		}
 		return true;
 	}
@@ -1773,6 +1798,7 @@ bool Level::playerContactSeparate(Node* a, Node* b) {
 				static_cast<Item*>(b->getParent())->playerRange = false;
 			}
 		}
+		return true;
 	}
 	else if (a->getName() == "item_radius" && b->getName() == "player_pickup"){
 		if (player->behindObject == false) {
@@ -1781,6 +1807,7 @@ bool Level::playerContactSeparate(Node* a, Node* b) {
 				static_cast<Item*>(a->getParent())->playerRange = false;
 			}
 		}
+		return true;
 	}
 	//check if player can pick up body
 	if (a->getName() == "player_pickup" && b->getName() == "body_radius"){
@@ -1790,6 +1817,7 @@ bool Level::playerContactSeparate(Node* a, Node* b) {
 				static_cast<DeadBody*>(b->getParent())->playerRange = false;
 			}
 		}
+		return true;
 	}
 	else if (a->getName() == "body_radius" && b->getName() == "player_pickup"){
 		if ((player->behindObject == true && static_cast<DeadBody*>(a->getParent())->isHidden == true) || (player->behindObject == false && static_cast<DeadBody*>(a->getParent())->behindObject == false)) {
@@ -1798,6 +1826,7 @@ bool Level::playerContactSeparate(Node* a, Node* b) {
 				static_cast<DeadBody*>(a->getParent())->playerRange = false;
 			}
 		}
+		return true;
 	}
 
 	// check if player has collided with a wall

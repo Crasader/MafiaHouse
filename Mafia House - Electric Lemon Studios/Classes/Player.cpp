@@ -16,7 +16,7 @@ Player::Player()
 	dynamic = true;
 	category = 64;
 	collision = 11;
-	contactTest = 27;
+	contactTest = 27 + 4;
 	//max movement speed
 	baseSpeed = 82;
 	maxHP = 150;

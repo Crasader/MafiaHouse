@@ -34,7 +34,7 @@ void HideObject::playerInRange() {
 			//outline->setColor(ccc3(155, 155, 155));//grey
 		}
 	}
-	playerRange = false;
+	//playerRange = false;
 }
 
 void HideObject::hide() {

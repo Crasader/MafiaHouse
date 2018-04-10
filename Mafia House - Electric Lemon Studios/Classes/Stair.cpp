@@ -89,8 +89,6 @@ Door::~Door() {
 }
 
 void Door::initObject(Vec2 startPos) {
-	//setColor(ccc3(255, 175, 0));//orange
-	//setContentSize(size);//set the size of the wall
 	GameObject::initObject(startPos);
 
 	auto useRadius = Node::create();
@@ -113,7 +111,7 @@ void Door::initObject(Vec2 startPos) {
 	radiusBody->setCollisionBitmask(0);
 	radiusBody->setContactTestBitmask(0);
 	useRadius2->setPhysicsBody(radiusBody);
-	addChild(useRadius2);
+	//addChild(useRadius2);
 
 	createOutline(outlineName);
 	createOutline2(outline2Name);
@@ -222,6 +220,9 @@ bool Door::use() {
 	if (locked == false) {
 		if (isOpen == false) {
 			isOpen = true;
+			getPhysicsBody()->setCategoryBitmask(0);
+			getPhysicsBody()->setCollisionBitmask(0);
+			getPhysicsBody()->setContactTestBitmask(0);
 			getPhysicsBody()->setEnabled(false);
 			setGlobalZOrder(2);
 			//setOpacity(100);
@@ -237,6 +238,9 @@ bool Door::use() {
 		else {
 			isOpen = false;
 			getPhysicsBody()->setEnabled(true);
+			getPhysicsBody()->setCategoryBitmask(category);
+			getPhysicsBody()->setCollisionBitmask(collision);
+			getPhysicsBody()->setContactTestBitmask(contactTest);
 			setGlobalZOrder(5);
 			//setOpacity(255);
 			outline2->setVisible(false);
