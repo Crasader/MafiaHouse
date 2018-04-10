@@ -44,8 +44,9 @@ void Character::updateRoom(vector<RoomData*> rooms) {
 void Character::pickUpItem(GameLayer* mainLayer) {
 	if (itemToPickUp != NULL) {
 		removeChild(heldItem, true);
-		itemToPickUp->removeFromParent();
+
 		heldItem = itemToPickUp;
+		itemToPickUp->removeFromParent();
 		
 		addChild(heldItem);
 		heldItem->initPickedUpItem();

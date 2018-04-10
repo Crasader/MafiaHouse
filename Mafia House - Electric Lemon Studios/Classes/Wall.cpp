@@ -9,8 +9,9 @@ Wall::Wall()
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 0xFFFFFFFF;
-	collision = 0xFFFFFFFF;
+	category = 1;
+	collision = 106;
+	contactTest = 74;
 }
 
 Wall::~Wall(){
@@ -111,6 +112,12 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					length = doorData[j].pos - newPos.x + position.x;
 					w = Wall::createWithSpriteFrameName();
 					w->initObject(newPos, Size(length, size.height));
+					if (type == 2) {
+						w->getPhysicsBody()->setContactTestBitmask(72);//floors check for contact with player and items
+					}
+					else {
+						w->getPhysicsBody()->setContactTestBitmask(8);//ceilings only check with items
+					}
 					w->setName(name);
 					if (length > 0) {
 						addChild(w);
@@ -157,6 +164,12 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 			length = size.width - newPos.x + position.x;
 			w = Wall::createWithSpriteFrameName();
 			w->initObject(newPos, Size(length, size.height));
+			if (type == 2) {
+				w->getPhysicsBody()->setContactTestBitmask(9);//floors check for contact with player and items
+			}
+			else {
+				w->getPhysicsBody()->setContactTestBitmask(8);//ceilings only check with items
+			}
 			w->setName(name);
 			addChild(w);
 		}

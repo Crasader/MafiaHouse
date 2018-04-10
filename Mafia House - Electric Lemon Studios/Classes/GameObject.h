@@ -193,8 +193,9 @@ protected:
 	int tag = 0;//tag for the physics body, used for collision detection
 	bool dynamic = false;//set whether bosy will be dynamic or not
 	bool rotate = false;
-	int category = 1;//category group bitmask for collisions
-	int collision = 1;//collision group bitmask for collisions
+	int category = 0;//category group bitmask for collisions
+	int contactTest = 0;//category group bitmask for collision testing
+	int collision = 0;//collision group bitmask for collision physics
 
 	Director* director = Director::getInstance();
 	SpriteFrameCache* frameCache = SpriteFrameCache::getInstance();

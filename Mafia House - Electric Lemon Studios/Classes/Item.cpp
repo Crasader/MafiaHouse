@@ -9,7 +9,8 @@ Item::Item()
 	zOrder = 6;
 	//physics body properties
 	category = 32;
-	collision = 40;
+	collision = 41;
+	contactTest = 0;
 	tag = 10000;//eac_h item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
 	rotate = true;
@@ -38,9 +39,8 @@ void Item::initRadius() {
 	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
-	pickUpRadiusBody->setCollisionBitmask(66);
-	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
-	pickUpRadiusBody->setTag(10000);
+	pickUpRadiusBody->setCollisionBitmask(0);
+	pickUpRadiusBody->setContactTestBitmask(66);
 	pickUpRadiusBody->setName("item_radius");
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
 
@@ -51,13 +51,14 @@ void Item::initMissingItem() {
 	missingItem = MissingItem::createWithSpriteFrameName(itemFile);
 	auto body = PhysicsBody::createBox(missingItem->getContentSize());
 	body->setDynamic(false);
+	body->setCategoryBitmask(0);
 	body->setCollisionBitmask(0);
-	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setContactTestBitmask(0);
 	body->setEnabled(false);
 	missingItem->setAnchorPoint(Vec2(0, 0));
 	missingItem->setPhysicsBody(body);
 	missingItem->setName("missing_item");
-	missingItem->setOpacity(90);
+	missingItem->setOpacity(100);
 	missingItem->setGlobalZOrder(6);
 	missingItem->setVisible(false);
 	missingItem->setPosition(getPosition());
@@ -77,7 +78,6 @@ void Item::initPickedUpItem() {
 	getPhysicsBody()->setDynamic(false);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(46);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	if (flippedX == true) {
@@ -98,6 +98,8 @@ void Item::initHeldItem() {
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
 	outline->setVisible(false);
+	getPhysicsBody()->setCollisionBitmask(0);
+	getPhysicsBody()->setContactTestBitmask(0);
 }
 
 void Item::initCrouchHeldItem() {
@@ -107,6 +109,8 @@ void Item::initCrouchHeldItem() {
 	setRotation(20.0f);
 	getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setEnabled(false);
+	getPhysicsBody()->setCollisionBitmask(0);
+	getPhysicsBody()->setContactTestBitmask(0);
 }
 
 void Item::initOffhand() {
@@ -120,6 +124,8 @@ void Item::initOffhand() {
 	outline->setVisible(true);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	pickUpRadius->setPositionNormalized(Vec2(0.55, 0.45));
+	getPhysicsBody()->setCollisionBitmask(0);
+	getPhysicsBody()->setContactTestBitmask(0);
 }
 
 void Item::rotatePickUpRadius(float degrees) {
@@ -161,11 +167,19 @@ void Item::prepareCrouchThrow(float angle) {
 }
 
 void Item::spin() {
-	if (flippedX == false) {
-		setRotation(getRotation() + 25);
+	float speed = getPhysicsBody()->getVelocity().getLengthSq() / (8000);
+	if (state != FALLING) {
+		if (getPhysicsBody()->getVelocity().x >= 0) {
+			setRotation(getRotation() + speed);
+		}
+		else {
+			setRotation(getRotation() - speed);
+		}
 	}
 	else {
-		setRotation(getRotation() - 25);
+		if (getRotation() < 10 && getRotation() > -10) {
+			setRotation(0);
+		}
 	}
 }
 
@@ -173,7 +187,6 @@ void Item::throwItem(float angle, Vec2 pos, bool flip) {
 	initThrownItem();
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setLinearDamping(1.0f);
-	setAnchorPoint(Vec2(0, 0));
 	Vec2 direction = angleToDirection(angle);
 	setPosition(pos);
 	setRotation(angle);
@@ -213,7 +226,8 @@ void Item::initThrownItem() {
 	outline->setColor(ccc3(210, 0, 255));//purple
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(46);
+	getPhysicsBody()->setCollisionBitmask(41);
+	getPhysicsBody()->setContactTestBitmask(103);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	getPhysicsBody()->setEnabled(true);
@@ -226,12 +240,16 @@ void Item::initFallItem() {
 	if (attackType == SWING || attackType == SHOOT) {
 		setRotation(0);
 	}
-	getPhysicsBody()->setRotationOffset(0);
-	getPhysicsBody()->setEnabled(true);
+	pickUpRadius->getPhysicsBody()->setEnabled(false);
+	//setAnchorPoint(Vec2(0, 0));
 	getPhysicsBody()->setGravityEnable(true);
-	getPhysicsBody()->setDynamic(true);
+	getPhysicsBody()->setCategoryBitmask(8);
+	getPhysicsBody()->setCollisionBitmask(107);
+	getPhysicsBody()->setContactTestBitmask(103);
+	setName("held_item");
+	getPhysicsBody()->setName("held_item");
+	//getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setLinearDamping(0.5f);
-	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	outline->setVisible(false);
 }
 
@@ -242,8 +260,10 @@ void Item::initGroundItem() {
 	enemyItem = false;
 	setGlobalZOrder(6);
 	outline->setVisible(true);
-	getPhysicsBody()->setCategoryBitmask(32);
-	getPhysicsBody()->setCollisionBitmask(40);
+	//setAnchorPoint(Vec2(0, 0));
+	getPhysicsBody()->setCategoryBitmask(category);
+	getPhysicsBody()->setCollisionBitmask(collision);
+	getPhysicsBody()->setContactTestBitmask(contactTest);
 	getPhysicsBody()->setEnabled(true);
 	getPhysicsBody()->setGravityEnable(true);
 	getPhysicsBody()->setDynamic(true);
@@ -313,31 +333,33 @@ void Item::stealRange(Node* player) {
 	else {
 		outline->setColor(ccc3(255, 100, 100));//red
 	}
-	playerRange = false;
+	//playerRange = false;
 }
 
 void Item::playerInRange(Node* player) {
 	if (playerRange == true) {
 		outline->setColor(ccc3(100, 255, 100));//green
 	}
-	playerRange = false;
+	//playerRange = false;
 }
 
 void Item::hasMoved() {
-	if ((abs((getPosition() - initialPos).getLengthSq()) > 50 * 50) || startedHeld == true) {//if item is not within a 50 px radius of it's starting position, or it started as held by an enemy
-		enemyCanUse = true;
-		outline->setColor(ccc3(255,100,100));//red
-		if (missingItem != NULL) {
-			missingItem->setVisible(true);
-			missingItem->getPhysicsBody()->setEnabled(true);
+	if (playerRange == false) {
+		if ((abs((getPosition() - initialPos).getLengthSq()) > 50 * 50) || startedHeld == true) {//if item is not within a 50 px radius of it's starting position, or it started as held by an enemy
+			enemyCanUse = true;
+			outline->setColor(ccc3(255, 100, 100));//red
+			if (missingItem != NULL) {
+				missingItem->setVisible(true);
+				missingItem->getPhysicsBody()->setEnabled(true);
+			}
 		}
-	}
-	else {
-		enemyCanUse = false;
-		outline->setColor(ccc3(100,100,255));//blue
-		if (missingItem != NULL) {
-			missingItem->setVisible(false);
-			missingItem->getPhysicsBody()->setEnabled(false);
+		else {
+			enemyCanUse = false;
+			outline->setColor(ccc3(100, 100, 255));//blue
+			if (missingItem != NULL) {
+				missingItem->setVisible(false);
+				missingItem->getPhysicsBody()->setEnabled(false);
+			}
 		}
 	}
 }
@@ -372,7 +394,7 @@ void Item::checkThrownSpeed() {
 void Item::checkFallingSpeed() {
 	float speed = getPhysicsBody()->getVelocity().getLength();
 	float speedY = abs(getPhysicsBody()->getVelocity().y);
-	if (speed <= 50) {//speed is less than 50
+	if (speed < 50) {//speed is less than 50
 		if (state != GROUND) {
 			initGroundItem();
 		}
@@ -430,6 +452,9 @@ void Item::prepareCrouchSwing(float angle) {
 }
 
 void Item::stabSequence(float angle, bool flip) {
+	getPhysicsBody()->setCollisionBitmask(40);
+	getPhysicsBody()->setContactTestBitmask(107);
+
 	Vec2 direction = angleToDirection(angle);
 	if (direction == Vec2(1, -1) || direction == Vec2(1, 1)) {
 		if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
@@ -438,14 +463,31 @@ void Item::stabSequence(float angle, bool flip) {
 	auto move = MoveBy::create(attackTime * 0.125, direction * 25);//stab forward
 	auto hold = MoveBy::create(attackTime * 0.75, Vec2(0, 0));//wait
 	auto moveback = MoveBy::create(attackTime * 0.125, -direction * 25);//pull back
-	auto sequence = Sequence::create(move, hold, moveback, NULL);
+
+	auto callback = CallFunc::create([this]() {
+		this->getPhysicsBody()->setEnabled(false);
+	});
+	auto wait = ScaleBy::create(attackTime * 0.875, 1);
+
+	auto sequence = Sequence::create(move, hold, moveback, callback, NULL);
+	runAction(sequence);
+	sequence = Sequence::create(wait, callback, nullptr);
 	runAction(sequence);
 }
 
 void Item::swingSequence(float angle, bool flip) {
+	getPhysicsBody()->setCollisionBitmask(40);
+	getPhysicsBody()->setContactTestBitmask(107);
+
 	Vec2 direction = angleToDirection(angle);
-	if (direction == Vec2(1, -1) || direction == Vec2(1, 1)) {
-		//if (flip == true) { getPhysicsBody()->setRotationOffset(90); }
+
+	if (flip == true) {
+		if (direction == Vec2(1, 1) || direction == Vec2(1, -1)) {
+			getPhysicsBody()->setRotationOffset(110);
+		}
+		else {
+			getPhysicsBody()->setRotationOffset(210);
+		}
 	}
 
 	Vec2 movement = Vec2(6, -35);
@@ -456,16 +498,21 @@ void Item::swingSequence(float angle, bool flip) {
 
 	auto hold = MoveBy::create(attackTime * 0.4, Vec2(0, 0));
 
-	//auto moveback = MoveBy::create(6 FRAMES, Vec2(-10, 5));
-	//auto rotateback = RotateBy::create(6 FRAMES, -135);
-	//Spawn::create(moveback, rotateback)
+	auto callback = CallFunc::create([this]() {
+		this->getPhysicsBody()->setEnabled(false);
+	});
+	auto wait = ScaleBy::create(attackTime * 0.6, 1);
 
-	auto sequence = Sequence::create(Spawn::create(move, rotate), hold, NULL);
+	auto sequence = Sequence::create(Spawn::create(move, rotate), hold, nullptr);
+	runAction(sequence);
+	sequence = Sequence::create(wait, callback, nullptr);
 	runAction(sequence);
 }
 
 void Item::fallAttack() {
 	getPhysicsBody()->setEnabled(true);
+	getPhysicsBody()->setCollisionBitmask(40);
+	getPhysicsBody()->setContactTestBitmask(107);
 	if (attackType == STAB) {
 		setPosition(Vec2(52, 35));
 		setRotation(90);
@@ -632,7 +679,7 @@ Fist::Fist(){
 	startTime = 9 FRAMES;
 	attackTime = 10 FRAMES;
 	lagTime = 14 FRAMES;
-	range = 22;
+	range = 25;
 	rangeRadius = 90;
 	powerLevel = 0;
 	noiseLevel = 0.4f;
@@ -652,7 +699,8 @@ void Fist::initHeldItem() {
 	getPhysicsBody()->setDynamic(true);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(46);
+	getPhysicsBody()->setCollisionBitmask(0);
+	getPhysicsBody()->setContactTestBitmask(0);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	setPosition(Vec2(50, 32));
@@ -727,7 +775,7 @@ Key::Key(){
 	startTime = 7 FRAMES;
 	attackTime = 6 FRAMES;
 	lagTime = 10 FRAMES;
-	range = 23;
+	range = 24;
 	rangeRadius = 80;
 	powerLevel = 0;
 	noiseLevel = 0.2f;

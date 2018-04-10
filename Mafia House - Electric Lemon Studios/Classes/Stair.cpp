@@ -10,7 +10,8 @@ Stair::Stair() {
 	//physics body properties
 	dynamic = false;
 	category = 16;
-	collision = 3;
+	collision = 0;
+	contactTest = 66;
 
 	outlineName = "objects/stairdoor_outline.png";
 }
@@ -75,8 +76,9 @@ Door::Door() {
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 0xFFFFFFFF;
-	collision = 0xFFFFFFFF;
+	category = 1;
+	collision = 106;
+	contactTest = 74;
 
 	outlineName = "objects/door/closed_outline.png";
 	outline2Name = "objects/door/opened_outline.png";
@@ -98,9 +100,8 @@ void Door::initObject(Vec2 startPos) {
 	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(3);
-	radiusBody->setContactTestBitmask(0xFFFFFFFF);
-	radiusBody->setName("door_radius");
+	radiusBody->setCollisionBitmask(0);
+	radiusBody->setContactTestBitmask(66);
 	useRadius->setPhysicsBody(radiusBody);
 	addChild(useRadius);
 	auto useRadius2 = Node::create();
@@ -109,9 +110,8 @@ void Door::initObject(Vec2 startPos) {
 	radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(3);
-	radiusBody->setContactTestBitmask(0xFFFFFFFF);
-	radiusBody->setName("door_radius");
+	radiusBody->setCollisionBitmask(0);
+	radiusBody->setContactTestBitmask(0);
 	useRadius2->setPhysicsBody(radiusBody);
 	addChild(useRadius2);
 
@@ -148,7 +148,7 @@ void Door::playerInRange() {
 		outline->setColor(ccc3(155, 155, 155));//grey
 		outline2->setColor(ccc3(155, 155, 155));//grey
 	}
-	playerRange = false;
+	//playerRange = false;
 }
 
 void Door::updateColour() {
@@ -291,8 +291,9 @@ Vent::Vent() {
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 0xFFFFFFFF;
-	collision = 0xFFFFFFFF;
+	category = 1;
+	collision = 106;
+	contactTest = 72;
 	opening = GameAnimation(OBJECT, "objects/vent/%03d.png", 5, 1 FRAMES, false);
 	closing = GameAnimation(OBJECT, "objects/vent/close/%03d.png", 5, 1 FRAMES, false);
 }
@@ -316,7 +317,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		useRadius2->setPosition(Vec2(25, 10));
 		//initializing physics body for enemies to walk on
 		auto body = PhysicsBody::createBox(size);//player is half height when crouching
-		body->setContactTestBitmask(0xFFFFFFFF);
+		body->setContactTestBitmask(0);
 		body->setCategoryBitmask(1);
 		body->setCollisionBitmask(2);//only collide with enemies
 		body->setDynamic(false);
@@ -343,17 +344,15 @@ void Vent::initObject(int orient, Vec2 startPos) {
 	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(1);
-	radiusBody->setContactTestBitmask(0xFFFFFFFF);
-	radiusBody->setName("vent_radius");
+	radiusBody->setCollisionBitmask(0);
+	radiusBody->setContactTestBitmask(64);
 	useRadius->setPhysicsBody(radiusBody);
 	addChild(useRadius);
 	radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(3);
-	radiusBody->setContactTestBitmask(0xFFFFFFFF);
-	radiusBody->setName("door_radius");
+	radiusBody->setCollisionBitmask(0);
+	radiusBody->setContactTestBitmask(0);
 	useRadius2->setPhysicsBody(radiusBody);
 	addChild(useRadius2);
 
@@ -409,8 +408,9 @@ Exit::Exit() {
 	scale = 1.0f;
 	//physics body properties
 	dynamic = false;
-	category = 0xFFFFFFFF;
-	collision = 0xFFFFFFFF;
+	category = 1;
+	collision = 106;
+	contactTest = 74;
 	outlineName = "objects/door/closed_outline.png";
 	outline2Name = "objects/door/opened_outline.png";
 	opening = GameAnimation(OBJECT, "objects/door/%03d.png", 5, 1 FRAMES, false);
@@ -427,8 +427,7 @@ void Exit::initObject(int orient, Vec2 startPos) {
 		size = Size(20, 110);
 		useBox = Size(radius, 110);
 	}
-	//setColor(ccc3(255, 155, 0));//orange
-	//setContentSize(size);//set the size of the wall
+
 	GameObject::initObject(startPos);
 
 	auto useRadius = Node::create();
@@ -438,10 +437,8 @@ void Exit::initObject(int orient, Vec2 startPos) {
 	auto radiusBody = PhysicsBody::createBox(useBox);
 	radiusBody->setDynamic(false);
 	radiusBody->setCategoryBitmask(4);
-	radiusBody->setCollisionBitmask(1);
-	radiusBody->setContactTestBitmask(0xFFFFFFFF);
-	radiusBody->setTag(10000);
-	radiusBody->setName("exit_radius");
+	radiusBody->setCollisionBitmask(0);
+	radiusBody->setContactTestBitmask(64);
 	useRadius->setPhysicsBody(radiusBody);
 	addChild(useRadius);
 
@@ -455,8 +452,8 @@ void Exit::initExit() {
 	body->setEnabled(false);
 	body->setDynamic(false);
 	body->setCategoryBitmask(4);
-	body->setCollisionBitmask(1);
-	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setCollisionBitmask(0);
+	body->setContactTestBitmask(64);
 	exitBox = Node::create();
 	exitBox->setPhysicsBody(body);
 	exitBox->setName("level_exit");

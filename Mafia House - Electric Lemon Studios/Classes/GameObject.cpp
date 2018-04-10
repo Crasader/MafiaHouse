@@ -70,7 +70,7 @@ void GameObject::initAutoBody() {
 
 	//necessary stuff, will not change between objects:
 	mainBody->setRotationEnable(rotate);
-	mainBody->setContactTestBitmask(0xFFFFFFFF);
+	mainBody->setContactTestBitmask(contactTest);
 
 	//mainBody->setVelocityLimit(maxSpeed);//max object speed
 	mainBody->retain();
@@ -91,7 +91,7 @@ void GameObject::initBoxBody(Size size) {
 
 	//necessary stuff, will not change between objects:
 	mainBody->setRotationEnable(rotate);
-	mainBody->setContactTestBitmask(0xFFFFFFFF);
+	mainBody->setContactTestBitmask(contactTest);
 
 	//mainBody->setVelocityLimit(maxSpeed);//max object speed
 	mainBody->retain();

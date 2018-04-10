@@ -8,7 +8,8 @@ DeadBody::DeadBody()
 	zOrder = 6;
 	//physics body properties
 	category = 32;
-	collision = 42;
+	collision = 41;
+	contactTest = 12;
 	tag = 70000;//each item type will be identified by the second and third digit: 10100 - 10199 for knives
 	dynamic = true;
 	rotate = false;
@@ -40,8 +41,8 @@ void DeadBody::initRadius() {
 	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
-	pickUpRadiusBody->setCollisionBitmask(64);
-	pickUpRadiusBody->setContactTestBitmask(0xFFFFFFFF);
+	pickUpRadiusBody->setCollisionBitmask(0);
+	pickUpRadiusBody->setContactTestBitmask(64);
 	pickUpRadiusBody->setTag(10000);
 	pickUpRadiusBody->setName("body_radius");
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
@@ -82,7 +83,7 @@ void DeadBody::playerInRange(Node* player) {
 			outline->setColor(ccc3(255, 100, 100));//red
 		}
 	}
-	else if (isHidden == true){
+	else {
 		if (playerRange == true) {
 			outline->setColor(ccc3(100, 255, 115));//green
 		}
@@ -90,7 +91,7 @@ void DeadBody::playerInRange(Node* player) {
 			outline->setColor(ccc3(100, 100, 100));//grey
 		}
 	}
-	playerRange = false;
+	//playerRange = false;
 }
 
 void DeadBody::initPickedUpBody() {
@@ -111,6 +112,8 @@ void DeadBody::initPickedUpBody() {
 void DeadBody::initHeldBody() {
 	setRotation(0);
 	setPosition(Vec2(14, 40));
+	getPhysicsBody()->setCollisionBitmask(0);
+	getPhysicsBody()->setContactTestBitmask(0);
 }
 
 void DeadBody::initCrouchPickedUpBody() {
@@ -131,6 +134,8 @@ void DeadBody::initCrouchPickedUpBody() {
 void DeadBody::initCrouchHeldBody() {
 	setRotation(0);
 	setPosition(Vec2(14, 8));
+	getPhysicsBody()->setCollisionBitmask(0);
+	getPhysicsBody()->setContactTestBitmask(0);
 }
 
 void  DeadBody::initDroppedBody(Vec2 pos, bool flip) {
@@ -184,7 +189,8 @@ void DeadBody::initThrownItem() {
 	outline->setColor(ccc3(210, 0, 255));//purple
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(42);
+	getPhysicsBody()->setCollisionBitmask(103);
+	getPhysicsBody()->setContactTestBitmask(107);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");
 	getPhysicsBody()->setDynamic(true);
@@ -195,9 +201,10 @@ void DeadBody::initGroundItem() {
 	state = GROUND;
 	//knockback = Vec2(abs(knockback.x), 0);//resetting knockback to positive
 	outline->setVisible(true);
+	getPhysicsBody()->setCategoryBitmask(category);
 	if (behindObject == false) {
-		getPhysicsBody()->setCategoryBitmask(32);
-		getPhysicsBody()->setCollisionBitmask(42);
+		getPhysicsBody()->setCollisionBitmask(collision);
+		getPhysicsBody()->setContactTestBitmask(contactTest);
 	}
 	//getPhysicsBody()->setLinearDamping(0.0f);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);

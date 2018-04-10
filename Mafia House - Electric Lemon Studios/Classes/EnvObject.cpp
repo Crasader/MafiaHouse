@@ -10,7 +10,8 @@ HideObject::HideObject()
 	tag = 20000;//each object will have a unique tag number
 	dynamic = false;
 	category = 16;
-	collision = 1;
+	collision = 0;
+	contactTest = 64;
 }
 HideObject::~HideObject(){
 }
@@ -56,8 +57,9 @@ PhysObject::PhysObject(){
 	//physics body properties
 	tag = 50000;//each object will have a unique tag number
 	dynamic = false;
-	category = 0xFFFFFFFF;
-	collision = 41;
+	category = 1;
+	collision = 104;
+	contactTest = 72;
 }
 
 void PhysObject::initObject(){
@@ -76,8 +78,8 @@ void PhysObject::initHideBox() {
 	auto body = PhysicsBody::createBox(hideBoxSize);
 	body->setDynamic(false);
 	body->setCategoryBitmask(4);
-	body->setCollisionBitmask(9);
-	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setCollisionBitmask(0);
+	body->setContactTestBitmask(104);
 	hideBox->setPhysicsBody(body);
 	hideBox->setPosition(hideBoxPosition);
 	addChild(hideBox);
@@ -89,8 +91,8 @@ void PhysObject::initHideBox2() {
 	auto body = PhysicsBody::createBox(hideBoxSize);
 	body->setDynamic(false);
 	body->setCategoryBitmask(4);
-	body->setCollisionBitmask(9);
-	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setCollisionBitmask(0);
+	body->setContactTestBitmask(0);
 	hideBox2->setPhysicsBody(body);
 	hideBox2->setPosition(hideBoxPosition);
 	addChild(hideBox2);

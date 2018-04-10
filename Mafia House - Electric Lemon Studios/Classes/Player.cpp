@@ -14,8 +14,9 @@ Player::Player()
 	//physics body properties
 	tag = 1;
 	dynamic = true;
-	category = 1;
-	collision = 30;
+	category = 64;
+	collision = 11;
+	contactTest = 27;
 	//max movement speed
 	baseSpeed = 82;
 	maxHP = 150;
@@ -44,21 +45,21 @@ void Player::initObject(Vec2 startPos) {
 	Character::initObject(startPos);
 	//initializing crouching physics body
 	crouchBody = PhysicsBody::createBox(crouchSize);//player is half height when crouching
-	crouchBody->setContactTestBitmask(0xFFFFFFFF);
 	crouchBody->setTag(1);
 	crouchBody->setName("player");
-	crouchBody->setCategoryBitmask(1);
-	crouchBody->setCollisionBitmask(30);
+	crouchBody->setCategoryBitmask(category);
+	crouchBody->setCollisionBitmask(collision);
+	crouchBody->setContactTestBitmask(contactTest);
 	crouchBody->setDynamic(true);
 	crouchBody->setRotationEnable(false);
 	crouchBody->retain();
 	//intializing hitbox for item pickup radius
-	auto body = PhysicsBody::createBox(Size(bodySize.width, 54));//player is half height when crouching
-	body->setContactTestBitmask(0xFFFFFFFF);
-	body->setCategoryBitmask(64);
-	body->setCollisionBitmask(4);
-	body->setDynamic(false);
 	pickUpRadius = Node::create();
+	auto body = PhysicsBody::createBox(Size(bodySize.width, 54));//top half of player's body
+	body->setCategoryBitmask(64);
+	body->setCollisionBitmask(0);
+	body->setContactTestBitmask(4);
+	body->setDynamic(false);
 	pickUpRadius->setPhysicsBody(body);
 	pickUpRadius->setName("player_pickup");
 	pickUpRadius->setPosition(Vec2(35, 64));
@@ -83,19 +84,18 @@ void Player::flipX() {
 
 //functions for player actions:
 void Player::resetCollisionChecks(float time) {
-	isHidingUnder = false;
 	touchingFloor = false;
-	touchingWall = false;
+	//touchingWall = false;
 	objectToClimb = NULL;
 	isHit = false;
-	doorToUse = NULL;
-	stairToUse = NULL;
-	objectToHideBehind = NULL;
-	itemToPickUp = NULL;
-	bodyToPickUp = NULL;
 	if (time - seenTime >= visionResetTime || seenTime == -1) {
 		inVision = false;
 	}
+	//isHidingUnder = false;
+	//doorToUse = NULL;
+	//stairToUse = NULL;
+	//objectToHideBehind = NULL;
+	//itemToPickUp = NULL;
 	//bodyToPickUp = NULL;
 }
 
@@ -171,7 +171,7 @@ void Player::walk(Input input, float time) {
 			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
-			setSpeed(moveSpeed * 1.5f);
+			setSpeed(moveSpeed * 1.4f);
 			moonwalk.action->setSpeed(moveSpeed);
 			if (flippedX == false) {
 				flipX();
@@ -204,7 +204,7 @@ void Player::walk(Input input, float time) {
 			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
-			setSpeed(moveSpeed * 1.5f);
+			setSpeed(moveSpeed * 1.4f);
 			moonwalk.action->setSpeed(moveSpeed);
 			if (flippedX == true) {
 				flipX();
@@ -309,8 +309,8 @@ void Player::pickUpBody(GameLayer* mainLayer) {
 		if (heldItem != NULL) {
 			heldItem->setVisible(false);
 		}
-		bodyToPickUp->removeFromParent();
 		heldBody = bodyToPickUp;
+		bodyToPickUp->removeFromParent();
 
 		addChild(heldBody);
 		if (isCrouched == false) {
@@ -713,7 +713,7 @@ void Player::update(GameLayer* mainLayer, float time) {
 		itemHitBy = NULL;
 	}
 	if (noclip == false) {
-		if (isHidingUnder == true) {
+		if (isHidingUnder == true && isCrouched == true) {
 			if (inVision == true) {//if player was in enemy vision upon entering hiding
 				wasSeen = true;
 			}
@@ -726,6 +726,9 @@ void Player::update(GameLayer* mainLayer, float time) {
 				heldBody->setOpacity(200);
 				heldBody->outline->setGlobalZOrder(2);
 				heldBody->outline->setOpacity(200);
+			}
+			if (heldItem != NULL) {
+				heldItem->isUnderObject = true;
 			}
 		}
 		else {//if they are no longer under object
@@ -740,6 +743,9 @@ void Player::update(GameLayer* mainLayer, float time) {
 					heldBody->setOpacity(255);
 					heldBody->outline->setGlobalZOrder(5);
 					heldBody->outline->setOpacity(255);
+				}
+				if (heldItem != NULL) {
+					heldItem->isUnderObject = false;
 				}
 			}
 		}
@@ -1047,6 +1053,7 @@ void Player::JumpState::exit(Player* player, GameLayer* mainLayer, float time) {
 
 //Fall State:
 void Player::FallState::enter(Player* player, GameLayer* mainLayer, float time) {
+	player->isCrouched = false;
 	player->wasClimbing = false;
 	player->wasFalling = true;
 	player->stopAllActions();
@@ -1515,7 +1522,7 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 		player->dropBody(mainLayer, time);
 	}
 	//player->createNoise(15, 0.4, time, player->getPosition() + Vec2(player->getSize().width, 0), Vec2(player->currentFloor, player->currentRoom), "player_roll", &mainLayer->noises);
-	player->getPhysicsBody()->setCollisionBitmask(28);//so player can pass through enemies
+	player->getPhysicsBody()->setCollisionBitmask(player->collision - 2);//so player can pass through enemies
 	player->rollEndTime = -1;
 }
 Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, float time) {
@@ -1524,7 +1531,7 @@ Player::State* Player::RollState::update(Player* player, GameLayer* mainLayer, f
 		//player->getPhysicsBody()->setLinearDamping(4.0f);
 	//}
 	if (player->getPhysicsBody()->getVelocity().x > -300.0f && player->getPhysicsBody()->getVelocity().x < 300.0f) {//when player's horizontal speed has stopped
-		player->getPhysicsBody()->setCollisionBitmask(30);//re-enabling enemy collisions
+		player->getPhysicsBody()->setCollisionBitmask(player->collision);//re-enabling enemy collisions
 		player->getPhysicsBody()->setLinearDamping(1.3f);
 	}
 	if (player->getPhysicsBody()->getVelocity().x > -25.0f && player->getPhysicsBody()->getVelocity().x < 25.0f) {//when player's horizontal speed has stopped
@@ -1553,7 +1560,7 @@ void Player::RollState::exit(Player* player, GameLayer* mainLayer, float time) {
 	if (player->heldItem != NULL) {
 		player->heldItem->setVisible(true);
 	}
-	player->getPhysicsBody()->setCollisionBitmask(30);//re-enabling enemy collisions
+	player->getPhysicsBody()->setCollisionBitmask(player->collision);//re-enabling enemy collisions
 	player->getPhysicsBody()->setLinearDamping(0.0f);
 }
 
@@ -1751,7 +1758,7 @@ void Player::NoClipState::exit(Player* player, GameLayer* mainLayer, float time)
 	player->noclip = false;
 	player->getPhysicsBody()->setVelocityLimit(10000);
 	player->getPhysicsBody()->setGravityEnable(true);
-	player->getPhysicsBody()->setCollisionBitmask(30);
+	player->getPhysicsBody()->setCollisionBitmask(player->collision);
 	player->moveSpeed = 1;
 	player->setSpeed(player->moveSpeed);
 	player->hidden = false;

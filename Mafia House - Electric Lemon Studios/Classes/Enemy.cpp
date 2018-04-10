@@ -13,7 +13,8 @@ Enemy::Enemy()
 	//physics body properties
 	dynamic = true;
 	category = 2;
-	collision = 47;
+	collision = 73;
+	contactTest = 77;
 	//for attacking without a weapon
 	fist = Fist::createWithSpriteFrameName();
 	fist->initObject();
@@ -74,12 +75,10 @@ void Enemy::initObject(Vec2 startPos)
 	addChild(lastSeenLocation);
 
 	//initializing knocked out physics body
-	knockedOutBody = PhysicsBody::createBox(Size(bodySize.width, bodySize.height / 2));
-	knockedOutBody->setContactTestBitmask(0xFFFFFFFF);
-	knockedOutBody->setTag(555);
-	knockedOutBody->setName("enemy");
-	knockedOutBody->setCategoryBitmask(2);
-	knockedOutBody->setCollisionBitmask(10);
+	knockedOutBody = PhysicsBody::createBox(Size(bodySize.width, (bodySize.height / 2) - 10));
+	knockedOutBody->setCategoryBitmask(32);
+	knockedOutBody->setCollisionBitmask(9);
+	knockedOutBody->setContactTestBitmask(10);
 	knockedOutBody->setDynamic(true);
 	knockedOutBody->setRotationEnable(false);
 	knockedOutBody->retain();
@@ -348,6 +347,7 @@ void Enemy::turnOnSpot(float time) {
 void Enemy::walk(float time) {
 	//check if they hit a wall and make them turn around right away
 	if (didHitWall == true) {
+		didHitWall = false;
 		if (hitWalltime == -1) {
 			hitWalltime = time;
 			stopTime = -3;//so they will turn straight away
@@ -918,6 +918,7 @@ void Enemy::runaway(GameLayer* mainlayer, float time) {
 	}
 
 	if (didHitWall == true) {
+		didHitWall = false;
 		canRunAway = false;
 	}
 }
@@ -1491,8 +1492,9 @@ void Enemy::update(GameLayer* mainLayer, float time) {
 	}
 
 	//resetting collision checks:
-	didHitWall = false;
-	touchingWall = false;
+	//didHitWall = false;
+	//touchingWall = false;
+
 	//updating color of question mark, turns more red as suspicion increases
 	float BluePercentage = suspicionLevel / maxSuspicion;
 	float GreenPercentage = abs(BluePercentage - 1);//inverts the percentage
@@ -1516,7 +1518,7 @@ void Enemy::DefaultState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->waitTime = enemy->defaultWaitTime;
 	enemy->walkTime = enemy->defaultWalkTime;
 	enemy->setName("enemy");
-	enemy->getPhysicsBody()->setCollisionBitmask(13);
+	enemy->getPhysicsBody()->setContactTestBitmask(enemy->contactTest);
 	enemy->visionDegrees = enemy->defaultDegrees;
 	enemy->visionRadius = enemy->defaultRadius;
 }
@@ -1669,7 +1671,7 @@ void Enemy::SuspectState::enter(Enemy* enemy, GameLayer* mainLayer, float time) 
 	enemy->walkTime = enemy->defaultWalkTime * 0.75f;
 	enemy->waitTime = enemy->defaultWaitTime * 0.75f;
 	enemy->setName("enemy");
-	enemy->getPhysicsBody()->setCollisionBitmask(13);
+	enemy->getPhysicsBody()->setContactTestBitmask(enemy->contactTest);
 	enemy->turnTime = enemy->defaultTurnTime * 0.75f;
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
 	enemy->visionRadius = enemy->defaultRadius * 1.3;
@@ -1818,7 +1820,7 @@ void Enemy::AlertState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 		enemy->setSpeed(1.65f);
 	}
 	enemy->setName("enemy_alert");
-	enemy->getPhysicsBody()->setCollisionBitmask(29);
+	enemy->getPhysicsBody()->setContactTestBitmask(enemy->contactTest + 16);
 	enemy->lostPlayer = false;
 	enemy->reachedLastSeen = false;
 	//enemy->visionDegrees = enemy->defaultDegrees * 1.1;
@@ -2118,9 +2120,6 @@ Enemy::State* Enemy::AttackState::update(Enemy* enemy, GameLayer* mainLayer, flo
 	if (enemy->heldItem == NULL) {//incase you knock them out in the middle of an attack and steal their weapon
 		return new DefaultState;//shouldn't be possible now tha tthey can attack without an item
 	}
-	//if (enemy->heldItem->didHitWall == true) {
-	//	enemy->move(Vec2(-1, 0));
-	//}
 	if (enemy->attackPrepareTime != -1.0f && time - enemy->attackPrepareTime >= enemy->heldItem->getStartTime()) {
 		enemy->attackStartTime = time;
 		if (enemy->prevState->type != "use_door" && enemy->heldItem->getAttackType() == Item::SHOOT) {
@@ -2179,13 +2178,15 @@ Enemy::State* Enemy::ThrowState::update(Enemy* enemy, GameLayer* mainLayer, floa
 		enemy->throwItem(mainLayer, time);
 		enemy->attackPrepareTime = -1.0f;
 	}
-	if (enemy->attackStartTime != -1.0f && time - enemy->attackStartTime >= enemy->thrownItem->getAttackTime()) {
-		enemy->attackEndTime = time;
-		enemy->attackStartTime = -1.0f;
-	}
-	if (enemy->attackEndTime != -1.0f && time - enemy->attackEndTime >= enemy->thrownItem->getLagTime()) {
-		enemy->attackEndTime = -1.0f;
-		return enemy->prevState;
+	if (enemy->thrownItem != NULL) {
+		if (enemy->attackStartTime != -1.0f && time - enemy->attackStartTime >= enemy->thrownItem->getAttackTime()) {
+			enemy->attackEndTime = time;
+			enemy->attackStartTime = -1.0f;
+		}
+		if (enemy->attackEndTime != -1.0f && time - enemy->attackEndTime >= enemy->thrownItem->getLagTime()) {
+			enemy->attackEndTime = -1.0f;
+			return enemy->prevState;
+		}
 	}
 
 	return nullptr;
@@ -2197,8 +2198,8 @@ void Enemy::ThrowState::exit(Enemy* enemy, GameLayer* mainLayer, float time) {
 
 //Use Door State:
 void Enemy::UseDoorState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
-	enemy->inAttackRange = false;
-	if (enemy->prevState->type != "attack") {
+	if (enemy->doorToUse != NULL) {
+		enemy->inAttackRange = false;
 		enemy->paused = false;
 		enemy->startPauseTime = -1;
 		enemy->doorStartTime = time;
@@ -2748,8 +2749,8 @@ void Enemy::DeathState::enter(Enemy* enemy, GameLayer* mainLayer, float time) {
 		}
 		enemy->startAnimation(DEATH, enemy->dying);
 	}
+	//enemy->stop();
 	enemy->getPhysicsBody()->setEnabled(false);
-	enemy->stop();
 }
 Enemy::State* Enemy::DeathState::update(Enemy* enemy, GameLayer* mainLayer, float time) {
 	if (enemy->getActionByTag(DEATH) == NULL) {//dying animation has finished
@@ -2785,7 +2786,7 @@ Thug::Thug() {
 	walking = GameAnimation(WALK, "enemy/thug/walk/%03d.png", 7, 10 FRAMES, true);
 	knockout = GameAnimation(KNOCKOUT, "enemy/thug/knockdown/%03d.png", 4, 20 FRAMES, false);
 	knockoutDeath = GameAnimation(DEATH, "enemy/thug/knockdown_die/%03d.png", 2, 20 FRAMES, false);
-	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/thug/die/%03d.png", 4, 17 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/thug/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "enemy/thug/swing/%03d.png", 2, 8 FRAMES, false);
 	throwing = GameAnimation(THROW, "enemy/thug/throw/%03d.png", 2, 6 FRAMES, false);
@@ -2813,7 +2814,7 @@ Guard::Guard() {
 	walking = GameAnimation(WALK, "enemy/guard/walk/%03d.png", 8, 8 FRAMES, true);
 	knockout = GameAnimation(KNOCKOUT, "enemy/guard/knockdown/%03d.png", 5, 15 FRAMES, false);
 	knockoutDeath = GameAnimation(DEATH, "enemy/guard/knockdown_die/%03d.png", 3, 15 FRAMES, false);
-	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 5, 15 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/guard/die/%03d.png", 5, 14 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/guard/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "enemy/guard/swing/%03d.png", 2, 8 FRAMES, false);
 	throwing = GameAnimation(THROW, "enemy/guard/throw/%03d.png", 2, 6 FRAMES, false);
@@ -2837,7 +2838,7 @@ Boss::Boss() {
 	walking = GameAnimation(WALK, "enemy/boss/walk/%03d.png", 12, 8 FRAMES, true);
 	knockout = GameAnimation(KNOCKOUT, "enemy/boss/knockdown/%03d.png", 4, 20 FRAMES, false);
 	knockoutDeath = GameAnimation(DEATH, "enemy/boss/knockdown_die/%03d.png", 1, 20 FRAMES, false);
-	dying = GameAnimation(DEATH, "enemy/boss/die/%03d.png", 4, 20 FRAMES, false);
+	dying = GameAnimation(DEATH, "enemy/boss/die/%03d.png", 4, 17 FRAMES, false);
 	stab = GameAnimation(STAB, "enemy/boss/stab/%03d.png", 2, 10 FRAMES, false);
 	swing = GameAnimation(SWING, "enemy/boss/swing/%03d.png", 2, 8 FRAMES, false);
 	throwing = GameAnimation(THROW, "enemy/boss/throw/%03d.png", 2, 6 FRAMES, false);

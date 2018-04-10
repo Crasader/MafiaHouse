@@ -15,8 +15,8 @@ void Noise::initNoise(float volume, float duration, float time, Vec2 position, s
 	auto body = PhysicsBody::createCircle(radius);
 	body->setDynamic(false);
 	body->setCategoryBitmask(4);
-	body->setCollisionBitmask(3);//player and enemies
-	body->setContactTestBitmask(0xFFFFFFFF);
+	body->setCollisionBitmask(0);
+	body->setContactTestBitmask(66);//player and enemies
 	body->setName("noise");
 	setPhysicsBody(body);
 }

@@ -72,10 +72,15 @@ public:
 	void handleInput(float gameTime);
 	void updateHUD(float gameTime);
 
-	bool playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve);
-	bool enemyPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve);
 	bool playerContactBegin(Node* a, Node* b);
 	bool enemyContactBegin(Node* a, Node* b);
+	bool itemContactBegin(Node* a, Node* b);
+	bool playerContactSeparate(Node* a, Node* b);
+	bool enemyContactSeparate(Node* a, Node* b);
+
+	bool playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve);
+	bool itemPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve);
+	bool enemyPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve);
 
 protected:
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
@@ -113,6 +118,7 @@ protected:
 	Sprite* darkenScreen;
 
 	float gameTime = 0.0f;
+	bool evenFrame = false;
 
 	Director* director = Director::getInstance();
 
@@ -149,8 +155,10 @@ protected:
 
 	vector<Door*> doors;
 
+	float windowScale;
 	Node* camPos;//an invisible node used to position the camera
 	Camera* camera = NULL;
+	float camStartPosZ;
 	Vec2 camBoundingBox = Vec2(200, 50);
 	Vec2 camOffset = Vec2(0, 150);//the offset for the camera, so player isn't in exact centre of screen
 	float camZoom = 1.0f;
@@ -164,7 +172,11 @@ protected:
 	float startPressTime = -1;
 	float holdTime = 12 FRAMES;
 
+	Node* a;
+	Node* b;
+
 	bool onContactBegin(PhysicsContact &contact);
+	bool onContactSeparate(PhysicsContact &contact);
 
 	bool onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & solve);//main function used for collision detection
 

@@ -16,7 +16,7 @@
 # player: player, x_coordinate, y_coordinate
 #
 250
-700|bg,Hallway.png|exit,left|door,right,locked|vent,top,open,300|hide_object,couch,400,0|item,crowbar,100,10|player,0,0|enemy,thug,450,0,STAND_SWITCH_LEFT,none,key
+700|bg,Hallway.png|exit,left|door,right,locked|vent,top,open,300|hide_object,couch,400,0|item,crowbar,100,0|player,50,0|enemy,thug,450,0,STAND_SWITCH_LEFT,none,key
 600|bg,Kitchen.png|exit,right|door,left|stair,1,A,530,0|item,knife,325,0|enemy,guard,200,0,NONE,gun|phys_object,kitch_table,100,0
 FLOOR_END
 250
