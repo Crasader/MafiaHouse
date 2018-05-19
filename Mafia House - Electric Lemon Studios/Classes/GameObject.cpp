@@ -197,7 +197,7 @@ void GameObject::stopX() {
 
 void GameObject::stopY() {
 	getPhysicsBody()->setVelocity(Vec2(getPhysicsBody()->getVelocity().x, 0));
-	getPhysicsBody()->resetForces();
+	//getPhysicsBody()->resetForces();
 }
 
 void GameObject::stop() {

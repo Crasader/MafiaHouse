@@ -113,6 +113,7 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 					w = Wall::createWithSpriteFrameName();
 					w->initObject(newPos, Size(length, size.height));
 					if (type == 2) {
+						w->getPhysicsBody()->setCollisionBitmask(104);//floors don't actually collide with character because they get stuck on seems
 						w->getPhysicsBody()->setContactTestBitmask(72);//floors check for contact with player and items
 					}
 					else {
@@ -165,7 +166,8 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 			w = Wall::createWithSpriteFrameName();
 			w->initObject(newPos, Size(length, size.height));
 			if (type == 2) {
-				w->getPhysicsBody()->setContactTestBitmask(9);//floors check for contact with player and items
+				w->getPhysicsBody()->setCollisionBitmask(104);//floors don't actually collide with character because they get stuck on seems
+				w->getPhysicsBody()->setContactTestBitmask(72);//floors check for contact with player and items
 			}
 			else {
 				w->getPhysicsBody()->setContactTestBitmask(8);//ceilings only check with items
@@ -176,7 +178,19 @@ void Room::createWall(vector<Door*> *doors, int orientation, int type, Vec2 posi
 	}
 	else {//no doors or vents
 		w = Wall::createWithSpriteFrameName();
-		w->initObject(position, size);
+		if (orientation == 1) {
+			w->initObject(position, Size(size.width, size.height));
+		}
+		else{
+			w->initObject(position, Size(size.width, size.height));
+			if (type == 2) {
+				w->getPhysicsBody()->setCollisionBitmask(104);//floors don't actually collide with character because they get stuck on seems
+				w->getPhysicsBody()->setContactTestBitmask(72);//floors check for contact with player and items
+			}
+			else {
+				w->getPhysicsBody()->setContactTestBitmask(8);//ceilings only check with items
+			}
+		}
 		w->setName(name);
 		addChild(w);
 	}

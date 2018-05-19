@@ -43,6 +43,7 @@ Player::~Player(){}
 
 void Player::initObject(Vec2 startPos) {
 	Character::initObject(startPos);
+	//getPhysicsBody()->setGravityEnable(false);
 	//initializing crouching physics body
 	crouchBody = PhysicsBody::createBox(crouchSize);//player is half height when crouching
 	crouchBody->setTag(1);
@@ -52,12 +53,14 @@ void Player::initObject(Vec2 startPos) {
 	crouchBody->setContactTestBitmask(contactTest);
 	crouchBody->setDynamic(true);
 	crouchBody->setRotationEnable(false);
+	//crouchBody->setGravityEnable(false);
+	crouchBody->setLinearDamping(0.6f);
 	crouchBody->retain();
 	//intializing hitbox for item pickup radius
 	pickUpRadius = Node::create();
 	auto body = PhysicsBody::createBox(Size(bodySize.width, 54));//top half of player's body
 	body->setCategoryBitmask(64);
-	body->setCollisionBitmask(0);
+	body->setCollisionBitmask(4);
 	body->setContactTestBitmask(4);
 	body->setDynamic(false);
 	pickUpRadius->setPhysicsBody(body);
@@ -95,8 +98,8 @@ void Player::resetCollisionChecks(float time) {
 	//doorToUse = NULL;
 	//stairToUse = NULL;
 	//objectToHideBehind = NULL;
-	//itemToPickUp = NULL;
-	//bodyToPickUp = NULL;
+	itemToPickUp = NULL;
+	bodyToPickUp = NULL;
 }
 
 void Player::walkPrepareAttack(Input input, float time) {
@@ -292,6 +295,7 @@ void Player::crouchWalk(Input input, float time) {
 void Player::jump() {
 	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("Audio/jump.wav");
 	if (touchingFloor == true) {
+		
 		auto callback = CallFunc::create([this]() {
 			hasJumped = true;
 			move(Vec2(0, 140));//apply force straight up
@@ -691,6 +695,13 @@ void Player::wasHit(Item* item, float time) {
 void Player::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);//checking if floor has changed
 	updateRoom(mainLayer->floors[currentFloor].rooms);//checking if room has changed
+	//getPhysicsBody()->setVelocity(Vec2(getPhysicsBody()->getVelocity().x / pow(2, abs(getPhysicsBody()->getVelocity().x)), getPhysicsBody()->getVelocity().y));
+	if (touchingFloor == false) {
+		//getPhysicsBody()->setGravityEnable(true);
+	}
+	else {
+		//getPhysicsBody()->setGravityEnable(false);
+	}
 	if (thrownItem != NULL) {
 		if (time - thrownItem->thrownTime >= thrownItemDelay) {
 			thrownItem = NULL;
@@ -1028,6 +1039,7 @@ Player::State* Player::JumpState::update(Player* player, GameLayer* mainLayer, f
 		return new NeutralState;
 	}
 	if (player->hasJumped == true && player ->getPhysicsBody()->getVelocity().y <= 0) {//when player's vertical speed has stopped
+		player->hasJumped = false;
 		return new FallState;
 	}
 	return nullptr;
@@ -1516,8 +1528,8 @@ void Player::RollState::enter(Player* player, GameLayer* mainLayer, float time) 
 	player->stopAllActions();
 	//player->stop();
 	player->startAnimation(ROLLING, player->rolling);
-	player->getPhysicsBody()->setLinearDamping(1.9f);
-	player->moveNoLimit(Vec2(730, 0));//applying force for the roll
+	player->getPhysicsBody()->setLinearDamping(1.65f);
+	player->moveNoLimit(Vec2(690, 0));//applying force for the roll
 	if (player->heldBody != NULL) {
 		player->dropBody(mainLayer, time);
 	}
@@ -1561,7 +1573,7 @@ void Player::RollState::exit(Player* player, GameLayer* mainLayer, float time) {
 		player->heldItem->setVisible(true);
 	}
 	player->getPhysicsBody()->setCollisionBitmask(player->collision);//re-enabling enemy collisions
-	player->getPhysicsBody()->setLinearDamping(0.0f);
+	player->getPhysicsBody()->setLinearDamping(0.6f);
 }
 
 //Hide State:

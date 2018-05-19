@@ -39,7 +39,7 @@ void Item::initRadius() {
 	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
-	pickUpRadiusBody->setCollisionBitmask(0);
+	pickUpRadiusBody->setCollisionBitmask(66);
 	pickUpRadiusBody->setContactTestBitmask(66);
 	pickUpRadiusBody->setName("item_radius");
 	pickUpRadius->setPhysicsBody(pickUpRadiusBody);
@@ -74,7 +74,7 @@ void Item::initPickedUpItem() {
 	setGlobalZOrder(5);
 	outline->setVisible(false);
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
-	pickUpRadius->getPhysicsBody()->setRotationOffset(0);
+	//pickUpRadius->getPhysicsBody()->setRotationOffset(0);
 	getPhysicsBody()->setDynamic(false);
 	getPhysicsBody()->setGravityEnable(false);
 	getPhysicsBody()->setCategoryBitmask(8);
@@ -124,6 +124,7 @@ void Item::initOffhand() {
 	outline->setVisible(true);
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	pickUpRadius->setPositionNormalized(Vec2(0.55, 0.45));
+	pickUpRadius->setRotation(0);
 	getPhysicsBody()->setCollisionBitmask(0);
 	getPhysicsBody()->setContactTestBitmask(0);
 }
@@ -271,7 +272,7 @@ void Item::initGroundItem() {
 	pickUpRadius->getPhysicsBody()->setEnabled(true);
 	setName("item");
 	getPhysicsBody()->setName("item");
-	pickUpRadius->getPhysicsBody()->setRotationOffset(0);
+	pickUpRadius->setRotation(0);
 }
 
 bool Item::checkBroken() {
@@ -340,7 +341,7 @@ void Item::playerInRange(Node* player) {
 	if (playerRange == true) {
 		outline->setColor(ccc3(100, 255, 100));//green
 	}
-	//playerRange = false;
+	playerRange = false;
 }
 
 void Item::hasMoved() {
@@ -423,7 +424,7 @@ void Item::checkGroundSpeed() {
 }
 
 void Item::prepareStab(float angle) {
-	setPosition(Vec2(30, 57));
+	setPosition(Vec2(30, 56));
 	setRotation(0 + angle);
 	setAnchorPoint(Vec2(0, 0.5));
 	//auto prepare = MoveBy::create(5 FRAMES, Vec2(-12, 6));
@@ -452,7 +453,7 @@ void Item::prepareCrouchSwing(float angle) {
 }
 
 void Item::stabSequence(float angle, bool flip) {
-	getPhysicsBody()->setCollisionBitmask(40);
+	getPhysicsBody()->setCollisionBitmask(41);
 	getPhysicsBody()->setContactTestBitmask(107);
 
 	Vec2 direction = angleToDirection(angle);
@@ -476,7 +477,7 @@ void Item::stabSequence(float angle, bool flip) {
 }
 
 void Item::swingSequence(float angle, bool flip) {
-	getPhysicsBody()->setCollisionBitmask(40);
+	getPhysicsBody()->setCollisionBitmask(41);
 	getPhysicsBody()->setContactTestBitmask(107);
 
 	Vec2 direction = angleToDirection(angle);
@@ -679,7 +680,7 @@ Fist::Fist(){
 	startTime = 9 FRAMES;
 	attackTime = 10 FRAMES;
 	lagTime = 14 FRAMES;
-	range = 25;
+	range = 24;
 	rangeRadius = 90;
 	powerLevel = 0;
 	noiseLevel = 0.4f;

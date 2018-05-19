@@ -134,7 +134,7 @@ void Level::onStart(float deltaTime){
 	unschedule(schedule_selector(Level::onStart));
 
 	//physics debug drawing:
-	getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//getScene()->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 
 	//initializing exits
 	for (int i = 0; i < doors.size(); i++) {
@@ -258,6 +258,7 @@ void Level::getStats(float deltaTime) {
 		levels[levelNum][3] = "1";
 	}
 	//checking if best time was beaten
+	int newTime = CompGreater<float>(gameTime, atof(levels[levelNum][4].c_str()));
 	if (gameTime < atof(levels[levelNum][4].c_str()) || atof(levels[levelNum][4].c_str()) <= 0) {
 		gotBestTime = true;
 		std::stringstream stream;
@@ -1005,6 +1006,41 @@ bool Level::onContactPreSolve(PhysicsContact &contact, PhysicsContactPreSolve & 
 	return true;
 }
 bool Level::playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve) {
+	//check if player can pick up body
+	if (a->getName() == "player_pickup" && b->getName() == "body_radius")
+	{
+		if ((player->behindObject == true && static_cast<DeadBody*>(b->getParent())->behindObject == true) || (player->behindObject == false && static_cast<DeadBody*>(b->getParent())->behindObject == false)) {
+			player->bodyToPickUp = static_cast<DeadBody*>(b->getParent());
+			static_cast<DeadBody*>(b->getParent())->playerRange = true;
+		}
+		return false;
+	}
+	else if (a->getName() == "body_radius" && b->getName() == "player_pickup")
+	{
+		if ((player->behindObject == true && static_cast<DeadBody*>(a->getParent())->isHidden == true) || (player->behindObject == false && static_cast<DeadBody*>(a->getParent())->behindObject == false)) {
+			player->bodyToPickUp = static_cast<DeadBody*>(a->getParent());
+			static_cast<DeadBody*>(a->getParent())->playerRange = true;
+		}
+		return false;
+	}
+
+	//check if player can pick up item
+	if (a->getName() == "player_pickup" && b->getName() == "item_radius")
+	{
+		if (player->behindObject == false) {
+			player->itemToPickUp = static_cast<Item*>(b->getParent());
+			static_cast<Item*>(b->getParent())->playerRange = true;
+		}
+		return false;
+	}
+	else if (a->getName() == "item_radius" && b->getName() == "player_pickup")
+	{
+		if (player->behindObject == false) {
+			player->itemToPickUp = static_cast<Item*>(a->getParent());
+			static_cast<Item*>(a->getParent())->playerRange = true;
+		}
+		return false;
+	}
 	//player and door
 	if (a->getName() == "player" && (b->getName() == "door_radius" || b->getName() == "vent_radius" || b->getName() == "exit_radius")) {
 		return false;
@@ -1015,9 +1051,11 @@ bool Level::playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve) {
 	// check if player is touching floor
 	if ((a->getName() == "player" && (b->getName() == "floor" || b->getName() == "vent")) || ((a->getName() == "floor" || a->getName() == "vent") && b->getName() == "player"))
 	{
-		solve.setRestitution(0);
-		player->touchingFloor = true;
-		return true;
+		if (player->hasJumped == false) {
+			player->stopY();
+			player->touchingFloor = true;
+		}
+		return false;
 	}
 	//player and physical object
 	if (a->getName() == "player" && b->getName() == "phys_object")
@@ -1289,49 +1327,6 @@ bool Level::onContactBegin(cocos2d::PhysicsContact &contact){
 	return true;
 }
 bool Level::playerContactBegin(Node* a, Node* b) {
-	//check if player can pick up item
-if (a->getName() == "player_pickup" && b->getName() == "item_radius")
-	{
-		if (player->behindObject == false) {
-			if (player->itemToPickUp == NULL) {
-				player->itemToPickUp = static_cast<Item*>(b->getParent());
-				static_cast<Item*>(b->getParent())->playerRange = true;
-			}
-		}
-		return true;
-	}
-	else if (a->getName() == "item_radius" && b->getName() == "player_pickup")
-	{
-		if (player->behindObject == false) {
-			if (player->itemToPickUp == NULL) {
-				player->itemToPickUp = static_cast<Item*>(a->getParent());
-				static_cast<Item*>(a->getParent())->playerRange = true;
-			}
-		}
-		return true;
-	}
-	//check if player can pick up body
-	if (a->getName() == "player_pickup" && b->getName() == "body_radius")
-	{
-		if ((player->behindObject == true && static_cast<DeadBody*>(b->getParent())->behindObject == true) || (player->behindObject == false && static_cast<DeadBody*>(b->getParent())->behindObject == false)) {
-			if (player->bodyToPickUp == NULL) {
-				player->bodyToPickUp = static_cast<DeadBody*>(b->getParent());
-				static_cast<DeadBody*>(b->getParent())->playerRange = true;
-			}
-		}
-		return true;
-	}
-	else if (a->getName() == "body_radius" && b->getName() == "player_pickup")
-	{
-		if ((player->behindObject == true && static_cast<DeadBody*>(a->getParent())->isHidden == true) || (player->behindObject == false && static_cast<DeadBody*>(a->getParent())->behindObject == false)) {
-			if (player->bodyToPickUp == NULL) {
-				player->bodyToPickUp = static_cast<DeadBody*>(a->getParent());
-				static_cast<DeadBody*>(a->getParent())->playerRange = true;
-			}
-		}
-		return true;
-	}
-
 	// check if player has collided with a wall
 	if (a->getName() == "player" && (b->getName() == "wall" || b->getName() == "door"))
 	{
@@ -1790,45 +1785,6 @@ bool Level::onContactSeparate(cocos2d::PhysicsContact &contact) {
 	return true;
 }
 bool Level::playerContactSeparate(Node* a, Node* b) {
-	//check if player can pick up item
-	if (a->getName() == "player_pickup" && b->getName() == "item_radius"){
-		if (player->behindObject == false) {
-			if (static_cast<Item*>(b->getParent()) == player->itemToPickUp) {
-				player->itemToPickUp = NULL;
-				static_cast<Item*>(b->getParent())->playerRange = false;
-			}
-		}
-		return true;
-	}
-	else if (a->getName() == "item_radius" && b->getName() == "player_pickup"){
-		if (player->behindObject == false) {
-			if (static_cast<Item*>(a->getParent()) == player->itemToPickUp) {
-				player->itemToPickUp = NULL;
-				static_cast<Item*>(a->getParent())->playerRange = false;
-			}
-		}
-		return true;
-	}
-	//check if player can pick up body
-	if (a->getName() == "player_pickup" && b->getName() == "body_radius"){
-		if ((player->behindObject == true && static_cast<DeadBody*>(b->getParent())->behindObject == true) || (player->behindObject == false && static_cast<DeadBody*>(b->getParent())->behindObject == false)) {
-			if (static_cast<DeadBody*>(b->getParent()) == player->bodyToPickUp) {
-				player->bodyToPickUp = NULL;
-				static_cast<DeadBody*>(b->getParent())->playerRange = false;
-			}
-		}
-		return true;
-	}
-	else if (a->getName() == "body_radius" && b->getName() == "player_pickup"){
-		if ((player->behindObject == true && static_cast<DeadBody*>(a->getParent())->isHidden == true) || (player->behindObject == false && static_cast<DeadBody*>(a->getParent())->behindObject == false)) {
-			if (static_cast<DeadBody*>(a->getParent()) == player->bodyToPickUp) {
-				player->bodyToPickUp = NULL;
-				static_cast<DeadBody*>(a->getParent())->playerRange = false;
-			}
-		}
-		return true;
-	}
-
 	// check if player has collided with a wall
 	if (a->getName() == "player" && (b->getName() == "wall" || b->getName() == "door"))
 	{

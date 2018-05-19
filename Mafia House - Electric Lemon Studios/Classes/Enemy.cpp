@@ -44,6 +44,8 @@ void Enemy::initObject(Vec2 startPos)
 {
 	GameObject::initObjectNoPhysics(startPos);
 	initBoxBody(bodySize);
+	getPhysicsBody()->setGravityEnable(false);
+	getPhysicsBody()->setLinearDamping(0.6f);
 	//initializing suspicion icons:
 	Texture2D::TexParams texParams = { GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	exMark = Sprite::createWithSpriteFrameName("icons/exmark.png");
@@ -81,6 +83,8 @@ void Enemy::initObject(Vec2 startPos)
 	knockedOutBody->setContactTestBitmask(10);
 	knockedOutBody->setDynamic(true);
 	knockedOutBody->setRotationEnable(false);
+	knockedOutBody->setGravityEnable(false);
+	knockedOutBody->setLinearDamping(0.6f);
 	knockedOutBody->retain();
 }
 
@@ -1382,6 +1386,7 @@ void Enemy::gotHit(Item* item, float time, GameLayer* mainLayer) {
 void Enemy::update(GameLayer* mainLayer, float time) {
 	updateFloor(mainLayer->floors);
 	updateRoom(mainLayer->floors[currentFloor].rooms);
+	stopY();
 	//checking if enemy still has a key, also removing stolen items
 	if (inventory.size() > 0) {
 		hasKey = false;

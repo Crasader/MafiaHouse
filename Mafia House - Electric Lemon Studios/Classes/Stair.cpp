@@ -296,7 +296,7 @@ Vent::Vent() {
 	//physics body properties
 	dynamic = false;
 	category = 1;
-	collision = 106;
+	collision = 104;
 	contactTest = 72;
 	opening = GameAnimation(OBJECT, "objects/vent/%03d.png", 5, 1 FRAMES, false);
 	closing = GameAnimation(OBJECT, "objects/vent/close/%03d.png", 5, 1 FRAMES, false);
@@ -320,7 +320,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		useRadius->setPosition(Vec2(25, 10));
 		useRadius2->setPosition(Vec2(25, 10));
 		//initializing physics body for enemies to walk on
-		auto body = PhysicsBody::createBox(size);//player is half height when crouching
+		/*auto body = PhysicsBody::createBox(size);//player is half height when crouching
 		body->setContactTestBitmask(0);
 		body->setCategoryBitmask(1);
 		body->setCollisionBitmask(2);//only collide with enemies
@@ -328,7 +328,7 @@ void Vent::initObject(int orient, Vec2 startPos) {
 		enemyWalkBody = Node::create();
 		enemyWalkBody->setPosition((Vec2(25, 10)));
 		enemyWalkBody->setPhysicsBody(body);
-		addChild(enemyWalkBody);
+		addChild(enemyWalkBody);*/
 	}
 	else if (orient == 1) {//vertical
 		setSpriteFrame(frameCache->getSpriteFrameByName("objects/vent/vertical/001.png"));

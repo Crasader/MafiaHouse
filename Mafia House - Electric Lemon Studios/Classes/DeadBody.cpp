@@ -41,7 +41,7 @@ void DeadBody::initRadius() {
 	auto pickUpRadiusBody = PhysicsBody::createBox(pickUpBox);
 	pickUpRadiusBody->setDynamic(false);
 	pickUpRadiusBody->setCategoryBitmask(4);
-	pickUpRadiusBody->setCollisionBitmask(0);
+	pickUpRadiusBody->setCollisionBitmask(64);
 	pickUpRadiusBody->setContactTestBitmask(64);
 	pickUpRadiusBody->setTag(10000);
 	pickUpRadiusBody->setName("body_radius");
@@ -91,7 +91,7 @@ void DeadBody::playerInRange(Node* player) {
 			outline->setColor(ccc3(100, 100, 100));//grey
 		}
 	}
-	//playerRange = false;
+	playerRange = false;
 }
 
 void DeadBody::initPickedUpBody() {
@@ -189,7 +189,7 @@ void DeadBody::initThrownItem() {
 	outline->setColor(ccc3(210, 0, 255));//purple
 	pickUpRadius->getPhysicsBody()->setEnabled(false);
 	getPhysicsBody()->setCategoryBitmask(8);
-	getPhysicsBody()->setCollisionBitmask(103);
+	getPhysicsBody()->setCollisionBitmask(107);
 	getPhysicsBody()->setContactTestBitmask(107);
 	setName("held_item");
 	getPhysicsBody()->setName("held_item");

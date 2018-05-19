@@ -75,3 +75,12 @@ public:
 	int bot;//bottomg of the floor
 	vector<RoomData*> rooms;//rooms the floor contains
 };
+
+template <typename type>
+type CompGreater(type a, type b) {
+	type thing;
+	
+	thing = a > b ? a : b;
+
+	return thing;
+}
