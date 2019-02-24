@@ -5,6 +5,6 @@
 FLOOR_END
 250
 200|bg,Bathroom.png|item,knife,50,0|item,key,150,0|door,right,locked
-600|bg,guestRoom.png|door,left|item,crowbar,525,0|stair,1,B,400,0|door,right,locked
+600|bg,guestRoom.png|door,left|item,hammer,525,0|stair,1,B,400,0|door,right,locked
 700|bg,Hallway.png|door,left|hide_object,couch,160,0|vent,bot,open,355|enemy,thug,520,0,LEFT,knife
 FLOOR_END

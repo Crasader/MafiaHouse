@@ -196,7 +196,7 @@ private:
 
 	//for rolling
 	float rollEndTime = -1;
-	float rollLagTime = 30 FRAMES;
+	float rollLagTime = 15 FRAMES;
 
 	//for jumping
 	float startJumpTime = -1;

@@ -1052,10 +1052,11 @@ bool Level::playerPresolve(Node* a, Node* b, PhysicsContactPreSolve & solve) {
 	if ((a->getName() == "player" && (b->getName() == "floor" || b->getName() == "vent")) || ((a->getName() == "floor" || a->getName() == "vent") && b->getName() == "player"))
 	{
 		if (player->hasJumped == false) {
-			player->stopY();
+			//player->stopY();
 			player->touchingFloor = true;
 		}
-		return false;
+		return true;
+		//return false;
 	}
 	//player and physical object
 	if (a->getName() == "player" && b->getName() == "phys_object")

@@ -66,7 +66,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     register_all_packages();
 
-	director->setDisplayStats(true);
+	//director->setDisplayStats(true);
 
     // create a scene (if you want directly test one scene you can switch the name here)
     auto scene = CocoLogo::createScene();

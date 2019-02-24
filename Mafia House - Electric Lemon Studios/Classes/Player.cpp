@@ -18,7 +18,7 @@ Player::Player()
 	collision = 11;
 	contactTest = 27 + 4;
 	//max movement speed
-	baseSpeed = 82;
+	baseSpeed = 84;
 	maxHP = 150;
 	hp = maxHP;
 	//initializing animations
@@ -174,7 +174,7 @@ void Player::walk(Input input, float time) {
 			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
-			setSpeed(moveSpeed * 1.4f);
+			setSpeed(moveSpeed * 1.6f);
 			moonwalk.action->setSpeed(moveSpeed);
 			if (flippedX == false) {
 				flipX();
@@ -207,7 +207,7 @@ void Player::walk(Input input, float time) {
 			stopAnimation(STAND);
 			stopAnimation(WALK);
 			startAnimation(MOONWALK, moonwalk);
-			setSpeed(moveSpeed * 1.4f);
+			setSpeed(moveSpeed * 1.6f);
 			moonwalk.action->setSpeed(moveSpeed);
 			if (flippedX == true) {
 				flipX();
@@ -247,7 +247,7 @@ void Player::crouchWalk(Input input, float time) {
 			moveAbsolute(Vec2(-10.0f * moveSpeed, 0));
 		}
 		else if (moveDirection == 2) {
-			setSpeed(moveSpeed * 1.5f);
+			setSpeed(moveSpeed * 1.6f);
 			if (flippedX == false) {
 				flipX();
 				moonwalking = true;
@@ -270,7 +270,7 @@ void Player::crouchWalk(Input input, float time) {
 			//run walking animation
 		}
 		else if (moveDirection == 1) {
-			setSpeed(moveSpeed * 1.5f);
+			setSpeed(moveSpeed * 1.6f);
 			moonwalk.action->setSpeed(moveSpeed);
 			if (flippedX == true) {
 				flipX();
